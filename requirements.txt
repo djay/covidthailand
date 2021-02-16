@@ -1,0 +1,9 @@
+requests
+tabula-py
+requests_cache
+tika
+matplotlib
+webdavclient3
+xlrd
+openpyxl
+BeautifulSoup4
