@@ -27,6 +27,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
+            ./*.pdf
+            ./*.xlsx 
             ~/*.pdf
             ~/*.xlsx
             ~/.cache/pip
@@ -38,7 +40,7 @@ jobs:
       - name: run
         run: |
             python covidthailand.py
-      - name: Sync with include
+      - name: Upload Graphs to wiki
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "."
