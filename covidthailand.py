@@ -291,7 +291,7 @@ def get_en_situation():
                 break
             pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
             pui_port = pui_airport + pui_seaport
-        if pui in [1103858, 3891136, 433807, 96989]: #mistypes
+        if pui in [1103858, 3891136, 433807, 96989]: #mistypes #TODO: should use thai version as likely more accurate
             pui=None
         if tests_total in [783679, 849874, 936458]:
             tests_total = None
@@ -392,5 +392,20 @@ plt.savefig("cases.png")
 fig, ax = plt.subplots()
 #df = df.cumsum()
 df.plot(ax=ax, use_index=True, y=TESTS_AREA_COLS, kind="area", figsize=[20,10], title="Hospital Area Tests")
+ax.legend([
+    "1: Upper N: Chiang Mai, Chiang Rai,...", 
+    "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
+    "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
+    "4: Mid C: Nonthaburi-Ayutthaya",
+    "5: Lower C: Kanchanaburi-Samut Sakhon",
+    "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
+    "7: Mid NE:  Khon Kaen...",
+    "8: Upper NE: Loei-Sakon Nakhon",
+    "9: Lower NE 1: Buriram, Surin...",
+    "10: Lower NE 2: Ubon Ratchathani...",
+    "11: SE: Ranong-Krabi-Surat Thani...",
+    "12: SW: Trang-Narathiwat",
+    "13: Bangkok?"
+    ])
 plt.tight_layout()
 plt.savefig("tests_area.png")

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - "releases/**"
+  schedule:
+    - cron: "0 10 * * *"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/*.pdf
+            ~/*.xlsx
+            ~/.cache/pip
+          key: ${{ runner.os }}
+          restore-keys: |
+            ${{ runner.os }}
+      - name: run
+        run: |
+            python covidthailand.py
+      - name: Archive test results
+        if: success()
+        uses: actions/upload-artifact@v1
+        with:
+          name: Graphs
+          path: ./*.png
+
