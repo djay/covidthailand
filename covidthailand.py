@@ -16,20 +16,6 @@ from bs4 import BeautifulSoup
 
 requests.adapters.DEFAULT_RETRIES = 5
 
-#data = {}
-
-#import requests_cache
-#requests_cache.install_cache('demo_cache')
-# urls = []
-# for index_url in ["https://ddc.moph.go.th/viralpneumonia/situation.php", "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"]:
-#     # skip "https://ddc.moph.go.th/viralpneumonia/situation_more.php" as they are harder to parse
-#     index = requests.get(index_url)
-#     links = re.findall("href=[\"\'](.*?)[\"\']", index.content.decode('utf-8'))
-#     links = [urllib.parse.urljoin(index_url, l) for l in links if 'situation' in l and 'pdf' in l]
-#     urls.extend(links)
-
-#urls = ["https://ddc.moph.go.th/viralpneumonia/file/situation/situation-no394-310164.pdf"]
-
 
 def all_pdfs(*index_urls):
     urls = []
@@ -85,12 +71,12 @@ def get_next_numbers(content, *matches, debug=False):
         print(content)
     return [],content
 
-def merge(file, date, stats):
-    if date not in data:
-        data[date] = stats
-    else:
-        data[date] = tuple(existing if not new or (new and existing and new < existing) else new for existing,new in zip(data[date],stats))
-    print(" ".join([str(s) for s in (file, ) + data[date]]))
+# def merge(file, date, stats):
+#     if date not in data:
+#         data[date] = stats
+#     else:
+#         data[date] = tuple(existing if not new or (new and existing and new < existing) else new for existing,new in zip(data[date],stats))
+#     print(" ".join([str(s) for s in (file, ) + data[date]]))
 
 def file2date(file):
     date = file.rsplit(".pdf",1)[0].rsplit('-',1)[1]
