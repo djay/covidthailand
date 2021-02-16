@@ -39,11 +39,11 @@ jobs:
         run: |
             python covidthailand.py
       - name: Sync with include
-          uses: kai-tub/external-repo-sync-action@v1
-          with:
+        uses: kai-tub/external-repo-sync-action@v1
+        with:
             source-directory: "."
             include-patterns: "*.png"
-          env:
+        env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
       # - name: Upload Graphs
       #   if: success()
