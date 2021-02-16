@@ -375,17 +375,20 @@ df['Positivity Area (MA)'] = df['Pos Area (MA)'] / df['Tests Area (MA)'] * 100
 df['Positivity XLS (MA)'] = df['Pos XLS (MA)'] / df['Tests XLS (MA)'] * 100
 df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
 #print(df.to_string())
-df.plot(ax=ax, use_index=True, y=["Tested (MA)", "PUI (MA)", "Cases (MA)", "Tests Area (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Tests XLS (MA)"], kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
+df.plot(ax=ax, use_index=True, y=["Tested (MA)", "PUI (MA)", "Tests XLS (MA)", "Cases (MA)", ], kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
+ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed", "Confirmed Cases"])
 plt.tight_layout()
 plt.savefig("tests.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity Tested (MA)", "Positivity Area (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
+df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
+ax.legend(['PUI/Cases', "Positive Results/Tests", "Positive Results/Tests Performed"])
 plt.tight_layout()
 plt.savefig("positivity.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos XLS (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+ax.legend(["Confirmed Cases", "Positive Test Results"])
 plt.tight_layout()
 plt.savefig("cases.png")
 
