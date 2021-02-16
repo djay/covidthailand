@@ -38,10 +38,15 @@ jobs:
       - name: run
         run: |
             python covidthailand.py
-      - name: Archive test results
-        if: success()
-        uses: actions/upload-artifact@v1
-        with:
-          name: Graphs
-          path: ./*.png
-
+      # - name: Upload Graphs
+      #   if: success()
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: graphs
+      #     path: ./*.png
+      # - name: Upload Graphs to wiki
+      #   uses: SwiftDocOrg/github-wiki-publish-action@v1
+      #   with:
+      #     path: "*.png"
+      #   env:
+      #     GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
