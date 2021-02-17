@@ -28,9 +28,11 @@ jobs:
         with:
           path: |
             ./*.pdf
-            ./*.xlsx 
+            ./*.xlsx
+            ./*.pptx 
             ~/*.pdf
             ~/*.xlsx
+            ~/*.pptx
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5

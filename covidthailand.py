@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
+from pptx import Presentation
 #pd.options.display.mpl_style = 'default'
 
 requests.adapters.DEFAULT_RETRIES = 5
@@ -42,7 +43,7 @@ def all_pdfs(*index_urls):
         parsedPDF = parser.from_file(file)
         yield file, parsedPDF
 
-def dav_files(url, username, password, ext="pdf"):
+def dav_files(url, username, password, ext=".pdf .pptx"):
     from webdav3.client import Client
     options = {
     'webdav_hostname': url,
@@ -52,7 +53,7 @@ def dav_files(url, username, password, ext="pdf"):
     client = Client(options)
     files = reversed(client.list())
     for file in files:
-        if ".{}".format(ext) not in file:
+        if not any([ext == file[-len(ext):] for ext in ext.split()]):
             continue
         if not os.path.exists(file):
             client.download_file(file, file)
@@ -72,13 +73,6 @@ def get_next_numbers(content, *matches, debug=False):
         print("Couldn't find '{}'".format(match))
         print(content)
     return [],content
-
-# def merge(file, date, stats):
-#     if date not in data:
-#         data[date] = stats
-#     else:
-#         data[date] = tuple(existing if not new or (new and existing and new < existing) else new for existing,new in zip(data[date],stats))
-#     print(" ".join([str(s) for s in (file, ) + data[date]]))
 
 def file2date(file):
     date = file.rsplit(".pdf",1)[0].rsplit('-',1)[1]
@@ -129,9 +123,9 @@ def previous_date(end, day):
 
 def find_date_range(content):
     # 11-17 เม.ย. 2563 or 04/04/2563 12/06/2563
-    m1 = re.search(r"([0-9]+)/([0-9]+)/([0-9]+) - ([0-9]+)/([0-9]+)/([0-9]+)", content)
-    m2 = re.search(r"([0-9]+) *- *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
-    m3 = re.search(r"([0-9]+) *- *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    m1 = re.search(r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content)
+    m2 = re.search(r"([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
+    m3 = re.search(r"([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
     if m1:
         d1,m1,y1,d2,m2,y2 = m1.groups()
         start = datetime.datetime(day=int(d1),month=int(m1),year=int(y1)-543)
@@ -157,19 +151,23 @@ def daterange(start_date, end_date, offset=0):
         yield start_date + datetime.timedelta(n)
 
 
-def parse_pdf(filename, as_html=False):
+def parse_file(filename, as_html=False):
     pages_txt = []
 
     # Read PDF file
     data = parser.from_file(filename, xmlContent=True)
     xhtml_data = BeautifulSoup(data['content'], features="lxml")
-    for i, content in enumerate(xhtml_data.find_all('div', attrs={'class': 'page'})):
+    pages = xhtml_data.find_all('div', attrs={'class': ['page', 'slide-content']})
+    # TODO: slides are divided by slide-content and slide-master-content rather than being contained
+    for i, content in enumerate(pages):
         # Parse PDF data using TIKA (xml/html)
         # It's faster and safer to create a new buffer than truncating it
         # https://stackoverflow.com/questions/4330812/how-do-i-clear-a-stringio-object
         _buffer = StringIO()
         _buffer.write(str(content))
         parsed_content = parser.from_buffer(_buffer.getvalue())
+        if parsed_content['content'] is None:
+            continue
 
         # Add pages
         text = parsed_content['content'].strip()
@@ -180,6 +178,26 @@ def parse_pdf(filename, as_html=False):
 
     return pages_txt
 
+def slide2text(slide):
+    text = ""
+    if slide.shapes.title:
+        text += slide.shapes.title.text
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            #for p in shape.text_frame:
+                text += "\n" + shape.text
+    return text
+
+def slide2chartdata(slide):
+    for shape in slide.shapes:
+        if shape.has_chart:
+            yield shape.chart
+
+def spread_date_range(start, end, row, columns):
+    r = list(daterange(start,end, offset=1))
+    stats = [float(p)/len(r) for p in row]
+    results = pd.DataFrame([[date,]+stats for date in r], columns=columns).set_index('Date')
+    return results
 
 def get_cases():
     timeline = requests.get('https://covid19.th-stat.com/api/open/timeline').json()['Data']
@@ -199,22 +217,50 @@ TESTS_AREA_COLS = ["Tests Area {}".format(i+1) for i in range(13)]
 def get_tests_by_area():
     columns = ['Date'] + POS_AREA_COLS + TESTS_AREA_COLS + ["Pos Area", "Tests Area"]
     data = pd.DataFrame()
-    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null"):
+
+    # some additional data from pptx files
+    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pptx"):
+        prs = Presentation(file)
+        for chart in (next(slide2chartdata(slide), None) for slide in prs.slides):
+            if not chart:
+                continue
+            title = chart.chart_title.text_frame.text if chart.has_title else ''
+            if "เริ่มเปิดบริการ" in title:
+                continue
+            if not any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
+                continue
+            start,end = find_date_range(title)
+            if start is None:
+                continue
+            series=dict([(s.name,s.values) for s in chart.series])
+            pos = list(series['จำนวนผลบวก'])
+            tests = list(series["จำนวนตรวจ"])
+            row = pos+tests+[sum(pos),sum(tests)]
+            results = spread_date_range(start, end, row, columns)
+            print(results)
+            data = data.combine_first(results)
+
+
+
+    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pdf"):
         #parsedPDF = parser.from_file(file)
 
         #pages = parsedPDF['content'].split("\n\n\n\n") #  # วันที่ท้ำรำยงำน
-        pages = parse_pdf(file)
-        pages = [page for page in pages if "เริ่มเปิดบริการ" not in page]
-        pages = [page for page in pages if "เขตสุขภาพ" in page or "เขตสุขภำพ" in page]
+        pages = parse_file(file)
+        not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
+        by_area = [page for page in not_whole_year if "เขตสุขภาพ" in page or "เขตสุขภำพ" in page]
+        # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
+        # no pdf available so data missing
+        # Also missing 14-20 Nov 2020 (no pptx or pdf)
 
-        for page in pages:
+        for page in by_area:
             start,end = find_date_range(page)
             if start is None:
                 continue
             if '349585' in page:
                 page = page.replace('349585', '349 585')
-            if '16/10/2563' in page:
-                print(page)
+            # if '16/10/2563' in page:
+            #     print(page)
             _, page = page.split("\n", 1) # get rid of first line that sometimes as date and time in it
             numbers, content = get_next_numbers(
                 page,
@@ -227,13 +273,13 @@ def get_tests_by_area():
             #print(numbers)
             pos = numbers[0:13]
             tests = numbers[13:26]
-            r = list(daterange(start,end, offset=1))
-            stats = [float(p)/len(r) for p in pos+tests+[sum(pos),sum(tests)]]
-            if stats[-2] > 50000:
+            if sum(pos) > 50000:
                 pass
-            results = pd.DataFrame([[date,]+stats for date in r], columns=columns).set_index('Date')
+            row = pos+tests+[sum(pos),sum(tests)]
+            results = spread_date_range(start, end, row, columns)
             print(results)
             data = data.combine_first(results)
+
     return data
 
 def get_thai_situation():
@@ -346,30 +392,25 @@ print(tests)
 #data.combine_first(tests)
 
 
+areas = get_tests_by_area()
+
+cases = get_cases()
+print(cases)  
+
 th_situation = get_thai_situation()
 th_situation = th_situation - th_situation.shift(-1)
 en_situation = get_en_situation()
 en_situation = en_situation - en_situation.shift(-1)
 situation = th_situation.combine_first(en_situation)
-df = situation
-# df['Tested'] = df['Tested'] - df['Tested'].shift(1)
-# df['PUI'] = df['PUI'] - df['PUI'].shift(1)
-# df['ASQ'] = df['ASQ'] - df['ASQ'].shift(1)
-# df['Not PUI'] = df['Not PUI'] - df['Not PUI'].shift(1)
-# #df['Hospitals'] = df['Hospitals'] - df['Hospitals'].shift(1)
-# df["Active case finding"] = df["Active case finding"] - df["Active case finding"].shift(1)
-
 print(situation)
-cases = get_cases()
-print(cases)  
+
+df = situation
 df = df.combine_first(cases)
-print(df)
-df = df.combine_first(get_tests_by_area())
-print(df)
+df = df.combine_first(areas)
 df = df.combine_first(tests)
 print(df)
 
-#df = pd.DataFrame(sorted(data.values()), columns=["Date","Tests", "PUI", "Active case finding", "ASQ", "Not PUI", "Cases"])
+
 # create a plot
 fig, ax = plt.subplots()
 
@@ -397,7 +438,7 @@ plt.savefig("tests.png")
 
 fig, ax = plt.subplots()
 df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
-ax.legend(['PUI/Cases', "Positive Results/Tests", "Positive Results/Tests Performed"])
+ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed", "Confirmed Cases   / Tests Performed"])
 plt.tight_layout()
 plt.savefig("positivity.png")
 

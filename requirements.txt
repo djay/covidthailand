@@ -7,3 +7,4 @@ webdavclient3
 xlrd
 openpyxl
 BeautifulSoup4
+python-pptx
