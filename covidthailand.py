@@ -22,6 +22,8 @@ def all_pdfs(*index_urls):
     for index_url in index_urls:
         # skip "https://ddc.moph.go.th/viralpneumonia/situation_more.php" as they are harder to parse
         index = requests.get(index_url)
+        if index.status_code > 399:
+            continue
         links = re.findall("href=[\"\'](.*?)[\"\']", index.content.decode('utf-8'))
         links = [urllib.parse.urljoin(index_url, l) for l in links if 'pdf' in l]
         urls.extend(links)
@@ -236,19 +238,30 @@ def get_tests_by_area():
 
 def get_thai_situation():
     results = []
-    for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/situation.php"):
+    for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/situation.php","https://ddc.moph.go.th/viralpneumonia/situation_more.php"):
         if 'situation' not in file:
             continue
         date = file2date(file)
         numbers,content = get_next_numbers(
-            parsedPDF['content'], 
+            parsedPDF['content'],
             "ด่านโรคติดต่อระหว่างประเทศ",
+            "ด่านโรคติดต่อระหวา่งประเทศ", # 'situation-no346-141263n.pdf'
+            "นวนการตรวจทางห้องปฏิบัติการ", 
+            "นวนการตรวจทางหVองปฏิบัติการ",
+            "นวนการตรวจทางหWองปฏิบัติการ",
+            "นวนการตรวจทางหองปฏิบัติการ",
             #"จำนวนการตรวจทางหอ้งปฏิบัติการ",
             )
         if not numbers:
             break
         # cases = None
         screened_port, screened_cw, tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest  = numbers
+        if tests_total < 30000:
+            tests_total, pui, active_finding, asq, not_pui, *rest = numbers
+            if pui == 4534137:
+                pui = 453413 #situation-no273-021063n.pdf 
+        if tests_total > 2000000 < 30000 or pui > 1500000 < 100000:
+            raise Exception(f"Bad data in {file}")
         #merge(file, date, (date, tests_total, pui, active_finding, asq, not_pui, None))
         results.append((date, tests_total, pui, active_finding, asq, not_pui))
         print(file,results[-1])
@@ -333,11 +346,11 @@ print(tests)
 #data.combine_first(tests)
 
 
-en_situation = get_en_situation()
-en_situation = en_situation - en_situation.shift(-1)
 th_situation = get_thai_situation()
 th_situation = th_situation - th_situation.shift(-1)
-situation = en_situation.combine_first(th_situation)
+en_situation = get_en_situation()
+en_situation = en_situation - en_situation.shift(-1)
+situation = th_situation.combine_first(en_situation)
 df = situation
 # df['Tested'] = df['Tested'] - df['Tested'].shift(1)
 # df['PUI'] = df['PUI'] - df['PUI'].shift(1)
@@ -372,7 +385,9 @@ df['Positivity Tested (MA)'] = df['Cases (MA)'] / df['Tested (MA)'] * 100
 df['Positivity PUI (MA)'] = df['Cases (MA)'] / df['PUI (MA)'] * 100
 df['Positivity'] = df['Cases'] / df['Tested'] * 100
 df['Positivity Area (MA)'] = df['Pos Area (MA)'] / df['Tests Area (MA)'] * 100
+df['Positivity Area'] = df['Pos Area'] / df['Tests Area'] * 100
 df['Positivity XLS (MA)'] = df['Pos XLS (MA)'] / df['Tests XLS (MA)'] * 100
+df['Positivity XLS'] = df['Pos XLS'] / df['Tests XLS'] * 100
 df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
 #print(df.to_string())
 df.plot(ax=ax, use_index=True, y=["Tested (MA)", "PUI (MA)", "Tests XLS (MA)", "Cases (MA)", ], kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
@@ -392,10 +407,8 @@ ax.legend(["Confirmed Cases", "Positive Test Results"])
 plt.tight_layout()
 plt.savefig("cases.png")
 
-fig, ax = plt.subplots()
 #df = df.cumsum()
-df.plot(ax=ax, use_index=True, y=TESTS_AREA_COLS, kind="area", figsize=[20,10], title="Hospital Area Tests")
-ax.legend([
+AREA_LEGEND = [
     "1: Upper N: Chiang Mai, Chiang Rai,...", 
     "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
     "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
@@ -409,6 +422,32 @@ ax.legend([
     "11: SE: Ranong-Krabi-Surat Thani...",
     "12: SW: Trang-Narathiwat",
     "13: Bangkok?"
-    ])
+    ]
+fig, ax = plt.subplots()
+df.plot(ax=ax, use_index=True, y=TESTS_AREA_COLS, kind="area", figsize=[20,10], title="Tests by Health Area")
+ax.legend(AREA_LEGEND)
 plt.tight_layout()
 plt.savefig("tests_area.png")
+
+fig, ax = plt.subplots()
+df.plot(ax=ax, use_index=True, y=POS_AREA_COLS, kind="area", figsize=[20,10], title="Positive Results by Health Area")
+ax.legend(AREA_LEGEND)
+plt.tight_layout()
+plt.savefig("pos_area.png")
+
+# Workout positivity for each area as proportion of positivity for that period
+fig, ax = plt.subplots()
+
+for area in range(1,14):
+    df[f'Positivity {area}'] = df[f'Pos Area {area}'] / df[f'Tests Area {area}'] * 100
+cols = [f'Positivity {area}' for area in range(1,14)]
+df['Total Positivity Area'] = df[cols].sum(axis=1)
+for area in range(1,14):
+    df[f'Positivity {area}'] = df[f'Positivity {area}'] / df['Total Positivity Area'] * df['Positivity Area']
+print(df[['Total Positivity Area','Positivity Area', 'Pos Area', 'Tests Area']+cols])
+
+df.plot(ax=ax, use_index=True, y=cols, kind="area", figsize=[20,10], title="Positivity by Health Area")
+ax.legend(AREA_LEGEND)
+plt.tight_layout()
+plt.savefig("positivity_area.png")
+
