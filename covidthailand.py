@@ -13,16 +13,23 @@ import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
 from pptx import Presentation
+from urllib3.util.retry import Retry
 #pd.options.display.mpl_style = 'default'
 
-requests.adapters.DEFAULT_RETRIES = 5
+requests.adapters.DEFAULT_RETRIES = 5 # for other tools that use requests internally
+
+from requests.adapters import HTTPAdapter, Retry
+s = requests.Session()
+retry = Retry(total=10, backoff_factor=1) # should make it more reliable as ddc.moph.go.th often fails
+s.mount('http://', HTTPAdapter(max_retries=retry))
+s.mount('https://', HTTPAdapter(max_retries=retry))
 
 
 def all_pdfs(*index_urls):
     urls = []
     for index_url in index_urls:
         # skip "https://ddc.moph.go.th/viralpneumonia/situation_more.php" as they are harder to parse
-        index = requests.get(index_url)
+        index = s.get(index_url)
         if index.status_code > 399:
             continue
         links = re.findall("href=[\"\'](.*?)[\"\']", index.content.decode('utf-8'))
@@ -33,7 +40,7 @@ def all_pdfs(*index_urls):
     for url in urls:
         file = url.rsplit('/', 1)[1]
         if not os.path.exists(file):
-            r = requests.get(url)
+            r = s.get(url)
             if r.status_code != 200:
                 continue
             with open(file, 'wb') as f:
@@ -200,7 +207,7 @@ def spread_date_range(start, end, row, columns):
     return results
 
 def get_cases():
-    timeline = requests.get('https://covid19.th-stat.com/api/open/timeline').json()['Data']
+    timeline = s.get('https://covid19.th-stat.com/api/open/timeline').json()['Data']
     results = []
     for d in timeline:
         date = datetime.datetime.strptime(d['Date'], '%m/%d/%Y')
