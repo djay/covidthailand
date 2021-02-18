@@ -221,24 +221,34 @@ def get_tests_by_area():
     # some additional data from pptx files
     for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pptx"):
         prs = Presentation(file)
-        for chart in (next(slide2chartdata(slide), None) for slide in prs.slides):
+        for chart in (chart for slide in prs.slides for chart in slide2chartdata(slide)):
             if not chart:
                 continue
             title = chart.chart_title.text_frame.text if chart.has_title else ''
-            if "เริ่มเปิดบริการ" in title:
-                continue
-            if not any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
-                continue
             start,end = find_date_range(title)
             if start is None:
                 continue
             series=dict([(s.name,s.values) for s in chart.series])
-            pos = list(series['จำนวนผลบวก'])
-            tests = list(series["จำนวนตรวจ"])
-            row = pos+tests+[sum(pos),sum(tests)]
-            results = spread_date_range(start, end, row, columns)
-            print(results)
-            data = data.combine_first(results)
+            if not "เริ่มเปิดบริการ" in title and any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
+                pos = list(series['จำนวนผลบวก'])
+                tests = list(series["จำนวนตรวจ"])
+                row = pos+tests+[sum(pos),sum(tests)]
+                results = spread_date_range(start, end, row, columns)
+                print(results)
+                data = data.combine_first(results)
+            elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
+                private = "Private" if "ภาคเอกชน" in title else "Public"
+
+                #pos = series["Pos"]
+                if 'จำนวนตรวจ' not in series:
+                    continue
+                tests = series['จำนวนตรวจ']
+                positivity = series['% Detection']
+                dates = list(daterange(start,end,1))
+                df = pd.DataFrame({"Date":dates,f"Tests {private}":tests, "% Detection":positivity}).set_index('Date')
+                df[f'Pos {private}'] = df[f"Tests {private}"] * df["% Detection"]/100.0  
+                print(df)
+                data = data.combine_first(df)
 
 
 
@@ -363,7 +373,9 @@ def get_en_situation():
 
 def get_tests_by_day():
     file = list(dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", 'xlsx'))[0]
-    tests = pd.read_excel(file, index_col=0, parse_dates=True, usecols=[0,1,2])
+    tests = pd.read_excel(file, parse_dates=True, usecols=[0,1,2])
+    tests.dropna(how="any", inplace=True) # get rid of totals row
+    tests = tests.set_index("Date")
     #row = tests[['Pos','Total']]['Cannot specify date'] 
     pos = tests.loc['Cannot specify date'].Pos 
     total = tests.loc['Cannot specify date'].Total
@@ -430,9 +442,16 @@ df['Positivity Area'] = df['Pos Area'] / df['Tests Area'] * 100
 df['Positivity XLS (MA)'] = df['Pos XLS (MA)'] / df['Tests XLS (MA)'] * 100
 df['Positivity XLS'] = df['Pos XLS'] / df['Tests XLS'] * 100
 df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
+df['Pos Public (MA)'] = df['Pos Public'].rolling(7, 1, center=True).mean() 
+df['Pos Private (MA)'] = df['Pos Private'].rolling(7, 1, center=True).mean()
+df['Pos Private+Public (MA)'] = df['Pos Private (MA)'] + df['Pos Public (MA)']
+df['Tests Public (MA)'] = df['Tests Public'].rolling(7, 1, center=True).mean() 
+df['Tests Private (MA)'] = df['Tests Private'].rolling(7, 1, center=True).mean()
+df['Tests Private+Public (MA)'] = df['Tests Public (MA)'] + df['Tests Private (MA)']
+
 #print(df.to_string())
-df.plot(ax=ax, use_index=True, y=["Tested (MA)", "PUI (MA)", "Tests XLS (MA)", "Cases (MA)", ], kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
-ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed", "Confirmed Cases"])
+df.plot(y=["Tested (MA)", "PUI (MA)", "Tests Private+Public (MA)", "Tests Private (MA)", "Cases (MA)"], ax=ax, use_index=True, kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
+ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed", "Tests Private", "Confirmed Cases", ])
 plt.tight_layout()
 plt.savefig("tests.png")
 
@@ -443,10 +462,16 @@ plt.tight_layout()
 plt.savefig("positivity.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos XLS (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
-ax.legend(["Confirmed Cases", "Positive Test Results"])
+df.plot(ax=ax, use_index=True, y=["Cases (MA)", 'Pos Private+Public (MA)', "Pos Private (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+ax.legend(["Confirmed Cases", "Positive Test Results", "Pos Private", ])
 plt.tight_layout()
 plt.savefig("cases.png")
+
+fig, ax = plt.subplots()
+df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Private+Public (MA)'], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+plt.tight_layout()
+plt.savefig("cases_all.png")
+
 
 #df = df.cumsum()
 AREA_LEGEND = [
