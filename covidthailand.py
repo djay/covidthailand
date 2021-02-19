@@ -14,6 +14,7 @@ from io import StringIO
 from bs4 import BeautifulSoup
 from pptx import Presentation
 from urllib3.util.retry import Retry
+import dateutil
 #pd.options.display.mpl_style = 'default'
 
 requests.adapters.DEFAULT_RETRIES = 5 # for other tools that use requests internally
@@ -38,8 +39,19 @@ def all_pdfs(*index_urls):
 
 
     for url in urls:
-        file = url.rsplit('/', 1)[1]
-        if not os.path.exists(file):
+        file = url.rsplit('/', 1)[-1]
+        r = s.head(url)
+        url_time = r.headers.get('last-modified')
+        if url_time is not None:
+            url_date = dateutil.parser.parse(url_time).astimezone()
+            fdate  = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
+            changed = url_date > fdate if os.path.exists(file) else True
+            if changed and os.path.exists(file):
+                timestamp = fdate.strftime("%Y%m%d-%H%M%S")
+                os.rename(file, f"{file}.{timestamp}")
+        else:
+            changed = True
+        if not os.path.exists(file) or changed:
             r = s.get(url)
             if r.status_code != 200:
                 continue
@@ -58,11 +70,21 @@ def dav_files(url, username, password, ext=".pdf .pptx"):
     'webdav_password': password
     }
     client = Client(options)
-    files = reversed(client.list())
-    for file in files:
+    client.session.mount('http://', HTTPAdapter(max_retries=retry))
+    client.session.mount('https://', HTTPAdapter(max_retries=retry))
+    files = reversed(client.list(get_info=True))
+    for info in files:
+        file = info['path'].split('/')[-1]
         if not any([ext == file[-len(ext):] for ext in ext.split()]):
             continue
-        if not os.path.exists(file):
+        modified = dateutil.parser.parse(info['modified']).astimezone() # Wed, 17 Feb 2021 11:21:04 GMT
+        fdate  = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
+        changed = modified > fdate if os.path.exists(file) else True
+        if changed and os.path.exists(file):
+            timestamp = fdate.strftime("%Y%m%d-%H%M%S")
+            os.rename(file, f"{file}.{timestamp}")
+
+        if not os.path.exists(file) or changed:
             client.download_file(file, file)
         yield file
 
@@ -457,14 +479,15 @@ df['Positivity XLS'] = df['Pos XLS'] / df['Tests XLS'] * 100
 df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
 df['Pos Public (MA)'] = df['Pos Public'].rolling(7, 1, center=True).mean() 
 df['Pos Private (MA)'] = df['Pos Private'].rolling(7, 1, center=True).mean()
-df['Pos Private+Public (MA)'] = df['Pos Private (MA)'] + df['Pos Public (MA)']
+df['Pos Corrected+Private (MA)'] = df['Pos Private (MA)'] + df['Pos XLS (MA)']
 df['Tests Public (MA)'] = df['Tests Public'].rolling(7, 1, center=True).mean() 
 df['Tests Private (MA)'] = df['Tests Private'].rolling(7, 1, center=True).mean()
 df['Tests Private+Public (MA)'] = df['Tests Public (MA)'] + df['Tests Private (MA)']
+df['Tests Corrected+Private (MA)'] = df['Tests XLS (MA)'] + df['Tests Private (MA)']
 
 #print(df.to_string())
-df.plot(y=["Tested (MA)", "PUI (MA)", "Tests Private+Public (MA)", "Tests Private (MA)", "Cases (MA)"], ax=ax, use_index=True, kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
-ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed", "Tests Private", "Confirmed Cases", ])
+df.plot(y=["Tested (MA)", "PUI (MA)", 'Tests Corrected+Private (MA)', "Tests Private (MA)", "Cases (MA)"], ax=ax, use_index=True, kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
+ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed (Corrected + Private)", "Tests Private", "Confirmed Cases", ])
 plt.tight_layout()
 plt.savefig("tests.png")
 
@@ -475,13 +498,13 @@ plt.tight_layout()
 plt.savefig("positivity.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Cases (MA)", 'Pos Private+Public (MA)', "Pos Private (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
-ax.legend(["Confirmed Cases", "Positive Test Results", "Pos Private", ])
+df.plot(ax=ax, use_index=True, y=["Cases (MA)", 'Pos Corrected+Private (MA)', "Pos Private (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+ax.legend(["Confirmed Cases", "Positive Test Results (Corrected + Private)", "Pos Private", ])
 plt.tight_layout()
 plt.savefig("cases.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Private+Public (MA)'], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Corrected+Private (MA)'], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
 plt.tight_layout()
 plt.savefig("cases_all.png")
 

@@ -8,3 +8,4 @@ xlrd
 openpyxl
 BeautifulSoup4
 python-pptx
+python-dateutil
