@@ -237,6 +237,8 @@ def get_tests_by_area():
                 continue
             series=dict([(s.name,s.values) for s in chart.series])
             if not "เริ่มเปิดบริการ" in title and any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
+                # the graph for X period split by health area.
+                # Need both pptx and pdf as one pdf is missing
                 pos = list(series['จำนวนผลบวก'])
                 tests = list(series["จำนวนตรวจ"])
                 row = pos+tests+[sum(pos),sum(tests)]
@@ -244,6 +246,7 @@ def get_tests_by_area():
                 print(results)
                 data = data.combine_first(results)
             elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
+                # The graphs at the end with all testing numbers private vs public
                 private = "Private" if "ภาคเอกชน" in title else "Public"
 
                 #pos = series["Pos"]
@@ -256,6 +259,7 @@ def get_tests_by_area():
                 df[f'Pos {private}'] = df[f"Tests {private}"] * df["% Detection"]/100.0  
                 print(df)
                 data = data.combine_first(df)
+            #TODO: There is also graphs splt by hospital
 
 
 
@@ -290,8 +294,6 @@ def get_tests_by_area():
             #print(numbers)
             pos = numbers[0:13]
             tests = numbers[13:26]
-            if sum(pos) > 50000:
-                pass
             row = pos+tests+[sum(pos),sum(tests)]
             results = spread_date_range(start, end, row, columns)
             print(results)
@@ -388,9 +390,13 @@ def get_tests_by_day():
     total = tests.loc['Cannot specify date'].Total
     tests.drop('Cannot specify date', inplace=True)
     # Need to redistribute the unknown values across known values
-    all_pos = tests['Pos'].sum()
-    all_total = tests['Total'].sum()
+    # Documentation tells us it was 11 labs and only before 3 April
+    unknown_end_date = datetime.datetime(day=3,month=4,year=2020)
+    all_pos = tests['Pos'][:unknown_end_date].sum()
+    all_total = tests['Total'][:unknown_end_date].sum()
     for index, row in tests.iterrows():
+        if index > unknown_end_date:
+            continue
         row.Pos = float(row.Pos) + row.Pos/all_pos*pos
         row.Total = float(row.Total) + row.Total/all_total*total
     # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
