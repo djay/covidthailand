@@ -25,9 +25,11 @@ retry = Retry(total=10, backoff_factor=1) # should make it more reliable as ddc.
 s.mount('http://', HTTPAdapter(max_retries=retry))
 s.mount('https://', HTTPAdapter(max_retries=retry))
 
+CHECK_NEWER = True
 
 def is_remote_newer(file, remote_date):
     if not os.path.exists(file):
+        print(f"Missing: {file}")
         return True
     if remote_date is None:
         return False # TODO: do we want to redownload each time? 
@@ -55,8 +57,12 @@ def all_pdfs(*index_urls):
 
     for url in urls:
         file = url.rsplit('/', 1)[-1]
-        r = s.head(url)
-        if is_remote_newer(file, r.headers.get('last-modified')):
+        if CHECK_NEWER:
+            r = s.head(url)
+            modified = r.headers.get('last-modified')
+        else:
+            modified = None
+        if is_remote_newer(file, modified):
             r = s.get(url)
             if r.status_code != 200:
                 continue
@@ -77,7 +83,8 @@ def dav_files(url, username, password, ext=".pdf .pptx"):
     client = Client(options)
     client.session.mount('http://', HTTPAdapter(max_retries=retry))
     client.session.mount('https://', HTTPAdapter(max_retries=retry))
-    files = reversed(client.list(get_info=True))
+    # important we get them sorted newest files first as we only fill in NaN from each additional file
+    files = sorted(client.list(get_info=True), key=lambda info:dateutil.parser.parse(info['modified']), reverse=True)
     for info in files:
         file = info['path'].split('/')[-1]
         if not any([ext == file[-len(ext):] for ext in ext.split()]):
@@ -88,6 +95,8 @@ def dav_files(url, username, password, ext=".pdf .pptx"):
 
 
 def get_next_numbers(content, *matches, debug=False):
+    if len(matches) == 0:
+        matches = [""]
     for match in matches:
         s = content.split(match) if match else ("",content)
         if len(s) >= 2:  #TODO if > 2 should check its the same first number?
@@ -302,7 +311,9 @@ def get_tests_by_area():
                 page = page.replace('349585', '349 585')
             # if '16/10/2563' in page:
             #     print(page)
-            _, page = page.split("\n", 1) # get rid of first line that sometimes as date and time in it
+            # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
+            first, rest = page.split("\n", 1)
+            page = rest if 'เพญ็พชิชำ' in first or '/' in first else page # get rid of first line that sometimes as date and time in it
             numbers, content = get_next_numbers(
                 page,
                 "", # "ภาคเอกชน", 
@@ -312,8 +323,10 @@ def get_tests_by_area():
             # ภาคเอกชน
             # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์        
             #print(numbers)
+            # TODO: should really find and parse X axis labels which contains 'เขต' and count
+            tests_start = 13 if 'total' not in page else 14
             pos = numbers[0:13]
-            tests = numbers[13:26]
+            tests = numbers[tests_start:tests_start+13]
             row = pos+tests+[sum(pos),sum(tests)]
             results = spread_date_range(start, end, row, columns)
             print(results)
