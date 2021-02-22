@@ -26,6 +26,21 @@ s.mount('http://', HTTPAdapter(max_retries=retry))
 s.mount('https://', HTTPAdapter(max_retries=retry))
 
 
+def is_remote_newer(file, remote_date):
+    if not os.path.exists(file):
+        return True
+    if remote_date is None:
+        return False # TODO: do we want to redownload each time? 
+    if type(remote_date) == str:
+        remote_date = dateutil.parser.parse(remote_date).astimezone()
+    fdate  = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
+    if remote_date > fdate:
+        timestamp = fdate.strftime("%Y%m%d-%H%M%S")
+        os.rename(file, f"{file}.{timestamp}")
+        return True
+    return False
+
+
 def all_pdfs(*index_urls):
     urls = []
     for index_url in index_urls:
@@ -41,17 +56,7 @@ def all_pdfs(*index_urls):
     for url in urls:
         file = url.rsplit('/', 1)[-1]
         r = s.head(url)
-        url_time = r.headers.get('last-modified')
-        if url_time is not None:
-            url_date = dateutil.parser.parse(url_time).astimezone()
-            fdate  = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
-            changed = url_date > fdate if os.path.exists(file) else True
-            if changed and os.path.exists(file):
-                timestamp = fdate.strftime("%Y%m%d-%H%M%S")
-                os.rename(file, f"{file}.{timestamp}")
-        else:
-            changed = True
-        if not os.path.exists(file) or changed:
+        if is_remote_newer(file, r.headers.get('last-modified')):
             r = s.get(url)
             if r.status_code != 200:
                 continue
@@ -77,14 +82,7 @@ def dav_files(url, username, password, ext=".pdf .pptx"):
         file = info['path'].split('/')[-1]
         if not any([ext == file[-len(ext):] for ext in ext.split()]):
             continue
-        modified = dateutil.parser.parse(info['modified']).astimezone() # Wed, 17 Feb 2021 11:21:04 GMT
-        fdate  = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
-        changed = modified > fdate if os.path.exists(file) else True
-        if changed and os.path.exists(file):
-            timestamp = fdate.strftime("%Y%m%d-%H%M%S")
-            os.rename(file, f"{file}.{timestamp}")
-
-        if not os.path.exists(file) or changed:
+        if is_remote_newer(file, info['modified']):
             client.download_file(file, file)
         yield file
 
@@ -477,6 +475,7 @@ df['Positivity Area'] = df['Pos Area'] / df['Tests Area'] * 100
 df['Positivity XLS (MA)'] = df['Pos XLS (MA)'] / df['Tests XLS (MA)'] * 100
 df['Positivity XLS'] = df['Pos XLS'] / df['Tests XLS'] * 100
 df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
+
 df['Pos Public (MA)'] = df['Pos Public'].rolling(7, 1, center=True).mean() 
 df['Pos Private (MA)'] = df['Pos Private'].rolling(7, 1, center=True).mean()
 df['Pos Corrected+Private (MA)'] = df['Pos Private (MA)'] + df['Pos XLS (MA)']
@@ -485,6 +484,10 @@ df['Tests Private (MA)'] = df['Tests Private'].rolling(7, 1, center=True).mean()
 df['Tests Private+Public (MA)'] = df['Tests Public (MA)'] + df['Tests Private (MA)']
 df['Tests Corrected+Private (MA)'] = df['Tests XLS (MA)'] + df['Tests Private (MA)']
 
+df['Positivity Private (MA)'] = df['Pos Private (MA)'] / df['Tests Private (MA)'] * 100
+df['Positivity Public+Private (MA)'] = df['Pos Corrected+Private (MA)'] / df['Tests Corrected+Private (MA)'] * 100
+
+
 #print(df.to_string())
 df.plot(y=["Tested (MA)", "PUI (MA)", 'Tests Corrected+Private (MA)', "Tests Private (MA)", "Cases (MA)"], ax=ax, use_index=True, kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
 ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed (Corrected + Private)", "Tests Private", "Confirmed Cases", ])
@@ -492,8 +495,8 @@ plt.tight_layout()
 plt.savefig("tests.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
-ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed", "Confirmed Cases   / Tests Performed"])
+df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)', 'Positivity Public+Private (MA)', 'Positivity Private (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
+ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed", "Confirmed Cases   / Tests Performed", 'Positivity Public+Private (MA)', 'Positivity Private (MA)'])
 plt.tight_layout()
 plt.savefig("positivity.png")
 
