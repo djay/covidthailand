@@ -25,7 +25,7 @@ retry = Retry(total=10, backoff_factor=1) # should make it more reliable as ddc.
 s.mount('http://', HTTPAdapter(max_retries=retry))
 s.mount('https://', HTTPAdapter(max_retries=retry))
 
-CHECK_NEWER = True
+CHECK_NEWER = False
 
 def is_remote_newer(file, remote_date):
     if not os.path.exists(file):
@@ -541,15 +541,28 @@ AREA_LEGEND = [
     "12: SW: Trang-Narathiwat",
     "13: Bangkok?"
     ]
+
+
+def rearrange(l, *first):
+    l = list(l)
+    result = []
+    for f in first:
+        result.append(l[f])
+        l[f] = None
+    return result+[i for i in l if i is not None]
+
+first = [12, 3, 5, 0, 4]
+area_legend = rearrange(AREA_LEGEND, *first)
+
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=TESTS_AREA_COLS, kind="area", figsize=[20,10], title="Tests by Health Area")
-ax.legend(AREA_LEGEND)
+df.plot(ax=ax, use_index=True, y=rearrange(TESTS_AREA_COLS, *first), kind="area", figsize=[20,10], title="Tests by Health Area")
+ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("tests_area.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=POS_AREA_COLS, kind="area", figsize=[20,10], title="Positive Results by Health Area")
-ax.legend(AREA_LEGEND)
+df.plot(ax=ax, use_index=True, y=rearrange(TESTS_AREA_COLS, *first), kind="area", figsize=[20,10], title="Positive Results by Health Area")
+ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("pos_area.png")
 
@@ -564,8 +577,8 @@ for area in range(1,14):
     df[f'Positivity {area}'] = df[f'Positivity {area}'] / df['Total Positivity Area'] * df['Positivity Area']
 print(df[['Total Positivity Area','Positivity Area', 'Pos Area', 'Tests Area']+cols])
 
-df.plot(ax=ax, use_index=True, y=cols, kind="area", figsize=[20,10], title="Positivity by Health Area")
-ax.legend(AREA_LEGEND)
+df.plot(ax=ax, use_index=True, y=rearrange(cols, *first), kind="area", figsize=[20,10], title="Positivity by Health Area")
+ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("positivity_area.png")
 
