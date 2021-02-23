@@ -25,7 +25,7 @@ retry = Retry(total=10, backoff_factor=1) # should make it more reliable as ddc.
 s.mount('http://', HTTPAdapter(max_retries=retry))
 s.mount('https://', HTTPAdapter(max_retries=retry))
 
-CHECK_NEWER = False
+CHECK_NEWER = True
 
 def is_remote_newer(file, remote_date):
     if not os.path.exists(file):
@@ -561,7 +561,7 @@ plt.tight_layout()
 plt.savefig("tests_area.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=rearrange(TESTS_AREA_COLS, *first), kind="area", figsize=[20,10], title="Positive Results by Health Area")
+df.plot(ax=ax, use_index=True, y=rearrange(POS_AREA_COLS, *first), kind="area", figsize=[20,10], title="Positive Results by Health Area")
 ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("pos_area.png")
