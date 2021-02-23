@@ -25,7 +25,7 @@ retry = Retry(total=10, backoff_factor=1) # should make it more reliable as ddc.
 s.mount('http://', HTTPAdapter(max_retries=retry))
 s.mount('https://', HTTPAdapter(max_retries=retry))
 
-CHECK_NEWER = True
+CHECK_NEWER = bool(os.environ.get('CHECK_NEWER', False))
 
 def is_remote_newer(file, remote_date):
     if not os.path.exists(file):

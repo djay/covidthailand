@@ -41,6 +41,7 @@ jobs:
             ${{ runner.os }}
       - name: run
         run: |
+            export CHECK_NEWER=True
             python covidthailand.py
       - name: Upload Graphs to wiki
         uses: kai-tub/external-repo-sync-action@v1
