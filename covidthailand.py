@@ -98,7 +98,7 @@ def get_next_numbers(content, *matches, debug=False):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
-        s = content.split(match) if match else ("",content)
+        s = re.split(match, content) if match else ("",content)
         if len(s) >= 2:  #TODO if > 2 should check its the same first number?
             content = s[1]
             numbers = re.findall(r"[,0-9]+", content)
@@ -339,26 +339,49 @@ def get_thai_situation():
     for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/situation.php","https://ddc.moph.go.th/viralpneumonia/situation_more.php"):
         if 'situation' not in file:
             continue
+        if "Situation Total number of PUI" in parsedPDF['content']:
+            # english report mixed up? - situation-no171-220663.pdf
+            continue
         date = file2date(file)
-        numbers,content = get_next_numbers(
+        numbers, content = get_next_numbers(
             parsedPDF['content'],
             "ด่านโรคติดต่อระหว่างประเทศ",
             "ด่านโรคติดต่อระหวา่งประเทศ", # 'situation-no346-141263n.pdf'
-            "นวนการตรวจทางห้องปฏิบัติการ", 
-            "นวนการตรวจทางหVองปฏิบัติการ",
-            "นวนการตรวจทางหWองปฏิบัติการ",
-            "นวนการตรวจทางหองปฏิบัติการ",
+            #"นวนการตรวจทางห้องปฏิบัติการ", 
+            #"นวนการตรวจทางหVองปฏิบัติการ",
+            #"นวนการตรวจทางหWองปฏิบัติการ",
+            #"นวนการตรวจทางหองปฏิบัติการ",
+            "นวนการตรวจทาง\S+องปฏิบัติการ",
+            "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
+            #"อันดับแรก \S+ สหรัฐอเมริกา", # situation-no179-300663.pdf 
+            # situation-no171-220663.pdf
             #"จำนวนการตรวจทางหอ้งปฏิบัติการ",
+            #"ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม" 'situation-no83-260363_1.pdf'
             )
-        if not numbers:
-            break
         # cases = None
-        screened_port, screened_cw, tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest  = numbers
-        if tests_total < 30000:
-            tests_total, pui, active_finding, asq, not_pui, *rest = numbers
-            if pui == 4534137:
-                pui = 453413 #situation-no273-021063n.pdf 
-        if tests_total > 2000000 < 30000 or pui > 1500000 < 100000:
+        if numbers:
+            screened_port, screened_cw, tests_total, pui, active_finding, asq, not_pui, *rest  = numbers
+            if tests_total < 30000:
+                tests_total, pui, active_finding, asq, not_pui, *rest = numbers
+                if pui == 4534137:
+                    pui = 453413 #situation-no273-021063n.pdf 
+        else:
+            numbers, content = get_next_numbers(
+                parsedPDF['content'],
+                "ตาราง 1", # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
+                #"ผลดำเนนิการคัดกรองผู้ปว่ยที่มีอาการตามนยิามเฝา้ระวังโรค" #'situation-no83-260363_1.pdf'
+                #"าเนินการคัดกรองผู้ป่\S+ระวังโรค" # situation-no72-150363_2.pdf
+            )
+            if numbers:
+                tests_total, active_finding, asq, not_pui = [None]*4
+                pui, *rest = numbers
+        if date > dateutil.parser.parse("2020-03-26") and not numbers:
+            raise Exception(f"Problem parsing {file}")
+        elif not numbers:
+            break
+
+            
+        if tests_total is not None and tests_total > 2000000 < 30000 or pui > 1500000 < 100000:
             raise Exception(f"Bad data in {file}")
         #merge(file, date, (date, tests_total, pui, active_finding, asq, not_pui, None))
         results.append((date, tests_total, pui, active_finding, asq, not_pui))
@@ -382,8 +405,7 @@ def get_en_situation():
             #"Ports of entry", 
             #"DDC Thailand   2",
             #"Total number of screened people",
-            "Total number of laboratory tests",
-            "Total  number of laboratory tests",
+            "Total +number of laboratory tests",
             #"Situation Total number of PUI",
             #"Point of entry",
             #"Screening passengers at ports of entry"
@@ -392,14 +414,16 @@ def get_en_situation():
         if numbers:
             tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest  = numbers
         else:
-            tests_total, active_finding, asq, not_pui = [None]*4
             numbers, content = get_next_numbers(
                 parsedPDF['content'], 
                 "Total number of people who met the criteria of patients",
                 debug=False
             )
-            if not numbers:
+            if date > dateutil.parser.parse("2020-01-30") and not numbers:
+                raise Exception(f"Problem parsing {file}")
+            elif not numbers:
                 break
+            tests_total, active_finding, asq, not_pui = [None]*4
             pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
             pui_port = pui_airport + pui_seaport
         if pui in [1103858, 3891136, 433807, 96989]: #mistypes #TODO: should use thai version as likely more accurate
@@ -456,10 +480,10 @@ cases = get_cases()
 print(cases)  
 
 th_situation = get_thai_situation()
-th_situation = th_situation - th_situation.shift(-1)
 en_situation = get_en_situation()
-en_situation = en_situation - en_situation.shift(-1)
-situation = th_situation.combine_first(en_situation)
+situation = en_situation.combine_first(th_situation)
+situation = situation.interpolate()
+situation = situation - situation.shift(+1) # we got cumilitive data
 print(situation)
 
 df = situation
@@ -508,10 +532,17 @@ plt.tight_layout()
 plt.savefig("tests.png")
 
 fig, ax = plt.subplots()
+df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)",  'Positivity Public+Private (MA)', 'Positivity Private (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
+ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public+Private)",  "Positive Results / Tests Performed (Public+Private)"])
+plt.tight_layout()
+plt.savefig("positivity.png")
+
+fig, ax = plt.subplots()
 df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)', 'Positivity Public+Private (MA)', 'Positivity Private (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
 ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed", "Confirmed Cases   / Tests Performed", 'Positivity Public+Private (MA)', 'Positivity Private (MA)'])
 plt.tight_layout()
-plt.savefig("positivity.png")
+plt.savefig("positivity_all.png")
+
 
 fig, ax = plt.subplots()
 df.plot(ax=ax, use_index=True, y=["Cases (MA)", 'Pos Corrected+Private (MA)', "Pos Private (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
