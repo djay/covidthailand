@@ -533,7 +533,7 @@ plt.savefig("tests.png")
 
 fig, ax = plt.subplots()
 df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)",  'Positivity Public+Private (MA)', 'Positivity Private (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
-ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public+Private)",  "Positive Results / Tests Performed (Public+Private)"])
+ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public+Private)",  "Positive Results / Tests Performed (Private)"])
 plt.tight_layout()
 plt.savefig("positivity.png")
 
