@@ -526,32 +526,67 @@ df['Positivity Public+Private (MA)'] = df['Pos Corrected+Private (MA)'] / df['Te
 
 
 #print(df.to_string())
-df.plot(y=["Tested (MA)", "PUI (MA)", 'Tests Corrected+Private (MA)', "Tests Private (MA)", "Cases (MA)"], ax=ax, use_index=True, kind="line", figsize=[20,10], title="People Tested (7 day rolling average)")
-ax.legend(['Situation reports "Tests"', "PUI", "Tests Performed (Corrected + Private)", "Tests Private", "Confirmed Cases", ])
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    kind="line", 
+    figsize=[20,10], 
+    title="Testing (7 day rolling average) - Thailand Covid",
+    y=["PUI (MA)",  "Tests XLS (MA)", 'Tests Corrected+Private (MA)',  "Tested (MA)", "Cases (MA)", ], 
+    )
+ax.legend(["PUI", "Tests Performed (Public)", "Tests Performed (All)",  'People Tested (situation reports)', "Confirmed Cases", ])
 plt.tight_layout()
 plt.savefig("tests.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)",  'Positivity Public+Private (MA)', 'Positivity Private (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
-ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public+Private)",  "Positive Results / Tests Performed (Private)"])
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    kind="line", 
+    figsize=[20,10], 
+    y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Public+Private (MA)',], 
+    title="Positive Rate (7 day rolling average) - Thailand Covid"
+)
+ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public)", "Positive Results / Tests Performed (All)", ])
 plt.tight_layout()
 plt.savefig("positivity.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Cases/Tests (MA)', 'Positivity Public+Private (MA)', 'Positivity Private (MA)'], kind="line", figsize=[20,10], title="Thailand Covid positivity (7day rolling average)")
-ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed", "Confirmed Cases   / Tests Performed", 'Positivity Public+Private (MA)', 'Positivity Private (MA)'])
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    kind="line", 
+    figsize=[20,10], 
+    y=["Positivity PUI (MA)", 'Positivity Cases/Tests (MA)', "Positivity XLS (MA)", 'Positivity Private (MA)', 'Positivity Public+Private (MA)', ], 
+    title="Positive Rate (7day rolling average) - Thailand Covid"
+)
+ax.legend(['Confirmed Cases / PUI', "Confirmed Cases / Tests Performed (Public)", "Positive Results / Tests Performed (Public)", 'Positive Results / Tests Performed (Private)', 'Positive Results / Tests Performed (All)', ])
 plt.tight_layout()
 plt.savefig("positivity_all.png")
 
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Cases (MA)", 'Pos Corrected+Private (MA)', "Pos Private (MA)", ], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
-ax.legend(["Confirmed Cases", "Positive Test Results (Corrected + Private)", "Pos Private", ])
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    kind="line", 
+    figsize=[20,10], 
+    y=["Cases (MA)",  "Pos XLS (MA)", 'Pos Corrected+Private (MA)', ], 
+    title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid"
+)
+ax.legend(["Confirmed Cases", "Positive Test Results (Public)", "Positive Test Results (All)",  ])
 plt.tight_layout()
 plt.savefig("cases.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Corrected+Private (MA)'], kind="line", figsize=[20,10], title="Positive Cases (7 day rolling average)")
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    kind="line", 
+    figsize=[20,10], 
+    y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Corrected+Private (MA)'], 
+    title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid"
+)
 plt.tight_layout()
 plt.savefig("cases_all.png")
 
@@ -586,13 +621,27 @@ first = [12, 3, 5, 0, 4]
 area_legend = rearrange(AREA_LEGEND, *first)
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=rearrange(TESTS_AREA_COLS, *first), kind="area", figsize=[20,10], title="Tests by Health Area")
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    y=rearrange(TESTS_AREA_COLS, *first), 
+    kind="area", 
+    figsize=[20,10], 
+    title="Tests by Health Area (Public) - Thailand Covid"
+)
 ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("tests_area.png")
 
 fig, ax = plt.subplots()
-df.plot(ax=ax, use_index=True, y=rearrange(POS_AREA_COLS, *first), kind="area", figsize=[20,10], title="Positive Results by Health Area")
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    y=rearrange(POS_AREA_COLS, *first), 
+    kind="area", 
+    figsize=[20,10], 
+    title="Positive Rate by Health Area (Public) - Thailand Covid"
+)
 ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("pos_area.png")
@@ -608,7 +657,14 @@ for area in range(1,14):
     df[f'Positivity {area}'] = df[f'Positivity {area}'] / df['Total Positivity Area'] * df['Positivity Area']
 print(df[['Total Positivity Area','Positivity Area', 'Pos Area', 'Tests Area']+cols])
 
-df.plot(ax=ax, use_index=True, y=rearrange(cols, *first), kind="area", figsize=[20,10], title="Positivity by Health Area")
+df.plot(
+    ax=ax, 
+    use_index=True, 
+    y=rearrange(cols, *first), 
+    kind="area", 
+    figsize=[20,10], 
+    title="Positive Rate by Health Area (Public) - Thailand Covid"
+)
 ax.legend(area_legend)
 plt.tight_layout()
 plt.savefig("positivity_area.png")
