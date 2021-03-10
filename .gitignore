@@ -2,3 +2,10 @@
 *.pdf
 *.xlsx
 *.pptx
+.vscode
+.idea
+situation_en
+situation_th
+tests_moph
+.venv
+__pycache__
