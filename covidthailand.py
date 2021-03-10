@@ -27,6 +27,32 @@ s.mount('https://', HTTPAdapter(max_retries=retry))
 
 CHECK_NEWER = bool(os.environ.get('CHECK_NEWER', False))
 
+def all_pdfs(*index_urls, dir=os.getcwd()):
+    urls = []
+    for index_url in index_urls:
+        index = s.get(index_url)
+        if index.status_code > 399:
+            continue
+        links = re.findall("href=[\"\'](.*?)[\"\']", index.content.decode('utf-8'))
+        links = [urllib.parse.urljoin(index_url, l) for l in links if 'pdf' in l]
+        urls.extend(links)
+    for url in urls:
+        modified = s.head(url).headers.get('last-modified') if CHECK_NEWER else None
+        file = url.rsplit('/', 1)[-1]
+        file = os.path.join(dir, file)
+        os.makedirs(os.path.dirname(file), exist_ok=True)
+        if is_remote_newer(file, modified):
+            r = s.get(url)
+            if r.status_code != 200:
+                continue
+            with open(file, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=512 * 1024): 
+                    if chunk: # filter out keep-alive new chunks
+                        f.write(chunk)
+        parsedPDF = parser.from_file(file)
+        yield os.path.basename(file), parsedPDF
+
+
 def is_remote_newer(file, remote_date):
     if not os.path.exists(file):
         print(f"Missing: {file}")
@@ -43,42 +69,12 @@ def is_remote_newer(file, remote_date):
     return False
 
 
-def all_pdfs(*index_urls):
-    urls = []
-    for index_url in index_urls:
-        # skip "https://ddc.moph.go.th/viralpneumonia/situation_more.php" as they are harder to parse
-        index = s.get(index_url)
-        if index.status_code > 399:
-            continue
-        links = re.findall("href=[\"\'](.*?)[\"\']", index.content.decode('utf-8'))
-        links = [urllib.parse.urljoin(index_url, l) for l in links if 'pdf' in l]
-        urls.extend(links)
-
-
-    for url in urls:
-        file = url.rsplit('/', 1)[-1]
-        if CHECK_NEWER:
-            r = s.head(url)
-            modified = r.headers.get('last-modified')
-        else:
-            modified = None
-        if is_remote_newer(file, modified):
-            r = s.get(url)
-            if r.status_code != 200:
-                continue
-            with open(file, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=512 * 1024): 
-                    if chunk: # filter out keep-alive new chunks
-                        f.write(chunk)
-        parsedPDF = parser.from_file(file)
-        yield file, parsedPDF
-
-def dav_files(url, username, password, ext=".pdf .pptx"):
+def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
     from webdav3.client import Client
     options = {
-    'webdav_hostname': url,
-    'webdav_login':    username,
-    'webdav_password': password
+        'webdav_hostname': url,
+        'webdav_login':    username,
+        'webdav_password': password
     }
     client = Client(options)
     client.session.mount('http://', HTTPAdapter(max_retries=retry))
@@ -89,9 +85,11 @@ def dav_files(url, username, password, ext=".pdf .pptx"):
         file = info['path'].split('/')[-1]
         if not any([ext == file[-len(ext):] for ext in ext.split()]):
             continue
-        if is_remote_newer(file, info['modified']):
-            client.download_file(file, file)
-        yield file
+        target = os.path.join(dir, file)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        if is_remote_newer(target, info['modified']):
+            client.download_file(file, target)
+        yield target
 
 
 def get_next_numbers(content, *matches, debug=False):
@@ -111,7 +109,13 @@ def get_next_numbers(content, *matches, debug=False):
     return [],content
 
 def file2date(file):
-    date = file.rsplit(".pdf",1)[0].rsplit('-',1)[1]
+    file = os.path.basename(file)
+    date = file.rsplit(".pdf",1)[0]
+    if '-' in date:
+        date = date.rsplit('-',1)[1]
+    else:
+        date = date.rsplit('_',1)[1]
+
     date = datetime.datetime(day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6])-43+2000)
     return date
 
@@ -214,26 +218,89 @@ def parse_file(filename, as_html=False):
 
     return pages_txt
 
-def slide2text(slide):
-    text = ""
-    if slide.shapes.title:
-        text += slide.shapes.title.text
-    for shape in slide.shapes:
-        if shape.has_text_frame:
-            #for p in shape.text_frame:
-                text += "\n" + shape.text
-    return text
+def get_thai_situation():
+    results = []
+    for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/situation.php", "https://ddc.moph.go.th/viralpneumonia/situation_more.php", dir="situation_th"):
+        if 'situation' not in file:
+            continue
+        if "Situation Total number of PUI" in parsedPDF['content']:
+            # english report mixed up? - situation-no171-220663.pdf
+            continue
+        date = file2date(file)
+        numbers, content = get_next_numbers(
+            parsedPDF['content'],
+            "ด่านโรคติดต่อระหว่างประเทศ",
+            "ด่านโรคติดต่อระหวา่งประเทศ", # 'situation-no346-141263n.pdf'
+            "นวนการตรวจทาง\S+องปฏิบัติการ",
+            "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
+            )
+        # cases = None
+        if numbers:
+            screened_port, screened_cw, tests_total, pui, active_finding, asq, not_pui, *rest  = numbers
+            if tests_total < 30000:
+                tests_total, pui, active_finding, asq, not_pui, *rest = numbers
+                if pui == 4534137:
+                    pui = 453413 #situation-no273-021063n.pdf 
+        else:
+            numbers, content = get_next_numbers(
+                parsedPDF['content'],
+                "ตาราง 1", # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
+            )
+            if numbers:
+                tests_total, active_finding, asq, not_pui = [None]*4
+                pui, *rest = numbers
+        if date > dateutil.parser.parse("2020-03-26") and not numbers:
+            raise Exception(f"Problem parsing {file}")
+        elif not numbers:
+            break
 
-def slide2chartdata(slide):
-    for shape in slide.shapes:
-        if shape.has_chart:
-            yield shape.chart
-
-def spread_date_range(start, end, row, columns):
-    r = list(daterange(start,end, offset=1))
-    stats = [float(p)/len(r) for p in row]
-    results = pd.DataFrame([[date,]+stats for date in r], columns=columns).set_index('Date')
+            
+        if tests_total is not None and tests_total > 2000000 < 30000 or pui > 1500000 < 100000:
+            raise Exception(f"Bad data in {file}")
+        #merge(file, date, (date, tests_total, pui, active_finding, asq, not_pui, None))
+        results.append((date, tests_total, pui, active_finding, asq, not_pui))
+        print(file,results[-1])
+    results = pd.DataFrame(results, columns=["Date","Tested", "PUI", "Active case finding", "ASQ", "Not PUI"]).set_index('Date')
+    print(results)
     return results
+
+def get_en_situation():
+    results = []
+    for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/eng/situation.php", dir="situation_en"):
+        if 'situation' not in file:
+            continue
+        date = file2date(file)
+        numbers, content = get_next_numbers(
+            parsedPDF['content'], 
+            "Total +number of laboratory tests",
+            debug=False
+            )
+        if numbers:
+            tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest  = numbers
+        else:
+            numbers, content = get_next_numbers(
+                parsedPDF['content'], 
+                "Total number of people who met the criteria of patients",
+                debug=False
+            )
+            if date > dateutil.parser.parse("2020-01-30") and not numbers:
+                raise Exception(f"Problem parsing {file}")
+            elif not numbers:
+                break
+            tests_total, active_finding, asq, not_pui = [None]*4
+            pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
+            pui_port = pui_airport + pui_seaport
+        if pui in [1103858, 3891136, 433807, 96989]: #mistypes?
+            pui=None
+        if tests_total in [783679, 849874, 936458]:
+            tests_total = None
+        results.append((date, tests_total, pui, active_finding, asq, not_pui))
+        print(file,results[-1])
+    
+    results = pd.DataFrame(results, columns=["Date","Tested", "PUI", "Active case finding", "ASQ", "Not PUI"]).set_index('Date')
+    print(results)
+    return results
+
 
 def get_cases():
     timeline = s.get('https://covid19.th-stat.com/api/open/timeline').json()['Data']
@@ -247,6 +314,72 @@ def get_cases():
     print(data)
     return data
 
+
+
+def get_tests_by_day():
+    file = list(dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", 'xlsx', "testing_moph"))[0]
+    tests = pd.read_excel(file, parse_dates=True, usecols=[0,1,2])
+    tests.dropna(how="any", inplace=True) # get rid of totals row
+    tests = tests.set_index("Date")
+    #row = tests[['Pos','Total']]['Cannot specify date'] 
+    pos = tests.loc['Cannot specify date'].Pos 
+    total = tests.loc['Cannot specify date'].Total
+    tests.drop('Cannot specify date', inplace=True)
+    # Need to redistribute the unknown values across known values
+    # Documentation tells us it was 11 labs and only before 3 April
+    unknown_end_date = datetime.datetime(day=3,month=4,year=2020)
+    all_pos = tests['Pos'][:unknown_end_date].sum()
+    all_total = tests['Total'][:unknown_end_date].sum()
+    for index, row in tests.iterrows():
+        if index > unknown_end_date:
+            continue
+        row.Pos = float(row.Pos) + row.Pos/all_pos*pos
+        row.Total = float(row.Total) + row.Total/all_total*total
+    # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
+    print(tests['Pos'].sum(), pos+all_pos)
+    print(tests['Total'].sum(), total+all_total)
+    # fix datetime
+    tests.reset_index(drop=False, inplace=True)
+    tests['Date']= pd.to_datetime(tests['Date'])
+    tests.set_index('Date', inplace=True)
+
+    tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
+
+    return tests
+
+
+
+def slide2text(slide):
+    text = ""
+    if slide.shapes.title:
+        text += slide.shapes.title.text
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            #for p in shape.text_frame:
+                text += "\n" + shape.text
+    return text
+
+def slide2chartdata(slide):
+    for shape in slide.shapes:
+        if not shape.has_chart:
+            continue
+        chart = shape.chart
+        if chart is None:
+            continue
+        title = chart.chart_title.text_frame.text if chart.has_title else ''
+        start,end = find_date_range(title)
+        if start is None:
+            continue
+        series=dict([(s.name,s.values) for s in chart.series])
+
+        yield chart,title,start,end,series
+
+def spread_date_range(start, end, row, columns):
+    r = list(daterange(start,end, offset=1))
+    stats = [float(p)/len(r) for p in row]
+    results = pd.DataFrame([[date,]+stats for date in r], columns=columns).set_index('Date')
+    return results
+
 POS_AREA_COLS = ["Pos Area {}".format(i+1) for i in range(13)] 
 TESTS_AREA_COLS = ["Tests Area {}".format(i+1) for i in range(13)]
 
@@ -254,45 +387,7 @@ def get_tests_by_area():
     columns = ['Date'] + POS_AREA_COLS + TESTS_AREA_COLS + ["Pos Area", "Tests Area"]
     data = pd.DataFrame()
 
-    # some additional data from pptx files
-    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pptx"):
-        prs = Presentation(file)
-        for chart in (chart for slide in prs.slides for chart in slide2chartdata(slide)):
-            if not chart:
-                continue
-            title = chart.chart_title.text_frame.text if chart.has_title else ''
-            start,end = find_date_range(title)
-            if start is None:
-                continue
-            series=dict([(s.name,s.values) for s in chart.series])
-            if not "เริ่มเปิดบริการ" in title and any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
-                # the graph for X period split by health area.
-                # Need both pptx and pdf as one pdf is missing
-                pos = list(series['จำนวนผลบวก'])
-                tests = list(series["จำนวนตรวจ"])
-                row = pos+tests+[sum(pos),sum(tests)]
-                results = spread_date_range(start, end, row, columns)
-                print(results)
-                data = data.combine_first(results)
-            elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
-                # The graphs at the end with all testing numbers private vs public
-                private = "Private" if "ภาคเอกชน" in title else "Public"
-
-                #pos = series["Pos"]
-                if 'จำนวนตรวจ' not in series:
-                    continue
-                tests = series['จำนวนตรวจ']
-                positivity = series['% Detection']
-                dates = list(daterange(start,end,1))
-                df = pd.DataFrame({"Date":dates,f"Tests {private}":tests, "% Detection":positivity}).set_index('Date')
-                df[f'Pos {private}'] = df[f"Tests {private}"] * df["% Detection"]/100.0  
-                print(df)
-                data = data.combine_first(df)
-            #TODO: There is also graphs splt by hospital
-
-
-
-    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pdf"):
+    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pdf", dir="testing_moph"):
         #parsedPDF = parser.from_file(file)
 
         #pages = parsedPDF['content'].split("\n\n\n\n") #  # วันที่ท้ำรำยงำน
@@ -332,340 +427,254 @@ def get_tests_by_area():
             print(results)
             data = data.combine_first(results)
 
+    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pptx", dir="testing_moph"):
+        prs = Presentation(file)
+        for chart in (chart for slide in prs.slides for chart in slide2chartdata(slide)):
+            chart,title,start,end,series = chart
+            if not "เริ่มเปิดบริการ" in title and any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
+                # the graph for X period split by health area.
+                # Need both pptx and pdf as one pdf is missing
+                pos = list(series['จำนวนผลบวก'])
+                tests = list(series["จำนวนตรวจ"])
+                row = pos+tests+[sum(pos),sum(tests)]
+                results = spread_date_range(start, end, row, columns)
+                print(results)
+                data = data.combine_first(results)
+
     return data
 
-def get_thai_situation():
-    results = []
-    for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/situation.php","https://ddc.moph.go.th/viralpneumonia/situation_more.php"):
-        if 'situation' not in file:
-            continue
-        if "Situation Total number of PUI" in parsedPDF['content']:
-            # english report mixed up? - situation-no171-220663.pdf
-            continue
-        date = file2date(file)
-        numbers, content = get_next_numbers(
-            parsedPDF['content'],
-            "ด่านโรคติดต่อระหว่างประเทศ",
-            "ด่านโรคติดต่อระหวา่งประเทศ", # 'situation-no346-141263n.pdf'
-            #"นวนการตรวจทางห้องปฏิบัติการ", 
-            #"นวนการตรวจทางหVองปฏิบัติการ",
-            #"นวนการตรวจทางหWองปฏิบัติการ",
-            #"นวนการตรวจทางหองปฏิบัติการ",
-            "นวนการตรวจทาง\S+องปฏิบัติการ",
-            "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
-            #"อันดับแรก \S+ สหรัฐอเมริกา", # situation-no179-300663.pdf 
-            # situation-no171-220663.pdf
-            #"จำนวนการตรวจทางหอ้งปฏิบัติการ",
-            #"ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม" 'situation-no83-260363_1.pdf'
-            )
-        # cases = None
-        if numbers:
-            screened_port, screened_cw, tests_total, pui, active_finding, asq, not_pui, *rest  = numbers
-            if tests_total < 30000:
-                tests_total, pui, active_finding, asq, not_pui, *rest = numbers
-                if pui == 4534137:
-                    pui = 453413 #situation-no273-021063n.pdf 
-        else:
-            numbers, content = get_next_numbers(
-                parsedPDF['content'],
-                "ตาราง 1", # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
-                #"ผลดำเนนิการคัดกรองผู้ปว่ยที่มีอาการตามนยิามเฝา้ระวังโรค" #'situation-no83-260363_1.pdf'
-                #"าเนินการคัดกรองผู้ป่\S+ระวังโรค" # situation-no72-150363_2.pdf
-            )
-            if numbers:
-                tests_total, active_finding, asq, not_pui = [None]*4
-                pui, *rest = numbers
-        if date > dateutil.parser.parse("2020-03-26") and not numbers:
-            raise Exception(f"Problem parsing {file}")
-        elif not numbers:
-            break
+def get_tests_private_public():
+    data = pd.DataFrame()
 
-            
-        if tests_total is not None and tests_total > 2000000 < 30000 or pui > 1500000 < 100000:
-            raise Exception(f"Bad data in {file}")
-        #merge(file, date, (date, tests_total, pui, active_finding, asq, not_pui, None))
-        results.append((date, tests_total, pui, active_finding, asq, not_pui))
-        print(file,results[-1])
-    results = pd.DataFrame(results, columns=["Date","Tested", "PUI", "Active case finding", "ASQ", "Not PUI"]).set_index('Date')
-    print(results)
-    return results
+    # some additional data from pptx files
+    for file in dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", ext=".pptx", dir="testing_moph"):
+        prs = Presentation(file)
+        for chart in (chart for slide in prs.slides for chart in slide2chartdata(slide)):
+            chart,title,start,end,series = chart
+            if not "เริ่มเปิดบริการ" in title and any(t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]):
+                # area graph
+                continue
+            elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
+                # The graphs at the end with all testing numbers private vs public
+                private = "Private" if "ภาคเอกชน" in title else "Public"
 
-def get_en_situation():
-    results = []
-    for file, parsedPDF in all_pdfs("https://ddc.moph.go.th/viralpneumonia/eng/situation.php"):
-        if 'situation' not in file:
-            continue
-        date = file2date(file)
-        #table = tabula.read_pdf(file, pages=[2])
-        # print(table)
-        #numbers = [n for n in table[0]['Total Number'] if type(n) == str]
-        #numbers = [n for n in table[0][table[0].columns[1]] if type(n) == str]
-        numbers, content = get_next_numbers(
-            parsedPDF['content'], 
-            #"Ports of entry", 
-            #"DDC Thailand   2",
-            #"Total number of screened people",
-            "Total +number of laboratory tests",
-            #"Situation Total number of PUI",
-            #"Point of entry",
-            #"Screening passengers at ports of entry"
-            debug=False
-            )
-        if numbers:
-            tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest  = numbers
-        else:
-            numbers, content = get_next_numbers(
-                parsedPDF['content'], 
-                "Total number of people who met the criteria of patients",
-                debug=False
-            )
-            if date > dateutil.parser.parse("2020-01-30") and not numbers:
-                raise Exception(f"Problem parsing {file}")
-            elif not numbers:
-                break
-            tests_total, active_finding, asq, not_pui = [None]*4
-            pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
-            pui_port = pui_airport + pui_seaport
-        if pui in [1103858, 3891136, 433807, 96989]: #mistypes #TODO: should use thai version as likely more accurate
-            pui=None
-        if tests_total in [783679, 849874, 936458]:
-            tests_total = None
-        results.append((date, tests_total, pui, active_finding, asq, not_pui))
-        print(file,results[-1])
-    
-    results = pd.DataFrame(results, columns=["Date","Tested", "PUI", "Active case finding", "ASQ", "Not PUI"]).set_index('Date')
-    print(results)
-    return results
+                #pos = series["Pos"]
+                if 'จำนวนตรวจ' not in series:
+                    continue
+                tests = series['จำนวนตรวจ']
+                positivity = series['% Detection']
+                dates = list(daterange(start,end,1))
+                df = pd.DataFrame({"Date":dates,f"Tests {private}":tests, "% Detection":positivity}).set_index('Date')
+                df[f'Pos {private}'] = df[f"Tests {private}"] * df["% Detection"]/100.0  
+                print(df)
+                data = data.combine_first(df)
+            #TODO: There is also graphs splt by hospital
 
-def get_tests_by_day():
-    file = list(dav_files("http://nextcloud.dmsc.moph.go.th/public.php/webdav", "wbioWZAQfManokc", "null", 'xlsx'))[0]
-    tests = pd.read_excel(file, parse_dates=True, usecols=[0,1,2])
-    tests.dropna(how="any", inplace=True) # get rid of totals row
-    tests = tests.set_index("Date")
-    #row = tests[['Pos','Total']]['Cannot specify date'] 
-    pos = tests.loc['Cannot specify date'].Pos 
-    total = tests.loc['Cannot specify date'].Total
-    tests.drop('Cannot specify date', inplace=True)
-    # Need to redistribute the unknown values across known values
-    # Documentation tells us it was 11 labs and only before 3 April
-    unknown_end_date = datetime.datetime(day=3,month=4,year=2020)
-    all_pos = tests['Pos'][:unknown_end_date].sum()
-    all_total = tests['Total'][:unknown_end_date].sum()
-    for index, row in tests.iterrows():
-        if index > unknown_end_date:
-            continue
-        row.Pos = float(row.Pos) + row.Pos/all_pos*pos
-        row.Total = float(row.Total) + row.Total/all_total*total
-    # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
-    print(tests['Pos'].sum(), pos+all_pos)
-    print(tests['Total'].sum(), total+all_total)
-    # fix datetime
-    tests.reset_index(drop=False, inplace=True)
-    tests['Date']= pd.to_datetime(tests['Date'])
-    tests.set_index('Date', inplace=True)
+    return data
 
-    tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
-
-    return tests
+### Combine and plot
 
 
-tests = get_tests_by_day()
-print(tests)
-#data.combine_first(tests)
+def scrape_and_combine():
+    tests = get_tests_by_day()
+    print(tests)
+    areas = get_tests_by_area()
+    cases = get_cases()
+    print(cases)  
+
+    th_situation = get_thai_situation()
+    en_situation = get_en_situation()
+    situation = en_situation.combine_first(th_situation)
+    situation = situation.interpolate()
+    situation = situation - situation.shift(+1) # we got cumilitive data
+    print(situation)
+
+    df = situation
+    df = df.combine_first(cases)
+    df = df.combine_first(areas)
+    df = df.combine_first(tests)
+    df = df.combine_first(get_tests_private_public())
+    print(df)
+    return df
+
+def calc_cols(df):
+    df['Tested (MA)'] = df['Tested'].rolling(7, 1, center=True).mean()
+    df['PUI (MA)'] = df['PUI'].rolling(7, 1, center=True).mean()
+    df['Cases (MA)'] = df['Cases'].rolling(7, 1, center=True).mean()
+    df['Tests Area (MA)'] = df['Tests Area'].rolling(7, 1, center=True).mean()
+    df['Pos Area (MA)'] = df['Pos Area'].rolling(7, 1, center=True).mean()
+    df['Tests XLS (MA)'] = df['Tests XLS'].rolling(7, 1, center=True).mean()
+    df['Pos XLS (MA)'] = df['Pos XLS'].rolling(7, 1, center=True).mean()
+
+    df['Positivity Tested (MA)'] = df['Cases (MA)'] / df['Tested (MA)'] * 100
+    df['Positivity PUI (MA)'] = df['Cases (MA)'] / df['PUI (MA)'] * 100
+    df['Positivity'] = df['Cases'] / df['Tested'] * 100
+    df['Positivity Area (MA)'] = df['Pos Area (MA)'] / df['Tests Area (MA)'] * 100
+    df['Positivity Area'] = df['Pos Area'] / df['Tests Area'] * 100
+    df['Positivity XLS (MA)'] = df['Pos XLS (MA)'] / df['Tests XLS (MA)'] * 100
+    df['Positivity XLS'] = df['Pos XLS'] / df['Tests XLS'] * 100
+    df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
+
+    df['Pos Public (MA)'] = df['Pos Public'].rolling(7, 1, center=True).mean() 
+    df['Pos Private (MA)'] = df['Pos Private'].rolling(7, 1, center=True).mean()
+    df['Pos Corrected+Private (MA)'] = df['Pos Private (MA)'] + df['Pos XLS (MA)']
+    df['Tests Public (MA)'] = df['Tests Public'].rolling(7, 1, center=True).mean() 
+    df['Tests Private (MA)'] = df['Tests Private'].rolling(7, 1, center=True).mean()
+    df['Tests Private+Public (MA)'] = df['Tests Public (MA)'] + df['Tests Private (MA)']
+    df['Tests Corrected+Private (MA)'] = df['Tests XLS (MA)'] + df['Tests Private (MA)']
+
+    df['Positivity Private (MA)'] = df['Pos Private (MA)'] / df['Tests Private (MA)'] * 100
+    df['Positivity Public+Private (MA)'] = df['Pos Corrected+Private (MA)'] / df['Tests Corrected+Private (MA)'] * 100
+    return df
 
 
-areas = get_tests_by_area()
+def save_plots(df):
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        kind="line", 
+        figsize=[20,10], 
+        title="Testing (7 day rolling average) - Thailand Covid",
+        y=["PUI (MA)",  "Tests XLS (MA)", 'Tests Corrected+Private (MA)',  "Tested (MA)", "Cases (MA)", ], 
+        )
+    ax.legend(["PUI", "Tests Performed (Public)", "Tests Performed (All)",  'People Tested (situation reports)', "Confirmed Cases", ])
+    plt.tight_layout()
+    plt.savefig("tests.png")
 
-cases = get_cases()
-print(cases)  
-
-th_situation = get_thai_situation()
-en_situation = get_en_situation()
-situation = en_situation.combine_first(th_situation)
-situation = situation.interpolate()
-situation = situation - situation.shift(+1) # we got cumilitive data
-print(situation)
-
-df = situation
-df = df.combine_first(cases)
-df = df.combine_first(areas)
-df = df.combine_first(tests)
-print(df)
-
-
-# create a plot
-fig, ax = plt.subplots()
-
-df['Tested (MA)'] = df['Tested'].rolling(7, 1, center=True).mean()
-df['PUI (MA)'] = df['PUI'].rolling(7, 1, center=True).mean()
-df['Cases (MA)'] = df['Cases'].rolling(7, 1, center=True).mean()
-df['Tests Area (MA)'] = df['Tests Area'].rolling(7, 1, center=True).mean()
-df['Pos Area (MA)'] = df['Pos Area'].rolling(7, 1, center=True).mean()
-df['Tests XLS (MA)'] = df['Tests XLS'].rolling(7, 1, center=True).mean()
-df['Pos XLS (MA)'] = df['Pos XLS'].rolling(7, 1, center=True).mean()
-
-df['Positivity Tested (MA)'] = df['Cases (MA)'] / df['Tested (MA)'] * 100
-df['Positivity PUI (MA)'] = df['Cases (MA)'] / df['PUI (MA)'] * 100
-df['Positivity'] = df['Cases'] / df['Tested'] * 100
-df['Positivity Area (MA)'] = df['Pos Area (MA)'] / df['Tests Area (MA)'] * 100
-df['Positivity Area'] = df['Pos Area'] / df['Tests Area'] * 100
-df['Positivity XLS (MA)'] = df['Pos XLS (MA)'] / df['Tests XLS (MA)'] * 100
-df['Positivity XLS'] = df['Pos XLS'] / df['Tests XLS'] * 100
-df['Positivity Cases/Tests (MA)'] = df['Cases (MA)'] / df['Tests XLS (MA)'] * 100
-
-df['Pos Public (MA)'] = df['Pos Public'].rolling(7, 1, center=True).mean() 
-df['Pos Private (MA)'] = df['Pos Private'].rolling(7, 1, center=True).mean()
-df['Pos Corrected+Private (MA)'] = df['Pos Private (MA)'] + df['Pos XLS (MA)']
-df['Tests Public (MA)'] = df['Tests Public'].rolling(7, 1, center=True).mean() 
-df['Tests Private (MA)'] = df['Tests Private'].rolling(7, 1, center=True).mean()
-df['Tests Private+Public (MA)'] = df['Tests Public (MA)'] + df['Tests Private (MA)']
-df['Tests Corrected+Private (MA)'] = df['Tests XLS (MA)'] + df['Tests Private (MA)']
-
-df['Positivity Private (MA)'] = df['Pos Private (MA)'] / df['Tests Private (MA)'] * 100
-df['Positivity Public+Private (MA)'] = df['Pos Corrected+Private (MA)'] / df['Tests Corrected+Private (MA)'] * 100
-
-
-#print(df.to_string())
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    kind="line", 
-    figsize=[20,10], 
-    title="Testing (7 day rolling average) - Thailand Covid",
-    y=["PUI (MA)",  "Tests XLS (MA)", 'Tests Corrected+Private (MA)',  "Tested (MA)", "Cases (MA)", ], 
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        kind="line", 
+        figsize=[20,10], 
+        y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Public+Private (MA)',], 
+        title="Positive Rate (7 day rolling average) - Thailand Covid"
     )
-ax.legend(["PUI", "Tests Performed (Public)", "Tests Performed (All)",  'People Tested (situation reports)', "Confirmed Cases", ])
-plt.tight_layout()
-plt.savefig("tests.png")
+    ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public)", "Positive Results / Tests Performed (All)", ])
+    plt.tight_layout()
+    plt.savefig("positivity.png")
 
-fig, ax = plt.subplots()
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    kind="line", 
-    figsize=[20,10], 
-    y=["Positivity PUI (MA)", "Positivity XLS (MA)", 'Positivity Public+Private (MA)',], 
-    title="Positive Rate (7 day rolling average) - Thailand Covid"
-)
-ax.legend(['Confirmed Cases / PUI', "Positive Results / Tests Performed (Public)", "Positive Results / Tests Performed (All)", ])
-plt.tight_layout()
-plt.savefig("positivity.png")
-
-fig, ax = plt.subplots()
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    kind="line", 
-    figsize=[20,10], 
-    y=["Positivity PUI (MA)", 'Positivity Cases/Tests (MA)', "Positivity XLS (MA)", 'Positivity Private (MA)', 'Positivity Public+Private (MA)', ], 
-    title="Positive Rate (7day rolling average) - Thailand Covid"
-)
-ax.legend(['Confirmed Cases / PUI', "Confirmed Cases / Tests Performed (Public)", "Positive Results / Tests Performed (Public)", 'Positive Results / Tests Performed (Private)', 'Positive Results / Tests Performed (All)', ])
-plt.tight_layout()
-plt.savefig("positivity_all.png")
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        kind="line", 
+        figsize=[20,10], 
+        y=["Positivity PUI (MA)", 'Positivity Cases/Tests (MA)', "Positivity XLS (MA)", 'Positivity Private (MA)', 'Positivity Public+Private (MA)', ], 
+        title="Positive Rate (7day rolling average) - Thailand Covid"
+    )
+    ax.legend(['Confirmed Cases / PUI', "Confirmed Cases / Tests Performed (Public)", "Positive Results / Tests Performed (Public)", 'Positive Results / Tests Performed (Private)', 'Positive Results / Tests Performed (All)', ])
+    plt.tight_layout()
+    plt.savefig("positivity_all.png")
 
 
-fig, ax = plt.subplots()
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    kind="line", 
-    figsize=[20,10], 
-    y=["Cases (MA)",  "Pos XLS (MA)", 'Pos Corrected+Private (MA)', ], 
-    title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid"
-)
-ax.legend(["Confirmed Cases", "Positive Test Results (Public)", "Positive Test Results (All)",  ])
-plt.tight_layout()
-plt.savefig("cases.png")
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        kind="line", 
+        figsize=[20,10], 
+        y=["Cases (MA)",  "Pos XLS (MA)", 'Pos Corrected+Private (MA)', ], 
+        title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid"
+    )
+    ax.legend(["Confirmed Cases", "Positive Test Results (Public)", "Positive Test Results (All)",  ])
+    plt.tight_layout()
+    plt.savefig("cases.png")
 
-fig, ax = plt.subplots()
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    kind="line", 
-    figsize=[20,10], 
-    y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Corrected+Private (MA)'], 
-    title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid"
-)
-plt.tight_layout()
-plt.savefig("cases_all.png")
-
-
-#df = df.cumsum()
-AREA_LEGEND = [
-    "1: Upper N: Chiang Mai, Chiang Rai,...", 
-    "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
-    "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
-    "4: Mid C: Nonthaburi-Ayutthaya",
-    "5: Lower C: Kanchanaburi-Samut Sakhon",
-    "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
-    "7: Mid NE:  Khon Kaen...",
-    "8: Upper NE: Loei-Sakon Nakhon",
-    "9: Lower NE 1: Buriram, Surin...",
-    "10: Lower NE 2: Ubon Ratchathani...",
-    "11: SE: Ranong-Krabi-Surat Thani...",
-    "12: SW: Trang-Narathiwat",
-    "13: Bangkok?"
-    ]
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        kind="line", 
+        figsize=[20,10], 
+        y=["Cases (MA)", "Pos Area (MA)", "Pos XLS (MA)", "Pos Public (MA)", "Pos Private (MA)", 'Pos Corrected+Private (MA)'], 
+        title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid"
+    )
+    plt.tight_layout()
+    plt.savefig("cases_all.png")
 
 
-def rearrange(l, *first):
-    l = list(l)
-    result = []
-    for f in first:
-        result.append(l[f])
-        l[f] = None
-    return result+[i for i in l if i is not None]
+    #df = df.cumsum()
+    AREA_LEGEND = [
+        "1: Upper N: Chiang Mai, Chiang Rai,...", 
+        "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
+        "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
+        "4: Mid C: Nonthaburi-Ayutthaya",
+        "5: Lower C: Kanchanaburi-Samut Sakhon",
+        "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
+        "7: Mid NE:  Khon Kaen...",
+        "8: Upper NE: Loei-Sakon Nakhon",
+        "9: Lower NE 1: Buriram, Surin...",
+        "10: Lower NE 2: Ubon Ratchathani...",
+        "11: SE: Ranong-Krabi-Surat Thani...",
+        "12: SW: Trang-Narathiwat",
+        "13: Bangkok?"
+        ]
 
-first = [12, 3, 5, 0, 4]
-area_legend = rearrange(AREA_LEGEND, *first)
 
-fig, ax = plt.subplots()
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    y=rearrange(TESTS_AREA_COLS, *first), 
-    kind="area", 
-    figsize=[20,10], 
-    title="Tests by Health Area (Public) - Thailand Covid"
-)
-ax.legend(area_legend)
-plt.tight_layout()
-plt.savefig("tests_area.png")
+    def rearrange(l, *first):
+        l = list(l)
+        result = []
+        for f in first:
+            result.append(l[f])
+            l[f] = None
+        return result+[i for i in l if i is not None]
 
-fig, ax = plt.subplots()
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    y=rearrange(POS_AREA_COLS, *first), 
-    kind="area", 
-    figsize=[20,10], 
-    title="Positive Rate by Health Area (Public) - Thailand Covid"
-)
-ax.legend(area_legend)
-plt.tight_layout()
-plt.savefig("pos_area.png")
+    first = [12, 3, 5, 0, 4]
+    area_legend = rearrange(AREA_LEGEND, *first)
 
-# Workout positivity for each area as proportion of positivity for that period
-fig, ax = plt.subplots()
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        y=rearrange(TESTS_AREA_COLS, *first), 
+        kind="area", 
+        figsize=[20,10], 
+        title="Tests by Health Area (Public) - Thailand Covid"
+    )
+    ax.legend(area_legend)
+    plt.tight_layout()
+    plt.savefig("tests_area.png")
 
-for area in range(1,14):
-    df[f'Positivity {area}'] = df[f'Pos Area {area}'] / df[f'Tests Area {area}'] * 100
-cols = [f'Positivity {area}' for area in range(1,14)]
-df['Total Positivity Area'] = df[cols].sum(axis=1)
-for area in range(1,14):
-    df[f'Positivity {area}'] = df[f'Positivity {area}'] / df['Total Positivity Area'] * df['Positivity Area']
-print(df[['Total Positivity Area','Positivity Area', 'Pos Area', 'Tests Area']+cols])
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        y=rearrange(POS_AREA_COLS, *first), 
+        kind="area", 
+        figsize=[20,10], 
+        title="Positive Rate by Health Area (Public) - Thailand Covid"
+    )
+    ax.legend(area_legend)
+    plt.tight_layout()
+    plt.savefig("pos_area.png")
 
-df.plot(
-    ax=ax, 
-    use_index=True, 
-    y=rearrange(cols, *first), 
-    kind="area", 
-    figsize=[20,10], 
-    title="Positive Rate by Health Area (Public) - Thailand Covid"
-)
-ax.legend(area_legend)
-plt.tight_layout()
-plt.savefig("positivity_area.png")
+    # Workout positivity for each area as proportion of positivity for that period
+    fig, ax = plt.subplots()
+
+    for area in range(1,14):
+        df[f'Positivity {area}'] = df[f'Pos Area {area}'] / df[f'Tests Area {area}'] * 100
+    cols = [f'Positivity {area}' for area in range(1,14)]
+    df['Total Positivity Area'] = df[cols].sum(axis=1)
+    for area in range(1,14):
+        df[f'Positivity {area}'] = df[f'Positivity {area}'] / df['Total Positivity Area'] * df['Positivity Area']
+    print(df[['Total Positivity Area','Positivity Area', 'Pos Area', 'Tests Area']+cols])
+
+    df.plot(
+        ax=ax, 
+        use_index=True, 
+        y=rearrange(cols, *first), 
+        kind="area", 
+        figsize=[20,10], 
+        title="Positive Rate by Health Area (Public) - Thailand Covid"
+    )
+    ax.legend(area_legend)
+    plt.tight_layout()
+    plt.savefig("positivity_area.png")
+
+if __name__ == "__main__":
+    df = scrape_and_combine()
+    df = calc_cols(df)
+    df = save_plots(df)
 

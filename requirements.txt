@@ -1,7 +1,8 @@
 requests
 tabula-py
-requests_cache
+requests_cache # didn't use
 tika
+pandas
 matplotlib
 webdavclient3
 xlrd
@@ -9,3 +10,4 @@ openpyxl
 BeautifulSoup4
 python-pptx
 python-dateutil
+jupyter
