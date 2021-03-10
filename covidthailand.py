@@ -20,11 +20,11 @@ CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
 requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
 s = requests.Session()
-retry = Retry(
+RETRY = Retry(
     total=10, backoff_factor=1
 )  # should make it more reliable as ddc.moph.go.th often fails
-s.mount("http://", HTTPAdapter(max_retries=retry))
-s.mount("https://", HTTPAdapter(max_retries=retry))
+s.mount("http://", HTTPAdapter(max_retries=RETRY))
+s.mount("https://", HTTPAdapter(max_retries=RETRY))
 
 
 ###############
@@ -187,7 +187,7 @@ def get_next_numbers(content, *matches, debug=False):
         matches = [""]
     for match in matches:
         s = re.split(match, content) if match else ("", content)
-        if len(s) >= 2:  # TODO if > 2 should check its the same first number?
+        if len(s) >= 2:
             content = s[1]
             numbers = re.findall(r"[,0-9]+", content)
             numbers = [n.replace(",", "") for n in numbers]
@@ -246,17 +246,17 @@ def is_remote_newer(file, remote_date):
         return True
     return False
 
-
-def all_pdfs(*index_urls, dir=os.getcwd()):
-    urls = []
+def web_links(*index_urls, ext=".pdf"):
     for index_url in index_urls:
         index = s.get(index_url)
-        if index.status_code > 399:
+        if index.status_code > 399: 
             continue
         links = re.findall("href=[\"'](.*?)[\"']", index.content.decode("utf-8"))
-        links = [urllib.parse.urljoin(index_url, l) for l in links if "pdf" in l]
-        urls.extend(links)
-    for url in urls:
+        for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
+            yield link
+
+def web_files(*index_urls, ext=".pdf", dir=os.getcwd()):
+    for url in web_links(*index_urls, ext):
         modified = s.head(url).headers.get("last-modified") if CHECK_NEWER else None
         file = url.rsplit("/", 1)[-1]
         file = os.path.join(dir, file)
@@ -265,12 +265,17 @@ def all_pdfs(*index_urls, dir=os.getcwd()):
             r = s.get(url)
             if r.status_code != 200:
                 continue
+            os.makedirs(os.path.dirname(file), exist_ok=True)
             with open(file, "wb") as f:
                 for chunk in r.iter_content(chunk_size=512 * 1024):
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
-        parsedPDF = parser.from_file(file)
-        yield os.path.basename(file), parsedPDF
+        if "pdf" in ext:
+            content = parser.from_file(file)
+        else:
+            with open(file) as f:
+                content = f.read()
+        yield os.path.basename(file), content
 
 
 def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
@@ -282,8 +287,8 @@ def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
         "webdav_password": password,
     }
     client = Client(options)
-    client.session.mount("http://", HTTPAdapter(max_retries=retry))
-    client.session.mount("https://", HTTPAdapter(max_retries=retry))
+    client.session.mount("http://", HTTPAdapter(max_retries=RETRY))
+    client.session.mount("https://", HTTPAdapter(max_retries=RETRY))
     # important we get them sorted newest files first as we only fill in NaN from each additional file
     files = sorted(
         client.list(get_info=True),
@@ -305,12 +310,50 @@ def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
 # download and parse thailand covid data
 ##########################################
 
+def get_en_situation():
+    results = []
+    for file, parsedPDF in web_files(
+        "https://ddc.moph.go.th/viralpneumonia/eng/situation.php", ext=".pdf", dir="situation_en"
+    ):
+        if "situation" not in file:
+            continue
+        date = file2date(file)
+        numbers, _ = get_next_numbers(
+            parsedPDF["content"], "Total +number of laboratory tests", debug=False
+        )
+        if numbers:
+            tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest = numbers
+        else:
+            numbers, _ = get_next_numbers(
+                parsedPDF["content"], "Total number of people who met the criteria of patients", debug=False,
+            )
+            if date > dateutil.parser.parse("2020-01-30") and not numbers:
+                raise Exception(f"Problem parsing {file}")
+            elif not numbers:
+                break
+            tests_total, active_finding, asq, not_pui = [None] * 4
+            pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
+            pui_port = pui_airport + pui_seaport
+        if pui in [1103858, 3891136, 433807, 96989]:  # mistypes?
+            pui = None
+        if tests_total in [783679, 849874, 936458]:
+            tests_total = None
+        results.append((date, tests_total, pui, active_finding, asq, not_pui))
+        print(file, results[-1])
+
+    results = pd.DataFrame(
+        results,
+        columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"],
+    ).set_index("Date")
+    print(results)
+    return results
 
 def get_thai_situation():
     results = []
-    for file, parsedPDF in all_pdfs(
+    for file, parsedPDF in web_files(
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
+        ext=".pdf",
         dir="situation_th",
     ):
         if "situation" not in file:
@@ -371,55 +414,6 @@ def get_thai_situation():
     print(results)
     return results
 
-
-def get_en_situation():
-    results = []
-    for file, parsedPDF in all_pdfs(
-        "https://ddc.moph.go.th/viralpneumonia/eng/situation.php", dir="situation_en"
-    ):
-        if "situation" not in file:
-            continue
-        date = file2date(file)
-        numbers, content = get_next_numbers(
-            parsedPDF["content"], "Total +number of laboratory tests", debug=False
-        )
-        if numbers:
-            (
-                tests_total,
-                pui,
-                active_finding,
-                asq,
-                not_pui,
-                pui,
-                pui_port,
-                *rest,
-            ) = numbers
-        else:
-            numbers, content = get_next_numbers(
-                parsedPDF["content"],
-                "Total number of people who met the criteria of patients",
-                debug=False,
-            )
-            if date > dateutil.parser.parse("2020-01-30") and not numbers:
-                raise Exception(f"Problem parsing {file}")
-            elif not numbers:
-                break
-            tests_total, active_finding, asq, not_pui = [None] * 4
-            pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
-            pui_port = pui_airport + pui_seaport
-        if pui in [1103858, 3891136, 433807, 96989]:  # mistypes?
-            pui = None
-        if tests_total in [783679, 849874, 936458]:
-            tests_total = None
-        results.append((date, tests_total, pui, active_finding, asq, not_pui))
-        print(file, results[-1])
-
-    results = pd.DataFrame(
-        results,
-        columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"],
-    ).set_index("Date")
-    print(results)
-    return results
 
 
 def get_cases():
