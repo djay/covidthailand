@@ -14,15 +14,11 @@ from bs4 import BeautifulSoup
 from pptx import Presentation
 from urllib3.util.retry import Retry
 import dateutil
-
-# pd.options.display.mpl_style = 'default'
-
-matplotlib.use("AGG")
-
-requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
-
 from requests.adapters import HTTPAdapter, Retry
 
+CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
+
+requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
 s = requests.Session()
 retry = Retry(
     total=10, backoff_factor=1
@@ -30,94 +26,40 @@ retry = Retry(
 s.mount("http://", HTTPAdapter(max_retries=retry))
 s.mount("https://", HTTPAdapter(max_retries=retry))
 
-CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
+
+###############
+# Date helpers
+###############
 
 
-def all_pdfs(*index_urls, dir=os.getcwd()):
-    urls = []
-    for index_url in index_urls:
-        index = s.get(index_url)
-        if index.status_code > 399:
-            continue
-        links = re.findall("href=[\"'](.*?)[\"']", index.content.decode("utf-8"))
-        links = [urllib.parse.urljoin(index_url, l) for l in links if "pdf" in l]
-        urls.extend(links)
-    for url in urls:
-        modified = s.head(url).headers.get("last-modified") if CHECK_NEWER else None
-        file = url.rsplit("/", 1)[-1]
-        file = os.path.join(dir, file)
-        os.makedirs(os.path.dirname(file), exist_ok=True)
-        if is_remote_newer(file, modified):
-            r = s.get(url)
-            if r.status_code != 200:
-                continue
-            with open(file, "wb") as f:
-                for chunk in r.iter_content(chunk_size=512 * 1024):
-                    if chunk:  # filter out keep-alive new chunks
-                        f.write(chunk)
-        parsedPDF = parser.from_file(file)
-        yield os.path.basename(file), parsedPDF
-
-
-def is_remote_newer(file, remote_date):
-    if not os.path.exists(file):
-        print(f"Missing: {file}")
-        return True
-    if remote_date is None:
-        return False  # TODO: do we want to redownload each time?
-    if type(remote_date) == str:
-        remote_date = dateutil.parser.parse(remote_date).astimezone()
-    fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
-    if remote_date > fdate:
-        timestamp = fdate.strftime("%Y%m%d-%H%M%S")
-        os.rename(file, f"{file}.{timestamp}")
-        return True
-    return False
-
-
-def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
-    from webdav3.client import Client
-
-    options = {
-        "webdav_hostname": url,
-        "webdav_login": username,
-        "webdav_password": password,
-    }
-    client = Client(options)
-    client.session.mount("http://", HTTPAdapter(max_retries=retry))
-    client.session.mount("https://", HTTPAdapter(max_retries=retry))
-    # important we get them sorted newest files first as we only fill in NaN from each additional file
-    files = sorted(
-        client.list(get_info=True),
-        key=lambda info: dateutil.parser.parse(info["modified"]),
-        reverse=True,
-    )
-    for info in files:
-        file = info["path"].split("/")[-1]
-        if not any([ext == file[-len(ext) :] for ext in ext.split()]):
-            continue
-        target = os.path.join(dir, file)
-        os.makedirs(os.path.dirname(target), exist_ok=True)
-        if is_remote_newer(target, info["modified"]):
-            client.download_file(file, target)
-        yield target
-
-
-def get_next_numbers(content, *matches, debug=False):
-    if len(matches) == 0:
-        matches = [""]
-    for match in matches:
-        s = re.split(match, content) if match else ("", content)
-        if len(s) >= 2:  # TODO if > 2 should check its the same first number?
-            content = s[1]
-            numbers = re.findall(r"[,0-9]+", content)
-            numbers = [n.replace(",", "") for n in numbers]
-            numbers = [int(n) for n in numbers if n]
-            return numbers, match + " " + content
-    if debug and matches:
-        print("Couldn't find '{}'".format(match))
-        print(content)
-    return [], content
+THAI_ABBR_MONTHS = [
+    "ม.ค.",
+    "ก.พ.",
+    "มี.ค.",
+    "เม.ย.",
+    "พ.ค.",
+    "มิ.ย.",
+    "ก.ค.",
+    "ส.ค.",
+    "ก.ย.",
+    "ต.ค.",
+    "พ.ย.",
+    "ธ.ค.",
+]
+THAI_FULL_MONTHS = [
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
+]
 
 
 def file2date(file):
@@ -132,36 +74,6 @@ def file2date(file):
         day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
     )
     return date
-
-
-thai_abbr_months = [
-    "ม.ค.",
-    "ก.พ.",
-    "มี.ค.",
-    "เม.ย.",
-    "พ.ค.",
-    "มิ.ย.",
-    "ก.ค.",
-    "ส.ค.",
-    "ก.ย.",
-    "ต.ค.",
-    "พ.ย.",
-    "ธ.ค.",
-]
-thai_full_months = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
-]
 
 
 def find_dates(content):
@@ -203,10 +115,10 @@ def find_date_range(content):
     elif m3:
         d1, d2, month, year = m3.groups()
         month = (
-            thai_abbr_months.index(month) + 1
-            if month in thai_abbr_months
-            else thai_full_months.index(month) + 1
-            if month in thai_full_months
+            THAI_ABBR_MONTHS.index(month) + 1
+            if month in THAI_ABBR_MONTHS
+            else THAI_FULL_MONTHS.index(month) + 1
+            if month in THAI_FULL_MONTHS
             else None
         )
         end = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
@@ -219,6 +131,27 @@ def find_date_range(content):
 def daterange(start_date, end_date, offset=0):
     for n in range(int((end_date - start_date).days) + offset):
         yield start_date + datetime.timedelta(n)
+
+
+def spread_date_range(start, end, row, columns):
+    r = list(daterange(start, end, offset=1))
+    stats = [float(p) / len(r) for p in row]
+    results = pd.DataFrame(
+        [
+            [
+                date,
+            ]
+            + stats
+            for date in r
+        ],
+        columns=columns,
+    ).set_index("Date")
+    return results
+
+
+####################
+# Extraction helpers
+#####################
 
 
 def parse_file(filename, as_html=False):
@@ -247,6 +180,130 @@ def parse_file(filename, as_html=False):
             pages_txt.append(text)
 
     return pages_txt
+
+
+def get_next_numbers(content, *matches, debug=False):
+    if len(matches) == 0:
+        matches = [""]
+    for match in matches:
+        s = re.split(match, content) if match else ("", content)
+        if len(s) >= 2:  # TODO if > 2 should check its the same first number?
+            content = s[1]
+            numbers = re.findall(r"[,0-9]+", content)
+            numbers = [n.replace(",", "") for n in numbers]
+            numbers = [int(n) for n in numbers if n]
+            return numbers, match + " " + content
+    if debug and matches:
+        print("Couldn't find '{}'".format(match))
+        print(content)
+    return [], content
+
+
+def slide2text(slide):
+    text = ""
+    if slide.shapes.title:
+        text += slide.shapes.title.text
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            # for p in shape.text_frame:
+            text += "\n" + shape.text
+    return text
+
+
+def slide2chartdata(slide):
+    for shape in slide.shapes:
+        if not shape.has_chart:
+            continue
+        chart = shape.chart
+        if chart is None:
+            continue
+        title = chart.chart_title.text_frame.text if chart.has_title else ""
+        start, end = find_date_range(title)
+        if start is None:
+            continue
+        series = dict([(s.name, s.values) for s in chart.series])
+
+        yield chart, title, start, end, series
+
+
+####################
+# Download helpers
+####################
+
+
+def is_remote_newer(file, remote_date):
+    if not os.path.exists(file):
+        print(f"Missing: {file}")
+        return True
+    if remote_date is None:
+        return False  # TODO: do we want to redownload each time?
+    if type(remote_date) == str:
+        remote_date = dateutil.parser.parse(remote_date).astimezone()
+    fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
+    if remote_date > fdate:
+        timestamp = fdate.strftime("%Y%m%d-%H%M%S")
+        os.rename(file, f"{file}.{timestamp}")
+        return True
+    return False
+
+
+def all_pdfs(*index_urls, dir=os.getcwd()):
+    urls = []
+    for index_url in index_urls:
+        index = s.get(index_url)
+        if index.status_code > 399:
+            continue
+        links = re.findall("href=[\"'](.*?)[\"']", index.content.decode("utf-8"))
+        links = [urllib.parse.urljoin(index_url, l) for l in links if "pdf" in l]
+        urls.extend(links)
+    for url in urls:
+        modified = s.head(url).headers.get("last-modified") if CHECK_NEWER else None
+        file = url.rsplit("/", 1)[-1]
+        file = os.path.join(dir, file)
+        os.makedirs(os.path.dirname(file), exist_ok=True)
+        if is_remote_newer(file, modified):
+            r = s.get(url)
+            if r.status_code != 200:
+                continue
+            with open(file, "wb") as f:
+                for chunk in r.iter_content(chunk_size=512 * 1024):
+                    if chunk:  # filter out keep-alive new chunks
+                        f.write(chunk)
+        parsedPDF = parser.from_file(file)
+        yield os.path.basename(file), parsedPDF
+
+
+def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
+    from webdav3.client import Client
+
+    options = {
+        "webdav_hostname": url,
+        "webdav_login": username,
+        "webdav_password": password,
+    }
+    client = Client(options)
+    client.session.mount("http://", HTTPAdapter(max_retries=retry))
+    client.session.mount("https://", HTTPAdapter(max_retries=retry))
+    # important we get them sorted newest files first as we only fill in NaN from each additional file
+    files = sorted(
+        client.list(get_info=True),
+        key=lambda info: dateutil.parser.parse(info["modified"]),
+        reverse=True,
+    )
+    for info in files:
+        file = info["path"].split("/")[-1]
+        if not any([ext == file[-len(ext) :] for ext in ext.split()]):
+            continue
+        target = os.path.join(dir, file)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        if is_remote_newer(target, info["modified"]):
+            client.download_file(file, target)
+        yield target
+
+
+##########################################
+# download and parse thailand covid data
+##########################################
 
 
 def get_thai_situation():
@@ -418,49 +475,6 @@ def get_tests_by_day():
     return tests
 
 
-def slide2text(slide):
-    text = ""
-    if slide.shapes.title:
-        text += slide.shapes.title.text
-    for shape in slide.shapes:
-        if shape.has_text_frame:
-            # for p in shape.text_frame:
-            text += "\n" + shape.text
-    return text
-
-
-def slide2chartdata(slide):
-    for shape in slide.shapes:
-        if not shape.has_chart:
-            continue
-        chart = shape.chart
-        if chart is None:
-            continue
-        title = chart.chart_title.text_frame.text if chart.has_title else ""
-        start, end = find_date_range(title)
-        if start is None:
-            continue
-        series = dict([(s.name, s.values) for s in chart.series])
-
-        yield chart, title, start, end, series
-
-
-def spread_date_range(start, end, row, columns):
-    r = list(daterange(start, end, offset=1))
-    stats = [float(p) / len(r) for p in row]
-    results = pd.DataFrame(
-        [
-            [
-                date,
-            ]
-            + stats
-            for date in r
-        ],
-        columns=columns,
-    ).set_index("Date")
-    return results
-
-
 POS_AREA_COLS = ["Pos Area {}".format(i + 1) for i in range(13)]
 TESTS_AREA_COLS = ["Tests Area {}".format(i + 1) for i in range(13)]
 
@@ -619,6 +633,7 @@ def scrape_and_combine():
 
 
 def calc_cols(df):
+    # adding in rolling average to see the trends better
     df["Tested (MA)"] = df["Tested"].rolling(7, 1, center=True).mean()
     df["PUI (MA)"] = df["PUI"].rolling(7, 1, center=True).mean()
     df["Cases (MA)"] = df["Cases"].rolling(7, 1, center=True).mean()
@@ -626,7 +641,12 @@ def calc_cols(df):
     df["Pos Area (MA)"] = df["Pos Area"].rolling(7, 1, center=True).mean()
     df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7, 1, center=True).mean()
     df["Pos XLS (MA)"] = df["Pos XLS"].rolling(7, 1, center=True).mean()
+    df["Pos Public (MA)"] = df["Pos Public"].rolling(7, 1, center=True).mean()
+    df["Pos Private (MA)"] = df["Pos Private"].rolling(7, 1, center=True).mean()
+    df["Tests Public (MA)"] = df["Tests Public"].rolling(7, 1, center=True).mean()
+    df["Tests Private (MA)"] = df["Tests Private"].rolling(7, 1, center=True).mean()
 
+    # Calculate positive rate
     df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
     df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["PUI (MA)"] * 100
     df["Positivity"] = df["Cases"] / df["Tested"] * 100
@@ -636,11 +656,8 @@ def calc_cols(df):
     df["Positivity XLS"] = df["Pos XLS"] / df["Tests XLS"] * 100
     df["Positivity Cases/Tests (MA)"] = df["Cases (MA)"] / df["Tests XLS (MA)"] * 100
 
-    df["Pos Public (MA)"] = df["Pos Public"].rolling(7, 1, center=True).mean()
-    df["Pos Private (MA)"] = df["Pos Private"].rolling(7, 1, center=True).mean()
+    # Combined data
     df["Pos Corrected+Private (MA)"] = df["Pos Private (MA)"] + df["Pos XLS (MA)"]
-    df["Tests Public (MA)"] = df["Tests Public"].rolling(7, 1, center=True).mean()
-    df["Tests Private (MA)"] = df["Tests Private"].rolling(7, 1, center=True).mean()
     df["Tests Private+Public (MA)"] = df["Tests Public (MA)"] + df["Tests Private (MA)"]
     df["Tests Corrected+Private (MA)"] = df["Tests XLS (MA)"] + df["Tests Private (MA)"]
 
@@ -654,6 +671,7 @@ def calc_cols(df):
 
 
 def save_plots(df):
+    matplotlib.use("AGG")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
