@@ -1,5 +1,4 @@
 name: CI
-
 on:
   push:
     branches-ignore:
@@ -41,8 +40,7 @@ jobs:
             ${{ runner.os }}
       - name: run
         run: |
-            export CHECK_NEWER=True
-            python covidthailand.py
+            CHECK_NEWER=True  python covidthailand.py
       - name: Upload Graphs to wiki
         uses: kai-tub/external-repo-sync-action@v1
         with:
@@ -50,15 +48,3 @@ jobs:
             include-patterns: "*.png"
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
-      # - name: Upload Graphs
-      #   if: success()
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: graphs
-      #     path: ./*.png
-      # - name: Upload Graphs to wiki
-      #   uses: SwiftDocOrg/github-wiki-publish-action@v1
-      #   with:
-      #     path: "*.png"
-      #   env:
-      #     GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

@@ -15,6 +15,7 @@ from pptx import Presentation
 from urllib3.util.retry import Retry
 import dateutil
 from requests.adapters import HTTPAdapter, Retry
+from webdav3.client import Client
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -278,8 +279,13 @@ def web_files(*index_urls, ext=".pdf", dir=os.getcwd()):
         yield os.path.basename(file), content
 
 
-def dav_files(url, username, password, ext=".pdf .pptx", dir=os.getcwd()):
-    from webdav3.client import Client
+def dav_files(
+    url="http://nextcloud.dmsc.moph.go.th/public.php/webdav", 
+    username="wbioWZAQfManokc",
+    password="null", 
+    ext=".pdf .pptx", 
+    dir="testing_moph",
+    ):
 
     options = {
         "webdav_hostname": url,
@@ -414,8 +420,6 @@ def get_thai_situation():
     print(results)
     return results
 
-
-
 def get_cases():
     timeline = s.get("https://covid19.th-stat.com/api/open/timeline").json()["Data"]
     results = []
@@ -428,21 +432,11 @@ def get_cases():
     print(data)
     return data
 
-
 def get_tests_by_day():
-    file = list(
-        dav_files(
-            "http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-            "wbioWZAQfManokc",
-            "null",
-            "xlsx",
-            "testing_moph",
-        )
-    )[0]
+    file = next(dav_files(ext="xlsx"))
     tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
     tests.dropna(how="any", inplace=True)  # get rid of totals row
     tests = tests.set_index("Date")
-    # row = tests[['Pos','Total']]['Cannot specify date']
     pos = tests.loc["Cannot specify date"].Pos
     total = tests.loc["Cannot specify date"].Total
     tests.drop("Cannot specify date", inplace=True)
@@ -477,16 +471,7 @@ def get_tests_by_area():
     columns = ["Date"] + POS_AREA_COLS + TESTS_AREA_COLS + ["Pos Area", "Tests Area"]
     data = pd.DataFrame()
 
-    for file in dav_files(
-        "http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-        "wbioWZAQfManokc",
-        "null",
-        ext=".pdf",
-        dir="testing_moph",
-    ):
-        # parsedPDF = parser.from_file(file)
-
-        # pages = parsedPDF['content'].split("\n\n\n\n") #  # วันที่ท้ำรำยงำน
+    for file in dav_files(ext=".pdf"):
         pages = parse_file(file)
         not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
         by_area = [
@@ -525,13 +510,7 @@ def get_tests_by_area():
             print(results)
             data = data.combine_first(results)
 
-    for file in dav_files(
-        "http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-        "wbioWZAQfManokc",
-        "null",
-        ext=".pptx",
-        dir="testing_moph",
-    ):
+    for file in dav_files(ext=".pptx"):
         prs = Presentation(file)
         for chart in (
             chart for slide in prs.slides for chart in slide2chartdata(slide)
@@ -556,13 +535,7 @@ def get_tests_private_public():
     data = pd.DataFrame()
 
     # some additional data from pptx files
-    for file in dav_files(
-        "http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-        "wbioWZAQfManokc",
-        "null",
-        ext=".pptx",
-        dir="testing_moph",
-    ):
+    for file in dav_files(ext=".pptx"):
         prs = Presentation(file)
         for chart in (
             chart for slide in prs.slides for chart in slide2chartdata(slide)
@@ -662,6 +635,36 @@ def calc_cols(df):
         df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     )
     return df
+
+# df = df.cumsum()
+AREA_LEGEND = [
+    "1: Upper N: Chiang Mai, Chiang Rai,...",
+    "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
+    "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
+    "4: Mid C: Nonthaburi-Ayutthaya",
+    "5: Lower C: Kanchanaburi-Samut Sakhon",
+    "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
+    "7: Mid NE:  Khon Kaen...",
+    "8: Upper NE: Loei-Sakon Nakhon",
+    "9: Lower NE 1: Buriram, Surin...",
+    "10: Lower NE 2: Ubon Ratchathani...",
+    "11: SE: Ranong-Krabi-Surat Thani...",
+    "12: SW: Trang-Narathiwat",
+    "13: Bangkok?",
+]
+
+def rearrange(l, *first):
+    l = list(l)
+    result = []
+    for f in first:
+        result.append(l[f])
+        l[f] = None
+    return result + [i for i in l if i is not None]
+
+FIRST_AREAS = [12, 3, 5, 0, 4] # based on size-ish
+AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
+TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
+POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
 
 def save_plots(df):
@@ -785,44 +788,16 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_all.png")
 
-    # df = df.cumsum()
-    AREA_LEGEND = [
-        "1: Upper N: Chiang Mai, Chiang Rai,...",
-        "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
-        "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
-        "4: Mid C: Nonthaburi-Ayutthaya",
-        "5: Lower C: Kanchanaburi-Samut Sakhon",
-        "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
-        "7: Mid NE:  Khon Kaen...",
-        "8: Upper NE: Loei-Sakon Nakhon",
-        "9: Lower NE 1: Buriram, Surin...",
-        "10: Lower NE 2: Ubon Ratchathani...",
-        "11: SE: Ranong-Krabi-Surat Thani...",
-        "12: SW: Trang-Narathiwat",
-        "13: Bangkok?",
-    ]
-
-    def rearrange(l, *first):
-        l = list(l)
-        result = []
-        for f in first:
-            result.append(l[f])
-            l[f] = None
-        return result + [i for i in l if i is not None]
-
-    first = [12, 3, 5, 0, 4]
-    area_legend = rearrange(AREA_LEGEND, *first)
-
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
         use_index=True,
-        y=rearrange(TESTS_AREA_COLS, *first),
+        y=rearrange(TESTS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Tests by Health Area (Public) - Thailand Covid",
     )
-    ax.legend(area_legend)
+    ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("tests_area.png")
 
@@ -830,12 +805,12 @@ def save_plots(df):
     df.plot(
         ax=ax,
         use_index=True,
-        y=rearrange(POS_AREA_COLS, *first),
+        y=rearrange(POS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Positive Rate by Health Area (Public) - Thailand Covid",
     )
-    ax.legend(area_legend)
+    ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("pos_area.png")
 
@@ -864,12 +839,12 @@ def save_plots(df):
     df.plot(
         ax=ax,
         use_index=True,
-        y=rearrange(cols, *first),
+        y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Positive Rate by Health Area (Public) - Thailand Covid",
     )
-    ax.legend(area_legend)
+    ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("positivity_area.png")
 
