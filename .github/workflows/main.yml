@@ -26,12 +26,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ./*.pdf
-            ./*.xlsx
-            ./*.pptx 
-            ~/*.pdf
-            ~/*.xlsx
-            ~/*.pptx
+            **/*.pdf
+            **/*.xlsx
+            **/*.pptx
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
