@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from typing import OrderedDict
 import requests
 import tabula
@@ -187,13 +188,13 @@ def get_next_numbers(content, *matches, debug=False):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
-        s = re.split(match, content) if match else ("", content)
-        if len(s) >= 2:
-            content = s[1]
-            numbers = re.findall(r"[,0-9]+", content)
+        _, *rest = re.split(match, content,1) if match else ("", content)
+        if rest:
+            rest, *_ = rest 
+            numbers = re.findall(r"[,0-9]+", rest)
             numbers = [n.replace(",", "") for n in numbers]
             numbers = [int(n) for n in numbers if n]
-            return numbers, match + " " + content
+            return numbers, match + " " + rest
     if debug and matches:
         print("Couldn't find '{}'".format(match))
         print(content)
@@ -257,7 +258,7 @@ def web_links(*index_urls, ext=".pdf"):
             yield link
 
 def web_files(*index_urls, ext=".pdf", dir=os.getcwd()):
-    for url in web_links(*index_urls, ext):
+    for url in web_links(*index_urls, ext=ext):
         modified = s.head(url).headers.get("last-modified") if CHECK_NEWER else None
         file = url.rsplit("/", 1)[-1]
         file = os.path.join(dir, file)
@@ -315,43 +316,219 @@ def dav_files(
 ##########################################
 # download and parse thailand covid data
 ##########################################
+d = dateutil.parser.parse
+
+def situation_cases_cum(parsedPDF, date):
+    _,rest = get_next_numbers(parsedPDF["content"], "The Disease Situation in Thailand", debug=True)
+    cases, rest = get_next_numbers(
+        rest, 
+        "Total number of confirmed cases",
+        "Characteristics of Infection in Confirmed cases",
+        "Confirmed cases",
+        debug=False
+    )
+    if not cases:
+        return
+    cases, *_ = cases
+    outside_quarantine, _ = get_next_numbers(
+        rest,
+        "Cases found outside (?:the )?(?:state )?quarantine (?:facilities|centers)",
+        debug=False
+    )
+    if outside_quarantine:
+        outside_quarantine, *_ = outside_quarantine
+        # 2647.0 # 2021-02-15
+        # if date > d("2021-01-25"):
+        #    # thai graphic says imported is 2396 instead of en 4195 on 2021-01-26
+        #    outside_quarantine = outside_quarantine -  (4195 - 2396) 
+
+        quarantine, _ = get_next_numbers(
+            rest, 
+            "Cases found in (?:the )?(?:state )?quarantine (?:facilities|centers)",
+            "Staying in [^ ]* quarantine",
+            debug=True)
+        quarantine, *_ = quarantine
+        quarantine = 1903 if quarantine == 19003 else quarantine # "2021-02-05"
+        if date < d("2020-12-28") or date > d("2021-01-25"):
+            imported = outside_quarantine # It's mislabeled (new daily is correct however)
+            imported = 2647 if imported == 609 else imported # "2021-02-17")
+            imported = None if imported == 610 else imported # 2021-02-20 - 2021-03-01
+            if imported is not None: 
+                outside_quarantine = imported -  quarantine
+            else:
+                outside_quarantine = None
+        else:
+            imported = outside_quarantine + quarantine
+    else:
+        quarantine, _ = get_next_numbers(
+            rest, 
+            "(?i)d.?e.?signated quarantine",
+            debug=False)
+        quarantine, *_ = quarantine if quarantine else [None]
+        quarantine = 562 if quarantine == 5562 else quarantine # "2021-09-19"
+        imported, _ = get_next_numbers(
+            rest, 
+            "(?i)Imported Cases",
+            "(?i)Cases were imported from overseas",
+            debug=False)
+        imported, *_ = imported if imported else [None]
+        if imported and quarantine:
+            outside_quarantine = imported - quarantine
+        else:
+            outside_quarantine = None #TODO: can we get imported from total - quarantine - local?
+    if quarantine:
+        active, _ = get_next_numbers(
+            rest,
+            "(?i)active case",
+            debug=False
+        )
+        active, *_ = active if active else [None]
+        if date < d("2020-12-24"):
+            active = None
+
+        # TODO: cum local really means all local ie walkins+active testing 
+        local, _ = get_next_numbers(rest, "(?i)(?:Local )?Transmission", debug=False)
+        local, *_ = local if local else [None]
+        # TODO: 2021-01-25. Local 6629.0 -> 12250.0, quarantine 597.0 -> 2396.0 active 4684.0->5532.0
+        if date <= d("2021-01-25") or d("2021-02-16") <= date <= d("2021-03-01"):
+            # switched to different definition?
+            if active is not None: 
+                local = local + active
+    else:
+        local, active = None, None
+    return pd.DataFrame(
+        [(date, cases, local, imported, quarantine, outside_quarantine, active)],
+        columns=["Date", "Cases Cum", "Local Transmision Cum", "Imported Cases Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Active finding Cum"]
+        ).set_index("Date")
+
+def situation_cases_new(parsedPDF, date):
+    _,rest = get_next_numbers(
+        parsedPDF["content"], 
+        "The Disease Situation in Thailand", 
+        "(?i)Type of case Total number Rate of Increase",
+        debug=False)
+    cases, rest = get_next_numbers(
+        rest, 
+        "(?i)number of new case(?:s)?",
+        debug=False
+    )
+    if not cases or date < d("2020-05-09"):
+        return
+    cases, *_ = cases
+    local, _ = get_next_numbers(rest, "(?i)(?:Local )?Transmission", debug=False)
+    local, *_ = local if local else [None]
+    quarantine, _ = get_next_numbers(
+        rest, 
+        "Cases found (?:positive from |in )(?:the )?(?:state )?quarantine",
+        #"Staying in [^ ]* quarantine",
+        debug=False)
+    quarantine, *_ = quarantine
+    outside_quarantine, _ = get_next_numbers(
+        rest,
+        "(?i)Cases found (?:positive )?outside (?:the )?(?:state )?quarantine",
+        debug=False
+    )
+    outside_quarantine, *_ = outside_quarantine if outside_quarantine else [None]
+    if outside_quarantine is not None:
+        imported = quarantine + outside_quarantine
+        active, _ = get_next_numbers(
+            rest,
+            "(?i)active case",
+            debug=True
+        )
+        active, *_ = active if active else [None]
+        if date <= d("2020-12-24"): # starts getting cum values
+            active = None
+        # local really means walkins. so need add it up
+        if active:
+            local = local + active
+    else:
+        imported, active = None, None
+    return pd.DataFrame(
+        [(date, cases, local, imported, quarantine, outside_quarantine, active)],
+        columns=["Date", "Cases", "Local Transmision", "Imported Cases", "Cases In Quarantine", "Cases Outside Quarantine", "Cases Active finding"]
+        ).set_index("Date")
+
+
+def situation_pui(parsedPDF, date):
+    numbers, _ = get_next_numbers(
+        parsedPDF["content"], "Total +number of laboratory tests", debug=False
+    )
+    if numbers:
+        tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest = numbers
+    else:
+        numbers, _ = get_next_numbers(
+            parsedPDF["content"], "Total number of people who met the criteria of patients", debug=False,
+        )
+        if date > dateutil.parser.parse("2020-01-30") and not numbers:
+            raise Exception(f"Problem parsing {date}")
+        elif not numbers:
+            return
+        tests_total, active_finding, asq, not_pui = [None] * 4
+        pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
+        pui_port = pui_airport + pui_seaport
+    if pui in [1103858, 3891136, 433807, 96989]:  # mistypes?
+        pui = None
+    if tests_total in [783679, 849874, 936458]:
+        tests_total = None
+    return pd.DataFrame(
+        [(date, tests_total, pui, active_finding, asq, not_pui)],
+        columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"]
+        ).set_index("Date")
+
 
 def get_en_situation():
-    results = []
-    for file, parsedPDF in web_files(
-        "https://ddc.moph.go.th/viralpneumonia/eng/situation.php", ext=".pdf", dir="situation_en"
-    ):
+    new = pd.DataFrame(columns=["Date"]).set_index("Date")
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
+    for file, parsedPDF in web_files(url, ext=".pdf", dir="situation_en"):
         if "situation" not in file:
             continue
         date = file2date(file)
-        numbers, _ = get_next_numbers(
-            parsedPDF["content"], "Total +number of laboratory tests", debug=False
+        df = situation_pui(parsedPDF, date)
+        if df is not None:
+            results = results.combine_first(df)
+        df = situation_cases_cum(parsedPDF, date)
+        if df is not None:
+            results = results.combine_first(df)
+        df = situation_cases_new(parsedPDF, date)
+        if df is not None:
+            new = new.combine_first(df)
+        row = results.iloc[0].to_dict()
+        row.update(new.iloc[0].to_dict())
+        print(
+            file, 
+            "p{PUI:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
+            "l{Local Transmision Cum:.0f}({Local Transmision:.0f})\t"
+            "a{Cases Active finding Cum:.0f}({Cases Active finding:.0f})\t"
+            "i{Imported Cases Cum:.0f}({Imported Cases:.0f})\t"
+            "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
+            "".format(**row)
         )
-        if numbers:
-            tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest = numbers
-        else:
-            numbers, _ = get_next_numbers(
-                parsedPDF["content"], "Total number of people who met the criteria of patients", debug=False,
-            )
-            if date > dateutil.parser.parse("2020-01-30") and not numbers:
-                raise Exception(f"Problem parsing {file}")
-            elif not numbers:
-                break
-            tests_total, active_finding, asq, not_pui = [None] * 4
-            pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
-            pui_port = pui_airport + pui_seaport
-        if pui in [1103858, 3891136, 433807, 96989]:  # mistypes?
-            pui = None
-        if tests_total in [783679, 849874, 936458]:
-            tests_total = None
-        results.append((date, tests_total, pui, active_finding, asq, not_pui))
-        print(file, results[-1])
-
-    results = pd.DataFrame(
-        results,
-        columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"],
+    # Missing data. filled in from th infographic
+    missing = [
+        (d("2020-12-19"),2476,0, 0),
+        (d("2020-12-20"),3011,516, 516),
+        (d("2020-12-21"),3385,876, 360),
+        (d("2020-12-22"),3798,1273, 397),
+        (d("2020-12-23"),3837,1273, 0),
+        (d("2020-12-24"),3895,1273, 0),
+        (d("2020-12-25"),3976,1308, 35),
+    ]
+    missing = pd.DataFrame(
+        missing,
+        columns=["Date","Local Transmision Cum","Cases Active finding Cum", "Cases Active finding"]
     ).set_index("Date")
-    print(results)
+    results = missing[["Local Transmision Cum","Cases Active finding Cum",]].combine_first(results)
+    
+    all_days = pd.date_range(results.index.min(), results.index.max())
+    results = results.reindex(all_days) # put in missing days with NaN
+    results = results.interpolate() # missing dates need to be filled so we don't get jumps
+    results = results - results.shift(+1)  # we got cumilitive data
+    renames = dict((c,c.rstrip(' Cum')) for c in list(results.columns) if 'Cum' in c)
+    results = new.combine_first(results.rename(columns=renames)) # trust new today data more
+    results = new.combine_first(results) # put in Cum cols too #TODO: put as cum
+
     return results
 
 def get_thai_situation():
@@ -417,11 +594,19 @@ def get_thai_situation():
         results,
         columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"],
     ).set_index("Date")
+    all_days = pd.date_range(results.index.min(), results.index.max())
+    results = results.reindex(all_days) # put in missing days with NaN
+    results = results.interpolate() # missing dates need to be filled so we don't get jumps
+    results = results - results.shift(+1)  # we got cumilitive data
     print(results)
     return results
 
 def get_cases():
-    timeline = s.get("https://covid19.th-stat.com/api/open/timeline").json()["Data"]
+    try:
+        timeline = s.get("https://covid19.th-stat.com/api/open/timeline").json()["Data"]
+    except JSONDecodeError:
+        return pd.DataFrame()
+
     results = []
     for d in timeline:
         date = datetime.datetime.strptime(d["Date"], "%m/%d/%Y")
@@ -577,18 +762,17 @@ def get_tests_private_public():
 
 
 def scrape_and_combine():
+
+    en_situation = get_en_situation()
+    th_situation = get_thai_situation()
+    situation = en_situation.combine_first(th_situation)
+    print(situation)
+
     tests = get_tests_by_day()
     print(tests)
     areas = get_tests_by_area()
     cases = get_cases()
     print(cases)
-
-    th_situation = get_thai_situation()
-    en_situation = get_en_situation()
-    situation = en_situation.combine_first(th_situation)
-    situation = situation.interpolate()
-    situation = situation - situation.shift(+1)  # we got cumilitive data
-    print(situation)
 
     df = situation
     df = df.combine_first(cases)
@@ -634,6 +818,8 @@ def calc_cols(df):
     df["Positivity Public+Private (MA)"] = (
         df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     )
+    df['Walkin'] = df["Local Transmision"] - df["Cases Active finding"]
+
     return df
 
 # df = df.cumsum()
@@ -847,6 +1033,17 @@ def save_plots(df):
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("positivity_area.png")
+
+    fig, ax = plt.subplots()
+    df["2020-12-12":].plot(
+        ax=ax,
+        y=["Imported Cases","Walkin", "Cases Active finding", ],
+        kind="area",
+        figsize=[20, 10],
+        title="Cases where found - Thailand Covid",
+    )
+    plt.tight_layout()
+    plt.savefig("cases_types.png")
 
 
 if __name__ == "__main__":
