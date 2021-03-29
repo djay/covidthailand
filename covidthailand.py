@@ -976,8 +976,6 @@ def save_plots(df):
             "Tested PUI (MA)",
             "Tests XLS (MA)",
             "Tests Corrected+Private (MA)",
-            "Tested (MA)",
-            "Cases (MA)",
         ],
     )
     ax.legend(
@@ -985,8 +983,6 @@ def save_plots(df):
             "PUI",
             "Tests Performed (Public)",
             "Tests Performed (All)",
-            "People Tested (situation reports)",
-            "Confirmed Cases",
         ]
     )
     plt.tight_layout()

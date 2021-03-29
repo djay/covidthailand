@@ -39,6 +39,7 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
   - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
 
 ![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
+![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
 
 ## Cases by Area
 - Source: [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
