@@ -735,7 +735,7 @@ def get_tests_by_area():
                 raw = raw.combine_first(pd.DataFrame(
                     [[start,end,]+pos + tests],
                     columns=raw_cols
-                ))
+                ).set_index("Start"))
     # Also need pdf copies becaus of missing pptx
     for file in dav_files(ext=".pdf"):
         pages = parse_file(file)
@@ -778,7 +778,7 @@ def get_tests_by_area():
             raw = raw.combine_first(pd.DataFrame(
                 [[start,end,]+pos + tests],
                 columns=raw_cols
-            ))
+            ).set_index("Start"))
     os.makedirs("api", exist_ok=True)
     raw.reset_index().to_json(
         "api/tests_by_area", 
@@ -851,7 +851,7 @@ def get_cases_by_area():
     case_areas = case_areas.rename(columns=dict(ConfirmDate="Date"))
     os.makedirs("api", exist_ok=True)
     case_areas.reset_index().to_json(
-        "api/case_by_area",
+        "api/cases_by_area",
         date_format="iso",
         indent=3,
         orient="records",
@@ -881,6 +881,15 @@ def scrape_and_combine():
     df = df.combine_first(privpublic)
     df = df.combine_first(cases_by_area)
     print(df)
+
+    os.makedirs("api", exist_ok=True)
+    df.reset_index().to_json(
+        "api/combined",
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
+
     return df
 
 

@@ -22,24 +22,28 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 - Source: [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv)
    - Date
-   - Pos Public
    - Tests Public
-   - Pos Private
    - Tests Private
+   - Pos Public
+   - Pos Private
+   - % Detection Public (raw figure Pos Public was derived from)
+   - % Detection Private (raw figure Pos Private was derived from)
 - Notes:
-  - Uses case history graphs + raw data XLS
+  - Uses case history graphs from latest PPTX
   - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
+  - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
 
-## Cases by Area and Demographics
+## Cases by Area
 - Source: [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area)
   - Date
-  - Cases Area {1-13}: 
+  - Cases Area {1-13}: The health district where the case was confirmed
 - Notes:
   - Not updated after 2021-01-14
 
 ## Cases Types and PUI counts
-- Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also english translations)
+- Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also [english translated situation reports](https://ddc.moph.go.th/viralpneumonia/eng/situation.php))
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports)
   - Date:
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
   - Cases Imported: All imported cases including those found outside quarantine
@@ -66,9 +70,10 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitized
 
-
-
-- Thailand COVID-19 Testing Data (Raw Data)  
-  - Tests/Cases (excluding proactive cases)
-  - https://service.dmsc.moph.go.th/labscovid19/indexen.php
-
+# Combined
+- Source: 
+  - All of the above
+  - + Latest [Thailand_COVID-19_testing_data-update.xlsx])https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom of page)
+  - + [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/combined)
+  - See all of the above for data definitions
