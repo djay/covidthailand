@@ -633,7 +633,7 @@ def get_thai_situation():
 
 def cum2daily(results):
     cum = results[(c for c in results.columns if " Cum" in c)]
-    all_days = pd.date_range(cum.index.min(), cum.index.max())
+    all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
     cum = cum.reindex(all_days) # put in missing days with NaN
     cum = cum.interpolate() # missing dates need to be filled so we don't get jumps
     cum = cum - cum.shift(+1)  # we got cumilitive data
@@ -846,9 +846,9 @@ def get_cases_by_area():
     provinces.at["Bangkok",'Area of Thailand'] = "Bangkok"
     provinces.index.value_counts()
     cases = cases.join(provinces, on="ProvinceEn")
-    case_areas = pd.crosstab(pd.to_datetime(cases['ConfirmDate']),cases['Health District Number'])
+    cases = cases.rename(columns=dict(ConfirmDate="Date"))
+    case_areas = pd.crosstab(pd.to_datetime(cases['Date']),cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
-    case_areas = case_areas.rename(columns=dict(ConfirmDate="Date"))
     os.makedirs("api", exist_ok=True)
     case_areas.reset_index().to_json(
         "api/cases_by_area",
@@ -991,6 +991,27 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("tests.png")
+
+
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax,
+        use_index=True,
+        kind="line",
+        figsize=[20, 10],
+        title="Situation Reports PUI - Thailand Covid",
+        y=[
+            'Tested Cum', 
+            "Tested PUI Cum", 
+            "Tested Not PUI Cum", 
+            "Tested Proactive Cum"
+        ],
+    )
+    plt.tight_layout()
+    plt.savefig("tested_pui.png")
+
+
+
 
     fig, ax = plt.subplots()
     df.plot(
@@ -1161,15 +1182,16 @@ def save_plots(df):
 
     cols = rearrange([f"Cases Area {area}" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots()
-    df["2020-12-01":].plot.area(
+    df[:"2020-01-14"].plot(
         ax=ax,
         y=cols,
+        kind="area",
+        figsize=[20, 10],
         title="Cases by health area"
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("cases_areas.png")
-
 
 if __name__ == "__main__":
     df = scrape_and_combine()
