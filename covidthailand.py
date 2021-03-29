@@ -1017,7 +1017,8 @@ def save_plots(df):
             'Tested Cum', 
             "Tested PUI Cum", 
             "Tested Not PUI Cum", 
-            "Tested Proactive Cum"
+            "Tested Proactive Cum",
+            "Tested Quarantine Cum",
         ],
     )
     plt.tight_layout()

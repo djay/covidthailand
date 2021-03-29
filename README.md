@@ -56,12 +56,13 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 - Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also [english translated situation reports](https://ddc.moph.go.th/viralpneumonia/eng/situation.php))
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports) [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
   - Date:
+  - Cases: Total cases that day. Cases Imported + Cases Local Transmission
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
-  - Cases Imported: All imported cases including those found outside quarantine
+  - Cases Imported: Cases In Quarantine + Cases outside quarantine
   - Cases Proavtive: Local transmissions that aren't walkins
-  - Cases Local Transmission: "Cases infected in Thailand". Walkins + Active case finding
-  - Tested: "Total number of laboratory tests": Same as PUI + some added occasionally
-  - Tested PUI: Cumulative People Classified as PUI
+  - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
+  - Tested: says "Total number of laboratory tests" but is mislabeled. ~PUI + 30%
+  - Tested PUI: People Classified as Person Under Infestigation. Qualifies for free test.
   - Tested Quarantine: "Returnees in quarantine facilities/centers". Stopped getting updated
   - Tested Proactive: Tested from "active case finding". Stopped getting updated
   - Tested Not PUI: "People who did not meet the PUI criteria". Stopped getting updated
