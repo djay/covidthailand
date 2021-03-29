@@ -38,8 +38,8 @@ jobs:
       - name: run
         run: |
             python covidthailand.py
-        env:
-          #CHECK_NEWER: True 
+        # env:
+        #     CHECK_NEWER: True 
       - name: Upload Graphs to wiki
         uses: kai-tub/external-repo-sync-action@v1
         with:
