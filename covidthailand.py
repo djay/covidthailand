@@ -1182,7 +1182,7 @@ def save_plots(df):
 
     cols = rearrange([f"Cases Area {area}" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots()
-    df[:"2020-01-14"].plot(
+    df[:"2020-06-14"].plot(
         ax=ax,
         y=cols,
         kind="area",
@@ -1191,7 +1191,18 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("cases_areas.png")
+    plt.savefig("cases_areas_1.png")
+
+    df["2020-12-01":"2021-01-14"].plot(
+        ax=ax,
+        y=cols,
+        kind="area",
+        figsize=[20, 10],
+        title="Cases by health area"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("cases_areas_2.png")
 
 if __name__ == "__main__":
     df = scrape_and_combine()

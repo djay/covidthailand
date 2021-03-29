@@ -19,8 +19,8 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
   - There is no data for 1 week
 
 
-[[https://github.com/djay/covidthailand/wiki/pos_area.png]]
-[[https://github.com/djay/covidthailand/wiki/tests_area.png]]
+![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area.png)
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area.png)
 
 
 ## Tests Private+Public
@@ -38,8 +38,8 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
   - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
   - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
 
+![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
 
-[[https://github.com/djay/covidthailand/wiki/cases.png]]
 ## Cases by Area
 - Source: [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area)
@@ -48,7 +48,8 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 - Notes:
   - Not updated after 2021-01-14
 
-[[https://github.com/djay/covidthailand/wiki/cases_areas.png]]
+![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_1.png)
+![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 
 ## Cases Types and PUI counts
 - Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also [english translated situation reports](https://ddc.moph.go.th/viralpneumonia/eng/situation.php))
@@ -79,8 +80,8 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitized
 
-[[https://github.com/djay/covidthailand/wiki/cases_types.png]]
-[[https://github.com/djay/covidthailand/wiki/tested_pui]]
+![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
+![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui)
 
 # Combined
 - Source: 
