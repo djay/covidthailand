@@ -1189,6 +1189,7 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_areas_1.png")
 
+    fig, ax = plt.subplots()
     df["2020-12-01":"2021-01-14"].plot(
         ax=ax,
         y=cols,
