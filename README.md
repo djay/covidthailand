@@ -81,7 +81,7 @@ Bureau, Chaeng Watthana"
         - Hospitized
 
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
-![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui)
+![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
 
 # Combined
 - Source: 
