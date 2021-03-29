@@ -4,6 +4,7 @@ An api for data extracted from various sources is available.
 
 In addition there is [An analysis of testing in thailand](https://github.com/djay/covidthailand/wiki)
 
+Runs each night. [![daily update is currently](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml))
 
 ## Tests by Health Area  
 - Source: [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom)

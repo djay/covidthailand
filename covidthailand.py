@@ -648,6 +648,7 @@ def get_situation():
     cum = cum2daily(situation)
     situation = situation.combine_first(cum) # any direct non-cum are trusted more
 
+    os.makedirs("api", exist_ok=True)
     situation.reset_index().to_json(
         "api/situation_reports", 
         date_format="iso",
@@ -873,8 +874,8 @@ def scrape_and_combine():
     print(cases)
     privpublic = get_tests_private_public()
 
-    df = situation
-    df = df.combine_first(cases)
+    df = cases # cases from situation can go wrong
+    df = df.combine_first(situation)
     df = df.combine_first(areas)
     df = df.combine_first(tests)
     df = df.combine_first(privpublic)
