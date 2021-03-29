@@ -655,6 +655,10 @@ def get_situation():
         indent=3,
         orient="records",
     )
+    situation.reset_index().to_csv(
+        "api/situation_reports.csv", 
+        index=False 
+    )
     return situation
 
 
@@ -786,7 +790,10 @@ def get_tests_by_area():
         indent=3,
         orient="records",
     )
-
+    raw.reset_index().to_csv(
+        "api/tests_by_area.csv",
+        index=False 
+    )
     return data
 
 
@@ -835,7 +842,10 @@ def get_tests_private_public():
         indent=3,
         orient="records",
     )
-
+    data.reset_index().to_csv(
+        "api/tests_pubpriv.csv",
+        index=False 
+    )
     return data
 
 def get_cases_by_area():
@@ -855,6 +865,10 @@ def get_cases_by_area():
         date_format="iso",
         indent=3,
         orient="records",
+    )
+    case_areas.reset_index().to_csv(
+        "api/cases_by_area.csv",
+        index=False 
     )
     return case_areas
 
@@ -889,7 +903,10 @@ def scrape_and_combine():
         indent=3,
         orient="records",
     )
-
+    df.reset_index().to_csv(
+        "api/combined.csv",
+        index=False 
+    )
     return df
 
 

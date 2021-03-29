@@ -8,7 +8,7 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 
 ## Tests by Health Area  
 - Source: [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom)
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
    - Start: Date
    - End: Date
    - Pos Area {1-13} - Positive public test results
@@ -25,7 +25,7 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 
 ## Tests Private+Public
 - Source: [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom)
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
    - Date
    - Tests Public
    - Tests Private
@@ -43,7 +43,7 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 
 ## Cases by Area
 - Source: [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - Date
   - Cases Area {1-13}: The health district where the case was confirmed
 - Notes:
@@ -54,7 +54,7 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 
 ## Cases Types and PUI counts
 - Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also [english translated situation reports](https://ddc.moph.go.th/viralpneumonia/eng/situation.php))
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports) [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
   - Date:
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
   - Cases Imported: All imported cases including those found outside quarantine
@@ -87,9 +87,9 @@ Bureau, Chaeng Watthana"
 # Combined
 - Source: 
   - All of the above
-  - + Latest [Thailand_COVID-19_testing_data-update.xlsx])https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom of page)
+  - + Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom of page)
   - + [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/combined)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/combined) [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
   - See all of the above for data definitions
   - Pos XLS: Public tests positive results
   - Tests XLS: Public tests
