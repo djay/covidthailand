@@ -1,16 +1,72 @@
 # Covidthailand: Thailand Covid testing stats
 
-Gathers stats from 4 sources and produces some graphs
+An api for data extracted from various sources is available.
 
-- Open API Time summary (Starting from 01/01/20):
-  - Confirmed Cases/Deaths
-  - https://covid19.th-stat.com/th/api
-- MOPH daily situation reports 
-  - PUI/Tested counts
-  - https://ddc.moph.go.th/viralpneumonia/situation.php
-- Thailand Laboratory testing data - weekly summary report
-  - Tests/Cases per health area
-  - https://service.dmsc.moph.go.th/labscovid19/indexen.php
+In addition there is [An analysis of testing in thailand](https://github.com/djay/covidthailand/wiki)
+
+
+## Tests by Health Area  
+- Source: [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area)
+   - Start: Date
+   - End: Date
+   - Pos Area {1-13} - Positive public test results
+   - Tests Area {1-13} - Total public tests (PCR)
+- Notes:
+  - not all periods are a week
+  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
+  - There is no data for 1 week
+
+## Tests Private+Public
+- Source: [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv)
+   - Date
+   - Pos Public
+   - Tests Public
+   - Pos Private
+   - Tests Private
+- Notes:
+  - Uses case history graphs + raw data XLS
+  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
+
+## Cases by Area and Demographics
+- Source: [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area)
+  - Date
+  - Cases Area {1-13}: 
+  - Cases: Total confirmed cases
+- Notes:
+  - 
+
+## Cases Types and PUI counts
+- Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also english translations)
+  - Date: from
+  - Cases In Quarantine Cum: "Cases found in quarantine facilities/centers"
+  - Cases Imported Cum: All imported cases including those found outside quarantine
+  - Cases Proavtive Cum: Local transmissions that aren't walkins
+  - Cases Local Transmission Cum: "Cases infected in Thailand". Walkins + Active case finding
+  - Tested Cum: "Total number of laboratory tests": Same as PUI + some added occasionally
+  - Tested PUI Cum: Cumulative People Classified as PUI
+  - Tested Quarantine Cum: "Returnees in quarantine facilities/centers". Stopped getting updated
+  - Tested Proactive Cum: Tested from "active case finding". Stopped getting updated
+  - Tested Not PUI Cum: "People who did not meet the PUI criteria"
+  - Screened Ports:
+  - Screened Immigration:
+- Notes:
+  - Cases New start from 2020-11-02
+  - There are many figures in these reports not included
+     - Breakdown of PUI source - Almost all at hospitals
+        - Could extract public vs private PUI
+     - Screened at "Ports of entry"
+     - Screened "People renewing their passports at the Immigration
+Bureau, Chaeng Watthana"
+     - Data found in other places
+        - Deaths
+        - Recovered
+        - Hospitized
+
+
+
 - Thailand COVID-19 Testing Data (Raw Data)  
   - Tests/Cases (excluding proactive cases)
   - https://service.dmsc.moph.go.th/labscovid19/indexen.php

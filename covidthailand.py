@@ -1,4 +1,4 @@
-from json.decoder import JSONDecodeError
+from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
 import requests
 import tabula
@@ -17,6 +17,7 @@ from urllib3.util.retry import Retry
 import dateutil
 from requests.adapters import HTTPAdapter, Retry
 from webdav3.client import Client
+import json
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -330,6 +331,8 @@ def situation_cases_cum(parsedPDF, date):
     if not cases:
         return
     cases, *_ = cases
+    if date < d("2020-04-09"):
+        return pd.DataFrame([(date, cases)],columns=["Date", "Cases Cum"]).set_index("Date")
     outside_quarantine, _ = get_next_numbers(
         rest,
         "Cases found outside (?:the )?(?:state )?quarantine (?:facilities|centers)",
@@ -349,7 +352,8 @@ def situation_cases_cum(parsedPDF, date):
             debug=True)
         quarantine, *_ = quarantine
         quarantine = 1903 if quarantine == 19003 else quarantine # "2021-02-05"
-        if date < d("2020-12-28") or date > d("2021-01-25"):
+        # TODO: work out date when it flips back again.
+        if date < d("2020-12-28") or (date > d("2021-01-25") and outside_quarantine > quarantine):
             imported = outside_quarantine # It's mislabeled (new daily is correct however)
             imported = 2647 if imported == 609 else imported # "2021-02-17")
             imported = None if imported == 610 else imported # 2021-02-20 - 2021-03-01
@@ -368,7 +372,7 @@ def situation_cases_cum(parsedPDF, date):
         quarantine = 562 if quarantine == 5562 else quarantine # "2021-09-19"
         imported, _ = get_next_numbers(
             rest, 
-            "(?i)Imported Cases",
+            "(?i)Imported Case(?:s)?",
             "(?i)Cases were imported from overseas",
             debug=False)
         imported, *_ = imported if imported else [None]
@@ -379,29 +383,41 @@ def situation_cases_cum(parsedPDF, date):
     if quarantine:
         active, _ = get_next_numbers(
             rest,
-            "(?i)active case",
+            "(?i)Cases found from active case finding",
+            "(?i)Cases were (?:infected )?migrant workers",
             debug=False
         )
         active, *_ = active if active else [None]
-        if date < d("2020-12-24"):
-            active = None
 
         # TODO: cum local really means all local ie walkins+active testing 
         local, _ = get_next_numbers(rest, "(?i)(?:Local )?Transmission", debug=False)
         local, *_ = local if local else [None]
         # TODO: 2021-01-25. Local 6629.0 -> 12250.0, quarantine 597.0 -> 2396.0 active 4684.0->5532.0
-        if date <= d("2021-01-25") or d("2021-02-16") <= date <= d("2021-03-01"):
+        if imported is None:
+            pass
+        elif cases-imported == active:
+            walkin = local
+            local = cases-imported
+            active = local - walkin
+        elif active is None:
+            pass
+        elif local + active == cases-imported:
             # switched to different definition?
-            if active is not None: 
-                local = local + active
+            walkin = local
+            local = walkin + active
+        elif date <= d("2021-01-25") or d("2021-02-16") <= date <= d("2021-03-01"):
+            walkin = local
+            local = walkin + active
     else:
         local, active = None, None
     return pd.DataFrame(
         [(date, cases, local, imported, quarantine, outside_quarantine, active)],
-        columns=["Date", "Cases Cum", "Local Transmision Cum", "Imported Cases Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Active finding Cum"]
+        columns=["Date", "Cases Cum", "Cases Local Transmision Cum", "Cases Imported Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum"]
         ).set_index("Date")
 
 def situation_cases_new(parsedPDF, date):
+    if date < d("2020-11-02"):
+        return
     _,rest = get_next_numbers(
         parsedPDF["content"], 
         "The Disease Situation in Thailand", 
@@ -446,7 +462,7 @@ def situation_cases_new(parsedPDF, date):
         imported, active = None, None
     return pd.DataFrame(
         [(date, cases, local, imported, quarantine, outside_quarantine, active)],
-        columns=["Date", "Cases", "Local Transmision", "Imported Cases", "Cases In Quarantine", "Cases Outside Quarantine", "Cases Active finding"]
+        columns=["Date", "Cases", "Cases Local Transmision", "Cases Imported", "Cases In Quarantine", "Cases Outside Quarantine", "Cases Proactive"]
         ).set_index("Date")
 
 
@@ -469,22 +485,26 @@ def situation_pui(parsedPDF, date):
         pui_port = pui_airport + pui_seaport
     if pui in [1103858, 3891136, 433807, 96989]:  # mistypes?
         pui = None
-    if tests_total in [783679, 849874, 936458]:
+    elif tests_total in [783679, 849874, 936458]:
         tests_total = None
+    elif None in (tests_total, pui, active_finding, asq, not_pui) and date > d("2020-06-30"):
+        raise Exception(f"Missing data at {date}")
+    row = (tests_total, pui, active_finding, asq, not_pui)
     return pd.DataFrame(
-        [(date, tests_total, pui, active_finding, asq, not_pui)],
-        columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"]
+        [(date, )+row],
+        columns=["Date", "Tested Cum", "Tested PUI Cum", "Tested Proactive Cum", "Tested Quarantine Cum", "Tested Not PUI Cum"]
         ).set_index("Date")
 
 
 def get_en_situation():
-    new = pd.DataFrame(columns=["Date"]).set_index("Date")
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
     for file, parsedPDF in web_files(url, ext=".pdf", dir="situation_en"):
         if "situation" not in file:
             continue
         date = file2date(file)
+        if date <= dateutil.parser.parse("2020-01-30"):
+            continue # TODO: can manually put in numbers before this
         df = situation_pui(parsedPDF, date)
         if df is not None:
             results = results.combine_first(df)
@@ -493,15 +513,19 @@ def get_en_situation():
             results = results.combine_first(df)
         df = situation_cases_new(parsedPDF, date)
         if df is not None:
-            new = new.combine_first(df)
+            results = results.combine_first(df)
+        cums = [c for c in results.columns if ' Cum' in c]
+        # if len(results) > 1 and (results.iloc[0][cums] > results.iloc[1][cums]).any():
+        #     print((results.iloc[0][cums] > results.iloc[1][cums]))
+        #     print(results.iloc[0:2])
+            #raise Exception("Cumulative data didn't increase")
         row = results.iloc[0].to_dict()
-        row.update(new.iloc[0].to_dict())
         print(
             file, 
-            "p{PUI:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
-            "l{Local Transmision Cum:.0f}({Local Transmision:.0f})\t"
-            "a{Cases Active finding Cum:.0f}({Cases Active finding:.0f})\t"
-            "i{Imported Cases Cum:.0f}({Imported Cases:.0f})\t"
+            "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
+            "l{Cases Local Transmision Cum:.0f}({Cases Local Transmision:.0f})\t"
+            "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
+            "i{Cases Imported Cum:.0f}({Cases Imported:.0f})\t"
             "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
             "".format(**row)
         )
@@ -517,22 +541,69 @@ def get_en_situation():
     ]
     missing = pd.DataFrame(
         missing,
-        columns=["Date","Local Transmision Cum","Cases Active finding Cum", "Cases Active finding"]
+        columns=["Date","Cases Local Transmision Cum","Cases Proactive Cum", "Cases Proactive"]
     ).set_index("Date")
-    results = missing[["Local Transmision Cum","Cases Active finding Cum",]].combine_first(results)
-    
-    all_days = pd.date_range(results.index.min(), results.index.max())
-    results = results.reindex(all_days) # put in missing days with NaN
-    results = results.interpolate() # missing dates need to be filled so we don't get jumps
-    results = results - results.shift(+1)  # we got cumilitive data
-    renames = dict((c,c.rstrip(' Cum')) for c in list(results.columns) if 'Cum' in c)
-    results = new.combine_first(results.rename(columns=renames)) # trust new today data more
-    results = new.combine_first(results) # put in Cum cols too #TODO: put as cum
-
+    results = missing[["Cases Local Transmision Cum","Cases Proactive Cum",]].combine_first(results)
     return results
 
+def situation_pui_th(parsedPDF, date):
+    tests_total, active_finding, asq, not_pui = [None] * 4
+    numbers, content = get_next_numbers(
+        parsedPDF["content"],
+        "ด่านโรคติดต่อระหว่างประเทศ",
+        "ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
+        "นวนการตรวจทาง\S+องปฏิบัติการ",
+        "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
+    )
+    # cases = None
+    if len(numbers) > 6:
+        (
+            screened_port,
+            screened_cw,
+            tests_total,
+            pui,
+            active_finding,
+            asq,
+            not_pui,
+            *rest,
+        ) = numbers
+        if tests_total < 30000:
+            tests_total, pui, active_finding, asq, not_pui, *rest = numbers
+            if pui == 4534137:
+                pui = 453413  # situation-no273-021063n.pdf
+    else:
+        numbers, content = get_next_numbers(
+            parsedPDF["content"],
+#            "ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม",
+            "ตาราง 2 ผลดำ",
+            "ตาราง 1",  # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
+        )
+        if len(numbers) > 0:
+            pui, *rest = numbers
+    if date > dateutil.parser.parse("2020-03-26") and not numbers:
+        raise Exception(f"Problem parsing {date}")
+    elif not numbers:
+        return
+    if tests_total == 167515: # situation-no447-250364.pdf
+        tests_total = 1675125
+
+    if (
+        tests_total is not None
+        and tests_total > 2000000 < 30000
+        or pui > 1500000 < 100000
+    ):
+        raise Exception(f"Bad data in {date}")
+    # merge(file, date, (date, tests_total, pui, active_finding, asq, not_pui, None))
+    row = (tests_total, pui, active_finding, asq, not_pui)
+    if None in row and date > d("2020-06-30"):
+        raise Exception(f"Missing data at {date}")
+    return pd.DataFrame(
+        [(date,)+row],
+        columns=["Date", "Tested Cum", "Tested PUI Cum", "Tested Proactive Cum", "Tested Quarantine Cum", "Tested Not PUI Cum"]
+    ).set_index("Date")
+     
 def get_thai_situation():
-    results = []
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
     for file, parsedPDF in web_files(
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
@@ -545,61 +616,46 @@ def get_thai_situation():
             # english report mixed up? - situation-no171-220663.pdf
             continue
         date = file2date(file)
-        numbers, content = get_next_numbers(
-            parsedPDF["content"],
-            "ด่านโรคติดต่อระหว่างประเทศ",
-            "ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
-            "นวนการตรวจทาง\S+องปฏิบัติการ",
-            "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
-        )
-        # cases = None
-        if numbers:
-            (
-                screened_port,
-                screened_cw,
-                tests_total,
-                pui,
-                active_finding,
-                asq,
-                not_pui,
-                *rest,
-            ) = numbers
-            if tests_total < 30000:
-                tests_total, pui, active_finding, asq, not_pui, *rest = numbers
-                if pui == 4534137:
-                    pui = 453413  # situation-no273-021063n.pdf
-        else:
-            numbers, content = get_next_numbers(
-                parsedPDF["content"],
-                "ตาราง 1",  # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
-            )
-            if numbers:
-                tests_total, active_finding, asq, not_pui = [None] * 4
-                pui, *rest = numbers
-        if date > dateutil.parser.parse("2020-03-26") and not numbers:
-            raise Exception(f"Problem parsing {file}")
-        elif not numbers:
-            break
+        df = situation_pui_th(parsedPDF, date)
+        if df is not None:
+            results = results.combine_first(df)
+            print(
+                file, 
+                "p{Tested PUI Cum:.0f}\t"
+                "t{Tested Cum:.0f}\t"
+                "{Tested Proactive Cum:.0f}\t"
+                "{Tested Quarantine Cum:.0f}\t" 
+                "{Tested Not PUI Cum:.0f}\t"
+                "".format(**results.iloc[0].to_dict()))
 
-        if (
-            tests_total is not None
-            and tests_total > 2000000 < 30000
-            or pui > 1500000 < 100000
-        ):
-            raise Exception(f"Bad data in {file}")
-        # merge(file, date, (date, tests_total, pui, active_finding, asq, not_pui, None))
-        results.append((date, tests_total, pui, active_finding, asq, not_pui))
-        print(file, results[-1])
-    results = pd.DataFrame(
-        results,
-        columns=["Date", "Tested", "PUI", "Active case finding", "ASQ", "Not PUI"],
-    ).set_index("Date")
-    all_days = pd.date_range(results.index.min(), results.index.max())
-    results = results.reindex(all_days) # put in missing days with NaN
-    results = results.interpolate() # missing dates need to be filled so we don't get jumps
-    results = results - results.shift(+1)  # we got cumilitive data
     print(results)
     return results
+
+def cum2daily(results):
+    cum = results[(c for c in results.columns if " Cum" in c)]
+    all_days = pd.date_range(cum.index.min(), cum.index.max())
+    cum = cum.reindex(all_days) # put in missing days with NaN
+    cum = cum.interpolate() # missing dates need to be filled so we don't get jumps
+    cum = cum - cum.shift(+1)  # we got cumilitive data
+    renames = dict((c,c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
+    cum = cum.rename(columns=renames)
+    return cum
+
+def get_situation():
+    en_situation = get_en_situation()
+    th_situation = get_thai_situation()
+    situation = th_situation.combine_first(en_situation)
+    cum = cum2daily(situation)
+    situation = situation.combine_first(cum) # any direct non-cum are trusted more
+
+    situation.reset_index().to_json(
+        "api/situation_reports", 
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
+    return situation
+
 
 def get_cases():
     try:
@@ -654,8 +710,32 @@ TESTS_AREA_COLS = ["Tests Area {}".format(i + 1) for i in range(13)]
 
 def get_tests_by_area():
     columns = ["Date"] + POS_AREA_COLS + TESTS_AREA_COLS + ["Pos Area", "Tests Area"]
+    raw_cols = ["Start", "End",] + POS_AREA_COLS + TESTS_AREA_COLS
     data = pd.DataFrame()
+    raw = pd.DataFrame()
 
+    for file in dav_files(ext=".pptx"):
+        prs = Presentation(file)
+        for chart in (
+            chart for slide in prs.slides for chart in slide2chartdata(slide)
+        ):
+            chart, title, start, end, series = chart
+            if not "เริ่มเปิดบริการ" in title and any(
+                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
+            ):
+                # the graph for X period split by health area.
+                # Need both pptx and pdf as one pdf is missing
+                pos = list(series["จำนวนผลบวก"])
+                tests = list(series["จำนวนตรวจ"])
+                row = pos + tests + [sum(pos), sum(tests)]
+                results = spread_date_range(start, end, row, columns)
+                print(results)
+                data = data.combine_first(results)
+                raw = raw.combine_first(pd.DataFrame(
+                    [[start,end,]+pos + tests],
+                    columns=raw_cols
+                ))
+    # Also need pdf copies becaus of missing pptx
     for file in dav_files(ext=".pdf"):
         pages = parse_file(file)
         not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
@@ -694,24 +774,17 @@ def get_tests_by_area():
             results = spread_date_range(start, end, row, columns)
             print(results)
             data = data.combine_first(results)
-
-    for file in dav_files(ext=".pptx"):
-        prs = Presentation(file)
-        for chart in (
-            chart for slide in prs.slides for chart in slide2chartdata(slide)
-        ):
-            chart, title, start, end, series = chart
-            if not "เริ่มเปิดบริการ" in title and any(
-                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
-            ):
-                # the graph for X period split by health area.
-                # Need both pptx and pdf as one pdf is missing
-                pos = list(series["จำนวนผลบวก"])
-                tests = list(series["จำนวนตรวจ"])
-                row = pos + tests + [sum(pos), sum(tests)]
-                results = spread_date_range(start, end, row, columns)
-                print(results)
-                data = data.combine_first(results)
+            raw = raw.combine_first(pd.DataFrame(
+                [[start,end,]+pos + tests],
+                columns=raw_cols
+            ))
+    os.makedirs("api", exist_ok=True)
+    raw.reset_index().to_json(
+        "api/tests_by_area", 
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
 
     return data
 
@@ -745,40 +818,67 @@ def get_tests_private_public():
                     {
                         "Date": dates,
                         f"Tests {private}": tests,
-                        "% Detection": positivity,
+                        f"% Detection {private}": positivity,
                     }
                 ).set_index("Date")
                 df[f"Pos {private}"] = (
-                    df[f"Tests {private}"] * df["% Detection"] / 100.0
+                    df[f"Tests {private}"] * df[f"% Detection {private}"] / 100.0
                 )
                 print(df)
                 data = data.combine_first(df)
             # TODO: There is also graphs splt by hospital
+    os.makedirs("api", exist_ok=True)
+    data.reset_index().to_json(
+        "api/tests_pubpriv",
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
 
     return data
 
+def get_cases_by_area():
+    cases = pd.DataFrame(json.loads(s.get("https://covid19.th-stat.com/api/open/cases").content)["Data"])
+    areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
+    provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces").set_index("Provinces")
+    provinces.at["Bangkok",'Health District Number'] = 13
+    provinces.at["Bangkok",'Area of Thailand'] = "Bangkok"
+    provinces.index.value_counts()
+    cases = cases.join(provinces, on="ProvinceEn")
+    case_areas = pd.crosstab(pd.to_datetime(cases['ConfirmDate']),cases['Health District Number'])
+    case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
+    case_areas = case_areas.rename(columns=dict(ConfirmDate="Date"))
+    os.makedirs("api", exist_ok=True)
+    case_areas.reset_index().to_json(
+        "api/case_by_area",
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
+    return case_areas
 
 ### Combine and plot
 
 
 def scrape_and_combine():
 
-    en_situation = get_en_situation()
-    th_situation = get_thai_situation()
-    situation = en_situation.combine_first(th_situation)
+    situation = get_situation()
     print(situation)
+    cases_by_area = get_cases_by_area()
 
     tests = get_tests_by_day()
     print(tests)
     areas = get_tests_by_area()
     cases = get_cases()
     print(cases)
+    privpublic = get_tests_private_public()
 
     df = situation
     df = df.combine_first(cases)
     df = df.combine_first(areas)
     df = df.combine_first(tests)
-    df = df.combine_first(get_tests_private_public())
+    df = df.combine_first(privpublic)
+    df = df.combine_first(cases_by_area)
     print(df)
     return df
 
@@ -786,7 +886,7 @@ def scrape_and_combine():
 def calc_cols(df):
     # adding in rolling average to see the trends better
     df["Tested (MA)"] = df["Tested"].rolling(7, 1, center=True).mean()
-    df["PUI (MA)"] = df["PUI"].rolling(7, 1, center=True).mean()
+    df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7, 1, center=True).mean()
     df["Cases (MA)"] = df["Cases"].rolling(7, 1, center=True).mean()
     df["Tests Area (MA)"] = df["Tests Area"].rolling(7, 1, center=True).mean()
     df["Pos Area (MA)"] = df["Pos Area"].rolling(7, 1, center=True).mean()
@@ -799,7 +899,7 @@ def calc_cols(df):
 
     # Calculate positive rate
     df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
-    df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["PUI (MA)"] * 100
+    df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["Tested PUI (MA)"] * 100
     df["Positivity"] = df["Cases"] / df["Tested"] * 100
     df["Positivity Area (MA)"] = df["Pos Area (MA)"] / df["Tests Area (MA)"] * 100
     df["Positivity Area"] = df["Pos Area"] / df["Tests Area"] * 100
@@ -818,7 +918,7 @@ def calc_cols(df):
     df["Positivity Public+Private (MA)"] = (
         df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     )
-    df['Walkin'] = df["Local Transmision"] - df["Cases Active finding"]
+    df['Cases Walkin'] = df["Cases Local Transmision"] - df["Cases Proactive"]
 
     return df
 
@@ -836,7 +936,7 @@ AREA_LEGEND = [
     "10: Lower NE 2: Ubon Ratchathani...",
     "11: SE: Ranong-Krabi-Surat Thani...",
     "12: SW: Trang-Narathiwat",
-    "13: Bangkok?",
+    "13: Bangkok",
 ]
 
 def rearrange(l, *first):
@@ -863,7 +963,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Testing (7 day rolling average) - Thailand Covid",
         y=[
-            "PUI (MA)",
+            "Tested PUI (MA)",
             "Tests XLS (MA)",
             "Tests Corrected+Private (MA)",
             "Tested (MA)",
@@ -981,9 +1081,10 @@ def save_plots(df):
         y=rearrange(TESTS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Tests by Health Area (Public) - Thailand Covid",
+        title="Test performed by Thailand Health Area",
     )
     ax.legend(AREA_LEGEND)
+    #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("tests_area.png")
 
@@ -994,9 +1095,10 @@ def save_plots(df):
         y=rearrange(POS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Rate by Health Area (Public) - Thailand Covid",
+        title="Positive Test results by Thailand Health Area",
     )
     ax.legend(AREA_LEGEND)
+    #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("pos_area.png")
 
@@ -1013,7 +1115,7 @@ def save_plots(df):
         df[f"Positivity {area}"] = (
             df[f"Positivity {area}"]
             / df["Total Positivity Area"]
-            * df["Positivity Area"]
+            * df["Positivity XLS (MA)"]
         )
     print(
         df[
@@ -1028,22 +1130,35 @@ def save_plots(df):
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Rate by Health Area (Public) - Thailand Covid",
+        title="Positive Rate by Health Area in proportion to Thailand positive rate",
     )
     ax.legend(AREA_LEGEND)
+    #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("positivity_area.png")
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
         ax=ax,
-        y=["Imported Cases","Walkin", "Cases Active finding", ],
+        y=["Cases Imported","Cases Walkin", "Cases Proactive", ],
         kind="area",
         figsize=[20, 10],
-        title="Cases where found - Thailand Covid",
+        title="Cases by source - Thailand Covid",
     )
     plt.tight_layout()
     plt.savefig("cases_types.png")
+
+
+    cols = rearrange([f"Cases Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots()
+    df["2020-12-01":].plot.area(
+        ax=ax,
+        y=cols,
+        title="Cases by health area"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("cases_areas.png")
 
 
 if __name__ == "__main__":
