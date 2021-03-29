@@ -34,33 +34,33 @@ In addition there is [An analysis of testing in thailand](https://github.com/dja
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area)
   - Date
   - Cases Area {1-13}: 
-  - Cases: Total confirmed cases
 - Notes:
-  - 
+  - Not updated after 2021-01-14
 
 ## Cases Types and PUI counts
 - Source: [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (inc also english translations)
-  - Date: from
-  - Cases In Quarantine Cum: "Cases found in quarantine facilities/centers"
-  - Cases Imported Cum: All imported cases including those found outside quarantine
-  - Cases Proavtive Cum: Local transmissions that aren't walkins
-  - Cases Local Transmission Cum: "Cases infected in Thailand". Walkins + Active case finding
-  - Tested Cum: "Total number of laboratory tests": Same as PUI + some added occasionally
-  - Tested PUI Cum: Cumulative People Classified as PUI
-  - Tested Quarantine Cum: "Returnees in quarantine facilities/centers". Stopped getting updated
-  - Tested Proactive Cum: Tested from "active case finding". Stopped getting updated
-  - Tested Not PUI Cum: "People who did not meet the PUI criteria"
-  - Screened Ports:
-  - Screened Immigration:
+  - Date:
+  - Cases In Quarantine: "Cases found in quarantine facilities/centers"
+  - Cases Imported: All imported cases including those found outside quarantine
+  - Cases Proavtive: Local transmissions that aren't walkins
+  - Cases Local Transmission: "Cases infected in Thailand". Walkins + Active case finding
+  - Tested: "Total number of laboratory tests": Same as PUI + some added occasionally
+  - Tested PUI: Cumulative People Classified as PUI
+  - Tested Quarantine: "Returnees in quarantine facilities/centers". Stopped getting updated
+  - Tested Proactive: Tested from "active case finding". Stopped getting updated
+  - Tested Not PUI: "People who did not meet the PUI criteria". Stopped getting updated
 - Notes:
-  - Cases New start from 2020-11-02
-  - There are many figures in these reports not included
-     - Breakdown of PUI source - Almost all at hospitals
-        - Could extract public vs private PUI
-     - Screened at "Ports of entry"
-     - Screened "People renewing their passports at the Immigration
+  - The only useful Tested number is "Tested PUI".
+  - All the daily numbers have cumulative raw data columns (ending in "Cum") from which the daily numbers are calculated
+     - except for all the Cases numbers from 2020-11-02 where daily numbers are taken from the reports
+     - to calculate daily numbers missing data is interpolated
+  - There are some figures in these reports not included
+    - Screened Ports: Screened at "Ports of entry"
+    - Screened Immigration: "People renewing their passports at the Immigration
 Bureau, Chaeng Watthana"
-     - Data found in other places
+    - Breakdown of PUI source - Almost all at hospitals
+        - Could extract public vs private PUI
+    - Data found in other places e.g.
         - Deaths
         - Recovered
         - Hospitized
