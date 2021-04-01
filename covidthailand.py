@@ -18,6 +18,7 @@ import dateutil
 from requests.adapters import HTTPAdapter, Retry
 from webdav3.client import Client
 import json
+from pytwitterscraper import TwitterScraper
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -848,18 +849,27 @@ def get_tests_private_public():
     )
     return data
 
-def get_cases_by_area():
-    cases = pd.DataFrame(json.loads(s.get("https://covid19.th-stat.com/api/open/cases").content)["Data"])
+def get_provinces():
     areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
     provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces").set_index("Provinces")
     provinces.at["Bangkok",'Health District Number'] = 13
     provinces.at["Bangkok",'Area of Thailand'] = "Bangkok"
-    provinces.index.value_counts()
+    #provinces.index.value_counts()
+    return provinces
+
+
+def get_cases_by_area():
+    cases = pd.DataFrame(json.loads(s.get("https://covid19.th-stat.com/api/open/cases").content)["Data"])
+    provinces = get_provinces()
     cases = cases.join(provinces, on="ProvinceEn")
     cases = cases.rename(columns=dict(ConfirmDate="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']),cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     os.makedirs("api", exist_ok=True)
+
+    # we will add in the tweet data for the export
+    case_areas = case_areas.combine_first(get_cases_by_area_tweets())
+
     case_areas.reset_index().to_json(
         "api/cases_by_area",
         date_format="iso",
@@ -870,16 +880,113 @@ def get_cases_by_area():
         "api/cases_by_area.csv",
         index=False 
     )
+
+    
     return case_areas
 
-### Combine and plot
+def get_cases_by_area_tweets():
+    tw = TwitterScraper()
 
+    # Get tweets
+    # TODO: just get updated ones?
+    officials = {}
+    provs = {}
+    for tweet in tw.get_tweets(72888855, count=2000).contents:
+        date = tweet['created_at'].date()
+        if "Official #COVID19 update" in tweet['text']:
+            twinfo = tw.get_tweetinfo(tweet['id']).contents
+            officials[date] = twinfo['text']
+        elif "👉" in tweet['text'] and "📍" in tweet['text'].lower():
+            twinfo = tw.get_tweetinfo(tweet['id']).contents
+            text = twinfo['text']
+            if "[" in text:
+                rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if "📍" in t['comment']]
+                text += ' '.join([tw.get_tweetinfo(t['id']).contents['text'] for t in rest])
+            provs[date] = text
+        else:
+            print(date,tweet['text'])
+
+    # Get imported vs walkin totals
+    df = pd.DataFrame()
+    def toint(s):
+        return int(s.replace(',','')) if s else None
+
+    for date, text in officials.items():
+        imported = toint(re.search("\+([0-9,]+) imported", text).group(1))
+        local = toint(re.search("\+([0-9,]+) local", text).group(1))
+        cols = ["Date", "Cases Imported", "Cases Local Transmission"]
+        row = [date,imported,local]
+        df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
+
+    # get walkin vs proactive by area
+    walkins = {}
+    proactive = {}
+    for date, text in provs.items():
+        if "📍" not in text:
+            continue
+        start,*lines = text.split("👉")
+        if len(lines) < 2:
+            raise Exception()
+        for line in lines:
+            prov = dict((p.strip(),toint(v)) for p,v in re.findall("📍([\s\w]+) ([0-9]+)", line))
+            label = re.findall('^ *([0-9]+)([^📍]*)📍', line)
+            if label:
+                total,label = label[0]
+                total = toint(total)
+            else:
+                raise Exception()
+            if total is None:
+                raise Exception()
+            if "proactive" in label:
+                proactive.update(dict(((date,k),v) for k,v in prov.items()))
+                proactive[(date,"All")] = total                                  
+            elif "walk-in" in label:
+                walkins.update(dict(((date,k),v) for k,v in prov.items()))
+                walkins[(date,"All")] = total
+            else:
+                raise Exception()
+
+                
+    cols = ["Date", "Province", "Cases Walkin", "Cases Proactive"]
+    rows = []
+    for date,province in set(walkins.keys()).union(set(proactive.keys())):
+        rows.append([date,province,walkins.get((date,province)),proactive.get((date,province))])
+    dfprov = pd.DataFrame(rows, columns=cols)
+    index = pd.MultiIndex.from_frame(dfprov[['Date','Province']])
+    dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
+    provinces = get_provinces()
+    dfprov = dfprov.join(provinces['Health District Number'], on="Province")
+    # Now we can save raw table of provice numbers
+    dfprov.reset_index().to_json(
+        "api/cases_by_province",
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
+    dfprov.reset_index().to_csv(
+        "api/cases_by_province.csv",
+        index=False 
+    )
+
+    # Reduce down to health areas
+    dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum().reset_index()
+    dfprov_grouped = dfprov_grouped.pivot(index="Date",columns=['Health District Number'])
+    dfprov_grouped = dfprov_grouped.rename(columns=dict((i,f"Area {i}") for i in range(1,14)))
+    by_area = dfprov_grouped.groupby(['Health District Number'],axis=1).sum()
+    by_area = by_area.rename(columns=dict((f"Area {i}", f"Cases Area {i}") for i in range(1,14)))
+    by_type = dfprov_grouped.groupby(level=0, axis=1).sum()
+    # Collapse columns to "Cases Proactive Area 13" etc
+    dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
+    by_area = by_area.combine_first(dfprov_grouped).combine_first(df).combine_first(by_type)
+    return by_area
+    
+### Combine and plot
 
 def scrape_and_combine():
 
+    cases_by_area = get_cases_by_area()
     situation = get_situation()
     print(situation)
-    cases_by_area = get_cases_by_area()
 
     tests = get_tests_by_day()
     print(tests)

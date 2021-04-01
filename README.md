@@ -42,12 +42,14 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 ![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
 
 ## Cases by Area
-- Source: [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
+- Source: 
+   - [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
+   - Daily infographics translated and tweeted
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - Date
   - Cases Area {1-13}: The health district where the case was confirmed
 - Notes:
-  - Not updated after 2021-01-14
+  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_1.png)
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
@@ -85,6 +87,15 @@ Bureau, Chaeng Watthana"
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
 
+# Cases by type and province
+- Source: [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live)
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+  - "Date":"2021-02-15T00:00:00.000Z",
+  - "Province":"Samut Sakhon",
+  - "Cases Walkin":53.0,
+  - "Cases Proactive":16.0,
+  - "Health District Number":5.0
+
 # Combined
 - Source: 
   - All of the above
@@ -97,3 +108,17 @@ Bureau, Chaeng Watthana"
 - Notes:
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
   should be the same numbers as Pos Public and Tests Public. 
+
+
+# TODO
+- get timely data source for cases by type and cases by area
+  - e.g. https://www.google.com/search?q=%E0%B8%AA%E0%B8%96%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%93%E0%B9%8C%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%95%E0%B8%B4%E0%B8%94%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%AD%E0%B9%84%E0%B8%A7%E0%B8%A3%E0%B8%B1%E0%B8%AA%E0%B9%82%E0%B8%84%E0%B9%82%E0%B8%A3%E0%B8%99%E0%B8%B2+site:thaigov.go.th+filetype:pdf
+  - https://www.facebook.com/ThaigovSpokesman
+  - http://media.thaigov.go.th/uploads/public_img/source/300364.pdf (can guess date)
+  - https://twitter.com/thaimoph - infographic which richardbarrow translates
+  - https://www.facebook.com/thailandprd
+  - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322
+- get data source for antigen and antibody tests
+  - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
+- get data source for walkins or proactive investigated/tested
+- put in badges for date of last record per dataset
