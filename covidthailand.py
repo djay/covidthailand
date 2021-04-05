@@ -887,7 +887,8 @@ def get_cases_by_area():
 def get_tweets_from(userid, datefrom, dateto, *matches):
     import pickle
     tw = TwitterScraper()
-    filename = f"tweets_{userid}.pickle"
+    filename = f"tweets/tweets_{userid}.pickle"
+    os.makedirs("tweets", exist_ok=True)
     try:
         with open(filename,"rb") as fp:
             tweets = pickle.load(fp)

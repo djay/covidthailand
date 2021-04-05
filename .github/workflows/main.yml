@@ -29,6 +29,8 @@ jobs:
             **/*.pdf
             **/*.xlsx
             **/*.pptx
+            **/*.pickle
+            **/*.json
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
