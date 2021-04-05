@@ -851,10 +851,18 @@ def get_tests_private_public():
 
 def get_provinces():
     areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
-    provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces").set_index("Provinces")
-    provinces.at["Bangkok",'Health District Number'] = 13
-    provinces.at["Bangkok",'Area of Thailand'] = "Bangkok"
-    #provinces.index.value_counts()
+    provinces = areas.assign(Provinces=areas['Provinces'].str.split(",")).explode("Provinces")
+    provinces['Provinces'] = provinces['Provinces'].str.strip()
+    missing = [
+        ("Bangkok", 13, "Central", None),
+    ]
+    missing = pd.DataFrame(missing, columns=['Provinces','Health District Number', "Area of Thailand", "Area Code"]).set_index("Provinces")
+    provinces = provinces.set_index("Provinces").combine_first(missing)
+    provinces.loc['Korat'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['Khorat'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['Suphanburi'] = provinces.loc['Suphan Buri']
+    provinces["Ayutthaya"] = provinces.loc["Phra Nakhon Si Ayutthaya"]
+
     return provinces
 
 
@@ -1111,7 +1119,7 @@ AREA_LEGEND = [
     "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
     "7: Mid NE:  Khon Kaen...",
     "8: Upper NE: Loei-Sakon Nakhon",
-    "9: Lower NE 1: Buriram, Surin...",
+    "9: Lower NE 1: Korat, Buriram, Surin...",
     "10: Lower NE 2: Ubon Ratchathani...",
     "11: SE: Ranong-Krabi-Surat Thani...",
     "12: SW: Trang-Narathiwat",
