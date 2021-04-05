@@ -11,3 +11,11 @@ BeautifulSoup4
 python-pptx
 python-dateutil
 jupyter
+pytwitterscraper
+camelot-py[cv]
+#scrape-facebook
+#sriram-twitter-scraper
+#Twper
+#twint
+#git+https://github.com/kigawas/pycares.git@fix-build-error#egg=pycares
+#nasty

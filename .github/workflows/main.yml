@@ -4,7 +4,7 @@ on:
     branches-ignore:
       - "releases/**"
   schedule:
-    - cron: "0 15 * * *"
+    - cron: "0 06 * * *"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,6 +29,8 @@ jobs:
             **/*.pdf
             **/*.xlsx
             **/*.pptx
+            **/*.pickle
+            **/*.json
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
