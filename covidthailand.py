@@ -413,7 +413,7 @@ def situation_cases_cum(parsedPDF, date):
         local, active = None, None
     return pd.DataFrame(
         [(date, cases, local, imported, quarantine, outside_quarantine, active)],
-        columns=["Date", "Cases Cum", "Cases Local Transmision Cum", "Cases Imported Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum"]
+        columns=["Date", "Cases Cum", "Cases Local Transmission Cum", "Cases Imported Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum"]
         ).set_index("Date")
 
 def situation_cases_new(parsedPDF, date):
@@ -463,7 +463,7 @@ def situation_cases_new(parsedPDF, date):
         imported, active = None, None
     return pd.DataFrame(
         [(date, cases, local, imported, quarantine, outside_quarantine, active)],
-        columns=["Date", "Cases", "Cases Local Transmision", "Cases Imported", "Cases In Quarantine", "Cases Outside Quarantine", "Cases Proactive"]
+        columns=["Date", "Cases", "Cases Local Transmission", "Cases Imported", "Cases In Quarantine", "Cases Outside Quarantine", "Cases Proactive"]
         ).set_index("Date")
 
 
@@ -524,7 +524,7 @@ def get_en_situation():
         print(
             file, 
             "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
-            "l{Cases Local Transmision Cum:.0f}({Cases Local Transmision:.0f})\t"
+            "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
             "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
             "i{Cases Imported Cum:.0f}({Cases Imported:.0f})\t"
             "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
@@ -542,9 +542,9 @@ def get_en_situation():
     ]
     missing = pd.DataFrame(
         missing,
-        columns=["Date","Cases Local Transmision Cum","Cases Proactive Cum", "Cases Proactive"]
+        columns=["Date","Cases Local Transmission Cum","Cases Proactive Cum", "Cases Proactive"]
     ).set_index("Date")
-    results = missing[["Cases Local Transmision Cum","Cases Proactive Cum",]].combine_first(results)
+    results = missing[["Cases Local Transmission Cum","Cases Proactive Cum",]].combine_first(results)
     return results
 
 def situation_pui_th(parsedPDF, date):
@@ -884,27 +884,70 @@ def get_cases_by_area():
     
     return case_areas
 
-def get_cases_by_area_tweets():
+def get_tweets_from(userid, datefrom, dateto, *matches):
+    import pickle
     tw = TwitterScraper()
+    filename = f"tweets_{userid}.pickle"
+    try:
+        with open(filename,"rb") as fp:
+            tweets = pickle.load(fp)
+    except:
+        tweets = {}
+    latest = max(tweets.keys()) if tweets else None
+    if latest and latest >= (datetime.datetime.today() if not dateto else dateto).date():
+        return tweets
+    for limit in ([50,300,500,2000,5000] if tweets else [5000]):       
+        for tweet in tw.get_tweets(userid, count=limit).contents:
+            date = tweet['created_at'].date()
+            if any(m in tweet['text'] for m in matches):
+                text = tw.get_tweetinfo(tweet['id']).contents['text']
+                if text in tweets.get(date,[]):
+                    continue
+                tweets[date] = tweets.get(date,[]) + [text]
+                
+        earliest = min(tweets.keys())
+        if earliest <= datefrom.date(): #TODO: ensure we have every tweet in sequence?
+            break
+    with open(filename,"wb") as fp:
+        pickle.dump(tweets, fp)
+    return tweets
+
+
+
+def get_cases_by_area_tweets():
+    #tw = TwitterScraper()
 
     # Get tweets
-    # TODO: just get updated ones?
+    old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
+    new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
+    
     officials = {}
     provs = {}
-    for tweet in tw.get_tweets(72888855, count=2000).contents:
-        date = tweet['created_at'].date()
-        if "Official #COVID19 update" in tweet['text']:
-            twinfo = tw.get_tweetinfo(tweet['id']).contents
-            officials[date] = twinfo['text']
-        elif "👉" in tweet['text'] and "📍" in tweet['text'].lower():
-            twinfo = tw.get_tweetinfo(tweet['id']).contents
-            text = twinfo['text']
-            if "[" in text:
-                rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if "📍" in t['comment']]
-                text += ' '.join([tw.get_tweetinfo(t['id']).contents['text'] for t in rest])
-            provs[date] = text
-        else:
-            print(date,tweet['text'])
+    for date,tweets in list(new.items())+list(old.items()):
+        for tweet in tweets:
+            if "RT @RichardBarrow" in tweet:
+                continue
+            if "Official #COVID19 update" in tweet:
+                officials[date] = tweet
+            elif "👉" in tweet and "📍" in tweet:
+                if tweet in provs.get(date,""):
+                    continue
+                provs[date] = provs.get(date,"") + " " + tweet
+
+    # for tweet in tw.get_tweets(72888855, count=2000).contents:
+    #     date = tweet['created_at'].date()
+    #     if "Official #COVID19 update" in tweet['text']:
+    #         twinfo = tw.get_tweetinfo(tweet['id']).contents
+    #         officials[date] = twinfo['text']
+    #     elif "👉" in tweet['text'] and "📍" in tweet['text'].lower():
+    #         twinfo = tw.get_tweetinfo(tweet['id']).contents
+    #         text = twinfo['text']
+    #         if "[" in text:
+    #             rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if "📍" in t['comment']]
+    #             text += ' '.join([tw.get_tweetinfo(t['id']).contents['text'] for t in rest])
+    #         provs[date] = text
+    #     else:
+    #         print(date,tweet['text'])
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
@@ -985,22 +1028,23 @@ def get_cases_by_area_tweets():
 def scrape_and_combine():
 
     cases_by_area = get_cases_by_area()
+    print(cases_by_area)
     situation = get_situation()
     print(situation)
 
     tests = get_tests_by_day()
     print(tests)
-    areas = get_tests_by_area()
+    tests_by_area = get_tests_by_area()
     cases = get_cases()
     print(cases)
     privpublic = get_tests_private_public()
 
     df = cases # cases from situation can go wrong
     df = df.combine_first(situation)
-    df = df.combine_first(areas)
+    df = df.combine_first(cases_by_area)
+    df = df.combine_first(tests_by_area)
     df = df.combine_first(tests)
     df = df.combine_first(privpublic)
-    df = df.combine_first(cases_by_area)
     print(df)
 
     os.makedirs("api", exist_ok=True)
@@ -1052,7 +1096,7 @@ def calc_cols(df):
     df["Positivity Public+Private (MA)"] = (
         df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     )
-    df['Cases Walkin'] = df["Cases Local Transmision"] - df["Cases Proactive"]
+    df['Cases Walkin'] = df["Cases Local Transmission"] - df["Cases Proactive"]
 
     return df
 

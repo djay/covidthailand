@@ -44,7 +44,7 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 ## Cases by Area
 - Source: 
    - [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily)
-   - Daily infographics translated and tweeted
+   - Source: [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - Date
   - Cases Area {1-13}: The health district where the case was confirmed
@@ -109,6 +109,8 @@ Bureau, Chaeng Watthana"
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
   should be the same numbers as Pos Public and Tests Public. 
 
+# Change log
+- 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 # TODO
 - get timely data source for cases by type and cases by area
