@@ -19,8 +19,8 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
   - There is no data for 1 week
 
 
-![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area.png)
-![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area.png)
+![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
 
 
 ## Tests Private+Public
