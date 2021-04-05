@@ -861,7 +861,7 @@ def get_provinces():
     provinces.loc['Korat'] = provinces.loc['Nakhon Ratchasima']
     provinces.loc['Khorat'] = provinces.loc['Nakhon Ratchasima']
     provinces.loc['Suphanburi'] = provinces.loc['Suphan Buri']
-    provinces["Ayutthaya"] = provinces.loc["Phra Nakhon Si Ayutthaya"]
+    provinces.loc["Ayutthaya"] = provinces.loc["Phra Nakhon Si Ayutthaya"]
 
     return provinces
 
@@ -1030,6 +1030,15 @@ def get_cases_by_area_tweets():
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
     by_area = by_area.combine_first(dfprov_grouped).combine_first(df).combine_first(by_type)
+
+    # Ensure we have all areas
+    for i in range(1,14):
+        col = f"Cases Walkin Area {i}"
+        if col not in by_area:
+            by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
+        col = f"Cases Proactive Area {i}"
+        if col not in by_area:
+            by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
     return by_area
     
 ### Combine and plot
@@ -1145,7 +1154,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         kind="line",
         figsize=[20, 10],
         title="Testing (7 day rolling average) - Thailand Covid",
@@ -1169,7 +1178,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         kind="line",
         figsize=[20, 10],
         title="Situation Reports PUI - Thailand Covid",
@@ -1190,7 +1199,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         kind="line",
         figsize=[20, 10],
         y=[
@@ -1240,7 +1249,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         kind="line",
         figsize=[20, 10],
         y=[
@@ -1263,7 +1272,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         kind="line",
         figsize=[20, 10],
         y=[
@@ -1282,7 +1291,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         y=rearrange(TESTS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1296,7 +1305,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         y=rearrange(POS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1307,9 +1316,56 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("pos_area.png")
 
+
+    cols = [f"Tests Daily {area}" for area in range(1, 14)]
+    df["Tests Total Area"] = df[TESTS_AREA_COLS].sum(axis=1)
+    for area in range(1, 14):
+        df[f"Tests Daily {area}"] = (
+            df[f"Tests Area {area}"]
+            / df["Tests Total Area"]
+            * df["Tests Public (MA)"]
+        )
+    fig, ax = plt.subplots()
+    df["2020-12-01":].plot(
+        ax=ax,
+        #use_index=True,
+        y=rearrange(cols, *FIRST_AREAS),
+        kind="area",
+        figsize=[20, 10],
+        title="Public Tests performed by Thailand Health Area (7 day rolling average)",
+    )
+    ax.legend(AREA_LEGEND)
+    #ax.subtitle("Excludes proactive & private tests")
+    plt.tight_layout()
+    plt.savefig("tests_area_daily.png")
+
+    cols = [f"Pos Daily {area}" for area in range(1, 14)]
+    df["Pos Total Area"] = df[POS_AREA_COLS].sum(axis=1)
+    for area in range(1, 14):
+        df[f"Pos Daily {area}"] = (
+            df[f"Pos Area {area}"]
+            / df["Pos Total Area"]
+            * df["Pos Public (MA)"]
+        )
+    fig, ax = plt.subplots()
+    df["2020-12-01":].plot(
+        ax=ax,
+        #use_index=True,
+        y=rearrange(cols, *FIRST_AREAS),
+        kind="area",
+        figsize=[20, 10],
+        title="Positive Public Test results by Thailand Health Area (7 day rolling average)",
+    )
+    ax.legend(AREA_LEGEND)
+    #ax.subtitle("Excludes proactive & private tests")
+    plt.tight_layout()
+    plt.savefig("pos_area_daily.png")
+
+
+
+
     # Workout positivity for each area as proportion of positivity for that period
     fig, ax = plt.subplots()
-
     for area in range(1, 14):
         df[f"Positivity {area}"] = (
             df[f"Pos Area {area}"] / df[f"Tests Area {area}"] * 100
@@ -1331,7 +1387,7 @@ def save_plots(df):
 
     df.plot(
         ax=ax,
-        use_index=True,
+        #use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1341,6 +1397,10 @@ def save_plots(df):
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("positivity_area.png")
+
+
+
+
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -1368,7 +1428,7 @@ def save_plots(df):
     plt.savefig("cases_areas_1.png")
 
     fig, ax = plt.subplots()
-    df["2020-12-01":"2021-01-14"].plot(
+    df["2020-12-01":].plot(
         ax=ax,
         y=cols,
         kind="area",
@@ -1378,6 +1438,34 @@ def save_plots(df):
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("cases_areas_2.png")
+
+
+    cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots()
+    df["2021-02-16":].plot(
+        ax=ax,
+        y=cols,
+        kind="area",
+        figsize=[20, 10],
+        title="Walkin cases by health area - Thailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("cases_areas_walkins.png")
+
+    cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots()
+    df["2021-02-16":].plot(
+        ax=ax,
+        y=cols,
+        kind="area",
+        figsize=[20, 10],
+        title="Proactive cases by health area - Thailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("cases_areas_proactive.png")
+
 
 if __name__ == "__main__":
     df = scrape_and_combine()

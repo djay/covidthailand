@@ -51,7 +51,6 @@ Runs each night. [![daily update is currently](https://github.com/djay/covidthai
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 
-![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_1.png)
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 
 ## Cases Types and PUI counts
@@ -95,6 +94,10 @@ Bureau, Chaeng Watthana"
   - "Cases Walkin":53.0,
   - "Cases Proactive":16.0,
   - "Health District Number":5.0
+
+![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
+![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
+
 
 # Combined
 - Source: 
