@@ -1140,10 +1140,10 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         kind="line",
         figsize=[20, 10],
-        title="Testing (7 day rolling average) - Thailand Covid",
+        title="Tests vs PUI (7 day rolling average) - Thailand Covid",
         y=[
             "Tested PUI (MA)",
             "Tests XLS (MA)",
@@ -1164,7 +1164,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         kind="line",
         figsize=[20, 10],
         title="Situation Reports PUI - Thailand Covid",
@@ -1185,7 +1185,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         kind="line",
         figsize=[20, 10],
         y=[
@@ -1235,7 +1235,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         kind="line",
         figsize=[20, 10],
         y=[
@@ -1258,7 +1258,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         kind="line",
         figsize=[20, 10],
         y=[
@@ -1277,7 +1277,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         y=rearrange(TESTS_AREA_COLS, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1312,9 +1312,9 @@ def save_plots(df):
             * df["Tests Public (MA)"]
         )
     fig, ax = plt.subplots()
-    df["2020-12-18":].plot(
+    df["2020-12-12":].plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1334,9 +1334,9 @@ def save_plots(df):
             * df["Pos Public (MA)"]
         )
     fig, ax = plt.subplots()
-    df["2020-12-18":].plot(
+    df["2020-12-12":].plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1346,8 +1346,6 @@ def save_plots(df):
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("pos_area_daily.png")
-
-
 
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -1373,7 +1371,7 @@ def save_plots(df):
 
     df.plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1387,7 +1385,7 @@ def save_plots(df):
     fig, ax = plt.subplots()
     df.loc["2020-12-12":].plot(
         ax=ax,
-        #use_index=True,
+        use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
@@ -1405,6 +1403,7 @@ def save_plots(df):
     df.loc["2020-12-12":].plot(
         ax=ax,
         y=["Cases Imported","Cases Walkin", "Cases Proactive", ],
+        use_index=True,
         kind="area",
         figsize=[20, 10],
         title="Cases by source - Thailand Covid",
@@ -1427,7 +1426,7 @@ def save_plots(df):
     plt.savefig("cases_areas_1.png")
 
     fig, ax = plt.subplots()
-    df["2020-12-01":].plot(
+    df["2020-12-12":].plot(
         ax=ax,
         y=cols,
         kind="area",
