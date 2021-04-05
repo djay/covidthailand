@@ -871,7 +871,7 @@ def get_cases_by_area():
     provinces = get_provinces()
     cases = cases.join(provinces, on="ProvinceEn")
     cases = cases.rename(columns=dict(ConfirmDate="Date"))
-    case_areas = pd.crosstab(pd.to_datetime(cases['Date']),cases['Health District Number'])
+    case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     os.makedirs("api", exist_ok=True)
 
@@ -927,6 +927,7 @@ def get_cases_by_area_tweets():
     #tw = TwitterScraper()
 
     # Get tweets
+    # 2021-03-01 and 2021-03-05 are missing
     old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
     
@@ -942,21 +943,6 @@ def get_cases_by_area_tweets():
                 if tweet in provs.get(date,""):
                     continue
                 provs[date] = provs.get(date,"") + " " + tweet
-
-    # for tweet in tw.get_tweets(72888855, count=2000).contents:
-    #     date = tweet['created_at'].date()
-    #     if "Official #COVID19 update" in tweet['text']:
-    #         twinfo = tw.get_tweetinfo(tweet['id']).contents
-    #         officials[date] = twinfo['text']
-    #     elif "👉" in tweet['text'] and "📍" in tweet['text'].lower():
-    #         twinfo = tw.get_tweetinfo(tweet['id']).contents
-    #         text = twinfo['text']
-    #         if "[" in text:
-    #             rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if "📍" in t['comment']]
-    #             text += ' '.join([tw.get_tweetinfo(t['id']).contents['text'] for t in rest])
-    #         provs[date] = text
-    #     else:
-    #         print(date,tweet['text'])
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
@@ -1081,17 +1067,17 @@ def scrape_and_combine():
 
 def calc_cols(df):
     # adding in rolling average to see the trends better
-    df["Tested (MA)"] = df["Tested"].rolling(7, 1, center=True).mean()
-    df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7, 1, center=True).mean()
-    df["Cases (MA)"] = df["Cases"].rolling(7, 1, center=True).mean()
-    df["Tests Area (MA)"] = df["Tests Area"].rolling(7, 1, center=True).mean()
-    df["Pos Area (MA)"] = df["Pos Area"].rolling(7, 1, center=True).mean()
-    df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7, 1, center=True).mean()
-    df["Pos XLS (MA)"] = df["Pos XLS"].rolling(7, 1, center=True).mean()
-    df["Pos Public (MA)"] = df["Pos Public"].rolling(7, 1, center=True).mean()
-    df["Pos Private (MA)"] = df["Pos Private"].rolling(7, 1, center=True).mean()
-    df["Tests Public (MA)"] = df["Tests Public"].rolling(7, 1, center=True).mean()
-    df["Tests Private (MA)"] = df["Tests Private"].rolling(7, 1, center=True).mean()
+    df["Tested (MA)"] = df["Tested"].rolling(7).mean()
+    df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7).mean()
+    df["Cases (MA)"] = df["Cases"].rolling(7).mean()
+    df["Tests Area (MA)"] = df["Tests Area"].rolling(7).mean()
+    df["Pos Area (MA)"] = df["Pos Area"].rolling(7).mean()
+    df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7).mean()
+    df["Pos XLS (MA)"] = df["Pos XLS"].rolling(7).mean()
+    df["Pos Public (MA)"] = df["Pos Public"].rolling(7).mean()
+    df["Pos Private (MA)"] = df["Pos Private"].rolling(7).mean()
+    df["Tests Public (MA)"] = df["Tests Public"].rolling(7).mean()
+    df["Tests Private (MA)"] = df["Tests Private"].rolling(7).mean()
 
     # Calculate positive rate
     df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
@@ -1326,13 +1312,13 @@ def save_plots(df):
             * df["Tests Public (MA)"]
         )
     fig, ax = plt.subplots()
-    df["2020-12-01":].plot(
+    df["2020-12-18":].plot(
         ax=ax,
         #use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Public Tests performed by Thailand Health Area (7 day rolling average)",
+        title="Public Tests performed by Thailand Health Area (ex. some proactive, 7 day rolling average)",
     )
     ax.legend(AREA_LEGEND)
     #ax.subtitle("Excludes proactive & private tests")
@@ -1348,13 +1334,13 @@ def save_plots(df):
             * df["Pos Public (MA)"]
         )
     fig, ax = plt.subplots()
-    df["2020-12-01":].plot(
+    df["2020-12-18":].plot(
         ax=ax,
         #use_index=True,
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Public Test results by Thailand Health Area (7 day rolling average)",
+        title="Public Positive Test results by Thailand Health Area (ex. some proactive, 7 day rolling average)",
     )
     ax.legend(AREA_LEGEND)
     #ax.subtitle("Excludes proactive & private tests")
