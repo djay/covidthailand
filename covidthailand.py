@@ -1377,19 +1377,32 @@ def save_plots(df):
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Rate by Health Area in proportion to Thailand positive rate",
+        title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
     )
     ax.legend(AREA_LEGEND)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("positivity_area.png")
 
+    fig, ax = plt.subplots()
+    df.loc["2020-12-12":].plot(
+        ax=ax,
+        #use_index=True,
+        y=rearrange(cols, *FIRST_AREAS),
+        kind="area",
+        figsize=[20, 10],
+        title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
+    )
+    ax.legend(AREA_LEGEND)
+    #ax.subtitle("Excludes proactive & private tests")
+    plt.tight_layout()
+    plt.savefig("positivity_area_2.png")
 
 
 
 
     fig, ax = plt.subplots()
-    df["2020-12-12":].plot(
+    df.loc["2020-12-12":].plot(
         ax=ax,
         y=["Cases Imported","Cases Walkin", "Cases Proactive", ],
         kind="area",
