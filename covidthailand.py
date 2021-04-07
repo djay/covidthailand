@@ -251,18 +251,18 @@ def is_remote_newer(file, remote_date):
         return True
     return False
 
-def web_links(*index_urls, ext=".pdf"):
+def web_links(*index_urls, ext=".pdf", dir="html"):
     for index_url in index_urls:
-        index = s.get(index_url)
-        if index.status_code > 399: 
-            continue
-        links = re.findall("href=[\"'](.*?)[\"']", index.content.decode("utf-8"))
-        for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
-            yield link
+        for file, index in web_files(index_url, dir=dir, to_text=False, check=True):
+            # if index.status_code > 399: 
+            #     continue
+            links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
+            for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
+                yield link
 
-def web_files(*index_urls, ext=".pdf", dir=os.getcwd()):
-    for url in web_links(*index_urls, ext=ext):
-        modified = s.head(url).headers.get("last-modified") if CHECK_NEWER else None
+def web_files(*urls, dir=os.getcwd(), to_text=True, check=CHECK_NEWER):
+    for url in urls:
+        modified = s.head(url).headers.get("last-modified") if check else None
         file = url.rsplit("/", 1)[-1]
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
@@ -275,10 +275,10 @@ def web_files(*index_urls, ext=".pdf", dir=os.getcwd()):
                 for chunk in r.iter_content(chunk_size=512 * 1024):
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
-        if "pdf" in ext:
+        if to_text:
             content = parser.from_file(file)
         else:
-            with open(file) as f:
+            with open(file, "rb") as f:
                 content = f.read()
         yield os.path.basename(file), content
 
@@ -501,7 +501,7 @@ def situation_pui(parsedPDF, date):
 def get_en_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
-    for file, parsedPDF in web_files(url, ext=".pdf", dir="situation_en"):
+    for file, parsedPDF in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en", to_text=True):
         if "situation" not in file:
             continue
         date = file2date(file)
@@ -607,10 +607,14 @@ def situation_pui_th(parsedPDF, date):
 def get_thai_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     for file, parsedPDF in web_files(
-        "https://ddc.moph.go.th/viralpneumonia/situation.php",
-        "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
-        ext=".pdf",
+        *web_links(
+            "https://ddc.moph.go.th/viralpneumonia/situation.php",
+            "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
+            ext=".pdf",
+            dir="situation_th"
+        ),
         dir="situation_th",
+        to_text=True
     ):
         if "situation" not in file:
             continue
@@ -1029,9 +1033,10 @@ def get_cases_by_area_tweets():
         for line in lines:
             prov_matches = re.findall("📍([\s\w,&;]+) ([0-9]+)", line)
             prov = dict((p.strip(),toint(v)) for ps,v in prov_matches for p in re.split("(?:,|&amp;)",ps))
-            label = re.findall('^ *([0-9]+)([^📍]*)📍', line)
+            label = re.findall('^ *([0-9]+)([^📍👉👇\[]*)', line)
             if label:
                 total,label = label[0]
+                #label = label.split("👉").pop() # Just in case tweets get muddled 2020-04-07
                 total = toint(total)
             else:
                 raise Exception(f"Couldn't find case type in: {line}")
