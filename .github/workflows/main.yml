@@ -4,7 +4,8 @@ on:
     branches-ignore:
       - "releases/**"
   schedule:
-    - cron: "0 06 * * *"
+    - cron: "0 06 * * *" # 1pm - to get daily briefing data
+    - cron: "0 18 * * *" # 1am - to get situation report
 jobs:
   build:
     runs-on: ubuntu-latest
