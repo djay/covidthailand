@@ -3,6 +3,7 @@ from typing import OrderedDict
 import requests
 import tabula
 import os
+import shutil
 from tika import parser
 import re
 import urllib.parse
@@ -876,7 +877,14 @@ def get_cases_by_area():
     os.makedirs("api", exist_ok=True)
 
     # we will add in the tweet data for the export
-    case_areas = case_areas.combine_first(get_cases_by_area_tweets())
+    try:
+        case_tweets = get_cases_by_area_tweets()
+    except:
+        # could be because of old data. refetch it
+        shutil.rmtree("tweets")
+        case_tweets = get_cases_by_area_tweets()
+
+    case_areas = case_areas.combine_first(case_tweets)
 
     case_areas.reset_index().to_json(
         "api/cases_by_area",
@@ -897,6 +905,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     tw = TwitterScraper()
     filename = f"tweets/tweets_{userid}.pickle"
     os.makedirs("tweets", exist_ok=True)
+    is_match = lambda tweet, *matches: any(m in tweet for m in matches)
     try:
         with open(filename,"rb") as fp:
             tweets = pickle.load(fp)
@@ -908,17 +917,45 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     for limit in ([50,300,500,2000,5000] if tweets else [5000]):       
         for tweet in tw.get_tweets(userid, count=limit).contents:
             date = tweet['created_at'].date()
-            if any(m in tweet['text'] for m in matches):
-                text = tw.get_tweetinfo(tweet['id']).contents['text']
-                if text in tweets.get(date,[]):
-                    continue
+            if not is_match(tweet['text'], *matches):
+                continue
+            text = tw.get_tweetinfo(tweet['id']).contents['text']
+            if text not in tweets.get(date,[]):
                 tweets[date] = tweets.get(date,[]) + [text]
+            # TODO: ensure tweets are [1/2] etc not just "[" and by same person
+            if "[" not in text:
+                continue
+            rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if is_match(t['comment'],"[", *matches)]
+            for t in rest:
+                text = tw.get_tweetinfo(t['id']).contents['text'] 
+                if text not in tweets.get(date,[]):
+                    tweets[date] = tweets.get(date,[]) + [text]
+
                 
         earliest = min(tweets.keys())
         if earliest <= datefrom.date(): #TODO: ensure we have every tweet in sequence?
             break
     with open(filename,"wb") as fp:
         pickle.dump(tweets, fp)
+
+    # join tweets
+    for date,lines in tweets.items():
+        newlines = []
+        tomerge = []
+        for line in lines:
+            m = re.search(r"\[([0-9]+)\/([0-9]+)\]", line)
+            if m:
+                i = int(m.group(1))
+                of = int(m.group(2))
+                tomerge.append( (i,of, line))
+            else:
+                newlines.append(line)
+        # TODO: somethings he forgets to put in [2/2]. need to use threads
+        if tomerge:        
+            tomerge.sort()
+            text = ' '.join(text for i,of,text in tomerge)
+            newlines.append(text)
+        tweets[date] = newlines
     return tweets
 
 
@@ -966,7 +1003,8 @@ def get_cases_by_area_tweets():
         if len(lines) < 2:
             raise Exception()
         for line in lines:
-            prov = dict((p.strip(),toint(v)) for p,v in re.findall("📍([\s\w]+) ([0-9]+)", line))
+            prov_matches = re.findall("📍([\s\w,&;]+) ([0-9]+)", line)
+            prov = dict((p.strip(),toint(v)) for ps,v in prov_matches for p in re.split("(?:,|&amp;)",ps))
             label = re.findall('^ *([0-9]+)([^📍]*)📍', line)
             if label:
                 total,label = label[0]
@@ -975,6 +1013,8 @@ def get_cases_by_area_tweets():
                 raise Exception()
             if total is None:
                 raise Exception()
+            elif total != sum(prov.values()):
+                raise Exception(f"bad parse of {line}")
             if "proactive" in label:
                 proactive.update(dict(((date,k),v) for k,v in prov.items()))
                 proactive[(date,"All")] = total                                  
