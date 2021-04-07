@@ -2,7 +2,7 @@
 
 Thailand testing and case data gathered and combined from various sources.
 
-The data is updated daily at 13:00 UTC+7. [![daily update is currently](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml))
+The data is updated twice daily at 13:00 UTC+7 and 01:00 UTC+7. [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml))
 
 
 For more in depth analysis on what some of this means see [An analysis of testing in thailand](https://github.com/djay/covidthailand/wiki)

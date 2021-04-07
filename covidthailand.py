@@ -900,12 +900,29 @@ def get_cases_by_area():
     
     return case_areas
 
+
+def parse_tweet(tw, tweet, found, *matches):
+    is_match = lambda tweet, *matches: any(m in tweet for m in matches)
+    if not is_match(tweet.get('text',tweet.get("comment","")), *matches):
+        return ""
+    text = tw.get_tweetinfo(tweet['id']).contents['text']
+    if any(text in t for t in found):
+        return ""
+    # TODO: ensure tweets are [1/2] etc not just "[" and by same person
+    if "[" not in text:
+        return text
+    for t in sorted(tw.get_tweetcomments(tweet['id']).contents, key=lambda t:t['id']):
+        rest = parse_tweet(tw, t, found+[text], *matches)
+        if rest and rest not in text:
+            text += " " + rest 
+    return text
+
 def get_tweets_from(userid, datefrom, dateto, *matches):
     import pickle
     tw = TwitterScraper()
     filename = f"tweets/tweets_{userid}.pickle"
     os.makedirs("tweets", exist_ok=True)
-    is_match = lambda tweet, *matches: any(m in tweet for m in matches)
+    #is_match = lambda tweet, *matches: any(m in tweet for m in matches)
     try:
         with open(filename,"rb") as fp:
             tweets = pickle.load(fp)
@@ -915,21 +932,24 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     if latest and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in ([50,300,500,2000,5000] if tweets else [5000]):       
-        for tweet in tw.get_tweets(userid, count=limit).contents:
+        for tweet in sorted(tw.get_tweets(userid, count=limit).contents,key=lambda t:t['id']):
             date = tweet['created_at'].date()
-            if not is_match(tweet['text'], *matches):
-                continue
-            text = tw.get_tweetinfo(tweet['id']).contents['text']
-            if text not in tweets.get(date,[]):
+            text = parse_tweet(tw, tweet, tweets.get(date,[]), *matches)
+            if text:
                 tweets[date] = tweets.get(date,[]) + [text]
-            # TODO: ensure tweets are [1/2] etc not just "[" and by same person
-            if "[" not in text:
-                continue
-            rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if is_match(t['comment'],"[", *matches)]
-            for t in rest:
-                text = tw.get_tweetinfo(t['id']).contents['text'] 
-                if text not in tweets.get(date,[]):
-                    tweets[date] = tweets.get(date,[]) + [text]
+            # if not is_match(tweet['text'], *matches):
+            #     continue
+            # text = tw.get_tweetinfo(tweet['id']).contents['text']
+            # if text not in tweets.get(date,[]):
+            #     tweets[date] = tweets.get(date,[]) + [text]
+            # # TODO: ensure tweets are [1/2] etc not just "[" and by same person
+            # if "[" not in text:
+            #     continue
+            # rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if is_match(t['comment'],"[", *matches)]
+            # for t in rest:
+            #     text = tw.get_tweetinfo(t['id']).contents['text'] 
+            #     if text not in tweets.get(date,[]):
+            #         tweets[date] = tweets.get(date,[]) + [text]
 
                 
         earliest = min(tweets.keys())
@@ -938,24 +958,28 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     with open(filename,"wb") as fp:
         pickle.dump(tweets, fp)
 
-    # join tweets
-    for date,lines in tweets.items():
-        newlines = []
-        tomerge = []
-        for line in lines:
-            m = re.search(r"\[([0-9]+)\/([0-9]+)\]", line)
-            if m:
-                i = int(m.group(1))
-                of = int(m.group(2))
-                tomerge.append( (i,of, line))
-            else:
-                newlines.append(line)
-        # TODO: somethings he forgets to put in [2/2]. need to use threads
-        if tomerge:        
-            tomerge.sort()
-            text = ' '.join(text for i,of,text in tomerge)
-            newlines.append(text)
-        tweets[date] = newlines
+    # # join tweets
+    # for date,lines in tweets.items():
+    #     newlines = []
+    #     tomerge = []
+    #     i=1
+    #     for line in lines:
+    #         m = re.search(r"\[([0-9]+)\/([0-9]+)\]", line)
+    #         if m:
+    #             i = int(m.group(1))
+    #             of = int(m.group(2))
+    #             tomerge.append( (i,of, line))
+    #         elif "[" in line:
+    #             tomerge.append((i,0,line))
+    #             i+=1
+    #         else:
+    #             newlines.append(line)
+    #     # TODO: somethings he forgets to put in [2/2]. need to use threads
+    #     if tomerge:        
+    #         tomerge.sort()
+    #         text = ' '.join(text for i,of,text in tomerge)
+    #         newlines.append(text)
+    #     tweets[date] = newlines
     return tweets
 
 
@@ -965,8 +989,8 @@ def get_cases_by_area_tweets():
 
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
-    old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
+    old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     
     officials = {}
     provs = {}
@@ -999,7 +1023,7 @@ def get_cases_by_area_tweets():
     for date, text in provs.items():
         if "📍" not in text:
             continue
-        start,*lines = text.split("👉")
+        start,*lines = text.split("👉",2)
         if len(lines) < 2:
             raise Exception()
         for line in lines:
@@ -1010,11 +1034,11 @@ def get_cases_by_area_tweets():
                 total,label = label[0]
                 total = toint(total)
             else:
-                raise Exception()
+                raise Exception(f"Couldn't find case type in: {line}")
             if total is None:
-                raise Exception()
+                raise Exception(f"Couldn't number of cases in: {line}")
             elif total != sum(prov.values()):
-                raise Exception(f"bad parse of {line}")
+                raise Exception(f"bad parse of {date} {text}")
             if "proactive" in label:
                 proactive.update(dict(((date,k),v) for k,v in prov.items()))
                 proactive[(date,"All")] = total                                  
@@ -1023,7 +1047,12 @@ def get_cases_by_area_tweets():
                 walkins[(date,"All")] = total
             else:
                 raise Exception()
-
+    # Add in missing data
+    date = d("2021-03-01")
+    p = {"All":36, "Pathum Thani": 35, "Nonthaburi": 1}
+    proactive.update(((date,k),v) for k,v in p.items())
+    w = {"All":28, "Samut Sakhon": 19, "Tak": 3, "Nakhon Pathom": 2, "Bangkok":2, "Chonburi": 1, "Ratchaburi": 1}
+    walkins.update(((date,k),v) for k,v in w.items())
                 
     cols = ["Date", "Province", "Cases Walkin", "Cases Proactive"]
     rows = []
@@ -1146,19 +1175,19 @@ def calc_cols(df):
 
 # df = df.cumsum()
 AREA_LEGEND = [
-    "1: Upper N: Chiang Mai, Chiang Rai,...",
-    "2: Lower N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
-    "3: Upper C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
-    "4: Mid C: Nonthaburi-Ayutthaya",
-    "5: Lower C: Kanchanaburi-Samut Sakhon",
-    "6: E: Trat, Rayong, Chonburi, Samut Prakan, ...",
-    "7: Mid NE:  Khon Kaen...",
-    "8: Upper NE: Loei-Sakon Nakhon",
-    "9: Lower NE 1: Korat, Buriram, Surin...",
-    "10: Lower NE 2: Ubon Ratchathani...",
-    "11: SE: Ranong-Krabi-Surat Thani...",
-    "12: SW: Trang-Narathiwat",
-    "13: Bangkok",
+    "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
+    "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
+    "3: U-C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
+    "4: M-C: Nonthaburi, P.Thani, Ayutthaya, Saraburi, Lopburi, Sing Buri, Ang Thong, N.Nayok",
+    "5: L-C: S.Sakhon, Kanchanaburi, N.Pathom, Ratchaburi, Suphanburi, PKK, Phetchaburi, S.Songkhram",
+    "6: E: Trat, Rayong, Chonburi, S.Prakan, Chanthaburi, Prachinburi, Sa Kaeo, Chachoengsao",
+    "7: M-NE: Khon Kaen, Kalasin, Maha Sarakham, Roi Et",
+    "8: U-NE: S.Nakhon, Loei, U.Thani, Nong Khai, NBL, Bueng Kan, N.Phanom, Mukdahan",
+    "9: L-NE: Korat, Buriram, Surin, Chaiyaphum",
+    "10: E-NE: Yasothon, Sisaket, Amnat Charoen, Ubon Ratchathani",
+    "11: SE: Phuket, Krabi, Ranong, Phang Nga, S.Thani, Chumphon, N.S.Thammarat",
+    "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
+    "13: C: Bangkok",
 ]
 
 def rearrange(l, *first):
