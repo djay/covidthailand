@@ -929,7 +929,7 @@ def parse_tweet(tw, tweet, found, *matches):
 def get_tweets_from(userid, datefrom, dateto, *matches):
     import pickle
     tw = TwitterScraper()
-    filename = f"tweets/tweets_{userid}.pickle"
+    filename = f"tweets/tweets2_{userid}.pickle"
     os.makedirs("tweets", exist_ok=True)
     #is_match = lambda tweet, *matches: any(m in tweet for m in matches)
     try:
