@@ -20,6 +20,7 @@ from requests.adapters import HTTPAdapter, Retry
 from webdav3.client import Client
 import json
 from pytwitterscraper import TwitterScraper
+from itertools import tee
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -1116,20 +1117,34 @@ def get_cases_by_area_tweets():
         if col not in by_area:
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
     return by_area
-    
+
+def split(seq, condition):
+    a, b = [], []
+    for item in seq:
+        (a if condition(item) else b).append(item)
+    return a, b
+
 def get_briefings():
 
     urls = ["http://media.thaigov.go.th/uploads/public_img/source/300364.pdf"]
-    for file, text in web_files(*urls, dir="briefings", to_text=True):
+    for file, text in web_files(*urls, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         for page in pages:
             if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
                 continue
             soup = BeautifulSoup(page, 'html.parser')
-            cells = soup.find_all('p')    
+            cells = soup.find_all('p')
+            cells = [c.get_text() for c in cells]
+            titles, cells = split(cells, lambda x: re.search("^\w*[0-9]+.", x))
+            maintitle, cells = split(cells, find_dates)
+            header, cells = split(cells, lambda x: "จังหวัด" in x)
+
+            # Find the titles
+            tail = cells
+            while True:
+                head, *tail = tail    
 
             rows = []
-            cells = [c.get_text() for c in cells]
             others = []
             while True:
                 if not cells:
@@ -1141,16 +1156,19 @@ def get_briefings():
                 #re.match(r"[\s\w]+\n\([0-9]+))", prov
                 #prov = prov.strip()
                 prov,num = prov.strip().split("\n")
-                num = re.search("([0-9]+)", num).group(1)
+                prov = prov.strip(".")
+                num = int(re.search("([0-9]+)", num).group(1))
                 rows.append((prov,num,demo,symp,hosp))
                 cells = rest
+            df = pd.DataFrame(rows, columns=["ProvinceTh", "Cases Proactive"])
+            return df
 
 
 ### Combine and plot
 
 def scrape_and_combine():
 
-    #get_briefings()
+    get_briefings()
     cases_by_area = get_cases_by_area()
     print(cases_by_area)
     situation = get_situation()
