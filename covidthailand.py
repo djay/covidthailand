@@ -72,9 +72,9 @@ def file2date(file):
     file = os.path.basename(file)
     date = file.rsplit(".pdf", 1)[0]
     if "-" in date:
-        date = date.rsplit("-", 1)[1]
+        date = date.rsplit("-", 1).pop()
     else:
-        date = date.rsplit("_", 1)[1]
+        date = date.rsplit("_", 1).pop()
 
     date = datetime.datetime(
         day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
@@ -1125,10 +1125,12 @@ def split(seq, condition):
     return a, b
 
 def get_briefings():
+    results = pd.DataFrame()
 
     urls = ["http://media.thaigov.go.th/uploads/public_img/source/300364.pdf"]
     for file, text in web_files(*urls, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
+        date = file2date(file)
         for page in pages:
             if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
                 continue
@@ -1136,13 +1138,17 @@ def get_briefings():
             cells = soup.find_all('p')
             cells = [c.get_text() for c in cells]
             titles, cells = split(cells, lambda x: re.search("^\w*[0-9]+.", x))
-            maintitle, cells = split(cells, find_dates)
+            maintitle, cells = split(cells, lambda x: "วันที่" in x)
             header, cells = split(cells, lambda x: "จังหวัด" in x)
 
-            # Find the titles
-            tail = cells
-            while True:
-                head, *tail = tail    
+            if "จากระบบเฝ้าระวัง" in titles[0]:
+                case_type = "Walkin"
+            elif "การคัดกรองเชิงรุก" in titles[0]:
+                case_type = "Proactive"
+            elif "เดินทางมาจากต่างประเทศ" in titles[0]:
+                case_type = "Quarantine"
+            else:
+                raise Exception()             
 
             rows = []
             others = []
@@ -1158,10 +1164,11 @@ def get_briefings():
                 prov,num = prov.strip().split("\n")
                 prov = prov.strip(".")
                 num = int(re.search("([0-9]+)", num).group(1))
-                rows.append((prov,num,demo,symp,hosp))
+                rows.append((date, prov,num))
                 cells = rest
-            df = pd.DataFrame(rows, columns=["ProvinceTh", "Cases Proactive"])
-            return df
+            df = pd.DataFrame(rows, columns=["Date", "ProvinceTh", f"Cases {case_type}",])
+            results = results.combine_first(df.set_index("Date"))
+    return results
 
 
 ### Combine and plot
