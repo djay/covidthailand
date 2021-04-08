@@ -887,8 +887,9 @@ def get_cases_by_area():
         case_tweets = get_cases_by_area_tweets()
     except:
         # could be because of old data. refetch it
-        shutil.rmtree("tweets")
-        case_tweets = get_cases_by_area_tweets()
+        #shutil.rmtree("tweets")
+        #case_tweets = get_cases_by_area_tweets()
+        raise
 
     case_areas = case_areas.combine_first(case_tweets)
 
@@ -935,7 +936,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     except:
         tweets = {}
     latest = max(tweets.keys()) if tweets else None
-    if latest and latest >= (datetime.datetime.today() if not dateto else dateto).date():
+    if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in ([50,300,500,2000,5000] if tweets else [5000]):       
         for tweet in sorted(tw.get_tweets(userid, count=limit).contents,key=lambda t:t['id']):
@@ -996,7 +997,8 @@ def get_cases_by_area_tweets():
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
     new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
-    old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
+    #old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
+    old = get_tweets_from(72888855, d("2021-02-21"), None, "Official #COVID19 update", "📍")
     
     officials = {}
     provs = {}
@@ -1035,17 +1037,27 @@ def get_cases_by_area_tweets():
         for line in lines:
             prov_matches = re.findall("📍([\s\w,&;]+) ([0-9]+)", line)
             prov = dict((p.strip(),toint(v)) for ps,v in prov_matches for p in re.split("(?:,|&amp;)",ps))
+            if d("2021-04-08").date() == date:
+                if prov["Bangkok"] == 147: #proactive
+                    prov["Bangkok"] = 47
+                elif prov["Phuket"] == 3: #Walkins
+                    prov["Chumphon"] = 3
+                    prov['Khon Kaen'] = 3
+                    prov["Ubon Thani"] = 7
+                    prov["Nakhon Pathom"] = 6
+                    prov["Phitsanulok"] = 4
+
             label = re.findall('^ *([0-9]+)([^📍👉👇\[]*)', line)
             if label:
                 total,label = label[0]
                 #label = label.split("👉").pop() # Just in case tweets get muddled 2020-04-07
                 total = toint(total)
             else:
-                raise Exception(f"Couldn't find case type in: {line}")
+                raise Exception(f"Couldn't find case type in: {date} {line}")
             if total is None:
-                raise Exception(f"Couldn't number of cases in: {line}")
+                raise Exception(f"Couldn't parse number of cases in: {date} {line}")
             elif total != sum(prov.values()):
-                raise Exception(f"bad parse of {date} {text}")
+                raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
             if "proactive" in label:
                 proactive.update(dict(((date,k),v) for k,v in prov.items()))
                 proactive[(date,"All")] = total                                  
