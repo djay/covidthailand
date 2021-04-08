@@ -868,7 +868,9 @@ def get_provinces():
     provinces.loc['Suphanburi'] = provinces.loc['Suphan Buri']
     provinces.loc["Ayutthaya"] = provinces.loc["Phra Nakhon Si Ayutthaya"]
     provinces.loc["Phathum Thani"] = provinces.loc["Pathum Thani"]
-    
+    provinces.loc["Pathom Thani"] = provinces.loc["Pathum Thani"]
+    provinces.loc["Ubon Thani"] = provinces.loc["Udon Thani"]
+   
 
     return provinces
 
