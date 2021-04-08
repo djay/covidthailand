@@ -1000,7 +1000,7 @@ def get_cases_by_area_tweets():
     # 2021-03-01 and 2021-03-05 are missing
     new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
     #old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
-    old = get_tweets_from(72888855, d("2021-02-21"), None, "Official #COVID19 update", "📍")
+    old = get_tweets_from(72888855, d("2021-02-18"), None, "Official #COVID19 update", "📍")
     
     officials = {}
     provs = {}
@@ -1257,6 +1257,7 @@ POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
 def save_plots(df):
     matplotlib.use("AGG")
+    plt.style.use('seaborn-whitegrid')
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
