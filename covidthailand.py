@@ -159,7 +159,7 @@ def spread_date_range(start, end, row, columns):
 #####################
 
 
-def parse_file(filename, as_html=False):
+def parse_file(filename, html=False, paged=True):
     pages_txt = []
 
     # Read PDF file
@@ -179,12 +179,14 @@ def parse_file(filename, as_html=False):
 
         # Add pages
         text = parsed_content["content"].strip()
-        if as_html:
+        if html:
             pages_txt.append(repr(content))
         else:
             pages_txt.append(text)
-
-    return pages_txt
+    if paged:
+        return pages_txt
+    else:
+        return '\n\n\n'.join(pages_txt)
 
 
 def get_next_numbers(content, *matches, debug=False):
@@ -253,14 +255,14 @@ def is_remote_newer(file, remote_date):
 
 def web_links(*index_urls, ext=".pdf", dir="html"):
     for index_url in index_urls:
-        for file, index in web_files(index_url, dir=dir, to_text=False, check=True):
+        for file, index in web_files(index_url, dir=dir, check=True):
             # if index.status_code > 399: 
             #     continue
             links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
             for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
                 yield link
 
-def web_files(*urls, dir=os.getcwd(), to_text=True, check=CHECK_NEWER):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     for url in urls:
         modified = s.head(url).headers.get("last-modified") if check else None
         file = url.rsplit("/", 1)[-1]
@@ -275,12 +277,9 @@ def web_files(*urls, dir=os.getcwd(), to_text=True, check=CHECK_NEWER):
                 for chunk in r.iter_content(chunk_size=512 * 1024):
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
-        if to_text:
-            content = parser.from_file(file)
-        else:
-            with open(file, "rb") as f:
-                content = f.read()
-        yield os.path.basename(file), content
+        with open(file, "rb") as f:
+            content = f.read()
+        yield file, content
 
 
 def dav_files(
@@ -322,7 +321,7 @@ def dav_files(
 d = dateutil.parser.parse
 
 def situation_cases_cum(parsedPDF, date):
-    _,rest = get_next_numbers(parsedPDF["content"], "The Disease Situation in Thailand", debug=True)
+    _,rest = get_next_numbers(parsedPDF, "The Disease Situation in Thailand", debug=True)
     cases, rest = get_next_numbers(
         rest, 
         "Total number of confirmed cases",
@@ -421,7 +420,7 @@ def situation_cases_new(parsedPDF, date):
     if date < d("2020-11-02"):
         return
     _,rest = get_next_numbers(
-        parsedPDF["content"], 
+        parsedPDF, 
         "The Disease Situation in Thailand", 
         "(?i)Type of case Total number Rate of Increase",
         debug=False)
@@ -470,13 +469,13 @@ def situation_cases_new(parsedPDF, date):
 
 def situation_pui(parsedPDF, date):
     numbers, _ = get_next_numbers(
-        parsedPDF["content"], "Total +number of laboratory tests", debug=False
+        parsedPDF, "Total +number of laboratory tests", debug=False
     )
     if numbers:
         tests_total, pui, active_finding, asq, not_pui, pui, pui_port, *rest = numbers
     else:
         numbers, _ = get_next_numbers(
-            parsedPDF["content"], "Total number of people who met the criteria of patients", debug=False,
+            parsedPDF, "Total number of people who met the criteria of patients", debug=False,
         )
         if date > dateutil.parser.parse("2020-01-30") and not numbers:
             raise Exception(f"Problem parsing {date}")
@@ -501,8 +500,9 @@ def situation_pui(parsedPDF, date):
 def get_en_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
-    for file, parsedPDF in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en", to_text=True):
-        if "situation" not in file:
+    for file, _ in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en"):
+        parsedPDF = parse_file(file, html=False, paged=False)
+        if "situation" not in os.path.basename(file):
             continue
         date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
@@ -551,7 +551,7 @@ def get_en_situation():
 def situation_pui_th(parsedPDF, date):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
-        parsedPDF["content"],
+        parsedPDF,
         "ด่านโรคติดต่อระหว่างประเทศ",
         "ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
         "นวนการตรวจทาง\S+องปฏิบัติการ",
@@ -575,7 +575,7 @@ def situation_pui_th(parsedPDF, date):
                 pui = 453413  # situation-no273-021063n.pdf
     else:
         numbers, content = get_next_numbers(
-            parsedPDF["content"],
+            parsedPDF,
 #            "ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม",
             "ตาราง 2 ผลดำ",
             "ตาราง 1",  # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
@@ -614,11 +614,11 @@ def get_thai_situation():
             dir="situation_th"
         ),
         dir="situation_th",
-        to_text=True
     ):
-        if "situation" not in file:
+        parsedPDF = parse_file(file, html=False, paged=False)
+        if "situation" not in os.path.basename(file):
             continue
-        if "Situation Total number of PUI" in parsedPDF["content"]:
+        if "Situation Total number of PUI" in parsedPDF:
             # english report mixed up? - situation-no171-220663.pdf
             continue
         date = file2date(file)
@@ -748,7 +748,7 @@ def get_tests_by_area():
                 ).set_index("Start"))
     # Also need pdf copies becaus of missing pptx
     for file in dav_files(ext=".pdf"):
-        pages = parse_file(file)
+        pages = parse_file(file, html=False, paged=True)
         not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
         by_area = [
             page
@@ -1103,10 +1103,40 @@ def get_cases_by_area_tweets():
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
     return by_area
     
+def get_briefings():
+
+    urls = ["http://media.thaigov.go.th/uploads/public_img/source/300364.pdf"]
+    for file, text in web_files(*urls, dir="briefings", to_text=True):
+        pages = parse_file(file, html=True, paged=True)
+        for page in pages:
+            if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
+                continue
+            soup = BeautifulSoup(page, 'html.parser')
+            cells = soup.find_all('p')    
+
+            rows = []
+            cells = [c.get_text() for c in cells]
+            others = []
+            while True:
+                if not cells:
+                    break
+                if "ราย)" not in cells[0] or "\n" not in cells[0]:
+                    others.append(cells.pop(0))
+                    continue
+                prov, demo, symp, hosp, *rest = cells
+                #re.match(r"[\s\w]+\n\([0-9]+))", prov
+                #prov = prov.strip()
+                prov,num = prov.strip().split("\n")
+                num = re.search("([0-9]+)", num).group(1)
+                rows.append((prov,num,demo,symp,hosp))
+                cells = rest
+
+
 ### Combine and plot
 
 def scrape_and_combine():
 
+    #get_briefings()
     cases_by_area = get_cases_by_area()
     print(cases_by_area)
     situation = get_situation()

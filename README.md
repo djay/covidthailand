@@ -79,7 +79,7 @@ Bureau, Chaeng Watthana"
 
 
 - Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom) (updated weekly but sparodic)
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
    - Start: Date
    - End: Date
@@ -98,8 +98,8 @@ Bureau, Chaeng Watthana"
 
 
 - Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom) (updated weekly but sparodic)
-   -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php) (link at bottom of page) (updated weekly but sparodic)
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
+   -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
    - Date
    - Tests Public
