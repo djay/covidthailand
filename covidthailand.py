@@ -20,7 +20,8 @@ from requests.adapters import HTTPAdapter, Retry
 from webdav3.client import Client
 import json
 from pytwitterscraper import TwitterScraper
-from itertools import tee
+def TODAY(): return datetime.datetime.today()
+from itertools import tee, islice, compress, cycle
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -1118,56 +1119,86 @@ def get_cases_by_area_tweets():
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
     return by_area
 
-def split(seq, condition):
+def seperate(seq, condition):
     a, b = [], []
     for item in seq:
         (a if condition(item) else b).append(item)
     return a, b
 
+def split(seq, condition, maxsplit=0):
+    run = []
+    last = False
+    splits = 0
+    for i in seq:
+        if (maxsplit and splits >= maxsplit) or bool(condition(i)) == last:
+            run.append(i)
+        else:
+            splits += 1
+            yield run
+            run = [i]
+            last = not last            
+    yield run
+
+# def nwise(iterable, n=2):                                                      
+#     iters = tee(iterable, n)                                                     
+#     for i, it in enumerate(iters):                                               
+#         next(islice(it, i, i), None)                                               
+#     return zip(*iters)   
+
+def pairwise(lst):
+    lst = list(lst)
+    return zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1])))    
+
 def get_briefings():
     results = pd.DataFrame()
 
-    urls = ["http://media.thaigov.go.th/uploads/public_img/source/300364.pdf"]
-    for file, text in web_files(*urls, dir="briefings"):
+    url = "http://media.thaigov.go.th/uploads/public_img/source/"
+    #datetime.datetime(day=int(d[0]), month=int(d[1]), year=int(d[2]) - 543)
+    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2020-12-30"), TODAY()))
+    for file, text in web_files(*links, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         date = file2date(file)
         for page in pages:
             if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
                 continue
             soup = BeautifulSoup(page, 'html.parser')
-            cells = soup.find_all('p')
-            cells = [c.get_text() for c in cells]
-            titles, cells = split(cells, lambda x: re.search("^\w*[0-9]+.", x))
-            maintitle, cells = split(cells, lambda x: "วันที่" in x)
-            header, cells = split(cells, lambda x: "จังหวัด" in x)
-
-            if "จากระบบเฝ้าระวัง" in titles[0]:
-                case_type = "Walkin"
-            elif "การคัดกรองเชิงรุก" in titles[0]:
-                case_type = "Proactive"
-            elif "เดินทางมาจากต่างประเทศ" in titles[0]:
-                case_type = "Quarantine"
+            parts = soup.find_all('p')
+            parts = [c for c in [c.strip() for c in [c.get_text() for c in parts]] if c]
+            maintitle, parts = seperate(parts, lambda x: "วันที่" in x)
+            footer, parts = seperate(parts, lambda x: "กรมควบคุมโรค กระทรวงสาธารณสุข" in x)
+            table = list(split(parts, lambda x: re.match("^\w*[0-9]+\.", x)))
+            if len(table) == 2:
+                # titles at the end
+                table, titles = table
+                table = [titles, table]
             else:
-                raise Exception()             
-
-            rows = []
-            others = []
-            while True:
-                if not cells:
-                    break
-                if "ราย)" not in cells[0] or "\n" not in cells[0]:
-                    others.append(cells.pop(0))
+                extras = table.pop(0)
+            rows = []   
+            for titles,cells in pairwise(table):
+                title = titles[0]
+                if re.search("(จากระบบเฝ้าระวัง|ติดเชื้อในประเทศ)", title):
+                    case_type = "Walkin"
+                elif "การคัดกรองเชิงรุก" in title:
+                    case_type = "Proactive"
+                elif "เดินทางมาจากต่างประเทศ" in title:
+                    case_type = "Quarantine"
+                    continue # just care about province cases for now
+                else:
                     continue
-                prov, demo, symp, hosp, *rest = cells
-                #re.match(r"[\s\w]+\n\([0-9]+))", prov
-                #prov = prov.strip()
-                prov,num = prov.strip().split("\n")
-                prov = prov.strip(".")
-                num = int(re.search("([0-9]+)", num).group(1))
-                rows.append((date, prov,num))
-                cells = rest
+                    #raise Exception()
+                header, cells = seperate(cells, lambda x: "จังหวัด" in x)
+                for provs, rest in pairwise(islice(split(cells, lambda x: "ราย)" in x),1,None)):
+                    for prov in provs: # TODO: should really be 1. make split only split 1.
+                        # TODO: sometimes cells/data seperated by "-" 2021-01-03
+                        prov,num = prov.strip().split("(",1)
+                        prov = prov.strip().strip(".")
+                        num = int(re.search("([0-9]+)", num).group(1))
+
+                        #prov, demo, symp, hosp, *rest = cells
+                        #re.match("^([\s\w]+)\w*\(([0-9]+)", prov
+                        rows.append((date, prov,num))
             df = pd.DataFrame(rows, columns=["Date", "ProvinceTh", f"Cases {case_type}",])
-            results = results.combine_first(df.set_index("Date"))
+            results = results.combine_first(df)
     return results
 
 
@@ -1175,7 +1206,7 @@ def get_briefings():
 
 def scrape_and_combine():
 
-    get_briefings()
+    briefings = get_briefings()
     cases_by_area = get_cases_by_area()
     print(cases_by_area)
     situation = get_situation()
