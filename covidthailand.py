@@ -857,14 +857,16 @@ def get_tests_private_public():
     return data
 
 def get_provinces():
+    #_, districts = next(web_files("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts", dir="html"))
     areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
     provinces = areas.assign(Provinces=areas['Provinces'].str.split(",")).explode("Provinces")
     provinces['Provinces'] = provinces['Provinces'].str.strip()
-    missing = [
-        ("Bangkok", 13, "Central", None),
-    ]
-    missing = pd.DataFrame(missing, columns=['Provinces','Health District Number', "Area of Thailand", "Area Code"]).set_index("Provinces")
-    provinces = provinces.set_index("Provinces").combine_first(missing)
+    provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
+    provinces['ProvinceAlt'] = provinces['ProvinceEn']
+    provinces = provinces.set_index("ProvinceAlt")
+    provinces.loc["Bangkok"] = [13, "Central", "Bangkok"]
+
+    # extra spellings for matching
     provinces.loc['Korat'] = provinces.loc['Nakhon Ratchasima']
     provinces.loc['Khorat'] = provinces.loc['Nakhon Ratchasima']
     provinces.loc['Suphanburi'] = provinces.loc['Suphan Buri']
@@ -872,28 +874,95 @@ def get_provinces():
     provinces.loc["Phathum Thani"] = provinces.loc["Pathum Thani"]
     provinces.loc["Pathom Thani"] = provinces.loc["Pathum Thani"]
     provinces.loc["Ubon Thani"] = provinces.loc["Udon Thani"]
-   
+    provinces.loc["Bung Kan"] = provinces.loc["Bueng Kan"]
+    provinces.loc["Chainat"] = provinces.loc["Chai Nat"]
+    provinces.loc["ลาปาง"] = provinces.loc["Lampang"]
+    provinces.loc["หนองบัวลาภู"] = provinces.loc["Nong Bua Lamphu"]
+    # TODO: Missing Bueng Kan (Bung Kan), Chai Nat (Chainat) in thai
+    # TODO: normalise names instead of have copies
+
+    # use the case data as it has a mapping between thai and english names
+    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
+    cases = pd.DataFrame(json.loads(cases)["Data"])
+    cases = cases.rename(columns=dict(Province="ProvinceTh", ProvinceAlt="Provinces"))
+    lup_province = cases.groupby(['ProvinceId', 'ProvinceTh', 'ProvinceEn']).size().reset_index().rename({0:'count'}, axis=1).sort_values('count', ascending=False).set_index("ProvinceEn")
+    # get the proper names from provinces
+    lup_province = lup_province.reset_index().rename(columns=dict(ProvinceEn="ProvinceAlt"))
+    lup_province = lup_province.set_index("ProvinceAlt").join(provinces)
+    lup_province = lup_province.drop(index="Unknown")
+    lup_province = lup_province.set_index("ProvinceTh").drop(columns="count")
+
+    # now bring in the thainames as extra altnames
+    provinces = provinces.combine_first(lup_province)
+
+    # bring in some appreviations
+    abr = pd.read_csv("https://raw.githubusercontent.com/kristw/gridmap-layout-thailand/master/src/input/provinces.csv")
+    on_enname = abr.merge(provinces, right_index=True, left_on="enName")
+    provinces = provinces.combine_first(on_enname.rename(columns=dict(thName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thAbbr"]))
+    provinces = provinces.combine_first(on_enname.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
+
+    on_thai = abr.merge(provinces, right_index=True, left_on="thName")
+    provinces = provinces.combine_first(on_thai.rename(columns=dict(enName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "thName","thAbbr"]))
+    provinces = provinces.combine_first(on_thai.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
+    provinces = provinces.combine_first(on_thai.rename(columns=dict(enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["thAbbr", "enName","thName"]))
+
+    # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
 
     return provinces
 
+PROVINCES = get_provinces()
+
+
+def get_cases_by_area_type():
+    briefings = get_cases_by_prov_briefings()
+    dfprov = get_cases_by_prov_tweets()
+    dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
+    dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
+    # Now we can save raw table of provice numbers
+    dfprov.reset_index().to_json(
+        "api/cases_by_province",
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
+    dfprov.reset_index().to_csv(
+        "api/cases_by_province.csv",
+        index=False 
+    )
+
+    # Reduce down to health areas
+    dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum().reset_index()
+    dfprov_grouped = dfprov_grouped.pivot(index="Date",columns=['Health District Number'])
+    dfprov_grouped = dfprov_grouped.rename(columns=dict((i,f"Area {i}") for i in range(1,14)))
+    by_area = dfprov_grouped.groupby(['Health District Number'],axis=1).sum()
+    by_area = by_area.rename(columns=dict((f"Area {i}", f"Cases Area {i}") for i in range(1,14)))
+    by_type = dfprov_grouped.groupby(level=0, axis=1).sum()
+    # Collapse columns to "Cases Proactive Area 13" etc
+    dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
+    by_area = by_area.combine_first(dfprov_grouped).combine_first(by_type)
+
+    # Ensure we have all areas
+    for i in range(1,14):
+        col = f"Cases Walkin Area {i}"
+        if col not in by_area:
+            by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
+        col = f"Cases Proactive Area {i}"
+        if col not in by_area:
+            by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
+    return by_area
+
 
 def get_cases_by_area():
-    cases = pd.DataFrame(json.loads(s.get("https://covid19.th-stat.com/api/open/cases").content)["Data"])
-    provinces = get_provinces()
-    cases = cases.join(provinces, on="ProvinceEn")
+    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
+    cases = pd.DataFrame(json.loads(cases)["Data"])
+    cases = cases.join(PROVINCES["Health District Number"], on="ProvinceEn")
     cases = cases.rename(columns=dict(ConfirmDate="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     os.makedirs("api", exist_ok=True)
 
     # we will add in the tweet data for the export
-    try:
-        case_tweets = get_cases_by_area_tweets()
-    except:
-        # could be because of old data. refetch it
-        #shutil.rmtree("tweets")
-        #case_tweets = get_cases_by_area_tweets()
-        raise
+    case_tweets = get_cases_by_area_type()
 
     case_areas = case_areas.combine_first(case_tweets)
 
@@ -942,7 +1011,8 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     latest = max(tweets.keys()) if tweets else None
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
-    for limit in ([50,300,500,2000,5000] if tweets else [5000]):       
+    for limit in ([50,2000,5000] if tweets else [5000]):
+        print(f"Getting {limit} tweets")       
         for tweet in sorted(tw.get_tweets(userid, count=limit).contents,key=lambda t:t['id']):
             date = tweet['created_at'].date()
             text = parse_tweet(tw, tweet, tweets.get(date,[]), *matches)
@@ -964,8 +1034,12 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
 
                 
         earliest = min(tweets.keys())
+        latest = max(tweets.keys())
+        print(f"got tweets {earliest} to {latest} {len(tweets)}")
         if earliest <= datefrom.date(): #TODO: ensure we have every tweet in sequence?
             break
+        else:
+            print(f"Retrying: Earliest {earliest}")
     with open(filename,"wb") as fp:
         pickle.dump(tweets, fp)
 
@@ -995,14 +1069,14 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
 
 
 
-def get_cases_by_area_tweets():
+def get_cases_by_prov_tweets():
     #tw = TwitterScraper()
 
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
     new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
     #old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
-    old = get_tweets_from(72888855, d("2021-02-18"), None, "Official #COVID19 update", "📍")
+    old = get_tweets_from(72888855, d("2021-02-21"), None, "Official #COVID19 update", "📍")
     
     officials = {}
     provs = {}
@@ -1084,40 +1158,7 @@ def get_cases_by_area_tweets():
     dfprov = pd.DataFrame(rows, columns=cols)
     index = pd.MultiIndex.from_frame(dfprov[['Date','Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
-    provinces = get_provinces()
-    dfprov = dfprov.join(provinces['Health District Number'], on="Province")
-    # Now we can save raw table of provice numbers
-    dfprov.reset_index().to_json(
-        "api/cases_by_province",
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    dfprov.reset_index().to_csv(
-        "api/cases_by_province.csv",
-        index=False 
-    )
-
-    # Reduce down to health areas
-    dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum().reset_index()
-    dfprov_grouped = dfprov_grouped.pivot(index="Date",columns=['Health District Number'])
-    dfprov_grouped = dfprov_grouped.rename(columns=dict((i,f"Area {i}") for i in range(1,14)))
-    by_area = dfprov_grouped.groupby(['Health District Number'],axis=1).sum()
-    by_area = by_area.rename(columns=dict((f"Area {i}", f"Cases Area {i}") for i in range(1,14)))
-    by_type = dfprov_grouped.groupby(level=0, axis=1).sum()
-    # Collapse columns to "Cases Proactive Area 13" etc
-    dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
-    by_area = by_area.combine_first(dfprov_grouped).combine_first(df).combine_first(by_type)
-
-    # Ensure we have all areas
-    for i in range(1,14):
-        col = f"Cases Walkin Area {i}"
-        if col not in by_area:
-            by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
-        col = f"Cases Proactive Area {i}"
-        if col not in by_area:
-            by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
-    return by_area
+    return dfprov
 
 def seperate(seq, condition):
     a, b = [], []
@@ -1147,17 +1188,32 @@ def split(seq, condition, maxsplit=0):
 
 def pairwise(lst):
     lst = list(lst)
-    return zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1])))    
+    return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))    
 
-def get_briefings():
-    results = pd.DataFrame()
+#in_any()
+
+def get_cases_by_prov_briefings():
+    results = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
+
+    num_people = re.compile(r"([0-9]+) *ราย")
+    title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
+    #allprov = [p for p in PROVINCES['ProvinceTh'] if type(p)==str]
+    #is_prov = re.compile(f"({'|'.join(allprov)})")
+#    is_pcell = lambda c: is_prov.search(c) and num_people.search(c)
+    is_pcell = re.compile(r"((?:[\u0E00-\u0E7Fa-zA-Z' ]+)\.? *\n *\( *(?:[0-9]+) *ราย *\))")
+    is_header = lambda x: "ลักษณะผู้ติดเชื้อ" in x
 
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     #datetime.datetime(day=int(d[0]), month=int(d[1]), year=int(d[2]) - 543)
-    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2020-12-30"), TODAY()))
+    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2021-03-24"), TODAY()))
+    links = reversed(list(links))
     for file, text in web_files(*links, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         date = file2date(file)
+        print(file, date)
+        totals = dict() # groupname -> running total
+        all_cells = {}
+        rows = []
         for page in pages:
             if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
                 continue
@@ -1173,32 +1229,50 @@ def get_briefings():
                 table = [titles, table]
             else:
                 extras = table.pop(0)
-            rows = []   
+            # if only one table we can use camelot to get the table. will be slow but less problems
+            #ctable = camelot.read_pdf(file, pages="6", process_background=True)[0].df
+               
             for titles,cells in pairwise(table):
-                title = titles[0]
-                if re.search("(จากระบบเฝ้าระวัง|ติดเชื้อในประเทศ)", title):
-                    case_type = "Walkin"
-                elif "การคัดกรองเชิงรุก" in title:
+                title = titles[0].strip("(ต่อ)").strip()
+                # groupnum, groupname, total = title_re.search(title).groups()
+                # if total:
+                #     total = int(total.group(1))
+                if "การคัดกรองเชิงรุก" in title:
                     case_type = "Proactive"
                 elif "เดินทางมาจากต่างประเทศ" in title:
                     case_type = "Quarantine"
                     continue # just care about province cases for now
+                #if re.search("(จากระบบเฝ้าระวัง|ติดเชื้อในประเทศ)", title):
                 else:
-                    continue
-                    #raise Exception()
-                header, cells = seperate(cells, lambda x: "จังหวัด" in x)
-                for provs, rest in pairwise(islice(split(cells, lambda x: "ราย)" in x),1,None)):
-                    for prov in provs: # TODO: should really be 1. make split only split 1.
+                    case_type = "Walkin"
+                header, cells = seperate(cells, is_header)
+                #lines = pairwise(islice(split(cells, is_pcell),1,None))
+                # "อยู่ระหว่างสอบสวน (93 ราย)" on 2021-04-05 screws things up as its not a province
+                lines = pairwise(islice(is_pcell.split("\n".join(cells)),1,None)) # beacause can be split over <p>
+                all_cells.setdefault(title,[]).append(lines)
+                print(title,case_type)
+                for prov, rest in lines:
+                    #for prov in provs: # TODO: should really be 1. make split only split 1.
                         # TODO: sometimes cells/data seperated by "-" 2021-01-03
                         prov,num = prov.strip().split("(",1)
-                        prov = prov.strip().strip(".")
-                        num = int(re.search("([0-9]+)", num).group(1))
+                        prov = prov.strip().strip(".").replace(" ", "")
+                        prov = PROVINCES.loc[prov]['ProvinceEn'] # get english name here so we know we got it
+                        num = int(num_people.search(num).group(1))
+                        totals[title] = totals.get(title,0) + num
+                        print(num,prov)
+                        rows.append((date, prov,case_type, num,))
+        # checksum on title totals
+        for title, total in totals.items():
+            m = num_people.search(title)
+            if m:
+                assert total==int(m.group(1))
+        df = pd.DataFrame(rows, columns=["Date", "Province", "Case Type", "Cases",])
+        results = results.combine_first(df.set_index(['Date', 'Province']))
 
-                        #prov, demo, symp, hosp, *rest = cells
-                        #re.match("^([\s\w]+)\w*\(([0-9]+)", prov
-                        rows.append((date, prov,num))
-            df = pd.DataFrame(rows, columns=["Date", "ProvinceTh", f"Cases {case_type}",])
-            results = results.combine_first(df)
+    results = results.groupby(['Date','Province','Case Type']).sum() # we often have multiple walkin events
+    results = results.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
+    results.columns = [f"Cases {c}" for c in results.columns.get_level_values(1)]
+
     return results
 
 
@@ -1206,7 +1280,6 @@ def get_briefings():
 
 def scrape_and_combine():
 
-    briefings = get_briefings()
     cases_by_area = get_cases_by_area()
     print(cases_by_area)
     situation = get_situation()
