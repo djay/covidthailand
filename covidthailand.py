@@ -1205,7 +1205,7 @@ def get_cases_by_prov_briefings():
 
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     #datetime.datetime(day=int(d[0]), month=int(d[1]), year=int(d[2]) - 543)
-    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2021-03-24"), TODAY()))
+    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2021-03-24"), TODAY(),1))
     links = reversed(list(links))
     for file, text in web_files(*links, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
