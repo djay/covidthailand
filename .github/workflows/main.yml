@@ -50,7 +50,7 @@ jobs:
             ${{ runner.os }}
       - name: Install dependencies
         run: |
-          apt install ghostscript python3-tk
+          sudo apt-get install ghostscript python3-tk
           pip install -r requirements.txt
       - name: Check for updated data
         if: ${{ github.event_name	== 'schedule' }}
