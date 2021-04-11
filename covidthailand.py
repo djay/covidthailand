@@ -254,6 +254,8 @@ def is_remote_newer(file, remote_date, check=True):
     if not os.path.exists(file):
         print(f"Missing: {file}")
         return True
+    elif os.stat(file).st_size == 0:
+        return True
     elif not check:
         return False
     elif remote_date is None:
@@ -895,11 +897,26 @@ def get_provinces():
     provinces.loc["Ubon Thani"] = provinces.loc["Udon Thani"]
     provinces.loc["Bung Kan"] = provinces.loc["Bueng Kan"]
     provinces.loc["Chainat"] = provinces.loc["Chai Nat"]
+    provinces.loc["Chon Buri"] = provinces.loc["Chonburi"]
     provinces.loc["ลาปาง"] = provinces.loc["Lampang"]
     provinces.loc["หนองบัวลาภู"] = provinces.loc["Nong Bua Lamphu"]
     provinces.loc["ปทุุมธานี"] = provinces.loc["Pathum Thani"]
-    # TODO: Missing Bueng Kan (Bung Kan), Chai Nat (Chainat) in thai
-    # TODO: normalise names instead of have copies
+    provinces.loc["เพชรบุรีี"] = provinces.loc["Phetchaburi"]
+    provinces.loc["เพชรบุรีี"] = provinces.loc["Phetchaburi"]
+    provinces.loc["เพชรบุุรี"] = provinces.loc["Phetchaburi"]
+
+    provinces.loc["สมุุทรสาคร"] = provinces.loc["Samut Sakhon"]
+    provinces.loc["สมุทธสาคร"] = provinces.loc["Samut Sakhon"]
+    provinces.loc["กรุงเทพฯ"] = provinces.loc["Bangkok"]
+    provinces.loc["กรุงเทพ"] = provinces.loc["Bangkok"]
+    provinces.loc["พระนครศรีอยุธา"] = provinces.loc["Ayutthaya"]
+    provinces.loc["อยุธยา"] = provinces.loc["Ayutthaya"]
+    provinces.loc["สมุุทรสงคราม"] = provinces.loc["Samut Songkhram"]
+    provinces.loc["สมุุทรปราการ"] = provinces.loc["Samut Prakan"]
+    provinces.loc["สระบุุรี"] = provinces.loc["Saraburi"]
+    provinces.loc["พม่า"] = provinces.loc["Nong Khai"] # it's really burma, but have to put it somewhere
+    provinces.loc["ชลบุุรี"] = provinces.loc["Chon Buri"]
+    provinces.loc["นนทบุุรี"] = provinces.loc["Nonthaburi"]
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -996,8 +1013,10 @@ def get_cases_by_area_api():
     cases = pd.DataFrame(records)
 #    cases['Date'] = pd.to_datetime(cases['announce_date'], format='%Y-%d-%m',errors='coerce')
 #    cases['Notified date'] = pd.to_datetime(cases['Notified date'], format='%Y-%d-%m',)
+    cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
-    missing_matches = cases.loc[cases["Health District Number"].isnull()]
+    unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"]!="")]
+    assert unjoined.empty
     cases = cases.rename(columns=dict(announce_date="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
