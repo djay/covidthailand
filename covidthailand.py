@@ -111,6 +111,18 @@ def previous_date(end, day):
         start = start - datetime.timedelta(days=1)
     return start
 
+def find_thai_date(content):
+    m3 = re.search(r"([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    d2, month, year = m3.groups()
+    month = (
+        THAI_ABBR_MONTHS.index(month) + 1
+        if month in THAI_ABBR_MONTHS
+        else THAI_FULL_MONTHS.index(month) + 1
+        if month in THAI_FULL_MONTHS
+        else None
+    )
+    date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
+    return date
 
 def find_date_range(content):
     # 11-17 เม.ย. 2563 or 04/04/2563 12/06/2563
@@ -571,6 +583,26 @@ def get_en_situation():
     results = missing[["Cases Local Transmission Cum","Cases Proactive Cum",]].combine_first(results)
     return results
 
+def get_situation_today():
+    _, page = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="situation_th", check=True))
+    text = BeautifulSoup(page, 'html.parser').get_text()
+    numbers, rest = get_next_numbers(text, "ผู้ป่วยเข้าเกณฑ์เฝ้าระวัง")
+    pui_cum, pui = numbers[:2]
+    numbers, rest = get_next_numbers(text, "กักกันในพื้นที่ที่รัฐกำหนด")
+    imported_cum, imported = numbers[:2]
+    numbers, rest = get_next_numbers(text, "ผู้ป่วยยืนยัน")
+    cases_cum, cases = numbers[:2]
+    numbers, rest = get_next_numbers(text, "สถานการณ์ในประเทศไทย")
+    date = find_thai_date(rest).date()
+    row = [cases_cum, cases, pui_cum, pui, imported_cum, imported]
+    return pd.DataFrame(
+        [[date,]+row],
+        columns=["Date", "Cases Cum", "Cases", "Tested PUI Cum", "Tested PUI", "Cases Imported Cum", "Cases Imported"]
+    ).set_index("Date")
+    
+    
+
+
 def situation_pui_th(parsedPDF, date):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
@@ -670,12 +702,16 @@ def cum2daily(results):
     cum = cum.rename(columns=renames)
     return cum
 
+   
+
 def get_situation():
+    today_situation = get_situation_today()
     en_situation = get_en_situation()
     th_situation = get_thai_situation()
     situation = th_situation.combine_first(en_situation)
     cum = cum2daily(situation)
     situation = situation.combine_first(cum) # any direct non-cum are trusted more
+    situation.combine_first(today_situation)
 
     os.makedirs("api", exist_ok=True)
     situation.reset_index().to_json(
@@ -1345,9 +1381,9 @@ def get_cases_by_prov_briefings():
 
 def scrape_and_combine():
 
+    situation = get_situation()
     cases_by_area = get_cases_by_area()
     print(cases_by_area)
-    situation = get_situation()
     print(situation)
 
     tests = get_tests_by_day()
