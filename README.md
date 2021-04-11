@@ -8,21 +8,6 @@ The data is updated twice daily at 13:00 UTC+7 and 01:00 UTC+7. [![last update w
 For more in depth analysis on what some of this means see [An analysis of testing in thailand](https://github.com/djay/covidthailand/wiki)
 
 
-# Cases by type and province
-
-![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
-![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
-
-- Source: 
-   - [Daily Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
-  - "Date": e.g "2021-04-06"
-  - "Province": e.g "Samut Sakhon"
-  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria
-  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid
-  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-
 ## Cases by Area
 
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
@@ -40,6 +25,7 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ## Cases Types and PUI counts (Daily Situation Reports)
 
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
+![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
 
 
@@ -74,6 +60,20 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitized
 
+# Cases by type and province
+
+![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
+![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
+
+- Source: 
+   - [Daily Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+  - "Date": e.g "2021-04-06"
+  - "Province": e.g "Samut Sakhon"
+  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria
+  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid
+  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
 ## Tests by Health Area  
 

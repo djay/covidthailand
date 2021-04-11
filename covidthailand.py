@@ -709,9 +709,9 @@ def get_situation():
     en_situation = get_en_situation()
     th_situation = get_thai_situation()
     situation = th_situation.combine_first(en_situation)
+    situation = situation.combine_first(today_situation)
     cum = cum2daily(situation)
     situation = situation.combine_first(cum) # any direct non-cum are trusted more
-    situation.combine_first(today_situation)
 
     os.makedirs("api", exist_ok=True)
     situation.reset_index().to_json(
@@ -1432,6 +1432,7 @@ def calc_cols(df):
     # Calculate positive rate
     df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
     df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["Tested PUI (MA)"] * 100
+    df["Positivity PUI"] = df["Cases"] / df["Tested PUI"] * 100
     df["Positivity"] = df["Cases"] / df["Tested"] * 100
     df["Positivity Area (MA)"] = df["Pos Area (MA)"] / df["Tests Area (MA)"] * 100
     df["Positivity Area"] = df["Pos Area"] / df["Tests Area"] * 100
@@ -1581,6 +1582,29 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("positivity.png")
+
+
+    fig, ax = plt.subplots()
+    df["2020-12-12":].plot(
+        ax=ax,
+        use_index=True,
+        kind="line",
+        figsize=[20, 10],
+        y=[
+            "Positivity PUI",
+            "Positivity Public+Private (MA)",
+        ],
+        title="Is enough testing happening: Positive Rate - Thailand Covid",
+    )
+    ax.legend(
+        [
+            "Share of PUI that have Covid",
+            "Share of PCR tests that are postitive",
+        ]
+    )
+    plt.tight_layout()
+    plt.savefig("positivity_2.png")
+
 
     fig, ax = plt.subplots()
     df.plot(
