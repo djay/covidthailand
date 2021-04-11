@@ -4,8 +4,7 @@ on:
     branches-ignore:
       - "releases/**"
   schedule:
-    - cron: "20 05,17 * * *" # 1pm - to get daily briefing data
-    #- cron: "0 18 * * *" # 1am - to get situation report
+    - cron: "20 05,16 * * *" # 12:20,23:20 - to get daily briefing data
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,9 +19,13 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 15
-      - name: Install dependencies
+      - name: Get current date
+        id: date
         run: |
-          pip install -r requirements.txt
+          echo "::set-output name=date::$(date +'%Y-%m-%d')"
+          echo "::set-output name=yesterday::$(date --date=yesterday +'%Y-%m-%d')"
+          echo "::set-output name=month::$(date +'%Y-%m')"
+          echo "::set-output name=year::$(date +'%Y')"
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
@@ -32,12 +35,23 @@ jobs:
             **/*.pptx
             **/*.pickle
             **/*.json
+            **/*.csv
+            html/*
+            json/*
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
-          key: ${{ runner.os }}
+          key: ${{ runner.os }}-${{ steps.date.outputs.date }}
           restore-keys: |
+            ${{ runner.os }}-${{ steps.date.outputs.date }}
+            ${{ runner.os }}-${{ steps.date.outputs.yesterday }}
+            ${{ runner.os }}-${{ steps.date.outputs.month }}
+            ${{ runner.os }}-${{ steps.date.outputs.year }}
             ${{ runner.os }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get install ghostscript python3-tk
+          pip install -r requirements.txt
       - name: Check for updated data
         if: ${{ github.event_name	== 'schedule' }}
         run: |
