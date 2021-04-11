@@ -95,6 +95,16 @@ def find_dates(content):
     return sorted([d for d in dates])
 
 
+def to_switching_date(dstr):
+    "turning str 2021-01-02 into date but where m and d need to be switched"
+    if not dstr:
+        return None
+    date = d(dstr).date()
+    if date.day <13 and date.month <13:
+        date = datetime.date(date.year, date.day, date.month)
+    return date
+
+
 def previous_date(end, day):
     start = end
     while start.day != int(day):
@@ -240,12 +250,14 @@ def slide2chartdata(slide):
 ####################
 
 
-def is_remote_newer(file, remote_date):
+def is_remote_newer(file, remote_date, check=True):
     if not os.path.exists(file):
         print(f"Missing: {file}")
         return True
-    if remote_date is None:
-        return False  # TODO: do we want to redownload each time?
+    elif not check:
+        return False
+    elif remote_date is None:
+        return True  # TODO: should we always keep cached?
     if type(remote_date) == str:
         remote_date = dateutil.parser.parse(remote_date).astimezone()
     fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
@@ -265,12 +277,13 @@ def web_links(*index_urls, ext=".pdf", dir="html"):
                 yield link
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
+    "if check is None, then always download"
     for url in urls:
         modified = s.head(url).headers.get("last-modified") if check else None
         file = url.rsplit("/", 1)[-1]
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
-        if is_remote_newer(file, modified):
+        if is_remote_newer(file, modified, check):
             r = s.get(url)
             if r.status_code != 200:
                 continue
@@ -413,6 +426,8 @@ def situation_cases_cum(parsedPDF, date):
             local = walkin + active
     else:
         local, active = None, None
+    
+    #assert cases == (local+imported) # Too many mistakes
     return pd.DataFrame(
         [(date, cases, local, imported, quarantine, outside_quarantine, active)],
         columns=["Date", "Cases Cum", "Cases Local Transmission Cum", "Cases Imported Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum"]
@@ -442,6 +457,7 @@ def situation_cases_new(parsedPDF, date):
         #"Staying in [^ ]* quarantine",
         debug=False)
     quarantine, *_ = quarantine
+    quarantine = {d("2021-01-27"):11}.get(date, quarantine) # corrections from thai doc
     outside_quarantine, _ = get_next_numbers(
         rest,
         "(?i)Cases found (?:positive )?outside (?:the )?(?:state )?quarantine",
@@ -463,6 +479,9 @@ def situation_cases_new(parsedPDF, date):
             local = local + active
     else:
         imported, active = None, None
+    cases = {d("2021-03-31"):42}.get(date, cases)
+    #if date not in [d("2020-12-26")]:
+    #    assert cases == (local+imported) # except 2020-12-26 - they didn't include 30 proactive
     return pd.DataFrame(
         [(date, cases, local, imported, quarantine, outside_quarantine, active)],
         columns=["Date", "Cases", "Cases Local Transmission", "Cases Imported", "Cases In Quarantine", "Cases Outside Quarantine", "Cases Proactive"]
@@ -643,7 +662,7 @@ def cum2daily(results):
     cum = results[(c for c in results.columns if " Cum" in c)]
     all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
     cum = cum.reindex(all_days) # put in missing days with NaN
-    cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
+    #cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
     cum = cum - cum.shift(+1)  # we got cumilitive data
     renames = dict((c,c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
     cum = cum.rename(columns=renames)
@@ -883,7 +902,7 @@ def get_provinces():
     # TODO: normalise names instead of have copies
 
     # use the case data as it has a mapping between thai and english names
-    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
+    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
     cases = pd.DataFrame(json.loads(cases)["Data"])
     cases = cases.rename(columns=dict(Province="ProvinceTh", ProvinceAlt="Provinces"))
     lup_province = cases.groupby(['ProvinceId', 'ProvinceTh', 'ProvinceEn']).size().reset_index().rename({0:'count'}, axis=1).sort_values('count', ascending=False).set_index("ProvinceEn")
@@ -916,7 +935,7 @@ PROVINCES = get_provinces()
 
 def get_cases_by_area_type():
     briefings = get_cases_by_prov_briefings()
-    dfprov = get_cases_by_prov_tweets()
+    dfprov,cases = get_cases_by_prov_tweets()
     dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
     dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
     # Now we can save raw table of provice numbers
@@ -941,6 +960,7 @@ def get_cases_by_area_type():
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
     by_area = by_area.combine_first(dfprov_grouped).combine_first(by_type)
+    by_area = by_area.combine_first(cases) # imported, proactive total etc
 
     # Ensure we have all areas
     for i in range(1,14):
@@ -953,24 +973,21 @@ def get_cases_by_area_type():
     return by_area
 
 
-def to_switching_date(dstr):
-    if not dstr:
-        return None
-    date = d(dstr).date()
-    if date.day <13 and date.month <13:
-        date = datetime.date(date.year, date.day, date.month)
-    return date
-
-def get_cases_by_area():
+def get_cases_by_area_api():
 #    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
     url = "https://data.go.th/api/3/action/datastore_search?resource_id=329f684b-994d-476b-91a4-62b2ea00f29f&limit=1000&offset="
     records = []
+    def get_page(i, check=False):
+        _, cases = next(web_files(f"{url}{i}", dir="json", check=check))
+        return json.loads(cases)['result']['records']
+
     for i in range(0,100000,1000):
-        _, cases = next(web_files(f"{url}{i}", dir="json"))
-        data = json.loads(cases)
-        if not data['result']['records']:
-            break
-        records.extend(data['result']['records'])
+        data = get_page(i, False)
+        if len(data) < 1000:
+            data = get_page(i, True)
+            if len(data) < 1000:
+                break
+        records.extend(data)
     # they screwed up the date conversion. d and m switched sometimes
     # TODO: bit slow. is there way to do this in pandas?
     for record in records:
@@ -984,13 +1001,17 @@ def get_cases_by_area():
     cases = cases.rename(columns=dict(announce_date="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
-    os.makedirs("api", exist_ok=True)
+    return case_areas
+
+def get_cases_by_area():
+    case_areas = get_cases_by_area_api()
 
     # we will add in the tweet data for the export
     case_tweets = get_cases_by_area_type()
 
     case_areas = case_areas.combine_first(case_tweets)
 
+    os.makedirs("api", exist_ok=True)
     case_areas.reset_index().to_json(
         "api/cases_by_area",
         date_format="iso",
@@ -1183,7 +1204,7 @@ def get_cases_by_prov_tweets():
     dfprov = pd.DataFrame(rows, columns=cols)
     index = pd.MultiIndex.from_frame(dfprov[['Date','Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
-    return dfprov
+    return dfprov, df
 
 def seperate(seq, condition):
     a, b = [], []
@@ -1318,8 +1339,8 @@ def scrape_and_combine():
     privpublic = get_tests_private_public()
 
     df = cases # cases from situation can go wrong
-    df = df.combine_first(situation)
     df = df.combine_first(cases_by_area)
+    df = df.combine_first(situation)
     df = df.combine_first(tests_by_area)
     df = df.combine_first(tests)
     df = df.combine_first(privpublic)
@@ -1374,7 +1395,31 @@ def calc_cols(df):
     df["Positivity Public+Private (MA)"] = (
         df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     )
-    df['Cases Walkin'] = df["Cases Local Transmission"] - df["Cases Proactive"]
+
+    # Computed data
+    # TODO: has a problem if we have local transmission but no proactive
+    walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
+    df = df.combine_first(walkins)
+
+    # Work out unknown areas or types
+    cols = [f"Cases Area {area}" for area in range(1, 14)]
+    df['Cases Area 14'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    assert df[cols+['Cases Area 14']][(df['Cases Area 14'] < 0)].empty
+    cols = [f"Cases Walkin Area {area}" for area in range(1, 14)]
+    df['Cases Walkin Area 14'] = df['Cases Walkin'].sub(df[cols].sum(axis=1), fill_value=0)
+    assert df[cols][(df['Cases Walkin Area 14'] < 0)].empty
+    cols = [f"Cases Proactive Area {area}" for area in range(1, 14)]
+    df['Cases Proactive Area 14'] = df['Cases Proactive'].sub(df[cols].sum(axis=1), fill_value=0)
+    assert df[cols][(df['Cases Proactive Area 14'] < 0)].empty
+    cols = [f"Tests Area {area}" for area in range(1, 14)]
+    df['Tests Area 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 97 lower than 0
+    assert df[cols][(df['Tests Area 14'] < 0)].empty
+    cols = [f"Pos Area {area}" for area in range(1, 14)]
+    df['Pos Area 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 139 rows < 0
+    assert df[cols][(df['Pos Area 14'] < 0)].empty
+    # TODO: skip for now until we work out how to not interpolate
+    df['Cases Unknown'] = df['Cases'].sub(df[["Cases Walkin","Cases Proactive","Cases Imported"]].sum(axis=1), fill_value=0).clip(lower=0) # 3 dates lower than 0
+    assert df[["Cases", "Cases Walkin","Cases Proactive","Cases Imported","Cases Unknown"]][(df['Cases Unknown'] < 0)].empty 
 
     return df
 
@@ -1395,16 +1440,18 @@ AREA_LEGEND = [
     "13: C: Bangkok",
 ]
 
+
 def rearrange(l, *first):
     l = list(l)
     result = []
     for f in first:
-        result.append(l[f])
-        l[f] = None
+        result.append(l[f-1])
+        l[f-1] = None
     return result + [i for i in l if i is not None]
 
-FIRST_AREAS = [12, 3, 5, 0, 4] # based on size-ish
+FIRST_AREAS = [13, 4, 6, 1, 5, 12] # based on size-ish
 AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
+AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown"]
 TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
@@ -1549,41 +1596,62 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_all.png")
 
+
+
+    fig, ax = plt.subplots()
+    df.loc["2020-12-12":].plot(
+        ax=ax,
+        y=["Cases Imported","Cases Walkin", "Cases Proactive", "Cases Unknown"],
+        use_index=True,
+        kind="area",
+        figsize=[20, 10],
+        title="Cases by source - Thailand Covid",
+    )
+    plt.tight_layout()
+    plt.savefig("cases_types.png")
+
+
+    ##########################
+    # Tests by area
+    ##########################
+
+    cols = [f"Tests Area {area}" for area in range(1, 15)]
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
         use_index=True,
-        y=rearrange(TESTS_AREA_COLS, *FIRST_AREAS),
+        y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Test performed by Thailand Health Area",
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("tests_area.png")
 
+    cols = [f"Pos Area {area}" for area in range(1, 15)]
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
         #use_index=True,
-        y=rearrange(POS_AREA_COLS, *FIRST_AREAS),
+        y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Positive Test results by Thailand Health Area",
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("pos_area.png")
 
 
-    cols = [f"Tests Daily {area}" for area in range(1, 14)]
-    df["Tests Total Area"] = df[TESTS_AREA_COLS].sum(axis=1)
-    for area in range(1, 14):
+    cols = [f"Tests Daily {area}" for area in range(1, 15)]
+    test_cols = [f"Tests Area {area}" for area in range(1, 15)]
+    for area in range(1, 15):
         df[f"Tests Daily {area}"] = (
             df[f"Tests Area {area}"]
-            / df["Tests Total Area"]
+            / df[test_cols].sum(axis=1)
             * df["Tests Public (MA)"]
         )
     fig, ax = plt.subplots()
@@ -1595,17 +1663,17 @@ def save_plots(df):
         figsize=[20, 10],
         title="Public Tests performed by Thailand Health Area (ex. some proactive, 7 day rolling average)",
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("tests_area_daily.png")
 
-    cols = [f"Pos Daily {area}" for area in range(1, 14)]
-    df["Pos Total Area"] = df[POS_AREA_COLS].sum(axis=1)
-    for area in range(1, 14):
+    cols = [f"Pos Daily {area}" for area in range(1, 15)]
+    pos_cols = [f"Pos Area {area}" for area in range(1, 15)]
+    for area in range(1, 15):
         df[f"Pos Daily {area}"] = (
             df[f"Pos Area {area}"]
-            / df["Pos Total Area"]
+            / df[pos_cols].sum(axis=1)
             * df["Pos Public (MA)"]
         )
     fig, ax = plt.subplots()
@@ -1617,19 +1685,18 @@ def save_plots(df):
         figsize=[20, 10],
         title="Public Positive Test results by Thailand Health Area (ex. some proactive, 7 day rolling average)",
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("pos_area_daily.png")
 
 
     # Workout positivity for each area as proportion of positivity for that period
-    fig, ax = plt.subplots()
-    for area in range(1, 14):
+    for area in range(1, 15):
         df[f"Positivity {area}"] = (
             df[f"Pos Area {area}"] / df[f"Tests Area {area}"] * 100
         )
-    cols = [f"Positivity {area}" for area in range(1, 14)]
+    cols = [f"Positivity {area}" for area in range(1, 15)]
     df["Total Positivity Area"] = df[cols].sum(axis=1)
     for area in range(1, 14):
         df[f"Positivity {area}"] = (
@@ -1644,6 +1711,7 @@ def save_plots(df):
         ]
     )
 
+    fig, ax = plt.subplots()
     df.plot(
         ax=ax,
         use_index=True,
@@ -1652,7 +1720,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("positivity_area.png")
@@ -1666,28 +1734,16 @@ def save_plots(df):
         figsize=[20, 10],
         title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("positivity_area_2.png")
 
+    #########################
+    # Case by area plots
+    #########################
 
-
-
-    fig, ax = plt.subplots()
-    df.loc["2020-12-12":].plot(
-        ax=ax,
-        y=["Cases Imported","Cases Walkin", "Cases Proactive", ],
-        use_index=True,
-        kind="area",
-        figsize=[20, 10],
-        title="Cases by source - Thailand Covid",
-    )
-    plt.tight_layout()
-    plt.savefig("cases_types.png")
-
-
-    cols = rearrange([f"Cases Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f"Cases Area {area}" for area in range(1, 15)],*FIRST_AREAS)
     fig, ax = plt.subplots()
     df[:"2020-06-14"].plot(
         ax=ax,
@@ -1696,7 +1752,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Cases by health area"
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("cases_areas_1.png")
 
@@ -1708,12 +1764,12 @@ def save_plots(df):
         figsize=[20, 10],
         title="Cases by health area"
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("cases_areas_2.png")
 
 
-    cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 15)],*FIRST_AREAS)
     fig, ax = plt.subplots()
     df["2021-02-16":].plot(
         ax=ax,
@@ -1722,11 +1778,11 @@ def save_plots(df):
         figsize=[20, 10],
         title="Walkin cases by health area - Thailand"
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("cases_areas_walkins.png")
 
-    cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 15)],*FIRST_AREAS)
     fig, ax = plt.subplots()
     df["2021-02-16":].plot(
         ax=ax,
@@ -1735,7 +1791,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Proactive cases by health area - Thailand"
     )
-    ax.legend(AREA_LEGEND)
+    ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("cases_areas_proactive.png")
 

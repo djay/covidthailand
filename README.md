@@ -134,13 +134,18 @@ Bureau, Chaeng Watthana"
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 # TODO
+- put in unknown for case types and areas so graph doesn't miss latests
+- put in graph of risk/source
+  - e.g entertainment vs factory vs prison vs friend
 - get timely data source for cases by type and cases by area
-  - e.g. https://www.google.com/search?q=%E0%B8%AA%E0%B8%96%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%93%E0%B9%8C%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%95%E0%B8%B4%E0%B8%94%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%AD%E0%B9%84%E0%B8%A7%E0%B8%A3%E0%B8%B1%E0%B8%AA%E0%B9%82%E0%B8%84%E0%B9%82%E0%B8%A3%E0%B8%99%E0%B8%B2+site:thaigov.go.th+filetype:pdf
+  - e.g. 
   - https://www.facebook.com/ThaigovSpokesman
   - http://media.thaigov.go.th/uploads/public_img/source/300364.pdf (can guess date)
   - https://twitter.com/thaimoph - infographic which richardbarrow translates
   - https://www.facebook.com/thailandprd
   - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322
+- get quicker PUI count
+  - https://ddc.moph.go.th/viralpneumonia/index.php
 - get data source for antigen and antibody tests
   - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
 - get data source for walkins or proactive investigated/tested
