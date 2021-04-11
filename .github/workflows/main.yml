@@ -52,14 +52,14 @@ jobs:
         run: |
           sudo apt-get install ghostscript python3-tk
           pip install -r requirements.txt
-      - name: Check for updated data
-        if: ${{ github.event_name	== 'schedule' }}
-        run: |
-            python covidthailand.py
-        env:
-            CHECK_NEWER: True 
-      - name: Check for new data
-        if: ${{ github.event_name	!= 'schedule' }}
+      # - name: Check for updated data
+      #   if: ${{ github.event_name	== 'schedule' }}
+      #   run: |
+      #       python covidthailand.py
+      #   env:
+      #       CHECK_NEWER: True 
+      - name: Check for new data only
+      #  if: ${{ github.event_name	!= 'schedule' }}
         run: |
             python covidthailand.py
       - name: Upload png to wiki
