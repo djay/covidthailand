@@ -878,6 +878,7 @@ def get_provinces():
     provinces.loc["Chainat"] = provinces.loc["Chai Nat"]
     provinces.loc["ลาปาง"] = provinces.loc["Lampang"]
     provinces.loc["หนองบัวลาภู"] = provinces.loc["Nong Bua Lamphu"]
+    provinces.loc["ปทุุมธานี"] = provinces.loc["Pathum Thani"]
     # TODO: Missing Bueng Kan (Bung Kan), Chai Nat (Chainat) in thai
     # TODO: normalise names instead of have copies
 
@@ -952,11 +953,35 @@ def get_cases_by_area_type():
     return by_area
 
 
+def to_switching_date(dstr):
+    if not dstr:
+        return None
+    date = d(dstr).date()
+    if date.day <13 and date.month <13:
+        date = datetime.date(date.year, date.day, date.month)
+    return date
+
 def get_cases_by_area():
-    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
-    cases = pd.DataFrame(json.loads(cases)["Data"])
-    cases = cases.join(PROVINCES["Health District Number"], on="ProvinceEn")
-    cases = cases.rename(columns=dict(ConfirmDate="Date"))
+#    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
+    url = "https://data.go.th/api/3/action/datastore_search?resource_id=329f684b-994d-476b-91a4-62b2ea00f29f&limit=1000&offset="
+    records = []
+    for i in range(0,100000,1000):
+        _, cases = next(web_files(f"{url}{i}", dir="json"))
+        data = json.loads(cases)
+        if not data['result']['records']:
+            break
+        records.extend(data['result']['records'])
+    # they screwed up the date conversion. d and m switched sometimes
+    # TODO: bit slow. is there way to do this in pandas?
+    for record in records:
+        record['announce_date'] = to_switching_date(record['announce_date'])
+        record['Notified date'] = to_switching_date(record['Notified date'])
+    cases = pd.DataFrame(records)
+#    cases['Date'] = pd.to_datetime(cases['announce_date'], format='%Y-%d-%m',errors='coerce')
+#    cases['Notified date'] = pd.to_datetime(cases['Notified date'], format='%Y-%d-%m',)
+    cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
+    missing_matches = cases.loc[cases["Health District Number"].isnull()]
+    cases = cases.rename(columns=dict(announce_date="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     os.makedirs("api", exist_ok=True)

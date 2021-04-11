@@ -14,27 +14,30 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
 
 - Source: 
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing)
+   - [Daily Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
-  - "Date":"2021-02-15T00:00:00.000Z",
-  - "Province":"Samut Sakhon",
-  - "Cases Walkin":53.0,
-  - "Cases Proactive":16.0,
-  - "Health District Number":5.0
+  - "Date": e.g "2021-04-06"
+  - "Province": e.g "Samut Sakhon"
+  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria
+  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid
+  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
 ## Cases by Area
 
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 
 - Source: 
-   - [Report COVID-19, individual case information](https://data.go.th/dataset/covid-19-daily) - No longer updated
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing)
+   - [Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
-  - Date
-  - Cases Area {1-13}: The health district where the case was confirmed
+  - Date: e.g "2021-04-06"
+  - Cases Area {1-13}: Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - Cases Proactive Area {1-13}: Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - Cases Walkin Area {1-13}: Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-## Cases Types and PUI counts
+## Cases Types and PUI counts (Daily Situation Reports)
 
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
@@ -44,7 +47,7 @@ For more in depth analysis on what some of this means see [An analysis of testin
   - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
   - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php)) (Updated a few days later)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports) [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
-  - Date:
+  - Date: e.g "2021-04-06"
   - Cases: Total cases that day. Cases Imported + Cases Local Transmission
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
   - Cases Imported: Cases In Quarantine + Cases outside quarantine
@@ -81,8 +84,8 @@ Bureau, Chaeng Watthana"
 - Source: 
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
-   - Start: Date
-   - End: Date
+   - Start: e.g "2021-04-06"
+   - End: e.g "2021-04-13"
    - Pos Area {1-13} - Positive public test results
    - Tests Area {1-13} - Total public tests (PCR)
 - Notes:
@@ -101,13 +104,11 @@ Bureau, Chaeng Watthana"
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
    -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
-   - Date
-   - Tests Public
-   - Tests Private
-   - Pos Public
-   - Pos Private
-   - % Detection Public (raw figure Pos Public was derived from)
-   - % Detection Private (raw figure Pos Private was derived from)
+   - Date: e.g "2021-04-06"
+   - Tests Public: PCR tests for free (PUI Criteria)
+   - Tests Private: PCR tests paid for
+   - Pos Public: Positive result of free PCR test
+   - Pos Private: Positive result of paid PCR test
    - Pos XLS: Public tests positive results (includes corrected dataless data)
    - Tests XLS: Public tests conducted (includes corrected dataless data)
 - Notes:
