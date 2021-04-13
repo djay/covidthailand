@@ -213,17 +213,19 @@ def parse_file(filename, html=False, paged=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False):
+def get_next_numbers(content, *matches, debug=False, before=False):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
-        _, *rest = re.split(match, content,1) if match else ("", content)
-        if rest:
-            rest, *_ = rest 
-            numbers = re.findall(r"[,0-9]+", rest)
-            numbers = [n.replace(",", "") for n in numbers]
-            numbers = [int(n) for n in numbers if n]
-            return numbers, match + " " + rest
+        ahead, *behind = re.split(match, content,1) if match else ("", content)
+        if not behind:
+            continue
+        found, *rest = behind if not before else [ahead]+behind
+        numbers = re.findall(r"[,0-9]+", found)
+        numbers = [n.replace(",", "") for n in numbers]
+        numbers = [int(n) for n in numbers if n]
+        numbers = numbers if not before else list(reversed(numbers))
+        return numbers, match + " " + found
     if debug and matches:
         print("Couldn't find '{}'".format(match))
         print(content)
@@ -987,8 +989,9 @@ PROVINCES = get_provinces()
 
 
 def get_cases_by_area_type():
-    briefings = get_cases_by_prov_briefings()
-    dfprov,cases = get_cases_by_prov_tweets()
+    briefings, cases = get_cases_by_prov_briefings()
+    dfprov,twcases = get_cases_by_prov_tweets()
+    cases = cases.combine_first(twcases)
     dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
     dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
     # Now we can save raw table of provice numbers
@@ -1293,8 +1296,7 @@ def pairwise(lst):
 
 #in_any()
 
-def get_cases_by_prov_briefings():
-    results = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
+def briefing_case_detail(date, pages):
 
     num_people = re.compile(r"([0-9]+) *ราย")
     title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
@@ -1304,85 +1306,127 @@ def get_cases_by_prov_briefings():
     is_pcell = re.compile(r"((?:[\u0E00-\u0E7Fa-zA-Z' ]+)\.? *\n *\( *(?:[0-9]+) *ราย *\))")
     is_header = lambda x: "ลักษณะผู้ติดเชื้อ" in x
 
+    totals = dict() # groupname -> running total
+    all_cells = {}
+    rows = []
+    if date < d("2021-03-24"):
+        pages = []
+    for page in pages:
+        if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
+            continue
+        soup = BeautifulSoup(page, 'html.parser')
+        parts = soup.find_all('p')
+        parts = [c for c in [c.strip() for c in [c.get_text() for c in parts]] if c]
+        maintitle, parts = seperate(parts, lambda x: "วันที่" in x)
+        footer, parts = seperate(parts, lambda x: "กรมควบคุมโรค กระทรวงสาธารณสุข" in x)
+        table = list(split(parts, lambda x: re.match("^\w*[0-9]+\.", x)))
+        if len(table) == 2:
+            # titles at the end
+            table, titles = table
+            table = [titles, table]
+        else:
+            extras = table.pop(0)
+        # if only one table we can use camelot to get the table. will be slow but less problems
+        #ctable = camelot.read_pdf(file, pages="6", process_background=True)[0].df
+            
+        for titles,cells in pairwise(table):
+            title = titles[0].strip("(ต่อ)").strip()
+            # groupnum, groupname, total = title_re.search(title).groups()
+            # if total:
+            #     total = int(total.group(1))
+            if "การคัดกรองเชิงรุก" in title:
+                case_type = "Proactive"
+            elif "เดินทางมาจากต่างประเทศ" in title:
+                case_type = "Quarantine"
+                continue # just care about province cases for now
+            #if re.search("(จากระบบเฝ้าระวัง|ติดเชื้อในประเทศ)", title):
+            else:
+                case_type = "Walkin"
+            header, cells = seperate(cells, is_header)
+            #lines = pairwise(islice(split(cells, is_pcell),1,None))
+            # "อยู่ระหว่างสอบสวน (93 ราย)" on 2021-04-05 screws things up as its not a province
+            lines = pairwise(islice(is_pcell.split("\n".join(cells)),1,None)) # beacause can be split over <p>
+            all_cells.setdefault(title,[]).append(lines)
+            print(title,case_type)
+            for prov, rest in lines:
+                #for prov in provs: # TODO: should really be 1. make split only split 1.
+                    # TODO: sometimes cells/data seperated by "-" 2021-01-03
+                    prov,num = prov.strip().split("(",1)
+                    prov = prov.strip().strip(".").replace(" ", "")
+                    prov = PROVINCES.loc[prov]['ProvinceEn'] # get english name here so we know we got it
+                    num = int(num_people.search(num).group(1))
+                    totals[title] = totals.get(title,0) + num
+                    print(num,prov)
+                    rows.append((date, prov,case_type, num,))
+    # checksum on title totals
+    for title, total in totals.items():
+        m = num_people.search(title)
+        if m:
+            assert total==int(m.group(1))
+    df = pd.DataFrame(rows, columns=["Date", "Province", "Case Type", "Cases",]).set_index(['Date', 'Province'])
+    return df
+
+def briefing_case_types(date, pages):
+    rows = []
+    for i,page in enumerate(pages):
+        soup = BeautifulSoup(page, 'html.parser')
+        text = soup.get_text()
+        if not "รายงานสถานการณ์" in text:
+            continue
+        numbers, rest = get_next_numbers(text, "รวม")
+        cases, walkins, proactive, quarantine, *_ = numbers
+        numbers, rest = get_next_numbers(text, "ช่องเส้นทางธรรมชาติ","รายผู้ที่เดินทางมาจากต่างประเทศ", before=True)
+        if len(numbers) > 0:
+            ports = numbers[0]
+        else:
+            ports = 0
+        imported = ports + quarantine
+
+        assert cases == walkins + proactive + imported
+
+        # numbers, rest = get_next_numbers(
+        #     text, 
+        #     "จากระบบเฝ้าระวังและระบบบริการฯ ",
+        #     ) # numbers are ahead of the labels
+        # proactive, *_ = numbers
+        # numbers, rest = get_next_numbers(text, "รายค้นหาผู้ติดเชื้อเชิงรุกในชุมชน")
+        # imported, *_ = numbers
+        # numbers, rest = get_next_numbers(text, "รวม") 
+        # cases, walkins, *_ = numbers
+        rows.append([date, cases, walkins, proactive, imported])
+        break
+    df = pd.DataFrame(rows, columns=["Date", "Cases", "Cases Walkin", "Cases Proactive", "Cases Imported",]).set_index(['Date'])
+    print(df)
+    return df
+
+def get_cases_by_prov_briefings():
+    types = pd.DataFrame(columns=["Date",]).set_index(['Date',])
+    cases = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     #datetime.datetime(day=int(d[0]), month=int(d[1]), year=int(d[2]) - 543)
-    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2021-03-24"), TODAY(),1))
+    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2021-02-24"), TODAY(),1))
     links = reversed(list(links))
     for file, text in web_files(*links, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         date = file2date(file)
         print(file, date)
-        totals = dict() # groupname -> running total
-        all_cells = {}
-        rows = []
-        for page in pages:
-            if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
-                continue
-            soup = BeautifulSoup(page, 'html.parser')
-            parts = soup.find_all('p')
-            parts = [c for c in [c.strip() for c in [c.get_text() for c in parts]] if c]
-            maintitle, parts = seperate(parts, lambda x: "วันที่" in x)
-            footer, parts = seperate(parts, lambda x: "กรมควบคุมโรค กระทรวงสาธารณสุข" in x)
-            table = list(split(parts, lambda x: re.match("^\w*[0-9]+\.", x)))
-            if len(table) == 2:
-                # titles at the end
-                table, titles = table
-                table = [titles, table]
-            else:
-                extras = table.pop(0)
-            # if only one table we can use camelot to get the table. will be slow but less problems
-            #ctable = camelot.read_pdf(file, pages="6", process_background=True)[0].df
-               
-            for titles,cells in pairwise(table):
-                title = titles[0].strip("(ต่อ)").strip()
-                # groupnum, groupname, total = title_re.search(title).groups()
-                # if total:
-                #     total = int(total.group(1))
-                if "การคัดกรองเชิงรุก" in title:
-                    case_type = "Proactive"
-                elif "เดินทางมาจากต่างประเทศ" in title:
-                    case_type = "Quarantine"
-                    continue # just care about province cases for now
-                #if re.search("(จากระบบเฝ้าระวัง|ติดเชื้อในประเทศ)", title):
-                else:
-                    case_type = "Walkin"
-                header, cells = seperate(cells, is_header)
-                #lines = pairwise(islice(split(cells, is_pcell),1,None))
-                # "อยู่ระหว่างสอบสวน (93 ราย)" on 2021-04-05 screws things up as its not a province
-                lines = pairwise(islice(is_pcell.split("\n".join(cells)),1,None)) # beacause can be split over <p>
-                all_cells.setdefault(title,[]).append(lines)
-                print(title,case_type)
-                for prov, rest in lines:
-                    #for prov in provs: # TODO: should really be 1. make split only split 1.
-                        # TODO: sometimes cells/data seperated by "-" 2021-01-03
-                        prov,num = prov.strip().split("(",1)
-                        prov = prov.strip().strip(".").replace(" ", "")
-                        prov = PROVINCES.loc[prov]['ProvinceEn'] # get english name here so we know we got it
-                        num = int(num_people.search(num).group(1))
-                        totals[title] = totals.get(title,0) + num
-                        print(num,prov)
-                        rows.append((date, prov,case_type, num,))
-        # checksum on title totals
-        for title, total in totals.items():
-            m = num_people.search(title)
-            if m:
-                assert total==int(m.group(1))
-        df = pd.DataFrame(rows, columns=["Date", "Province", "Case Type", "Cases",])
-        results = results.combine_first(df.set_index(['Date', 'Province']))
+        df = briefing_case_detail(date, pages)
+        cases = cases.combine_first(df)
+        types = types.combine_first(briefing_case_types(date, pages))
 
-    results = results.groupby(['Date','Province','Case Type']).sum() # we often have multiple walkin events
-    results = results.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
-    results.columns = [f"Cases {c}" for c in results.columns.get_level_values(1)]
+    cases = cases.groupby(['Date','Province','Case Type']).sum() # we often have multiple walkin events
+    cases = cases.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
+    cases.columns = [f"Cases {c}" for c in cases.columns.get_level_values(1)]
 
-    return results
+    return cases, types
 
 
 ### Combine and plot
 
 def scrape_and_combine():
 
-    situation = get_situation()
     cases_by_area = get_cases_by_area()
+    situation = get_situation()
     print(cases_by_area)
     print(situation)
 

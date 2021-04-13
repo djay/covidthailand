@@ -7,6 +7,11 @@ The data is updated twice daily at 13:00 UTC+7 and 01:00 UTC+7. [![last update w
 
 For more in depth analysis on what some of this means see [An analysis of testing in thailand](https://github.com/djay/covidthailand/wiki)
 
+# Disclaimer
+- Some data sources are missing days or numbers (e.g. situation reports and tests)
+- Some are scraped from text and the code to do this might not be perfect
+- Some are translations where mistypings have happened
+- I take no responsibility for the accuracy of this data.
 
 ## Cases by Area
 
