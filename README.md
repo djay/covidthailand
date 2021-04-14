@@ -13,13 +13,23 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - Some are translations where mistypings have happened
 - I take no responsibility for the accuracy of this data.
 
+# Dashboard
+## Postitive Rate
+![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
+## Cases by Health District
+![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+## Cases by method found
+![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
 
+## Public PCR Tests by Health District
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+
+# Downloads
 ## Cases by Area
 
-![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
-
 - Source: 
-   - [Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [MOPH Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - Date: e.g "2021-04-06"
@@ -30,8 +40,6 @@ For more in depth analysis on what some of this means see [An analysis of testin
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 ## Cases Types and PUI counts (Daily Situation Reports)
 
-![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
-![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
 
 
