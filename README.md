@@ -14,15 +14,23 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - I take no responsibility for the accuracy of this data.
 
 # Dashboard
-## Postitive Rate
-![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
+## Tests per Confirmed Case
+![Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png)
+- [OWID Tests per Case](https://ourworldindata.org/coronavirus-testing) to compare with other countries
+- WHO suggests 10-30 tests per confirmed case for adequate testing
+- PUI is updated daily and is an indicator of how many free tests will be performed
+- Tests and PUI numbers don't seem to include most proactive testing
 ## Cases by Health District
-![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+- [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 ## Cases by method found
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
+- Contact tracing normally counts as a "Walkin"
+- Proactive tests are normally done on specific high risk locations
 
 ## Public PCR Tests by Health District
 ![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+- Excludes private and some proactive tests (non-PCR)
 
 # Downloads
 ## Cases by Area
