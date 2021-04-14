@@ -22,6 +22,7 @@ import json
 from pytwitterscraper import TwitterScraper
 def TODAY(): return datetime.datetime.today()
 from itertools import tee, islice, compress, cycle
+import camelot
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -947,6 +948,7 @@ def get_provinces():
     provinces.loc["สมุทธสาคร"] = provinces.loc["Samut Sakhon"]
     provinces.loc["กรุงเทพฯ"] = provinces.loc["Bangkok"]
     provinces.loc["กรุงเทพ"] = provinces.loc["Bangkok"]
+    provinces.loc["กรงุเทพมหานคร"] = provinces.loc["Bangkok"]
     provinces.loc["พระนครศรีอยุธา"] = provinces.loc["Ayutthaya"]
     provinces.loc["อยุธยา"] = provinces.loc["Ayutthaya"]
     provinces.loc["สมุุทรสงคราม"] = provinces.loc["Samut Songkhram"]
@@ -955,6 +957,148 @@ def get_provinces():
     provinces.loc["พม่า"] = provinces.loc["Nong Khai"] # it's really burma, but have to put it somewhere
     provinces.loc["ชลบุุรี"] = provinces.loc["Chon Buri"]
     provinces.loc["นนทบุุรี"] = provinces.loc["Nonthaburi"]
+    # from prov table in briefings
+    provinces.loc["เชยีงใหม่"] = provinces.loc["Chiang Mai"]
+    provinces.loc['จนัทบรุ'] = provinces.loc['Chanthaburi']
+    provinces.loc['บรุรีมัย'] = provinces.loc['Buriram']
+    provinces.loc['กาญจนบรุ'] = provinces.loc['Kanchanaburi']
+    provinces.loc['Prachin Buri'] = provinces.loc['Prachinburi']
+    provinces.loc['ปราจนีบรุ'] = provinces.loc['Prachin Buri']
+    provinces.loc['ลพบรุ'] = provinces.loc['Lopburi']
+    provinces.loc['พษิณุโลก'] = provinces.loc['Phitsanulok']
+    provinces.loc['นครศรธีรรมราช'] = provinces.loc['Nakhon Si Thammarat']
+    provinces.loc['เพชรบรูณ์'] = provinces.loc['Phetchabun']
+    provinces.loc['อา่งทอง'] = provinces.loc['Ang Thong']
+    provinces.loc['ชยัภมู'] = provinces.loc['Chaiyaphum']
+    provinces.loc['รอ้ยเอ็ด'] = provinces.loc['Roi Et']
+    provinces.loc['อทุยัธานี'] = provinces.loc['Uthai Thani']
+    provinces.loc['ชลบรุ'] = provinces.loc['Chon Buri']
+    provinces.loc['สมทุรปราการ'] = provinces.loc['Samut Prakan']
+    provinces.loc['นราธวิาส'] = provinces.loc['Narathiwat']
+    provinces.loc['ประจวบครีขีนัธ'] = provinces.loc['Prachuap Khiri Khan']
+    provinces.loc['สมทุรสาคร'] = provinces.loc['Samut Sakhon']
+    provinces.loc['ปทมุธานี'] = provinces.loc['Pathum Thani']
+    provinces.loc['สระแกว้'] = provinces.loc['Sa Kaeo']
+    provinces.loc['นครราชสมีา'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['นนทบรุ'] = provinces.loc['Nonthaburi']
+    provinces.loc['ภเูก็ต'] = provinces.loc['Phuket']
+    provinces.loc['สพุรรณบรุี'] = provinces.loc['Suphan Buri']
+    provinces.loc['อดุรธานี'] = provinces.loc['Udon Thani']
+    provinces.loc['พระนครศรอียธุยา'] = provinces.loc['Ayutthaya']
+    provinces.loc['สระบรุ'] = provinces.loc['Saraburi']
+    provinces.loc['เพชรบรุ'] = provinces.loc['Phetchabun']
+    provinces.loc['ราชบรุ'] = provinces.loc['Ratchaburi']
+    provinces.loc['เชยีงราย'] = provinces.loc['Chiang Rai']
+    provinces.loc['อบุลราชธานี'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['สรุาษฎรธ์านี'] = provinces.loc['Surat Thani']
+    provinces.loc['ฉะเชงิเทรา'] = provinces.loc['Chachoengsao']
+    provinces.loc['สมทุรสงคราม'] = provinces.loc['Samut Songkhram']
+    provinces.loc['แมฮ่อ่งสอน'] = provinces.loc['Mae Hong Son']
+    provinces.loc['สโุขทยั'] = provinces.loc['Sukhothai']
+    provinces.loc['นา่น'] = provinces.loc['Nan']
+    provinces.loc['อตุรดติถ'] = provinces.loc['Uttaradit']
+    provinces.loc['Nong Bua Lam Phu'] = provinces.loc['Nong Bua Lamphu']
+    provinces.loc['หนองบวัล'] = provinces.loc['Nong Bua Lam Phu']
+    provinces.loc['พงังา'] = provinces.loc['Phang Nga']
+    provinces.loc['สรุนิทร'] = provinces.loc['Surin']
+    provinces.loc['Si Sa Ket'] = provinces.loc['Sisaket']
+    provinces.loc['ศรสีะเกษ'] = provinces.loc['Si Sa Ket']
+    provinces.loc['ตรงั'] = provinces.loc['Trang']
+    provinces.loc['พจิติร'] = provinces.loc['Phichit']
+    provinces.loc['ปตัตานี'] = provinces.loc['Phichit']
+    provinces.loc['ชยันาท'] = provinces.loc['Chai Nat']
+    provinces.loc['พทัลงุ'] = provinces.loc['Phatthalung']
+    provinces.loc['มกุดาหาร'] = provinces.loc['Mukdahan']
+    provinces.loc['บงึกาฬ'] = provinces.loc['Bueng Kan']
+    provinces.loc['กาฬสนิธุ'] = provinces.loc['Kalasin']
+    provinces.loc['สงิหบ์รุ'] = provinces.loc['Sing Buri']
+    provinces.loc['ปทมุธาน'] = provinces.loc['Pathum Thani']
+    provinces.loc['สพุรรณบรุ'] = provinces.loc['Suphan Buri']
+    provinces.loc['อดุรธาน'] = provinces.loc['Udon Thani']
+    provinces.loc['อบุลราชธาน'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['สรุาษฎรธ์าน'] = provinces.loc['Surat Thani']
+    provinces.loc['นครสวรรค'] = provinces.loc['Nakhon Sawan']
+    provinces.loc['ล าพนู'] = provinces.loc['Lamphun']
+    provinces.loc['ล าปาง'] = provinces.loc['Lampang']
+    provinces.loc['เพชรบรูณ'] = provinces.loc['Phetchabun']
+    provinces.loc['อทุยัธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['ก าแพงเพชร'] = provinces.loc['Kamphaeng Phet']
+    provinces.loc['Lam Phu'] = provinces.loc['Nong Bua Lamphu']
+    provinces.loc['หนองบวัล าภู'] = provinces.loc['Lam Phu']
+    provinces.loc['ปตัตาน'] = provinces.loc['Pattani']
+    provinces.loc['บรุรีัมย'] = provinces.loc['Buriram']
+    provinces.loc['Buri Ram'] = provinces.loc['Buriram']
+    provinces.loc['บรุรัีมย'] = provinces.loc['Buri Ram']
+    provinces.loc['จันทบรุ'] = provinces.loc['Chanthaburi']
+    provinces.loc['ชมุพร'] = provinces.loc['Chumphon']
+    provinces.loc['อทุัยธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['อ านาจเจรญ'] = provinces.loc['Amnat Charoen']
+    provinces.loc['สโุขทัย'] = provinces.loc['Sukhothai']
+    provinces.loc['ปัตตาน'] = provinces.loc['Pattani']
+    provinces.loc['พัทลงุ'] = provinces.loc['Phatthalung']
+    provinces.loc['ขอนแกน่'] = provinces.loc['Khon Kaen']
+    provinces.loc['อทัุยธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['หนองบัวล าภู'] = provinces.loc['Nong Bua Lam Phu']
+    provinces.loc['สตลู'] = provinces.loc['Satun']
+    provinces.loc['ปทุมธาน'] = provinces.loc['Pathum Thani']
+    provinces.loc['ชลบุร'] = provinces.loc['Chon Buri']
+    provinces.loc['จันทบุร'] = provinces.loc['Chanthaburi']
+    provinces.loc['นนทบุร'] = provinces.loc['Nonthaburi']
+    provinces.loc['เพชรบุร'] = provinces.loc['Phetchaburi']
+    provinces.loc['ราชบุร'] = provinces.loc['Ratchaburi']
+    provinces.loc['ลพบุร'] = provinces.loc['Lopburi']
+    provinces.loc['สระบุร'] = provinces.loc['Saraburi']
+    provinces.loc['สิงห์บุร'] = provinces.loc['Sing Buri']
+    provinces.loc['ปราจีนบุร'] = provinces.loc['Prachin Buri']
+    provinces.loc['สุราษฎร์ธาน'] = provinces.loc['Surat Thani']
+    provinces.loc['ชัยภูม'] = provinces.loc['Chaiyaphum']
+    provinces.loc['สุรินทร'] = provinces.loc['Surin']
+    provinces.loc['อุบลราชธาน'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['ประจวบคีรีขันธ'] = provinces.loc['Prachuap Khiri Khan']
+    provinces.loc['อุตรดิตถ'] = provinces.loc['Uttaradit']
+    provinces.loc['อ านาจเจริญ'] = provinces.loc['Amnat Charoen']
+    provinces.loc['อุดรธาน'] = provinces.loc['Udon Thani']
+    provinces.loc['เพชรบูรณ'] = provinces.loc['Phetchabun']
+    provinces.loc['บุรีรัมย'] = provinces.loc['Buri Ram']
+    provinces.loc['กาฬสินธุ'] = provinces.loc['Kalasin']
+    provinces.loc['สุพรรณบุร'] = provinces.loc['Suphanburi']
+    provinces.loc['กาญจนบุร'] = provinces.loc['Kanchanaburi']
+    provinces.loc['ล าพูน'] = provinces.loc['Lamphun']
+    provinces.loc["บึงกาฬ"] = provinces.loc["Bueng Kan"]
+    provinces.loc['สมทุรสำคร'] = provinces.loc['Samut Sakhon']
+    provinces.loc['กรงุเทพมหำนคร'] = provinces.loc['Bangkok']
+    provinces.loc['สมทุรปรำกำร'] = provinces.loc['Samut Prakan']
+    provinces.loc['อำ่งทอง'] = provinces.loc['Ang Thong']
+    provinces.loc['ปทมุธำน'] = provinces.loc['Pathum Thani']
+    provinces.loc['สมทุรสงครำม'] = provinces.loc['Samut Songkhram']
+    provinces.loc['พระนครศรอียธุยำ'] = provinces.loc['Ayutthaya']
+    provinces.loc['ตำก'] = provinces.loc['Tak']
+    provinces.loc['ตรำด'] = provinces.loc['Trat']
+    provinces.loc['รำชบรุ'] = provinces.loc['Ratchaburi']
+    provinces.loc['ฉะเชงิเทรำ'] = provinces.loc['Chachoengsao']
+    provinces.loc['Mahasarakham'] = provinces.loc['Maha Sarakham']
+    provinces.loc['มหำสำรคำม'] = provinces.loc['Mahasarakham']
+    provinces.loc['สรุำษฎรธ์ำน'] = provinces.loc['Surat Thani']
+    provinces.loc['นครรำชสมีำ'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['ปรำจนีบรุ'] = provinces.loc['Prachinburi']
+    provinces.loc['ชยันำท'] = provinces.loc['Chai Nat']
+    provinces.loc['กำญจนบรุ'] = provinces.loc['Kanchanaburi']
+    provinces.loc['อบุลรำชธำน'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['นครศรธีรรมรำช'] = provinces.loc['Nakhon Si Thammarat']
+    provinces.loc['นครนำยก'] = provinces.loc['Nakhon Nayok']
+    provinces.loc['ล ำปำง'] = provinces.loc['Lampang']
+    provinces.loc['นรำธวิำส'] = provinces.loc['Narathiwat']
+    provinces.loc['สงขลำ'] = provinces.loc['Songkhla']
+    provinces.loc['ล ำพนู'] = provinces.loc['Lamphun']
+    provinces.loc['อ ำนำจเจรญ'] = provinces.loc['Amnat Charoen']
+    provinces.loc['หนองคำย'] = provinces.loc['Nong Khai']
+    provinces.loc['หนองบวัล ำภู'] = provinces.loc['Nong Bua Lam Phu']
+    provinces.loc['อดุรธำน'] = provinces.loc['Udon Thani']
+    provinces.loc['นำ่น'] = provinces.loc['Nan']
+    provinces.loc['เชยีงรำย'] = provinces.loc['Chiang Rai']
+    provinces.loc['ก ำแพงเพชร'] = provinces.loc['Kamphaeng Phet']
+    provinces.loc['พทัลงุ*'] = provinces.loc['Phatthalung']
+    provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1007,15 +1151,16 @@ def get_cases_by_area_type():
     )
 
     # Reduce down to health areas
-    dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum().reset_index()
+    dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date",columns=['Health District Number'])
     dfprov_grouped = dfprov_grouped.rename(columns=dict((i,f"Area {i}") for i in range(1,14)))
-    by_area = dfprov_grouped.groupby(['Health District Number'],axis=1).sum()
-    by_area = by_area.rename(columns=dict((f"Area {i}", f"Cases Area {i}") for i in range(1,14)))
-    by_type = dfprov_grouped.groupby(level=0, axis=1).sum()
+    #cols = dict((f"Area {i}", f"Cases Area {i}") for i in range(1,14))
+    #by_area = dfprov_grouped["Cases"].groupby(['Health District Number'],axis=1).sum(min_count=1).rename(columns=cols)
+    #cols = dict((f"Area {i}", f"Cases Proactive Area {i}") for i in range(1,14))
+    by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
-    by_area = by_area.combine_first(dfprov_grouped).combine_first(by_type)
+    by_area = dfprov_grouped.combine_first(by_type)
     by_area = by_area.combine_first(cases) # imported, proactive total etc
 
     # Ensure we have all areas
@@ -1055,19 +1200,19 @@ def get_cases_by_area_api():
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
     unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"]!="")]
-    assert unjoined.empty
+    assert unjoined.empty, f"Missing prov: {list(unjoined.index)}"
     cases = cases.rename(columns=dict(announce_date="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     return case_areas
 
 def get_cases_by_area():
-    case_areas = get_cases_by_area_api()
+    case_areas = get_cases_by_area_api() # can be very wrong for the last days
 
     # we will add in the tweet data for the export
     case_tweets = get_cases_by_area_type()
 
-    case_areas = case_areas.combine_first(case_tweets)
+    case_areas = case_tweets.combine_first(case_areas)
 
     os.makedirs("api", exist_ok=True)
     case_areas.reset_index().to_json(
@@ -1311,10 +1456,10 @@ def briefing_case_detail(date, pages):
     rows = []
     if date < d("2021-03-24"):
         pages = []
-    for page in pages:
-        if "ผู้ป่วยรายใหม่ประเทศไทย" not in page:
+    for soup in pages:
+        text = soup.get_text()
+        if "ผู้ป่วยรายใหม่ประเทศไทย" not in text:
             continue
-        soup = BeautifulSoup(page, 'html.parser')
         parts = soup.find_all('p')
         parts = [c for c in [c.strip() for c in [c.get_text() for c in parts]] if c]
         maintitle, parts = seperate(parts, lambda x: "วันที่" in x)
@@ -1364,12 +1509,14 @@ def briefing_case_detail(date, pages):
         if m:
             assert total==int(m.group(1))
     df = pd.DataFrame(rows, columns=["Date", "Province", "Case Type", "Cases",]).set_index(['Date', 'Province'])
+
     return df
 
 def briefing_case_types(date, pages):
     rows = []
-    for i,page in enumerate(pages):
-        soup = BeautifulSoup(page, 'html.parser')
+    if date < d("2021-02-01"):
+        pages = []
+    for i,soup in enumerate(pages):
         text = soup.get_text()
         if not "รายงานสถานการณ์" in text:
             continue
@@ -1382,43 +1529,103 @@ def briefing_case_types(date, pages):
             ports = 0
         imported = ports + quarantine
 
-        assert cases == walkins + proactive + imported
-
-        # numbers, rest = get_next_numbers(
-        #     text, 
-        #     "จากระบบเฝ้าระวังและระบบบริการฯ ",
-        #     ) # numbers are ahead of the labels
-        # proactive, *_ = numbers
-        # numbers, rest = get_next_numbers(text, "รายค้นหาผู้ติดเชื้อเชิงรุกในชุมชน")
-        # imported, *_ = numbers
-        # numbers, rest = get_next_numbers(text, "รวม") 
-        # cases, walkins, *_ = numbers
+        assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
         rows.append([date, cases, walkins, proactive, imported])
         break
     df = pd.DataFrame(rows, columns=["Date", "Cases", "Cases Walkin", "Cases Proactive", "Cases Imported",]).set_index(['Date'])
-    print(df)
+    print(df.to_string(header=False))
     return df
+
+NUM_OR_DASH = re.compile("([0-9\,-]+)")
+def briefing_province_cases(file, date, pages):
+    if date < d("2021-01-13"):
+        pages = []
+    rows = {}
+    for i,soup in enumerate(pages):
+        #camelot.read_pdf(file,pages=' '.join([str(i) for i in [i]]))
+        if "อโควิดในประเทศรายใหม่" not in str(soup):
+            continue
+        parts = [l.get_text() for l in soup.find_all("p")]
+        parts = [l for l in parts if l]
+        #parts = list(split(parts, lambda x: "รวม" in x))[-1]
+        title, *parts = parts
+        while parts and "รวม" in parts[0]:
+            header, *parts = parts
+        #lines = [c.strip() for c in re.split("((?:[^0-9,\- ]+) *)+", "\n".join(lines)) if c.strip()]
+        parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
+        while True:
+            if len(parts) < 9:
+                break
+            linenum, prov, *parts = parts
+            numbers, parts = parts[:9], parts[9:]
+            #_, prov, *_ = re.split("[0-9-]+[ ,]", line)
+            thai = prov.strip().strip(" ี").strip(" ์").strip(" ิ")
+            try:
+                prov = PROVINCES["ProvinceEn"].loc[thai]
+            except KeyError:
+                print(f"provinces.loc['{thai}'] = provinces.loc['x']")
+                continue
+            #numbers = [float(i.replace(",","")) if i!="-" else 0 for i in re.findall("([0-9-,]+)", row)]
+            numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
+            #numbers, rest = get_next_numbers(line, "\w*")
+            #linenum = numbers[0]
+            numbers = numbers[1:-1] # last is total. first is previous days
+            assert len(numbers) == 7
+            for i, cases in enumerate(reversed(numbers)):
+                if i > 3: # 2021-01-11 they use earlier cols for date ranges
+                    break
+                olddate = date-datetime.timedelta(days=i)
+                #cases = numbers[-1]
+                #df.loc[(olddate,prov), "Cases"] = cases
+                rows[(olddate,prov)] = cases
+                if False and olddate == date:
+                    if cases > 0:
+                        print(date,linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
+                    else:
+                        print("no cases", linenum, thai, *numbers)
+    df = pd.DataFrame(((d,p,c) for (d,p), c in rows.items()), columns=["Date", "Province", "Cases"]).set_index(["Date","Province"])
+
+    return df
+
+
 
 def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date",]).set_index(['Date',])
-    cases = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
+    date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
+    date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
-    #datetime.datetime(day=int(d[0]), month=int(d[1]), year=int(d[2]) - 543)
-    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(d("2021-02-24"), TODAY(),1))
+    start = d("2021-01-13") #12th gets a bit messy but could be fixed
+    #start = d("2021-04-07")
+    end = TODAY()
+    #end = d("2021-04-09")
+    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end,1))
     links = reversed(list(links))
     for file, text in web_files(*links, dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
+        pages = [BeautifulSoup(page, 'html.parser') for page in pages]
         date = file2date(file)
-        print(file, date)
         df = briefing_case_detail(date, pages)
-        cases = cases.combine_first(df)
-        types = types.combine_first(briefing_case_types(date, pages))
+        date_prov_types = date_prov_types.combine_first(df)
+        today_types = briefing_case_types(date, pages)
+        types = types.combine_first(today_types)
+        prov = briefing_province_cases(file, date, pages)
+        date_prov = date_prov.combine_first(prov)
+        today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
+        prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
+        if today_total != prov_total:
+            print(f"WARNING: briefing provs={prov_total}, cases={today_total}")
+        # Phetchabun                  1.0 extra
+    # ขอนแกน่ 12 missing
+    # ชุมพร 1 missing
 
-    cases = cases.groupby(['Date','Province','Case Type']).sum() # we often have multiple walkin events
-    cases = cases.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
-    cases.columns = [f"Cases {c}" for c in cases.columns.get_level_values(1)]
 
-    return cases, types
+    if not date_prov_types.empty:
+        date_prov_types = date_prov_types.groupby(['Date','Province','Case Type']).sum() # we often have multiple walkin events
+        date_prov_types = date_prov_types.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
+        date_prov_types.columns = [f"Cases {c}" for c in date_prov_types.columns.get_level_values(1)]
+        date_prov = date_prov.combine_first(date_prov_types)
+
+    return date_prov, types
 
 
 ### Combine and plot

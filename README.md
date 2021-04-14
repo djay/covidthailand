@@ -13,6 +13,7 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - Some are translations where mistypings have happened
 - I take no responsibility for the accuracy of this data.
 
+
 ## Cases by Area
 
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
