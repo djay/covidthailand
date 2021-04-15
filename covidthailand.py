@@ -1859,9 +1859,9 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity_2.png")
 
-    df["PUI per Case"] = df["Tested PUI (MA)"] / df["Cases (MA)"] 
+    df["PUI per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
     df["PUI per Walkin"] = df["Tested PUI"].shift(-3).rolling(3).mean()/ df["Cases Walkin"].rolling(3).mean()
-    df["Tests per case"] = "Tests Corrected+Private (MA)" / df["Cases (MA)"]
+    df["Tests per case"] = df["Tests Corrected+Private (MA)"] / df["Cases (MA)"]
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -1871,17 +1871,16 @@ def save_plots(df):
         figsize=[20, 10],
         y=[
             "PUI per Case",
-            "PCR Tests per case",
+            "Tests per case",
         ],
         title="Tests & PUI per Confirmed Case (7 day rolling average)",
     )
-    # ax.legend(
-    #     [
-    #         "Share of PUI that have Covid",
-    #         "Whare of PUI that have Covid found via Walkin",
-    #         "Share of PCR tests that are postitive",
-    #     ]
-    # )
+    ax.legend(
+        [
+            "PUI per Case",
+            "PCR Tests per case",
+        ]
+    )
     plt.tight_layout()
     plt.savefig("tests_per_case.png")
 
