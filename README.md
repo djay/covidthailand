@@ -36,7 +36,7 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ## Cases by Area
 
 - Source: 
-   - [MOPH Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
    - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
@@ -88,7 +88,7 @@ Bureau, Chaeng Watthana"
 ![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
 
 - Source: 
-   - [Daily Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
+   - [Daily CCSA Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
   - "Date": e.g "2021-04-06"

@@ -2004,19 +2004,20 @@ def save_plots(df):
     plt.savefig("pos_area.png")
 
 
-    cols = [f"Tests Daily {area}" for area in range(1, 15)]
-    test_cols = [f"Tests Area {area}" for area in range(1, 15)]
-    for area in range(1, 15):
+    cols = [f"Tests Daily {area}" for area in range(1, 14)]
+    test_cols = [f"Tests Area {area}" for area in range(1, 14)]
+    for area in range(1, 14):
         df[f"Tests Daily {area}"] = (
             df[f"Tests Area {area}"]
             / df[test_cols].sum(axis=1)
             * df["Tests Public (MA)"]
         )
+    df['Tests Daily 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
         ax=ax,
         use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
+        y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Public Tests performed by Thailand Health Area (ex. some proactive, 7 day rolling average)",
@@ -2026,19 +2027,20 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("tests_area_daily.png")
 
-    cols = [f"Pos Daily {area}" for area in range(1, 15)]
-    pos_cols = [f"Pos Area {area}" for area in range(1, 15)]
-    for area in range(1, 15):
+    cols = [f"Pos Daily {area}" for area in range(1, 14)]
+    pos_cols = [f"Pos Area {area}" for area in range(1, 14)]
+    for area in range(1, 14):
         df[f"Pos Daily {area}"] = (
             df[f"Pos Area {area}"]
             / df[pos_cols].sum(axis=1)
             * df["Pos Public (MA)"]
         )
+    df['Pos Daily 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
         ax=ax,
         use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
+        y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Public Positive Test results by Thailand Health Area (ex. some proactive, 7 day rolling average)",
@@ -2050,11 +2052,11 @@ def save_plots(df):
 
 
     # Workout positivity for each area as proportion of positivity for that period
-    for area in range(1, 15):
+    for area in range(1, 14):
         df[f"Positivity {area}"] = (
             df[f"Pos Area {area}"] / df[f"Tests Area {area}"] * 100
         )
-    cols = [f"Positivity {area}" for area in range(1, 15)]
+    cols = [f"Positivity {area}" for area in range(1, 14)]
     df["Total Positivity Area"] = df[cols].sum(axis=1)
     for area in range(1, 14):
         df[f"Positivity {area}"] = (
@@ -2062,6 +2064,8 @@ def save_plots(df):
             / df["Total Positivity Area"]
             * df["Positivity XLS (MA)"]
         )
+    df['Positivity 14'] = df['Positivity XLS (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+
     print(
         df[
             ["Total Positivity Area", "Positivity Area", "Pos Area", "Tests Area"]
@@ -2073,7 +2077,7 @@ def save_plots(df):
     df.plot(
         ax=ax,
         use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
+        y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
@@ -2087,7 +2091,7 @@ def save_plots(df):
     df.loc["2020-12-12":].plot(
         ax=ax,
         use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
+        y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
         title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
