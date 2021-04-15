@@ -16,13 +16,16 @@ For more in depth analysis on what some of this means see [An analysis of testin
 # Dashboard
 ## Tests per Confirmed Case
 ![Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png)
-- [OWID Tests per Case](https://ourworldindata.org/coronavirus-testing) to compare with other countries
-- WHO suggests 10-30 tests per confirmed case for adequate testing
-- PUI is updated daily and is an indicator of how many free tests will be performed
+- WHO suggests lower than 10-30 tests per confirmed case for adequate testing
+- PUI is updated daily and is a indicator of how many free tests will be performed
 - Tests and PUI numbers don't seem to include most proactive testing
+- [Our World in Data: Tests per Case](https://ourworldindata.org/coronavirus-testing) to compare with other countries. also [Our World in Data: Postitive Rate](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#the-scale-of-testing-compared-to-the-scale-of-the-outbreak)
+
 ## Cases by Health District
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+- Imported cases are not yet shown.
+- You can also see [Cases by District broken down by walkin vs proactive](https://github.com/djay/covidthailand#cases-by-type-and-province) but there is no longer a data source to keep this updated.
 ## Cases by method found
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
 - Contact tracing normally counts as a "Walkin"
@@ -32,6 +35,10 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
 - Excludes private and some proactive tests (non-PCR)
 
+## Share of Positive tests results for Public PCR tests by Health District
+
+![Positive Rate by Health Area in proportion to Thailand positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+- Gives an indication of which areas are doing less testing compared to cases.
 # Downloads
 ## Cases by Area
 
@@ -54,6 +61,7 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - Source: 
   - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
   - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php)) (Updated a few days later)
+  - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Todays PUI count
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports) [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
   - Date: e.g "2021-04-06"
   - Cases: Total cases that day. Cases Imported + Cases Local Transmission
@@ -81,21 +89,6 @@ Bureau, Chaeng Watthana"
         - Deaths
         - Recovered
         - Hospitized
-
-# Cases by type and province
-
-![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
-![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
-
-- Source: 
-   - [Daily CCSA Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
-  - "Date": e.g "2021-04-06"
-  - "Province": e.g "Samut Sakhon"
-  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria
-  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid
-  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
 ## Tests by Health Area  
 
@@ -140,10 +133,23 @@ Bureau, Chaeng Watthana"
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
   should be the same numbers as Pos Public and Tests Public. 
 
+
+# Cases by type and province
+
+![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
+![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
+
+- Source: 
+   - [Daily CCSA Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
+- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+  - "Date": e.g "2021-04-06"
+  - "Province": e.g "Samut Sakhon"
+  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria
+  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid
+  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+
 # Combined
-
-![Positive Rate by Health Area in proportion to Thailand positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
-
 
 - Source: 
   - All of the above
@@ -151,23 +157,25 @@ Bureau, Chaeng Watthana"
 - API: [Download JSON](https://github.com/djay/covidthailand/wiki/combined) [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
   - See all of the above for data definitions
 
-
-# Change log
-- 2021-04-05 - add tweets with province/type break down to get more up to date stats
-
-# TODO
-- put in unknown for case types and areas so graph doesn't miss latests
-- put in graph of risk/source
-  - e.g entertainment vs factory vs prison vs friend
-- get timely data source for cases by type and cases by area
-  - e.g. 
+# Other sources of data
+## Thailand
   - https://www.facebook.com/ThaigovSpokesman
   - http://media.thaigov.go.th/uploads/public_img/source/300364.pdf (can guess date)
   - https://twitter.com/thaimoph - infographic which richardbarrow translates
   - https://www.facebook.com/thailandprd
   - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322
-- get quicker PUI count
-  - https://ddc.moph.go.th/viralpneumonia/index.php
+  - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
+
+# Change log
+- 2021-04-15 - Quicker province case type breakdowns from daily briefing reports
+- 2021-04-13 - get quicker PUI count from https://ddc.moph.go.th/viralpneumonia/index.php
+- 2021-04-12 - Put in "unknown area" for tests and cases by district so totals are correct
+- 2021-04-05 - add tweets with province/type break down to get more up to date stats
+
+# TODO
+- put imported cases into cases by area plot since they don't have location. Should fix some missing from totals.
+- put in graph of risk/source
+  - e.g entertainment vs factory vs prison vs friend 
 - get data source for antigen and antibody tests
   - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
 - get data source for walkins or proactive investigated/tested
