@@ -4,7 +4,9 @@ on:
     branches-ignore:
       - "releases/**"
   schedule:
-    - cron: "20 05,16 * * *" # 12:20,23:20 - to get daily briefing data
+    - cron: "20 05 * * *" # 12:20 daily briefing
+    - cron: "20 07 * * *" # 14:20 new PUI number
+    - cron: "20 16 * * *" # 23:20 any new test data
 jobs:
   build:
     runs-on: ubuntu-latest
