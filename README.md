@@ -174,6 +174,8 @@ Bureau, Chaeng Watthana"
 
 # TODO
 - put imported cases into cases by area plot since they don't have location. Should fix some missing from totals.
+- switch to plotly or seaborn 
+  - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
 - put in graph of risk/source
   - e.g entertainment vs factory vs prison vs friend 
 - get data source for antigen and antibody tests

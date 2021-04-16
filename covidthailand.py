@@ -1174,7 +1174,17 @@ def get_cases_by_area_type():
     return by_area
 
 
-def get_cases_by_area_api():
+def get_case_details_csv():
+    url = "https://data.go.th/dataset/covid-19-daily"
+    links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
+    file, _ = next(web_files(*links, dir="json"))
+    cases = pd.read_csv(file)
+    cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
+    cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
+
+    return cases
+
+def get_case_details_api():
 #    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
     url = "https://data.go.th/api/3/action/datastore_search?resource_id=329f684b-994d-476b-91a4-62b2ea00f29f&limit=1000&offset="
     records = []
@@ -1195,11 +1205,15 @@ def get_cases_by_area_api():
         record['announce_date'] = to_switching_date(record['announce_date'])
         record['Notified date'] = to_switching_date(record['Notified date'])
     cases = pd.DataFrame(records)
+    return cases
+
+def get_cases_by_area_api():
+    cases = get_case_details_csv()
 #    cases['Date'] = pd.to_datetime(cases['announce_date'], format='%Y-%d-%m',errors='coerce')
 #    cases['Notified date'] = pd.to_datetime(cases['Notified date'], format='%Y-%d-%m',)
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
-    unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"]!="")]
+    unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"].notnull())]
     assert unjoined.empty, f"Missing prov: {list(unjoined.index)}"
     cases = cases.rename(columns=dict(announce_date="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
@@ -1709,9 +1723,6 @@ def calc_cols(df):
     df = df.combine_first(walkins)
 
     # Work out unknown areas or types
-    cols = [f"Cases Area {area}" for area in range(1, 14)]
-    df['Cases Area 14'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
-    assert df[cols+['Cases Area 14']][(df['Cases Area 14'] < 0)].empty
     cols = [f"Cases Walkin Area {area}" for area in range(1, 14)]
     df['Cases Walkin Area 14'] = df['Cases Walkin'].sub(df[cols].sum(axis=1), fill_value=0)
     assert df[cols][(df['Cases Walkin Area 14'] < 0)].empty
@@ -1758,7 +1769,7 @@ def rearrange(l, *first):
 
 FIRST_AREAS = [13, 4, 6, 1, 5, 12] # based on size-ish
 AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
-AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown"]
+AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
 TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
@@ -2105,7 +2116,13 @@ def save_plots(df):
     # Case by area plots
     #########################
 
-    cols = rearrange([f"Cases Area {area}" for area in range(1, 15)],*FIRST_AREAS)
+    cols = [f"Cases Area {area}" for area in range(1, 14)]+["Cases Imported"]
+    df['Cases Area Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    cols = cols+['Cases Area Unknown']
+    assert df[cols][(df['Cases Area Unknown'] < 0)].empty
+    legend = AREA_LEGEND + ["Imported Cases", "Unknown District"]
+
+    cols = rearrange(cols,*FIRST_AREAS)
     fig, ax = plt.subplots()
     df[:"2020-06-14"].plot(
         ax=ax,
@@ -2114,7 +2131,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Cases by health area"
     )
-    ax.legend(AREA_LEGEND_UNKNOWN)
+    ax.legend(legend)
     plt.tight_layout()
     plt.savefig("cases_areas_1.png")
 
@@ -2126,7 +2143,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Cases by health area"
     )
-    ax.legend(AREA_LEGEND_UNKNOWN)
+    ax.legend(legend)
     plt.tight_layout()
     plt.savefig("cases_areas_2.png")
 
