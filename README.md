@@ -16,44 +16,81 @@ For more in depth analysis on what some of this means see [An analysis of testin
 # Dashboard
 ## Tests per Confirmed Case
 ![Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png)
+- View this inversed as [Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png) or [Our World in Data: Tests per Case](https://ourworldindata.org/coronavirus-testing#tests-per-confirmed-case) to compare with other countries. 
 - WHO suggests lower than 10-30 tests per confirmed case for adequate testing
 - PUI is updated daily and is a indicator of how many free tests will be performed. Tests seem to
   on average around 3 times PUI number (when lots of proactive testing is not happening) so can be used as a rough predictor of Tests per Case.
-- Tests and PUI numbers don't seem to include most proactive testing
-- [Our World in Data: Tests per Case](https://ourworldindata.org/coronavirus-testing) to compare with other countries. also [Our World in Data: Postitive Rate](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#the-scale-of-testing-compared-to-the-scale-of-the-outbreak)
+- Tests and PUI numbers don't seem to include all proactive testing but some say this shouldn't be included anyway.
+- Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
 
 ## Cases by Health District
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 - Imported cases are not yet shown.
 - You can also see [Cases by District broken down by walkin vs proactive](https://github.com/djay/covidthailand#cases-by-type-and-province) but there is no longer a data source to keep this updated.
-## Cases by method found
+- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
+  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
+## Cases by test type
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
 - Contact tracing normally counts as a "Walkin"
 - Proactive tests are normally done on specific high risk locations
+- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
+  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
 
 ## Public PCR Tests by Health District
 ![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
 - Excludes private and some proactive tests (non-PCR)
-
+- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 ## Share of Positive tests results for Public PCR tests by Health District
 
 ![Positive Rate by Health Area in proportion to Thailand positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
 - Gives an indication of which areas are doing less testing compared to cases.
+- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
+
+
 # Downloads
-## Cases by Area
+## Tests by Health Area  
+
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
 
 - Source: 
-   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
-   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
-  - Date: e.g "2021-04-06"
-  - Cases Area {1-13}: Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - Cases Proactive Area {1-13}: Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - Cases Walkin Area {1-13}: Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
+- Downloads: [JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
+   - Start: e.g "2021-04-06"
+   - End: e.g "2021-04-13"
+   - Pos Area {1-13} - Positive public test results
+   - Tests Area {1-13} - Total public tests (PCR)
 - Notes:
-  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - not all periods are a week
+  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
+  - There is missing file so 1 weeks data is not shown
+  - The example graphs shown have been extrapolated using daily totals from the Public test daily data below
+
+## Tests Private+Public
+
+![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
+![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
+
+
+- Source: 
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
+   -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
+- Downloads: [JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
+   - Date: e.g "2021-04-06"
+   - Tests Public: PCR tests for free (PUI Criteria)
+   - Tests Private: PCR tests paid for
+   - Pos Public: Positive result of free PCR test
+   - Pos Private: Positive result of paid PCR test
+   - Pos XLS: Public tests positive results (includes corrected dataless data)
+   - Tests XLS: Public tests conducted (includes corrected dataless data)
+- Notes:
+  - Uses case history graphs from latest PPTX
+  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
+  - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
+  - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
+  should be the same numbers as Pos Public and Tests Public. 
+
 ## Cases Types and PUI counts (Daily Situation Reports)
 
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
@@ -91,64 +128,34 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitized
 
-## Tests by Health Area  
-
-![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
-![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
-
-
-- Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
-   - Start: e.g "2021-04-06"
-   - End: e.g "2021-04-13"
-   - Pos Area {1-13} - Positive public test results
-   - Tests Area {1-13} - Total public tests (PCR)
-- Notes:
-  - not all periods are a week
-  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
-  - There is missing file so 1 weeks data is not shown
-  - The example graphs shown have been extrapolated using daily totals from the Public test daily data below
-
-## Tests Private+Public
-
-![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
-![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
-
-
-- Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
-   -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv) [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
-   - Date: e.g "2021-04-06"
-   - Tests Public: PCR tests for free (PUI Criteria)
-   - Tests Private: PCR tests paid for
-   - Pos Public: Positive result of free PCR test
-   - Pos Private: Positive result of paid PCR test
-   - Pos XLS: Public tests positive results (includes corrected dataless data)
-   - Tests XLS: Public tests conducted (includes corrected dataless data)
-- Notes:
-  - Uses case history graphs from latest PPTX
-  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
-  - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
-  - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
-  should be the same numbers as Pos Public and Tests Public. 
-
-
 # Cases by type and province
 
 ![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
 ![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
 
 - Source: 
-   - [Daily CCSA Covid Briefings](https://www.facebook.com/ThaigovSpokesman) - *No longer updated*
+   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
+
+- Source: 
+   - [Daily CCSA Covid Briefings](https://www.facebook.com/ThaigovSpokesman) 
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) *No longer updated*
-- API: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+- Download by Province: [JSON](https://github.com/djay/covidthailand/wiki/cases_by_province) [CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
   - "Date": e.g "2021-04-06"
   - "Province": e.g "Samut Sakhon"
-  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria
-  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid
+  - "Cases": Confirmed cases in this province
+  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
+  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid. *No longer updated*
   - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+- Download summary by health district [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
+  - Date: e.g "2021-04-06"
+  - Cases Area {1-13}: Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - Cases Proactive Area {1-13}: Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - Cases Walkin Area {1-13}: Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+- Notes:
+  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+
 
 # Combined
 
@@ -160,11 +167,8 @@ Bureau, Chaeng Watthana"
 
 # Other sources of data
 ## Thailand
-  - https://www.facebook.com/ThaigovSpokesman
-  - http://media.thaigov.go.th/uploads/public_img/source/300364.pdf (can guess date)
-  - https://twitter.com/thaimoph - infographic which richardbarrow translates
-  - https://www.facebook.com/thailandprd
-  - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322
+  - [Thai Gov Press: FB](https://www.facebook.com/ThaigovSpokesman), [Ministry of Healt: Twitter](https://twitter.com/thaimoph), [Thai Government PR](https://www.facebook.com/thailandprd)
+  - [MOPH GIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322)
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log

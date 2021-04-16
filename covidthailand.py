@@ -1886,7 +1886,9 @@ def save_plots(df):
             "PUI3 per Case",
             "Tests per case",
         ],
-        title="Tests & PUI per Confirmed Case (7 day rolling average)",
+        title="Thailand Tests,PUI per Confirmed Case (7 day rolling average)"
+        "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
+        f"Updated: {TODAY.date()}",
     )
     ax.legend(
         [
@@ -1977,11 +1979,26 @@ def save_plots(df):
         use_index=True,
         kind="area",
         figsize=[20, 10],
-        title="Cases by source - Thailand Covid",
+        title="Thailand Cases by source\n"
+        "https://github.com/djay/covidthailand#cases-by-method-found\n"
+        f"Updated: {TODAY.date()}",
     )
     plt.tight_layout()
     plt.savefig("cases_types.png")
 
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax,
+        y=["Cases Imported","Cases Walkin", "Cases Proactive", "Cases Unknown"],
+        use_index=True,
+        kind="area",
+        figsize=[20, 10],
+        title="Thailand Cases by source\n"
+        "https://github.com/djay/covidthailand#cases-by-method-found\n"
+        f"Updated: {TODAY.date()}",
+    )
+    plt.tight_layout()
+    plt.savefig("cases_types_all.png")
 
     ##########################
     # Tests by area
