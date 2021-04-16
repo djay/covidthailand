@@ -17,7 +17,8 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ## Tests per Confirmed Case
 ![Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png)
 - WHO suggests lower than 10-30 tests per confirmed case for adequate testing
-- PUI is updated daily and is a indicator of how many free tests will be performed
+- PUI is updated daily and is a indicator of how many free tests will be performed. Tests seem to
+  on average around 3 times PUI number (when lots of proactive testing is not happening) so can be used as a rough predictor of Tests per Case.
 - Tests and PUI numbers don't seem to include most proactive testing
 - [Our World in Data: Tests per Case](https://ourworldindata.org/coronavirus-testing) to compare with other countries. also [Our World in Data: Postitive Rate](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#the-scale-of-testing-compared-to-the-scale-of-the-outbreak)
 
