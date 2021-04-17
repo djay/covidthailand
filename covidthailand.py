@@ -1888,7 +1888,7 @@ def save_plots(df):
         ],
         title="Thailand Tests,PUI per Confirmed Case (7 day rolling average)"
         "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
-        f"Updated: {TODAY.date()}",
+        f"Updated: {TODAY().date()}",
     )
     ax.legend(
         [
@@ -1981,7 +1981,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Thailand Cases by source\n"
         "https://github.com/djay/covidthailand#cases-by-method-found\n"
-        f"Updated: {TODAY.date()}",
+        f"Updated: {TODAY().date()}",
     )
     plt.tight_layout()
     plt.savefig("cases_types.png")
@@ -1993,9 +1993,9 @@ def save_plots(df):
         use_index=True,
         kind="area",
         figsize=[20, 10],
-        title="Thailand Cases by source\n"
-        "https://github.com/djay/covidthailand#cases-by-method-found\n"
-        f"Updated: {TODAY.date()}",
+        title="Thailand Covid Cases by Test Type\n"
+        "(https://github.com/djay/covidthailand#cases-by-method-found)\n"
+        f"Updated: {TODAY().date()}",
     )
     plt.tight_layout()
     plt.savefig("cases_types_all.png")
@@ -2051,7 +2051,10 @@ def save_plots(df):
         y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Public Tests performed by Thailand Health Area (ex. some proactive, 7 day rolling average)",
+        title="Public PCR Tests by Thailand Health District"
+        "(excludes private and some proactive tests, 7 day rolling average)\n
+        "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district\n"
+        f"Updated: {TODAY().date()}",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
