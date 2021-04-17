@@ -2052,7 +2052,7 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         title="Public PCR Tests by Thailand Health District"
-        "(excludes private and some proactive tests, 7 day rolling average)\n
+        "(excludes private and some proactive tests, 7 day rolling average)\n"
         "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district\n"
         f"Updated: {TODAY().date()}",
     )
