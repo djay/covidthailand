@@ -1101,6 +1101,7 @@ def get_provinces():
     provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
     provinces.loc['เชีียงราย'] = provinces.loc['Chiang Rai']
     provinces.loc['เวียงจันทร์'] = provinces.loc['Nong Khai']# TODO: it's really vientiane
+    provinces.loc['อุทัยธาน'] = provinces.loc['Uthai Thani']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1223,10 +1224,10 @@ def get_cases_by_area_api():
     return case_areas
 
 def get_cases_by_area():
-    case_areas = get_cases_by_area_api() # can be very wrong for the last days
 
     # we will add in the tweet data for the export
     case_tweets = get_cases_by_area_type()
+    case_areas = get_cases_by_area_api() # can be very wrong for the last days
 
     case_areas = case_tweets.combine_first(case_areas)
 
@@ -1571,6 +1572,7 @@ def briefing_province_cases(file, date, pages):
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
         while True:
             if len(parts) < 9:
+                # TODO: can be number unknown cases - e.g. หมายเหตุ : รอสอบสวนโรค จานวน 337 ราย
                 break
             linenum, prov, *parts = parts
             numbers, parts = parts[:9], parts[9:]
@@ -1580,7 +1582,8 @@ def briefing_province_cases(file, date, pages):
                 prov = PROVINCES["ProvinceEn"].loc[thai]
             except KeyError:
                 print(f"provinces.loc['{thai}'] = provinces.loc['x']")
-                continue
+                raise Exception(f"provinces.loc['{thai}'] = provinces.loc['x']")
+                #continue
             #numbers = [float(i.replace(",","")) if i!="-" else 0 for i in re.findall("([0-9-,]+)", row)]
             numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
             #numbers, rest = get_next_numbers(line, "\w*")
@@ -1588,7 +1591,7 @@ def briefing_province_cases(file, date, pages):
             numbers = numbers[1:-1] # last is total. first is previous days
             assert len(numbers) == 7
             for i, cases in enumerate(reversed(numbers)):
-                if i > 3: # 2021-01-11 they use earlier cols for date ranges
+                if i > 4: # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date-datetime.timedelta(days=i)
                 #cases = numbers[-1]
@@ -1630,6 +1633,9 @@ def get_cases_by_prov_briefings():
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
             print(f"WARNING: briefing provs={prov_total}, cases={today_total}")
+        # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
+        #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
+
         # Phetchabun                  1.0 extra
     # ขอนแกน่ 12 missing
     # ชุมพร 1 missing
@@ -1771,7 +1777,7 @@ def rearrange(l, *first):
         l[f-1] = None
     return result + [i for i in l if i is not None]
 
-FIRST_AREAS = [13, 4, 6, 1, 5, 12] # based on size-ish
+FIRST_AREAS = [13, 4, 5, 6, 1] # based on size-ish
 AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
 AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
 TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
@@ -1824,6 +1830,9 @@ def save_plots(df):
     plt.savefig("tested_pui.png")
 
 
+    ###############
+    # Positive Rate
+    ###############
 
 
     fig, ax = plt.subplots()
@@ -1832,10 +1841,11 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
+        colormap="Dark2",
         y=[
+            "Positivity Public+Private (MA)",
             "Positivity PUI (MA)",
             "Positivity XLS (MA)",
-            "Positivity Public+Private (MA)",
         ],
         title="Positive Rate: Is enough testing happening?\n"
         "(7 day rolling mean)\n"
@@ -1844,9 +1854,9 @@ def save_plots(df):
     )
     ax.legend(
         [
+            "Positive Results / Tests Performed (All)",
             "Confirmed Cases / PUI",
             "Positive Results / Tests Performed (Public)",
-            "Positive Results / Tests Performed (All)",
         ]
     )
     plt.tight_layout()
@@ -1862,10 +1872,11 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
+        colormap="Dark2",
         y=[
-            "Positivity PUI (MA)",
             "Positivity Public+Private (MA)",
             "Cases per Tests (MA)",
+            "Positivity PUI (MA)",
             "Cases per PUI3",
             "Positivity Walkins/PUI (MA)",
         ],
@@ -1876,9 +1887,9 @@ def save_plots(df):
     )
     ax.legend(
         [
-            "Share of PUI that have Covid",
             "Positive Rate: Share of PCR tests that are postitive ",
             "Share of PCR tests that have Covid",
+            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
             "Share of PUI that are Walkin Covid Cases",
         ]
@@ -1899,10 +1910,11 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
+        colormap="Dark2",
         y=[
-            "PUI per Case",
             "Tests per positive",
             "Tests per case",
+            "PUI per Case",
             "PUI3 per Case",
             "PUI per Walkin",
         ],
@@ -1913,9 +1925,9 @@ def save_plots(df):
     )
     ax.legend(
         [
-            "PUI per Case",
             "PCR Tests per Positive",
             "PCR Tests per Case",
+            "PUI per Case",
             "PUI*3 per Case",
             "PUI per Walkin Case",
         ]
@@ -1931,9 +1943,9 @@ def save_plots(df):
         kind="line",
         figsize=[20, 10],
         y=[
-            "Positivity PUI (MA)",
             "Positivity Cases/Tests (MA)",
             "Positivity XLS (MA)",
+            "Positivity PUI (MA)",
             "Positivity Private (MA)",
             "Positivity Public+Private (MA)",
         ],
@@ -1941,15 +1953,19 @@ def save_plots(df):
     )
     ax.legend(
         [
-            "Confirmed Cases / PUI",
             "Confirmed Cases / Tests Performed (Public)",
             "Positive Results / Tests Performed (Public)",
+            "Confirmed Cases / PUI",
             "Positive Results / Tests Performed (Private)",
             "Positive Results / Tests Performed (All)",
         ]
     )
     plt.tight_layout()
     plt.savefig("positivity_all.png")
+
+    ##################
+    # Test Plots
+    ##################
 
     fig, ax = plt.subplots()
     df.plot(
