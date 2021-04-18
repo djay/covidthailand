@@ -1836,7 +1836,10 @@ def save_plots(df):
             "Positivity XLS (MA)",
             "Positivity Public+Private (MA)",
         ],
-        title="Positive Rate (7 day rolling average) - Thailand Covid",
+        title="Positive Rate: Is enough testing happening?\n"
+        "(7 day rolling mean)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
     )
     ax.legend(
         [
@@ -1865,9 +1868,9 @@ def save_plots(df):
             "Case per PUI3",
             "Positivity Walkins/PUI (MA)",
         ],
-        title="Positive Rate: Is enough testing happening"
-        "7 day rolling mean"
-        f"Updated: {TODAY().date()}"
+        title="Positive Rate: Is enough testing happening?\n"
+        "(7 day rolling mean)\n"
+        f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
     )
     ax.legend(
@@ -1951,7 +1954,10 @@ def save_plots(df):
             "Pos XLS (MA)",
             "Pos Corrected+Private (MA)",
         ],
-        title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid",
+        title="Positive Test results compared to Confirmed Cases\n"
+        "(7 day rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#tests-privatepublic",
     )
     ax.legend(
         [
@@ -1977,7 +1983,10 @@ def save_plots(df):
             "Pos Private (MA)",
             "Pos Corrected+Private (MA)",
         ],
-        title="Confirmed Cases vs Positive Results (7 day rolling average) - Thailand Covid",
+        title="Positive Test results compared to Confirmed Cases\n"
+        "(7 day rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#tests-privatepublic",
     )
     plt.tight_layout()
     plt.savefig("cases_all.png")
@@ -1991,9 +2000,9 @@ def save_plots(df):
         use_index=True,
         kind="area",
         figsize=[20, 10],
-        title="Thailand Cases by source\n"
+        title="Thailand Covid Cases by Test Type\n"
+        f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#cases-by-method-found\n"
-        f"Updated: {TODAY().date()}",
     )
     plt.tight_layout()
     plt.savefig("cases_types.png")
@@ -2024,7 +2033,9 @@ def save_plots(df):
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Test performed by Thailand Health Area",
+        title="Public PCR Tests by Health District\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#tests-by-health-area"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2039,7 +2050,9 @@ def save_plots(df):
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Test results by Thailand Health Area",
+        title="Public PCR Positive Test Results by Health District\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#tests-by-health-area"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2063,7 +2076,7 @@ def save_plots(df):
         y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Public PCR Tests by Thailand Health District"
+        title="Public PCR Tests by Thailand Health District\n"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
@@ -2089,7 +2102,7 @@ def save_plots(df):
         y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Public PCR Tests by Thailand Health District"
+        title="Positive Public PCR Tests by Thailand Health District\n"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
@@ -2146,10 +2159,12 @@ def save_plots(df):
         y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
+        title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
+        "(exludes private and some proactive tests)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#positive-rate-by-health-district",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
     plt.savefig("positivity_area_2.png")
 
@@ -2170,7 +2185,9 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        title="Cases by health area"
+        title="Thailand Covid Cases by Health District\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#cases-by-health-district"
     )
     ax.legend(legend)
     plt.tight_layout()
@@ -2212,7 +2229,9 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        title="Walkin cases by health area - Thailand"
+        title='Thailand "Walkin" Covid Cases by health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand#cases-by-province-by-case-type"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -2225,7 +2244,9 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        title="Proactive cases by health area - Thailand"
+        title='Thailand "Proactive" Covid Cases by health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand#cases-by-province-by-case-type"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
