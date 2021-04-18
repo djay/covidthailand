@@ -23,6 +23,8 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - Tests and PUI numbers don't seem to include all proactive testing but some say this shouldn't be included anyway. [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
 - Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
 
+![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
+
 ## Cases by Health District
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)

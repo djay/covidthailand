@@ -1907,9 +1907,9 @@ def save_plots(df):
     )
     ax.legend(
         [
-            "PUI per Case",
-            "Predicted Tests per Case (PUI*3)",
             "PCR Tests per case",
+            "PUI per Case",
+            "PCR Tests*3 per Case",
         ]
     )
     plt.tight_layout()
