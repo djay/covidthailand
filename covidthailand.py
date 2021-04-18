@@ -1685,6 +1685,8 @@ def calc_cols(df):
     df["Tested (MA)"] = df["Tested"].rolling(7).mean()
     df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7).mean()
     df["Cases (MA)"] = df["Cases"].rolling(7).mean()
+    df["Cases Walkin (MA)"] = df["Cases Walkin"].rolling(7).mean()
+    df["Cases Proactive (MA)"] = df["Cases Proactive"].rolling(7).mean()
     df["Tests Area (MA)"] = df["Tests Area"].rolling(7).mean()
     df["Pos Area (MA)"] = df["Pos Area"].rolling(7).mean()
     df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7).mean()
@@ -1845,7 +1847,7 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity.png")
 
-    df["Positivity Walkins/PUI"] = df["Cases Walkin"] / df["Tested PUI"]
+    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"]
     df["Case per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"]*3 
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] 
 
@@ -1856,10 +1858,11 @@ def save_plots(df):
         kind="line",
         figsize=[20, 10],
         y=[
-            "Positivity PUI (MA)",
-            "Case per PUI3",
             "Positivity Public+Private (MA)",
             "Cases per Tests (MA)",
+            "Positivity PUI (MA)",
+            "Case per PUI3",
+            "Positivity Walkins/PUI (MA)",
         ],
         title="Positive Rate: Is enough testing happening"
         "7 day rolling mean"
@@ -1872,6 +1875,7 @@ def save_plots(df):
             "Share of PCR tests that have Covid",
             "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
+            "Share of PUI that have are Walkin Covid Cases",
         ]
     )
     plt.tight_layout()
@@ -2001,7 +2005,7 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         title="Thailand Covid Cases by Test Type\n"
-        f"Updated: {TODAY().date()}\n",
+        f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#cases-by-method-found"
     )
     plt.tight_layout()
@@ -2060,7 +2064,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Public PCR Tests by Thailand Health District"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n",
+        f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
