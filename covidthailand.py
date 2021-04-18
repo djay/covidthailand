@@ -1851,7 +1851,7 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity.png")
 
-    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / (df["Tested PUI (MA)"]*3)
+    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / (df["Tested PUI (MA)"])
     df["Case per PUI3"] = df["Cases (MA)"] / (df["Tested PUI (MA)"]*3)
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] 
 
@@ -1862,9 +1862,9 @@ def save_plots(df):
         kind="line",
         figsize=[20, 10],
         y=[
+            "Positivity PUI (MA)",
             "Positivity Public+Private (MA)",
             "Cases per Tests (MA)",
-            "Positivity PUI (MA)",
             "Case per PUI3",
             "Positivity Walkins/PUI (MA)",
         ],
@@ -1875,11 +1875,11 @@ def save_plots(df):
     )
     ax.legend(
         [
+            "Share of PUI that have Covid",
             "Positive Rate: Share of PCR tests that are postitive ",
             "Share of PCR tests that have Covid",
-            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
-            "Share of PUI*3 that are Walkin Covid Cases",
+            "Share of PUI that are Walkin Covid Cases",
         ]
     )
     plt.tight_layout()
@@ -1887,8 +1887,10 @@ def save_plots(df):
 
     df["PUI per Case"] = df["Tested PUI (MA)"] / df["Cases (MA)"] 
     df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
-    df["PUI per Walkin"] = df["Tested PUI"].shift(-3).rolling(3).mean()/ df["Cases Walkin"].rolling(3).mean()
+    df["PUI3 per Walkin"] = df["Tested PUI (MA)"]*3 / df["Cases Walkin (MA)"]
+    df["PUI per Walkin"] = df["Tested PUI (MA)"] / df["Cases Walkin (MA)"]
     df["Tests per case"] = df["Tests Corrected+Private (MA)"] / df["Cases (MA)"]
+    df["Tests per positive"] = df["Tests Corrected+Private (MA)"] / df["Pos Corrected+Private (MA)"]
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -1897,19 +1899,24 @@ def save_plots(df):
         kind="line",
         figsize=[20, 10],
         y=[
-            "Tests per case",
             "PUI per Case",
+            "Tests per positive",
+            "Tests per case",
             "PUI3 per Case",
+            "PUI per Walkin",
         ],
-        title="Thailand Tests,PUI per Confirmed Case (7 day rolling mean)\n"
+        title="Thailand Tests per Confirmed Case\n" 
+        "(7 day rolling mean)\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#tests-per-confirmed-case"
     )
     ax.legend(
         [
-            "PCR Tests per case",
             "PUI per Case",
-            "PCR Tests*3 per Case",
+            "PCR Tests per Positive",
+            "PCR Tests per Case",
+            "PUI*3 per Case",
+            "PUI per Walkin Case",
         ]
     )
     plt.tight_layout()
