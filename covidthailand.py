@@ -1099,6 +1099,7 @@ def get_provinces():
     provinces.loc['ก ำแพงเพชร'] = provinces.loc['Kamphaeng Phet']
     provinces.loc['พทัลงุ*'] = provinces.loc['Phatthalung']
     provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
+    provinces.loc['เชีียงราย'] = provinces.loc['Chiang Rai']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1214,7 +1215,7 @@ def get_cases_by_area_api():
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
     unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"].notnull())]
-    assert unjoined.empty, f"Missing prov: {list(unjoined.index)}"
+    assert unjoined.empty, f"Missing prov: {list(unjoined['province_of_onset'])}"
     cases = cases.rename(columns=dict(announce_date="Date"))
     case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
@@ -1847,8 +1848,8 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity.png")
 
-    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"]
-    df["Case per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"]*3 
+    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / (df["Tested PUI (MA)"]*3)
+    df["Case per PUI3"] = df["Cases (MA)"] / (df["Tested PUI (MA)"]*3)
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] 
 
     fig, ax = plt.subplots()
@@ -1875,7 +1876,7 @@ def save_plots(df):
             "Share of PCR tests that have Covid",
             "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
-            "Share of PUI that have are Walkin Covid Cases",
+            "Share of PUI*3 that are Walkin Covid Cases",
         ]
     )
     plt.tight_layout()
