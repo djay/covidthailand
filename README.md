@@ -41,9 +41,9 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
 - Excludes private and some proactive tests (non-PCR)
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
-## Share of Positive tests results for Public PCR tests by Health District
+## Positive Rate by Health District
 
-![Positive Rate by Health Area in proportion to Thailand positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
 - Gives an indication of which areas are doing less testing compared to cases.
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
@@ -94,6 +94,7 @@ For more in depth analysis on what some of this means see [An analysis of testin
 ## Cases Types and PUI counts (Daily Situation Reports)
 
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
+![Case Types](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 
 
 - Source: 
@@ -128,8 +129,8 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitized
 
-# Cases by type and province
-
+# Cases by province by case type
+![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 ![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
 ![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
 

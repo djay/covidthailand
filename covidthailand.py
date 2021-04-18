@@ -1846,6 +1846,8 @@ def save_plots(df):
     plt.savefig("positivity.png")
 
     df["Positivity Walkins/PUI"] = df["Cases Walkin"] / df["Tested PUI"]
+    df["Case per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"]*3 
+    df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] 
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -1854,17 +1856,22 @@ def save_plots(df):
         kind="line",
         figsize=[20, 10],
         y=[
-            "Positivity PUI",
-            "Positivity Walkins/PUI",
+            "Positivity PUI (MA)",
+            "Case per PUI3",
             "Positivity Public+Private (MA)",
+            "Cases per Tests (MA)",
         ],
-        title="Is enough testing happening: Positive Rate - Thailand Covid",
+        title="Positive Rate: Is enough testing happening"
+        "7 day rolling mean"
+        f"Updated: {TODAY().date()}"
+        "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
     )
     ax.legend(
         [
+            "Positive Rate: Share of PCR tests that are postitive ",
+            "Share of PCR tests that have Covid",
             "Share of PUI that have Covid",
-            "Whare of PUI that have Covid found via Walkin",
-            "Share of PCR tests that are postitive",
+            "Share of PUI*3 that have Covid",
         ]
     )
     plt.tight_layout()
@@ -1882,13 +1889,13 @@ def save_plots(df):
         kind="line",
         figsize=[20, 10],
         y=[
+            "Tests per case",
             "PUI per Case",
             "PUI3 per Case",
-            "Tests per case",
         ],
-        title="Thailand Tests,PUI per Confirmed Case (7 day rolling average)"
-        "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
-        f"Updated: {TODAY().date()}",
+        title="Thailand Tests,PUI per Confirmed Case (7 day rolling mean)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#tests-per-confirmed-case"
     )
     ax.legend(
         [
@@ -1994,8 +2001,8 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         title="Thailand Covid Cases by Test Type\n"
-        "(https://github.com/djay/covidthailand#cases-by-method-found)\n"
-        f"Updated: {TODAY().date()}",
+        f"Updated: {TODAY().date()}\n",
+        "https://github.com/djay/covidthailand#cases-by-method-found"
     )
     plt.tight_layout()
     plt.savefig("cases_types_all.png")
@@ -2053,8 +2060,8 @@ def save_plots(df):
         figsize=[20, 10],
         title="Public PCR Tests by Thailand Health District"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
-        "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district\n"
-        f"Updated: {TODAY().date()}",
+        f"Updated: {TODAY().date()}\n",
+        "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2077,7 +2084,10 @@ def save_plots(df):
         y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Public Positive Test results by Thailand Health Area (ex. some proactive, 7 day rolling average)",
+        title="Positive Public PCR Tests by Thailand Health District"
+        "(excludes private and some proactive tests, 7 day rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2114,7 +2124,10 @@ def save_plots(df):
         y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        title="Positive Rate by Health Area in proportion to Thailand positive rate (exludes private and some proactive tests)",
+        title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
+        "(excludes private and some proactive tests, 7 day rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#share-of-positive-tests-results-for-public-pcr-tests-by-health-district",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2164,11 +2177,27 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        title="Cases by health area"
+        title="Thailand Covid Cases by health District\n"
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand#cases-by-health-district\n"
     )
     ax.legend(legend)
     plt.tight_layout()
     plt.savefig("cases_areas_2.png")
+
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax,
+        y=cols,
+        kind="area",
+        figsize=[20, 10],
+        title="Thailand Covid Cases by health District\n"
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand#cases-by-health-district\n"
+    )
+    ax.legend(legend)
+    plt.tight_layout()
+    plt.savefig("cases_areas_all.png")
 
 
     cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 15)],*FIRST_AREAS)
