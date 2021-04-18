@@ -1851,9 +1851,9 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity.png")
 
-    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / (df["Tested PUI (MA)"])
-    df["Case per PUI3"] = df["Cases (MA)"] / (df["Tested PUI (MA)"]*3)
-    df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] 
+    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
+    df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
+    df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -1865,7 +1865,7 @@ def save_plots(df):
             "Positivity PUI (MA)",
             "Positivity Public+Private (MA)",
             "Cases per Tests (MA)",
-            "Case per PUI3",
+            "Cases per PUI3",
             "Positivity Walkins/PUI (MA)",
         ],
         title="Positive Rate: Is enough testing happening?\n"
@@ -1885,10 +1885,10 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity_2.png")
 
-    df["PUI per Case"] = df["Tested PUI (MA)"] / df["Cases (MA)"] 
+    df["PUI per Case"] = df["Tested PUI (MA)"].divide(df["Cases (MA)"]) 
     df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
     df["PUI3 per Walkin"] = df["Tested PUI (MA)"]*3 / df["Cases Walkin (MA)"]
-    df["PUI per Walkin"] = df["Tested PUI (MA)"] / df["Cases Walkin (MA)"]
+    df["PUI per Walkin"] = df["Tested PUI (MA)"].divide( df["Cases Walkin (MA)"] )
     df["Tests per case"] = df["Tests Corrected+Private (MA)"] / df["Cases (MA)"]
     df["Tests per positive"] = df["Tests Corrected+Private (MA)"] / df["Pos Corrected+Private (MA)"]
 
