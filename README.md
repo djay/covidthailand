@@ -29,6 +29,9 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 ## Positive Rate by Health District (Public Labs only)
 
 ![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+
+![Health Districts with high Positive Rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
+
 - Gives an indication of which areas are doing less testing compared to cases.
 - *NOTE* Each band is scaled to a proportion of thailands positive rate so can't be used as a measure of the districts actual positive rate.
 - *NOTE* Excludes private test labs and some proactive tests (non-PCR) so actual rate would be lower
@@ -56,7 +59,7 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 - Some are translations where mistypings have happened
 - I take no responsibility for the accuracy of this data.
 
-## Tests Private+Public
+## Daily Tests Private+Public
 
 ![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
 
@@ -65,10 +68,10 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
    -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
 - Downloads: [JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
    - Date: e.g "2021-04-06"
-   - Tests Public: PCR tests for free (PUI Criteria)
-   - Tests Private: PCR tests paid for
-   - Pos Public: Positive result of free PCR test
-   - Pos Private: Positive result of paid PCR test
+   - Tests Public: PCR tests
+   - Tests Private: PCR tests
+   - Pos Public: Positive result
+   - Pos Private: Positive result
    - Pos XLS: Public tests positive results (includes corrected dataless data)
    - Tests XLS: Public tests conducted (includes corrected dataless data)
 - Notes:
@@ -78,7 +81,7 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
   should be the same numbers as Pos Public and Tests Public. 
 
-## Tests by Health District  
+## Public Tests by Health District  
 
 ![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
 

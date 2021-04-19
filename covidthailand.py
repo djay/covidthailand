@@ -712,9 +712,16 @@ def get_situation():
     en_situation = get_en_situation()
     th_situation = get_thai_situation()
     situation = th_situation.combine_first(en_situation)
-    situation = situation.combine_first(today_situation)
     cum = cum2daily(situation)
     situation = situation.combine_first(cum) # any direct non-cum are trusted more
+
+    # Only add in the live stats if they have been updated with new info
+    today = today_situation.index.max()
+    yesterday = today-datetime.timedelta(days=1)
+    stoday = today_situation.loc[today]
+    syesterday = situation.loc[str(yesterday)]
+    if syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']:
+        situation = situation.combine_first(today_situation)
 
     os.makedirs("api", exist_ok=True)
     situation.reset_index().to_json(
@@ -1787,6 +1794,10 @@ POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 def save_plots(df):
     matplotlib.use("AGG")
     plt.style.use('seaborn-whitegrid')
+    plt.rcParams.update({'font.size': 18})
+    #plt.rcParams['legend.title_fontsize'] = 'small'
+    plt.rc('legend',**{'fontsize':16})
+
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2058,10 +2069,14 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_types_all.png")
 
+
+
     ##########################
     # Tests by area
     ##########################
 
+
+    plt.rc('legend',**{'fontsize':12})
     AREA_COLOURS="tab20"
 
     cols = [f"Tests Area {area}" for area in range(1, 15)]
@@ -2205,13 +2220,39 @@ def save_plots(df):
         figsize=[20, 10],
         colormap=AREA_COLOURS,
         title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
-        "(exludes private and some proactive tests)\n"
+        "(excludes private and some proactive tests)\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#positive-rate-by-health-district",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("positivity_area_2.png")
+
+
+
+    for area in range(1, 14):
+        df[f"Positivity {area}"] = (
+            df[f"Pos Area {area}"] / df[f"Tests Area {area}"] * 100
+        )
+    cols = [f"Positivity {area}" for area in range(1, 14)]
+    df['Positivity 14'] = df['Positivity XLS (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df.loc["2020-12-12":].plot.area(
+        ax=ax,
+        use_index=True,
+        y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
+        stacked=False,
+        colormap=AREA_COLOURS,
+        title="Health Districts with the highest Positive Rate\n"
+        "(excludes private and some proactive tests)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#positive-rate-by-health-district",
+    )
+    ax.legend(AREA_LEGEND_UNKNOWN)
+    plt.tight_layout()
+    plt.savefig("positivity_area_unstacked_2.png")
+
 
     #########################
     # Case by area plots
@@ -2287,12 +2328,10 @@ def save_plots(df):
     plt.savefig("cases_areas_walkins.png")
 
     cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 15)],*FIRST_AREAS)
-    fig, ax = plt.subplots()
-    df["2021-02-16":].plot(
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    df["2021-02-16":].plot.area(
         ax=ax,
         y=cols,
-        kind="area",
-        figsize=[20, 10],
         colormap=AREA_COLOURS,
         title='Thailand "Proactive" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
@@ -2302,6 +2341,25 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_areas_proactive.png")
 
+
+    for area in range(1, 14):
+        df[f"Case-Pos {area}"] = (
+            df[f"Cases Area {area}"] - df[f"Pos Area {area}"]
+        )
+    cols = [f"Case-Pos {area}" for area in range(1, 14)]
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["2020-12-12":].plot.area(
+        ax=ax,
+        y=rearrange(cols, *FIRST_AREAS),
+        stacked=False,
+        colormap=AREA_COLOURS,
+        title='Which districts have more cases than positive results\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND_UNKNOWN)
+    plt.tight_layout()
+    plt.savefig("cases_from_positives_area.png")
 
 if __name__ == "__main__":
     df = scrape_and_combine()
