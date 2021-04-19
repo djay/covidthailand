@@ -1817,7 +1817,10 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
-        title="Situation Reports PUI - Thailand Covid",
+        title="PCR Tests and PUI in Thailand\n"
+        "(7 day rolling mean. Excludes some proactive test)\n"
+        f"Checked: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#pcr-tests-in-thailand-by-day\n",
         y=[
             'Tested Cum', 
             "Tested PUI Cum", 

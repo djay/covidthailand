@@ -1,17 +1,8 @@
 # Covidthailand: Thailand Covid testing stats
 
-Thailand testing and case data gathered and combined from various sources.
+Thailand testing and case data gathered and combined from various sources for others to download and use.
 
-The data is updated twice daily at 13:00 UTC+7 and 01:00 UTC+7. [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml))
-
-
-For more in depth analysis on what some of this means see [An analysis of testing in thailand](https://github.com/djay/covidthailand/wiki)
-
-# Disclaimer
-- Some data sources are missing days or numbers (e.g. situation reports and tests)
-- Some are scraped from text and the code to do this might not be perfect
-- Some are translations where mistypings have happened
-- I take no responsibility for the accuracy of this data.
+The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
 # Dashboard
 
@@ -55,6 +46,12 @@ For more in depth analysis on what some of this means see [An analysis of testin
 
 
 # Downloads
+
+## Disclaimer
+- Some data sources are missing days or numbers (e.g. situation reports and tests)
+- Some are scraped from text and the code to do this might not be perfect
+- Some are translations where mistypings have happened
+- I take no responsibility for the accuracy of this data.
 
 ## Tests Private+Public
 
