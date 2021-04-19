@@ -14,16 +14,25 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - I take no responsibility for the accuracy of this data.
 
 # Dashboard
-## Tests per Confirmed Case
-![Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png)
-- View this inversed as [Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png) or [Our World in Data: Tests per Case](https://ourworldindata.org/coronavirus-testing#tests-per-confirmed-case) to compare with other countries. 
-- WHO suggests more than 10-30 tests per confirmed case for adequate testing
-- PUI is updated daily and is a indicator of how many free tests will be performed. Tests seem to
-  on average around 3 times PUI number (when lots of proactive testing is not happening) so can be used as a rough predictor of Tests per Case.
-- Tests and PUI numbers don't seem to include all proactive testing but some say this shouldn't be included anyway. [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
-- Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
+
+# Positive Rate
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
+- *NOTE* The actual positive rate is often delayed due to when testing data reports become available. Included is some other measures that give an indication what the rate might be. 
+- Read [Understanding the Positive Rate](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) to know why number of tests per population is not the best measure to compare countries on testing and why WHO suggests a positive rate of < %3.
+- Tests and PUI numbers don't seem to include all proactive testing but some say this shouldn't be included anyway. [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
+- View this inversed as [Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png) or [Our World in Data: Positive Rate](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) to compare with other countries. 
+- Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
+
+## Public PCR Tests by Health District
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+- Excludes private and some proactive tests (non-PCR)
+- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
+## Positive Rate by Health District
+
+![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+- Gives an indication of which areas are doing less testing compared to cases.
+- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
 ## Cases by Health District
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
@@ -39,35 +48,8 @@ For more in depth analysis on what some of this means see [An analysis of testin
 - Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
   [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
 
-## Public PCR Tests by Health District
-![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
-- Excludes private and some proactive tests (non-PCR)
-- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
-## Positive Rate by Health District
-
-![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
-- Gives an indication of which areas are doing less testing compared to cases.
-- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
-
 
 # Downloads
-## Tests by Health Area  
-
-![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
-![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
-
-- Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
-- Downloads: [JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
-   - Start: e.g "2021-04-06"
-   - End: e.g "2021-04-13"
-   - Pos Area {1-13} - Positive public test results
-   - Tests Area {1-13} - Total public tests (PCR)
-- Notes:
-  - not all periods are a week
-  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
-  - There is missing file so 1 weeks data is not shown
-  - The example graphs shown have been extrapolated using daily totals from the Public test daily data below
 
 ## Tests Private+Public
 
@@ -92,6 +74,24 @@ For more in depth analysis on what some of this means see [An analysis of testin
   - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
   should be the same numbers as Pos Public and Tests Public. 
+
+## Tests by Health District  
+
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
+
+- Source: 
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
+- Downloads: [JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
+   - Start: e.g "2021-04-06"
+   - End: e.g "2021-04-13"
+   - Pos Area {1-13} - Positive public test results
+   - Tests Area {1-13} - Total public tests (PCR)
+- Notes:
+  - not all periods are a week
+  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
+  - There is missing file so 1 weeks data is not shown
+  - The example graphs shown have been extrapolated using daily totals from the Public test daily data below
 
 ## Cases Types and PUI counts (Daily Situation Reports)
 

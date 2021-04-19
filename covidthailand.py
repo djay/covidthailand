@@ -1872,7 +1872,7 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
-        colormap="Dark2",
+        colormap="Set1",
         y=[
             "Positivity Public+Private (MA)",
             "Cases per Tests (MA)",
@@ -1910,7 +1910,7 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
-        colormap="Dark2",
+        colormap="Set1",
         y=[
             "Tests per positive",
             "Tests per case",
@@ -2049,6 +2049,8 @@ def save_plots(df):
     # Tests by area
     ##########################
 
+    AREA_COLOURS="tab20"
+
     cols = [f"Tests Area {area}" for area in range(1, 15)]
     fig, ax = plt.subplots()
     df.plot(
@@ -2057,7 +2059,7 @@ def save_plots(df):
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Public PCR Tests by Health District\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#tests-by-health-area"
@@ -2075,7 +2077,7 @@ def save_plots(df):
         y=rearrange(cols, *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Public PCR Positive Test Results by Health District\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#tests-by-health-area"
@@ -2102,7 +2104,7 @@ def save_plots(df):
         y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Public PCR Tests by Thailand Health District\n"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
@@ -2129,7 +2131,7 @@ def save_plots(df):
         y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Positive Public PCR Tests by Thailand Health District\n"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
@@ -2170,7 +2172,7 @@ def save_plots(df):
         y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
         "(excludes private and some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
@@ -2188,7 +2190,7 @@ def save_plots(df):
         y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
         "(exludes private and some proactive tests)\n"
         f"Updated: {TODAY().date()}\n"
@@ -2215,7 +2217,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Thailand Covid Cases by Health District\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#cases-by-health-district"
@@ -2230,7 +2232,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Thailand Covid Cases by health District\n"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand#cases-by-health-district\n"
@@ -2245,7 +2247,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title="Thailand Covid Cases by health District\n"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand#cases-by-health-district\n"
@@ -2262,7 +2264,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title='Thailand "Walkin" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand#cases-by-province-by-case-type"
@@ -2278,7 +2280,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap="tab20",
+        colormap=AREA_COLOURS,
         title='Thailand "Proactive" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand#cases-by-province-by-case-type"
