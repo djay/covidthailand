@@ -172,6 +172,8 @@ Bureau, Chaeng Watthana"
 
 # Other sources of data
 ## Thailand
+  - [Pete Scully: COVID-19 Thailand Public Data](https://petescully.co.uk/research/covid19-thailand-dashboards/) for added visulisations and comparisons
+  - [Stefano Starita](https://twitter.com/DrSteStarita) - more excellent analysis and visualisations
   - [Thai Gov Press: FB](https://www.facebook.com/ThaigovSpokesman), [Ministry of Healt: Twitter](https://twitter.com/thaimoph), [Thai Government PR](https://www.facebook.com/thailandprd)
   - [MOPH GIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322)
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
@@ -183,12 +185,15 @@ Bureau, Chaeng Watthana"
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 # TODO
-- put imported cases into cases by area plot since they don't have location. Should fix some missing from totals.
 - switch to plotly or seaborn 
   - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
-- put in graph of risk/source
-  - e.g entertainment vs factory vs prison vs friend 
+- put in plots of 
+  - risk/source e.g entertainment vs factory vs prison vs friend 
+  - case age groups over time
+  - severe cases vs mild vs deaths?
+
 - get data source for antigen and antibody tests
   - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
 - get data source for walkins or proactive investigated/tested
 - put in badges for date of last record per dataset
+- get data from older briefing reports to improve cases by area data
