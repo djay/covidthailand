@@ -1869,24 +1869,28 @@ def save_plots(df):
     df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
         ax=ax,
-        use_index=True,
         kind="line",
-        figsize=[20, 10],
-        colormap="Set1",
         y=[
             "Positivity Public+Private (MA)",
+        ],
+        linewidth=5,
+        title="Positive Rate: Is enough testing happening?\n"
+        "(7 day rolling mean)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#positive-rate\n"
+    )
+    df["2020-12-12":].plot(
+        ax=ax,
+        y=[
             "Cases per Tests (MA)",
             "Positivity PUI (MA)",
             "Cases per PUI3",
             "Positivity Walkins/PUI (MA)",
         ],
-        title="Positive Rate: Is enough testing happening?\n"
-        "(7 day rolling mean)\n"
-        f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#tests-per-confirmed-case\n"
+        colormap=plt.cm.Set1,
     )
     ax.legend(
         [
@@ -1907,15 +1911,21 @@ def save_plots(df):
     df["Tests per case"] = df["Tests Corrected+Private (MA)"] / df["Cases (MA)"]
     df["Tests per positive"] = df["Tests Corrected+Private (MA)"] / df["Pos Corrected+Private (MA)"]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["2020-12-12":].plot(
+        ax=ax,
+        kind="line",
+        y=[
+            "Tests per positive",
+        ],
+        linewidth = 7,
+    )
     df["2020-12-12":].plot(
         ax=ax,
         use_index=True,
         kind="line",
-        figsize=[20, 10],
         colormap="Set1",
         y=[
-            "Tests per positive",
             "Tests per case",
             "PUI per Case",
             "PUI3 per Case",

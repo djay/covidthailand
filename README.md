@@ -6,7 +6,7 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 
 # Dashboard
 
-*WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. This is not correct, as explained in [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki). It represents only the days PUI number and is mislabeled. The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then it will likely be much higher than reality. 
+*WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
 
 # Positive Rate
 
@@ -19,7 +19,7 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 
 ## PCR Tests in Thailand by day
 ![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
-- Tests and PUI numbers don't seem to include all proactive tests so the actual tests could be higher. see [Understanding Thailands Covid Positive Rate](https://github.
+- Tests and PUI numbers don't seem to include all proactive tests so the actual tests could be higher. see [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
 - Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
 
 ## PCR Tests by Health District (Public Labs only)
