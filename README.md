@@ -6,6 +6,8 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 
 # Dashboard
 
+*WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. This is not correct, as explained in [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki). It represents only the days PUI number and is mislabeled. The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then it will likely be much higher than reality. 
+
 # Positive Rate
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
