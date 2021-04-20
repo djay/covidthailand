@@ -2103,7 +2103,7 @@ def save_plots(df):
         ax=ax,
         y=labels+['Age Unknown'],
         kind="area",
-        colormap="cool",
+        colormap="summer",
         title="Thailand Covid Cases by Age\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand#cases-by-method-found"
