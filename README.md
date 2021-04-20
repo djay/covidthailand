@@ -28,12 +28,9 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 ## Positive Rate by Health District (Public Labs only)
 
-![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
-
 ![Health Districts with high Positive Rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
 
 - Gives an indication of which areas are doing less testing compared to cases.
-- *NOTE* Each band is scaled to a proportion of thailands positive rate so can't be used as a measure of the districts actual positive rate.
 - *NOTE* Excludes private test labs and some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
@@ -84,6 +81,9 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 ## Public Tests by Health District  
 
 ![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
+
+![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+
 
 - Source: 
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
