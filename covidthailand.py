@@ -1804,12 +1804,15 @@ def save_plots(df):
         use_index=True,
         kind="line",
         figsize=[20, 10],
-        title="Tests vs PUI (7 day rolling average) - Thailand Covid",
         y=[
             "Tested PUI (MA)",
             "Tests XLS (MA)",
             "Tests Corrected+Private (MA)",
         ],
+        title="Thailand PCR Tests and PUI\n"
+        "(7 day rolling mean. Test totals exclude some proactive testing)\n"
+        f"Checked: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#readme\n",
     )
     ax.legend(
         [
@@ -1831,7 +1834,7 @@ def save_plots(df):
         title="PCR Tests and PUI in Thailand\n"
         "(7 day rolling mean. Excludes some proactive test)\n"
         f"Checked: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#pcr-tests-in-thailand-by-day\n",
+        "https://github.com/djay/covidthailand#readme\n",
         y=[
             'Tested Cum', 
             "Tested PUI Cum", 
@@ -2240,9 +2243,9 @@ def save_plots(df):
         stacked=False,
         colormap=AREA_COLOURS,
         title="Health Districts with the highest Positive Rate\n"
-        "(excludes private and some proactive tests)\n"
+        "(excludes private and some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#positive-rate-by-health-district",
+        "https://github.com/djay/covidthailand#readme",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
