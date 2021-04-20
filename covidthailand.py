@@ -2230,18 +2230,14 @@ def save_plots(df):
 
 
 
-    for area in range(1, 14):
-        df[f"Positivity {area}"] = (
-            df[f"Pos Area {area}"] / df[f"Tests Area {area}"] * 100
-        )
-    cols = [f"Positivity {area}" for area in range(1, 14)]
-    df['Positivity 14'] = df['Positivity XLS (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    for area in range(1, 15):
+        df[f"Positivity Daily {area}"] = df[f"Pos Daily {area}"] / df[f"Tests Daily {area}"] * 100
+    cols = [f"Positivity Daily {area}" for area in range(1, 15)]
 
     fig, ax = plt.subplots(figsize=[20, 10])
     df.loc["2020-12-12":].plot.area(
         ax=ax,
-        use_index=True,
-        y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
+        y=rearrange(cols, *FIRST_AREAS),
         stacked=False,
         colormap=AREA_COLOURS,
         title="Health Districts with the highest Positive Rate\n"
@@ -2253,6 +2249,28 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("positivity_area_unstacked_2.png")
 
+
+    for area in range(1, 14):
+        df[f"Cases/Tests {area}"] = (
+            df[f"Cases Area {area}"] / df[f"Tests Area {area}"] * 100
+        )
+    cols = [f"Cases/Tests {area}" for area in range(1, 14)]
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df.loc["2020-12-12":].plot.area(
+        ax=ax,
+        use_index=True,
+        y=rearrange(cols, *FIRST_AREAS),
+        stacked=False,
+        colormap=AREA_COLOURS,
+        title="Health Districts with the highest Cases/Tests\n"
+        "(excludes private and some proactive tests)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#positive-rate-by-health-district",
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("casestests_area_unstacked_2.png")
 
     #########################
     # Case by area plots
