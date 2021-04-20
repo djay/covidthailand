@@ -47,6 +47,8 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 - Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
   [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
 
+## Cases by Age
+![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_ages.png)
 
 # Downloads
 

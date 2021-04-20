@@ -1194,7 +1194,7 @@ def get_case_details_csv():
     cases = pd.read_csv(file)
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
-
+    cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
     return cases
 
 def get_case_details_api():
@@ -1221,17 +1221,27 @@ def get_case_details_api():
     return cases
 
 def get_cases_by_area_api():
-    cases = get_case_details_csv()
-#    cases['Date'] = pd.to_datetime(cases['announce_date'], format='%Y-%d-%m',errors='coerce')
-#    cases['Notified date'] = pd.to_datetime(cases['Notified date'], format='%Y-%d-%m',)
+    cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
     unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"].notnull())]
     assert unjoined.empty, f"Missing prov: {list(unjoined['province_of_onset'])}"
-    cases = cases.rename(columns=dict(announce_date="Date"))
-    case_areas = pd.crosstab(pd.to_datetime(cases['Date']).dt.date,cases['Health District Number'])
+    case_areas = pd.crosstab(cases['Date'],cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     return case_areas
+
+def get_cases_by_demographics_api():
+    import numpy as np
+    cases = get_case_details_csv().reset_index()
+    #cases = cases.rename(columns=dict(announce_date="Date"))
+
+    #age_groups = pd.cut(cases['age'], bins=np.arange(0, 100, 10))
+    age_groups = pd.cut(cases['age'], bins=[0, 19, 40, 65, np.inf], labels=["Age 0-19", "Age 20-40", "Age 41-65", "Age 66-"])
+
+    case_ages = pd.crosstab(cases['Date'],age_groups)
+    #case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
+    return case_ages
+
 
 def get_cases_by_area():
 
@@ -1663,6 +1673,7 @@ def get_cases_by_prov_briefings():
 ### Combine and plot
 
 def scrape_and_combine():
+    cases_by_age = get_cases_by_demographics_api()
 
     cases_by_area = get_cases_by_area()
     situation = get_situation()
@@ -1682,6 +1693,7 @@ def scrape_and_combine():
     df = df.combine_first(tests_by_area)
     df = df.combine_first(tests)
     df = df.combine_first(privpublic)
+    df = df.combine_first(cases_by_age)
     print(df)
 
     os.makedirs("api", exist_ok=True)
@@ -2075,6 +2087,29 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_types_all.png")
 
+
+    cases_by_age = get_cases_by_demographics_api()
+    import numpy as np
+    cases = get_case_details_csv().reset_index()
+    labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], labels=labels)
+    case_ages = pd.crosstab(cases['Date'],age_groups)
+    case_ages = case_ages.join(df['Cases'])
+    case_ages['Age Unknown'] = case_ages['Cases'].sub(case_ages[labels].sum(axis=1), fill_value=0).clip(lower=0)
+
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    case_ages["2020-12-12":].plot(
+        ax=ax,
+        y=labels+['Age Unknown'],
+        kind="area",
+        colormap="cool",
+        title="Thailand Covid Cases by Age\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand#cases-by-method-found"
+    )
+    plt.tight_layout()
+    plt.savefig("cases_ages.png")
 
 
     ##########################
