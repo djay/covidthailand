@@ -1897,7 +1897,7 @@ def save_plots(df):
         ax=ax,
         y=[
             "Cases per Tests (MA)",
-            "Positivity PUI (MA)",
+#            "Positivity PUI (MA)",
             "Cases per PUI3",
             "Positivity Walkins/PUI (MA)",
         ],
@@ -1907,7 +1907,7 @@ def save_plots(df):
         [
             "Positive Rate: Share of PCR tests that are postitive ",
             "Share of PCR tests that have Covid",
-            "Share of PUI that have Covid",
+#            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
             "Share of PUI that are Walkin Covid Cases",
         ]
@@ -2227,7 +2227,6 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("positivity_area_2.png")
-
 
 
     for area in range(1, 15):
