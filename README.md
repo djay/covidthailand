@@ -13,8 +13,8 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
 - *NOTE* The actual positive rate is often delayed due to when testing data reports become available. Included is some other measures that give an indication what the rate might be. 
 - Read [Understanding the Positive Rate](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) to know why number of tests per population is not the best measure to compare countries on testing and why WHO suggests a positive rate of < %3.
-- Tests and PUI numbers don't seem to include all proactive testing but some say this shouldn't be included anyway. [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
-- View this inversed as [Tests per Case](https://github.com/djay/covidthailand/wiki/tests_per_case.png) or [Our World in Data: Positive Rate](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) to compare with other countries. 
+- [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which could make Thailands positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed). You could argue excluding proactive testing gives a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling.
+- [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inversed) could be easier to understand.
 - Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
 
 ## PCR Tests in Thailand by day
@@ -182,6 +182,7 @@ Bureau, Chaeng Watthana"
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log
+- 2021-04-21 - Added clearer positive rate by district plot and made overall positive rate clearer
 - 2021-04-15 - Quicker province case type breakdowns from daily briefing reports
 - 2021-04-13 - get quicker PUI count from https://ddc.moph.go.th/viralpneumonia/index.php
 - 2021-04-12 - Put in "unknown area" for tests and cases by district so totals are correct
