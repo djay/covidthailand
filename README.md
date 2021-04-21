@@ -48,7 +48,11 @@ The data is updated twice daily at 12:20 UTC+7 and 23:20 UTC+7. [![last update w
   [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
 
 ## Cases by Age
-![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_ages.png)
+![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
+- see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+
 
 # Downloads
 
