@@ -1779,7 +1779,7 @@ def get_cases_by_prov_briefings():
     if not date_prov_types.empty:
         symptoms = date_prov_types[["Cases Symptomatic", "Cases Asymptomatic"]] # todo could keep province breakdown
         symptoms = symptoms.groupby(['Date']).sum()
-        symptoms = types.combine_first(symptoms)
+        types = types.combine_first(symptoms)
         date_prov_types = date_prov_types[["Case Type", "Cases"]]
         date_prov_types = date_prov_types.groupby(['Date','Province','Case Type']).sum() # we often have multiple walkin events
         date_prov_types = date_prov_types.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
@@ -1833,6 +1833,9 @@ def calc_cols(df):
     # adding in rolling average to see the trends better
     df["Tested (MA)"] = df["Tested"].rolling(7).mean()
     df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7).mean()
+    df["Tested PUI Walkin Public (MA)"] = df["Tested PUI Walkin Public"].rolling(7).mean()
+    df["Tested PUI Walkin Private (MA)"] = df["Tested PUI Walkin Private"].rolling(7).mean()
+    df["Tested PUI Walkin (MA)"] = df["Tested PUI Walkin"].rolling(7).mean()
     df["Cases (MA)"] = df["Cases"].rolling(7).mean()
     df["Cases Walkin (MA)"] = df["Cases Walkin"].rolling(7).mean()
     df["Cases Proactive (MA)"] = df["Cases Proactive"].rolling(7).mean()
@@ -1940,7 +1943,7 @@ def save_plots(df):
         figsize=[20, 10],
         y=[
             "Tested PUI (MA)",
-            "Tested PUI Walkin Public",
+            "Tested PUI Walkin Public (MA)",
             "Tests XLS (MA)",
             "Tests Corrected+Private (MA)",
         ],
@@ -2195,6 +2198,23 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("cases_types.png")
+
+    cols = ["Cases Symptomatic","Cases Asymptomatic"]
+    df['Cases Symptomatic Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    fig, ax = plt.subplots()
+    df.loc["2020-12-12":].plot(
+        ax=ax,
+        y=cols+['Cases Symptomatic Unknown'],
+        use_index=True,
+        kind="area",
+        figsize=[20, 10],
+        title="Thailand Covid Cases by Symptoms\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand"
+    )
+    plt.tight_layout()
+    plt.savefig("cases_sym.png")
+
 
     fig, ax = plt.subplots()
     df.plot(
