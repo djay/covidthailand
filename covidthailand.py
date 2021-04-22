@@ -215,30 +215,31 @@ def parse_file(filename, html=False, paged=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
-        ahead, *behind = re.split(match, content,1) if match else ("", content)
+        ahead, *behind = re.split(f"({match})", content,1) if match else ("", "", content)
         if not behind:
             continue
-        found, *rest = behind if not before else [ahead]+behind
+        matched, *behind = behind
+        behind = "".join(behind)
+        found = ahead if before else behind
         numbers = re.findall(r"[,0-9]+", found)
         numbers = [n.replace(",", "") for n in numbers]
         numbers = [int(n) for n in numbers if n]
         numbers = numbers if not before else list(reversed(numbers))
-        return numbers, match + " " + found
+        if remove:
+            behind = re.sub(r"[,0-9]+", "", found, remove)
+        return numbers, matched + " " + behind 
     if debug and matches:
         print("Couldn't find '{}'".format(match))
         print(content)
     return [], content
 
-def get_next_number(content, *matches, default=None):
-    num, rest = get_next_numbers(content, *matches)
-    if num:
-        return num[0]
-    else:
-        return default
+def get_next_number(content, *matches, default=None, remove=False):
+    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0)
+    return num[0] if num else default, rest
 
 def slide2text(slide):
     text = ""
@@ -640,10 +641,18 @@ def get_situation_today():
         columns=["Date", "Cases Cum", "Cases", "Tested PUI Cum", "Tested PUI", "Cases Imported Cum", "Cases Imported"]
     ).set_index("Date")
     
-    
+def check_cum(df, results, date):
+    if results.empty:
+        return True
+    next_day = results.loc[results.index[0]][[c for c in results.columns if " Cum" in c]]
+    last = df.loc[df.index[-1]][[c for c in df.columns if " Cum" in c]]
+    if (next_day.fillna(0) >= last.fillna(0)).all():
+        return True
+    else:
+        raise Exception(str(next_day - last))
 
 
-def situation_pui_th(parsedPDF, date):
+def situation_pui_th(parsedPDF, date, results):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
         parsedPDF,
@@ -683,34 +692,34 @@ def situation_pui_th(parsedPDF, date):
         return
     if tests_total == 167515: # situation-no447-250364.pdf
         tests_total = 1675125
-
+    if date in [d("2020-12-23")]: # 1024567
+        tests_total, not_pui = 997567, 329900
     if (
         tests_total is not None
         and tests_total > 2000000 < 30000
         or pui > 1500000 < 100000
     ):
         raise Exception(f"Bad data in {date}")
+    pui = {d("2020-02-12"):799, d("2020-02-13"):804}.get(date, pui) # Guess
 
-    numbers, rest = get_next_numbers(
-        parsedPDF, 
-        "ษาที่โรงพยาบาลด้วยตนเอง", "โรงพยาบาลเอกชน")
-    if not numbers:
-        pui_walkin_private, pui_walkin_public, pui_walkin = [None]*3
-    elif re.search("โรงพยาบาลเอกชน", rest):
-        pui_walkin_private, pui_walkin_public, pui_walkin, *_ = numbers
-        #pui_walkin_public = {8628765:862876}.get(pui_walkin_public,pui_walkin_public)
-        #assert pui_walkin == pui_walkin_private + pui_walkin_public
-    else:
-        pui_walkin, *_ = numbers
-        pui_walkin_private, pui_walkin_public = None, None
-        #pui_walkin = {853189:85191}.get(pui_walkin, pui_walkin) # by taking away other numbers
+    walkinsre = "(?:ษาที่โรงพยาบาลด้วยตนเอง|โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลดวยตนเอง)"
+    _,line = get_next_numbers(parsedPDF,walkinsre)
+    pui_walkin_private,rest = get_next_number(line, f"(?s){walkinsre}.*?โรงพยาบาลเอกชน", remove=True)
+    pui_walkin_public, rest = get_next_number(rest, f"(?s){walkinsre}.*?โรงพยาบาลรัฐ", remove=True)
+    unknown, rest = get_next_number(rest, f"(?s){walkinsre}.*?(?:งการสอบสวน|ารสอบสวน)", remove=True)
+    #rest = re.sub("(?s)(?:งการสอบสวน|ารสอบสวน).*?(?:อ่ืนๆ|อื่นๆ|อืน่ๆ|ผู้ป่วยยืนยันสะสม|88)?","", rest,1)
+    pui_walkin, rest = get_next_number(rest)
+    assert pui_walkin is not None
+    if date <= d("2020-03-10"):
+        pui_walkin_private,pui_walkin,pui_walkin_public = [None]*3 # starts going up again
+    #pui_walkin_private = {d("2020-03-10"):2088}.get(date, pui_walkin_private)
+
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and pui_walkin > 0)
-    #assert pui_walkin_public is None or (5000000> pui_walkin_public > 10000)
 
     row = (tests_total, pui, active_finding, asq, not_pui, pui_walkin_private, pui_walkin_public, pui_walkin)
     if None in row and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
-    return pd.DataFrame(
+    df= pd.DataFrame(
         [(date,)+row],
         columns=[
             "Date", 
@@ -723,6 +732,8 @@ def situation_pui_th(parsedPDF, date):
             "Tested PUI Walkin Public Cum", 
             "Tested PUI Walkin Cum"]
     ).set_index("Date")
+    assert check_cum(df, results, date)
+    return df
      
 def get_thai_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
@@ -742,7 +753,7 @@ def get_thai_situation():
             # english report mixed up? - situation-no171-220663.pdf
             continue
         date = file2date(file)
-        df = situation_pui_th(parsedPDF, date)
+        df = situation_pui_th(parsedPDF, date, results)
         if df is not None:
             results = results.combine_first(df)
             print(
@@ -1601,7 +1612,7 @@ def briefing_case_detail(date, pages):
             all_cells.setdefault(title,[]).append(lines)
             print(title,case_type)
 
-            for prov_num, rest in lines:
+            for prov_num, line in lines:
                 #for prov in provs: # TODO: should really be 1. make split only split 1.
                     # TODO: sometimes cells/data seperated by "-" 2021-01-03
                     prov,num = prov_num.strip().split("(",1)
@@ -1613,10 +1624,11 @@ def briefing_case_detail(date, pages):
                         prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
                     num = int(num_people.search(num).group(1))
                     totals[title] = totals.get(title,0) + num
-                    _, rest = get_next_numbers("nผล") # "result"
-                    asym = get_next_number(rest, "ไม่มีอาการ","ไมมี่อาการ", default=0)
-                    sym = get_next_number(rest, "(?<!ไม่)มีอาการ","(?<!(ไมมี่|ไม่มี))อาการ", default=0)
-                    unknown = get_next_number(
+
+                    _, rest = get_next_numbers(line, "(?:nผล|ผลพบ)") # "result"
+                    asym,rest = get_next_number(rest, "(?s)^.*(?:ไม่มีอาการ|ไมมี่อาการ|ไม่มีอาการ)", default=0, remove=True)
+                    sym,rest = get_next_number(rest, "(?s)^.*(?<!(?:ไม่มี|ไมมี่|ไม่มี))(?:อาการ|อาการ)", default=0, remove=True)
+                    unknown,_ = get_next_number(
                         rest,
                         "อยู่ระหว่างสอบสวนโรค", 
 #                        "อยู่ระหว่างสอบสวน",
@@ -1781,8 +1793,8 @@ def get_cases_by_prov_briefings():
 
 def scrape_and_combine():
     cases_by_area = get_cases_by_area()
-    cases_by_age = get_cases_by_demographics_api()
     situation = get_situation()
+    cases_by_age = get_cases_by_demographics_api()
 
     print(cases_by_area)
     print(situation)
@@ -1940,7 +1952,7 @@ def save_plots(df):
     ax.legend(
         [
             "PUI",
-            "PUI (Public)"
+            "PUI (Public)",
             "Tests Performed (Public)",
             "Tests Performed (All)",
         ]
