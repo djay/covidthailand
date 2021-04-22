@@ -1252,7 +1252,11 @@ def get_cases_by_area_type():
 
 def get_case_details_csv():
     url = "https://data.go.th/dataset/covid-19-daily"
-    links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
+    file, text = next(web_files(url, dir="json"))
+    data = re.search("packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
+    apis = json.loads(data)
+    links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
+    #links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
     file, _ = next(web_files(*links, dir="json"))
     cases = pd.read_csv(file)
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
