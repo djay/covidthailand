@@ -1999,36 +1999,44 @@ def save_plots(df):
     ###############
 
 
-    fig, ax = plt.subplots()
+    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
+    df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
+    df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
+
+    fig, ax = plt.subplots(figsize=[20, 10])
     df.plot(
         ax=ax,
-        use_index=True,
         kind="line",
-        figsize=[20, 10],
-        colormap="Dark2",
         y=[
             "Positivity Public+Private (MA)",
-            "Positivity PUI (MA)",
-            "Positivity Public (MA)",
         ],
+        linewidth=5,
         title="Positive Rate: Is enough testing happening?\n"
         "(7 day rolling mean)\n"
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand"
     )
+    df["2020-12-12":].plot(
+        ax=ax,
+        y=[
+            "Cases per Tests (MA)",
+#            "Positivity PUI (MA)",
+            "Cases per PUI3",
+            "Positivity Walkins/PUI (MA)",
+        ],
+        colormap=plt.cm.Set1,
+    )
     ax.legend(
         [
-            "Positive Results / Tests Performed (All)",
-            "Confirmed Cases / PUI",
-            "Positive Results / Tests Performed (Public)",
+            "Positive Rate: Share of PCR tests that are postitive ",
+            "Share of PCR tests that have Covid",
+#            "Share of PUI that have Covid",
+            "Share of PUI*3 that have Covid",
+            "Share of PUI that are Walkin Covid Cases",
         ]
     )
     plt.tight_layout()
     plt.savefig("positivity.png")
-
-    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
-    df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
-    df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
 
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
@@ -2342,6 +2350,23 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
+    plt.savefig("tests_area_daily_2.png")
+    fig, ax = plt.subplots()
+    df.plot(
+        ax=ax,
+        use_index=True,
+        y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
+        kind="area",
+        figsize=[20, 10],
+        colormap=AREA_COLOURS,
+        title="PCR Tests by Thailand Health District\n"
+        "(excludes some proactive tests, 7 day rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand",
+    )
+    ax.legend(AREA_LEGEND_UNKNOWN)
+    #ax.subtitle("Excludes proactive & private tests")
+    plt.tight_layout()
     plt.savefig("tests_area_daily.png")
 
     cols = [f"Pos Daily {area}" for area in range(1, 14)]
@@ -2355,6 +2380,23 @@ def save_plots(df):
     df['Pos Daily 14'] = df['Pos (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
+        ax=ax,
+        use_index=True,
+        y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
+        kind="area",
+        figsize=[20, 10],
+        colormap=AREA_COLOURS,
+        title="Positive PCR Tests by Thailand Health District\n"
+        "(excludes some proactive tests, 7 day rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand",
+    )
+    ax.legend(AREA_LEGEND_UNKNOWN)
+    #ax.subtitle("Excludes proactive & private tests")
+    plt.tight_layout()
+    plt.savefig("pos_area_daily_2.png")
+    fig, ax = plt.subplots()
+    df.plot(
         ax=ax,
         use_index=True,
         y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
@@ -2448,6 +2490,20 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("positivity_area_unstacked_2.png")
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df.plot.area(
+        ax=ax,
+        y=rearrange(cols, *FIRST_AREAS),
+        stacked=False,
+        colormap=AREA_COLOURS,
+        title="Health Districts with the highest Positive Rate\n"
+        "(excludes some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
+        f"Updated: {TODAY().date()}\n"
+        "https://github.com/djay/covidthailand",
+    )
+    ax.legend(AREA_LEGEND_UNKNOWN)
+    plt.tight_layout()
+    plt.savefig("positivity_area_unstacked.png")
 
 
     for area in range(1, 14):

@@ -13,7 +13,8 @@ The data is updated daily with most data changing around midday once the governm
 # Positive Rate
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
-- *NOTE* The actual positive rate is often delayed due to when testing data reports become available. Included is some other measures that give an indication what the rate might be. 
+- *NOTE* The actual positive rate is often delayed due to when testing data reports become available. Included is some other measures that give an indication what the rate might be.
+- [Positivity: Full year](https://github.com/djay/covidthailand/wiki/positivity_2.png) 
 - Read [Understanding the Positive Rate](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) to know why number of tests per population is not the best measure to compare countries on testing and why WHO suggests a positive rate of < %3.
 - [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which could make Thailands positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed). You could argue excluding proactive testing gives a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling.
 - [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inversed) could be easier to understand.
@@ -25,25 +26,30 @@ The data is updated daily with most data changing around midday once the governm
 - Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
 
 ## PCR Tests by Health District
-![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily_2.png)
+- [Tests by health area: Full Year](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 ## Positive Rate by Health District
 
 ![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
 
+- [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked.png)
 - Gives an indication of which areas are doing less testing compared to cases.
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
 ## Cases by Health District
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+
+- [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 - You can also see [Cases by District broken down by walkin vs proactive](#cases-by-type-and-province) but there is no longer a data source to keep this updated.
 - Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
   [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
 ## Cases by test type
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
+ - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 - Contact tracing normally counts as a "Walkin"
 - Proactive tests are normally done on specific high risk locations
 - Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
@@ -51,6 +57,7 @@ The data is updated daily with most data changing around midday once the governm
 
 ## Cases by Age
 ![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
+
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
@@ -67,6 +74,7 @@ The data is updated daily with most data changing around midday once the governm
 ## Daily Tests Private+Public
 
 ![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
+![Private and Public Positive Tests](https://github.com/djay/covidthailand/wiki/tests.png)
 
 - Source: 
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
@@ -89,7 +97,9 @@ The data is updated daily with most data changing around midday once the governm
 
 ![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
 
-![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+![PCR Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+
+![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area.png)
 
 
 - Source: 
@@ -150,6 +160,7 @@ Bureau, Chaeng Watthana"
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 ![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
 ![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
+![Cases by symptoms by Health Area](https://github.com/djay/covidthailand/wiki/cases_sym.png)
 
 - Source: 
    - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
