@@ -200,6 +200,8 @@ Bureau, Chaeng Watthana"
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log
+- 2021-04-23 - Fixed mistake in testing data where private tests was added again
+- 2021-04-22 - data for sym/asymptomatic and pui private vs pui public
 - 2021-04-20 - Added case age plot
 - 2021-04-18 - Added clearer positive rate by district plot and made overall positive rate clearer
 - 2021-04-15 - Quicker province case type breakdowns from daily briefing reports
@@ -212,11 +214,11 @@ Bureau, Chaeng Watthana"
   - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
 - put in plots of 
   - risk/source e.g entertainment vs factory vs prison vs friend 
-  - case age groups over time
   - severe cases vs mild vs deaths?
 
 - get data source for antigen and antibody tests
   - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
+- get source for sym/asym for latest cases
 - get data source for walkins or proactive investigated/tested
 - put in badges for date of last record per dataset
 - get data from older briefing reports to improve cases by area data
