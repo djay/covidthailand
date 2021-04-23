@@ -1703,9 +1703,10 @@ def briefing_province_cases(file, date, pages):
         parts = [l for l in parts if l]
         #parts = list(split(parts, lambda x: "รวม" in x))[-1]
         title, *parts = parts
+        if "รวม (ราย)" not in title:
+            continue  #Additional top 10 report. #TODO: better detection of right report
         while parts and "รวม" in parts[0]:
-            header, *parts = parts
-        #lines = [c.strip() for c in re.split("((?:[^0-9,\- ]+) *)+", "\n".join(lines)) if c.strip()]
+            totals, *parts = parts
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
         while True:
             if len(parts) < 9:
@@ -1713,7 +1714,6 @@ def briefing_province_cases(file, date, pages):
                 break
             linenum, prov, *parts = parts
             numbers, parts = parts[:9], parts[9:]
-            #_, prov, *_ = re.split("[0-9-]+[ ,]", line)
             thai = prov.strip().strip(" ี").strip(" ์").strip(" ิ")
             try:
                 prov = PROVINCES["ProvinceEn"].loc[thai]
@@ -1721,18 +1721,13 @@ def briefing_province_cases(file, date, pages):
                 print(f"provinces.loc['{thai}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{thai}'] = provinces.loc['x']")
                 #continue
-            #numbers = [float(i.replace(",","")) if i!="-" else 0 for i in re.findall("([0-9-,]+)", row)]
             numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
-            #numbers, rest = get_next_numbers(line, "\w*")
-            #linenum = numbers[0]
             numbers = numbers[1:-1] # last is total. first is previous days
             assert len(numbers) == 7
             for i, cases in enumerate(reversed(numbers)):
                 if i > 4: # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date-datetime.timedelta(days=i)
-                #cases = numbers[-1]
-                #df.loc[(olddate,prov), "Cases"] = cases
                 rows[(olddate,prov)] = cases
                 if False and olddate == date:
                     if cases > 0:
