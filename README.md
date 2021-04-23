@@ -8,6 +8,8 @@ The data is updated daily with most data changing around midday once the governm
 
 *WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
 
+*CORRECTION* Previous versions of these stats had a higher number for test data due to a mistake in interpreting the data. This hasn't change the positive rate significantly.
+
 # Positive Rate
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
@@ -22,16 +24,16 @@ The data is updated daily with most data changing around midday once the governm
 - Tests and PUI numbers don't seem to include all proactive tests so the actual tests could be higher. see [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
 - Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
 
-## PCR Tests by Health District (Public Labs only)
+## PCR Tests by Health District
 ![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
-- *NOTE* Excludes private test labs and some proactive tests (non-PCR) so actual tests is higher
+- *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
-## Positive Rate by Health District (Public Labs only)
+## Positive Rate by Health District
 
-![Health Districts with high Positive Rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
+![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
 
 - Gives an indication of which areas are doing less testing compared to cases.
-- *NOTE* Excludes private test labs and some proactive tests (non-PCR) so actual rate would be lower
+- *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
 ## Cases by Health District
@@ -71,24 +73,23 @@ The data is updated daily with most data changing around midday once the governm
    -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
    - Date: e.g "2021-04-06"
-   - Tests Public: PCR tests
-   - Tests Private: PCR tests
-   - Pos Public: Positive result
-   - Pos Private: Positive result
-   - Pos XLS: Public tests positive results (includes corrected dataless data)
-   - Tests XLS: Public tests conducted (includes corrected dataless data)
+   - Tests: PCR tests
+   - Tests Private: PCR tests from private labs
+   - Pos: Positive result
+   - Pos Private: Positive result from private labs
+   - Pos XLS: Tests positive results (includes corrected dataless data)
+   - Tests XLS: Tests conducted (includes corrected dataless data)
 - Notes:
   - Uses case history graphs from latest PPTX
-  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
-  - Public data matches the XLS file contained in the same shared folder marked as raw testing data.
+  - data seems to exclude some non-PCR tests (likely used in some proactive testing)
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
-  should be the same numbers as Pos Public and Tests Public. 
+  should be the same numbers as ```Pos``` and ```Tests```. 
 
-## Public Tests by Health District  
+## Tests by Health District  
 
 ![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
 
-![Positive Rate by Health District in overall positive rate (public tests ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
+![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_2.png)
 
 
 - Source: 
@@ -96,13 +97,13 @@ The data is updated daily with most data changing around midday once the governm
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
    - Start: e.g "2021-04-06"
    - End: e.g "2021-04-13"
-   - Pos Area {1-13} - Positive public test results
-   - Tests Area {1-13} - Total public tests (PCR)
+   - Pos Area {1-13} - Positive test results
+   - Tests Area {1-13} - Total tests (PCR)
 - Notes:
   - not all periods are a week
-  - data seems to exclude private tests and non-PCR tests (likely used in some proactive testing)
-  - There is missing file so 1 weeks data is not shown
-  - The example graphs shown have been extrapolated using daily totals from the Public test daily data below
+  - data seems to exclude non-PCR tests (likely used in some proactive testing)
+  - There is missing files so some weeks data are not shown
+  - The example graphs shown have been extrapolated using daily totals from the test daily data
 
 ## Cases Types and PUI counts (Daily Situation Reports)
 
@@ -123,6 +124,8 @@ The data is updated daily with most data changing around midday once the governm
   - Cases Proavtive: Local transmissions that aren't walkins
   - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
   - Tested PUI: People Classified as Person Under Infestigation. Qualifies for free test.
+  - Tested PUI Walkin Public: PUI classified at public hospitals/labs
+  - Tested PUI Walkin Private: PUI classified at private hospitals/labs
 - The follwing are included but are *not useful data since 2020-08*.
   - Tested: *Not different from PUI since 2020-08* says "Total number of laboratory tests" but is mislabeled. ~PUI + 30%
   - Tested Quarantine: *Not changed since 2020-08*. "Returnees in quarantine facilities/centers".
@@ -138,8 +141,6 @@ The data is updated daily with most data changing around midday once the governm
     - Screened Ports: Screened at "Ports of entry"
     - Screened Immigration: "People renewing their passports at the Immigration
 Bureau, Chaeng Watthana"
-    - Breakdown of PUI source - Almost all at hospitals
-        - Could extract public vs private PUI
     - Data found in other places e.g.
         - Deaths
         - Recovered

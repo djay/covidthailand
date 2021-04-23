@@ -962,7 +962,7 @@ def get_tests_private_public():
                 continue
             elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
                 # The graphs at the end with all testing numbers private vs public
-                private = "Private" if "ภาคเอกชน" in title else "Public"
+                private = " Private" if "ภาคเอกชน" in title else ""
 
                 # pos = series["Pos"]
                 if "จำนวนตรวจ" not in series:
@@ -973,16 +973,18 @@ def get_tests_private_public():
                 df = pd.DataFrame(
                     {
                         "Date": dates,
-                        f"Tests {private}": tests,
-                        f"% Detection {private}": positivity,
+                        f"Tests{private}": tests,
+                        f"% Detection{private}": positivity,
                     }
                 ).set_index("Date")
-                df[f"Pos {private}"] = (
-                    df[f"Tests {private}"] * df[f"% Detection {private}"] / 100.0
+                df[f"Pos{private}"] = (
+                    df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
                 )
                 print(df)
                 data = data.combine_first(df)
             # TODO: There is also graphs splt by hospital
+    data['Pos Public'] = data['Pos'] - data['Pos Private']
+    data['Tests Public'] = data['Tests'] - data['Tests Private']
     os.makedirs("api", exist_ok=True)
     data.reset_index().to_json(
         "api/tests_pubpriv",
@@ -1843,26 +1845,30 @@ def calc_cols(df):
     df["Pos Area (MA)"] = df["Pos Area"].rolling(7).mean()
     df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7).mean()
     df["Pos XLS (MA)"] = df["Pos XLS"].rolling(7).mean()
+    df["Pos (MA)"] = df["Pos"].rolling(7).mean()
     df["Pos Public (MA)"] = df["Pos Public"].rolling(7).mean()
     df["Pos Private (MA)"] = df["Pos Private"].rolling(7).mean()
     df["Tests Public (MA)"] = df["Tests Public"].rolling(7).mean()
     df["Tests Private (MA)"] = df["Tests Private"].rolling(7).mean()
+    df["Tests (MA)"] = df["Tests"].rolling(7).mean()
 
     # Calculate positive rate
     df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
     df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["Tested PUI (MA)"] * 100
     df["Positivity PUI"] = df["Cases"] / df["Tested PUI"] * 100
-    df["Positivity"] = df["Cases"] / df["Tested"] * 100
+    df["Positivity Cases/Tested"] = df["Cases"] / df["Tested"] * 100
     df["Positivity Area (MA)"] = df["Pos Area (MA)"] / df["Tests Area (MA)"] * 100
     df["Positivity Area"] = df["Pos Area"] / df["Tests Area"] * 100
     df["Positivity XLS (MA)"] = df["Pos XLS (MA)"] / df["Tests XLS (MA)"] * 100
     df["Positivity XLS"] = df["Pos XLS"] / df["Tests XLS"] * 100
+    df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
+    df["Positivity Public (MA)"] = df["Pos Public (MA)"] / df["Tests Public (MA)"] * 100
     df["Positivity Cases/Tests (MA)"] = df["Cases (MA)"] / df["Tests XLS (MA)"] * 100
 
     # Combined data
-    df["Pos Corrected+Private (MA)"] = df["Pos Private (MA)"] + df["Pos XLS (MA)"]
-    df["Tests Private+Public (MA)"] = df["Tests Public (MA)"] + df["Tests Private (MA)"]
-    df["Tests Corrected+Private (MA)"] = df["Tests XLS (MA)"] + df["Tests Private (MA)"]
+    df["Pos Corrected+Private (MA)"] =  df["Pos XLS (MA)"]
+    df["Tests Private+Public (MA)"] = df["Tests (MA)"]
+    df["Tests Corrected+Private (MA)"] = df["Tests XLS (MA)"]
 
     df["Positivity Private (MA)"] = (
         df["Pos Private (MA)"] / df["Tests Private (MA)"] * 100
@@ -1944,7 +1950,7 @@ def save_plots(df):
         y=[
             "Tested PUI (MA)",
             "Tested PUI Walkin Public (MA)",
-            "Tests XLS (MA)",
+            "Tests Public (MA)",
             "Tests Corrected+Private (MA)",
         ],
         title="Thailand PCR Tests and PUI\n"
@@ -2003,7 +2009,7 @@ def save_plots(df):
         y=[
             "Positivity Public+Private (MA)",
             "Positivity PUI (MA)",
-            "Positivity XLS (MA)",
+            "Positivity Public (MA)",
         ],
         title="Positive Rate: Is enough testing happening?\n"
         "(7 day rolling mean)\n"
@@ -2112,7 +2118,7 @@ def save_plots(df):
         figsize=[20, 10],
         y=[
             "Positivity Cases/Tests (MA)",
-            "Positivity XLS (MA)",
+            "Positivity Public (MA)",
             "Positivity PUI (MA)",
             "Positivity Private (MA)",
             "Positivity Public+Private (MA)",
@@ -2143,7 +2149,7 @@ def save_plots(df):
         figsize=[20, 10],
         y=[
             "Cases (MA)",
-            "Pos XLS (MA)",
+            "Pos Public (MA)",
             "Pos Corrected+Private (MA)",
         ],
         title="Positive Test results compared to Confirmed Cases\n"
@@ -2283,9 +2289,9 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Public PCR Tests by Health District\n"
+        title="PCR Tests by Health District\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#tests-by-health-area"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2301,9 +2307,9 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Public PCR Positive Test Results by Health District\n"
+        title="PCR Positive Test Results by Health District\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#tests-by-health-area"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2317,9 +2323,9 @@ def save_plots(df):
         df[f"Tests Daily {area}"] = (
             df[f"Tests Area {area}"]
             / df[test_cols].sum(axis=1)
-            * df["Tests Public (MA)"]
+            * df["Tests (MA)"]
         )
-    df['Tests Daily 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    df['Tests Daily 14'] = df['Tests (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
         ax=ax,
@@ -2328,10 +2334,10 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Public PCR Tests by Thailand Health District\n"
-        "(excludes private and some proactive tests, 7 day rolling average)\n"
+        title="PCR Tests by Thailand Health District\n"
+        "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
+        "https://github.com/djay/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2344,9 +2350,9 @@ def save_plots(df):
         df[f"Pos Daily {area}"] = (
             df[f"Pos Area {area}"]
             / df[pos_cols].sum(axis=1)
-            * df["Pos Public (MA)"]
+            * df["Pos (MA)"]
         )
-    df['Pos Daily 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    df['Pos Daily 14'] = df['Pos (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
         ax=ax,
@@ -2355,10 +2361,10 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Positive Public PCR Tests by Thailand Health District\n"
-        "(excludes private and some proactive tests, 7 day rolling average)\n"
+        title="Positive PCR Tests by Thailand Health District\n"
+        "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#public-pcr-tests-by-health-district",
+        "https://github.com/djay/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2377,9 +2383,9 @@ def save_plots(df):
         df[f"Positivity {area}"] = (
             df[f"Positivity {area}"]
             / df["Total Positivity Area"]
-            * df["Positivity XLS (MA)"]
+            * df["Positivity Public+Private (MA)"]
         )
-    df['Positivity 14'] = df['Positivity XLS (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    df['Positivity 14'] = df['Positivity Public+Private (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
 
     print(
         df[
@@ -2397,9 +2403,9 @@ def save_plots(df):
         figsize=[20, 10],
         colormap=AREA_COLOURS,
         title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
-        "(excludes private and some proactive tests, 7 day rolling average)\n"
+        "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#share-of-positive-tests-results-for-public-pcr-tests-by-health-district",
+        "https://github.com/djay/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2414,10 +2420,10 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
-        "(excludes private and some proactive tests)\n"
+        title="Positive Rate by Health Area in proportion to Thailand Positive Rate\n"
+        "(excludes some proactive tests)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#positive-rate-by-health-district",
+        "https://github.com/djay/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -2435,9 +2441,9 @@ def save_plots(df):
         stacked=False,
         colormap=AREA_COLOURS,
         title="Health Districts with the highest Positive Rate\n"
-        "(excludes private and some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
+        "(excludes some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#readme",
+        "https://github.com/djay/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -2458,9 +2464,9 @@ def save_plots(df):
         stacked=False,
         colormap=AREA_COLOURS,
         title="Health Districts with the highest Cases/Tests\n"
-        "(excludes private and some proactive tests)\n"
+        "(excludes some proactive tests)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#positive-rate-by-health-district",
+        "https://github.com/djay/covidthailand",
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
@@ -2486,7 +2492,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title="Thailand Covid Cases by Health District\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand#cases-by-health-district"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(legend)
     plt.tight_layout()
@@ -2501,7 +2507,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title="Thailand Covid Cases by health District\n"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand#cases-by-health-district\n"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(legend)
     plt.tight_layout()
@@ -2516,7 +2522,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title="Thailand Covid Cases by health District\n"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand#cases-by-health-district\n"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(legend)
     plt.tight_layout()
@@ -2533,7 +2539,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title='Thailand "Walkin" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand#cases-by-province-by-case-type"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -2547,7 +2553,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title='Thailand "Proactive" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand#cases-by-province-by-case-type"
+        "https://github.com/djay/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
