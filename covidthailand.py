@@ -2016,7 +2016,7 @@ def save_plots(df):
         f"Updated: {TODAY().date()}\n"
         "https://github.com/djay/covidthailand"
     )
-    df["2020-12-12":].plot(
+    df.plot(
         ax=ax,
         y=[
             "Cases per Tests (MA)",
