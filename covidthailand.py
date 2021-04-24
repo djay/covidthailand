@@ -1317,11 +1317,84 @@ def get_cases_by_demographics_api():
     #cases = cases.rename(columns=dict(announce_date="Date"))
 
     #age_groups = pd.cut(cases['age'], bins=np.arange(0, 100, 10))
-    age_groups = pd.cut(cases['age'], bins=[0, 19, 40, 65, np.inf], labels=["Age 0-19", "Age 20-40", "Age 41-65", "Age 66-"])
-
+  # import numpy as np
+    # cases = get_case_details_csv().reset_index()
+    labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], labels=labels)
     case_ages = pd.crosstab(cases['Date'],age_groups)
     #case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
-    return case_ages
+
+    cases['risk'].value_counts()
+    risks = {}
+    risks['สถานบันเทิง'] = "Entertainment"
+    risks['อยู่ระหว่างการสอบสวน'] = "Investigating" # Under investication
+    risks['การค้นหาผู้ป่วยเชิงรุกและค้นหาผู้ติดเชื้อในชุมชน'] = "Proactive Search"
+    risks['State Quarantine'] = 'Imported'
+    risks['ไปสถานที่ชุมชน เช่น ตลาดนัด สถานที่ท่องเที่ยว'] = "Community"
+    risks['Cluster ผับ Thonglor'] = "Entertainment"
+    risks['ผู้ที่เดินทางมาจากต่างประเทศ และเข้า ASQ/ALQ'] = 'Imported'
+    risks['Cluster บางแค'] = "Community" # bangkhee
+    risks['Cluster ตลาดพรพัฒน์'] = "Work" #market
+    risks['Cluster ระยอง'] = "Entertainment" # Rayong
+    risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work" # work with forigners
+    risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Work" # detention
+    risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
+    risks['สนามมวย'] = "Entertainment" # Boxing
+    risks['ไปสถานที่แออัด เช่น งานแฟร์ คอนเสิร์ต'] = "Community" # fair/market
+    risks['คนต่างชาติเดินทางมาจากต่างประเทศ'] = "Imported"
+    risks['บุคลากรด้านการแพทย์และสาธารณสุข'] = "Work"
+    risks['ระบุไม่ได้'] = "Unknown"
+    risks['อื่นๆ'] = "Unknown"
+    risks['พิธีกรรมทางศาสนา'] = "Community" # Religous
+    risks['Cluster บ่อนพัทยา/ชลบุรี'] = "Entertainment" # gambling rayong
+    risks['ผู้ที่เดินทางมาจากต่างประเทศ และเข้า HQ/AHQ'] = "Imported"
+    risks['Cluster บ่อนไก่อ่างทอง'] = "Entertainment" # cockfighting
+    risks['Cluster จันทบุรี'] = "Entertainment" # Chanthaburi - gambing?
+    risks['Cluster โรงงาน Big Star'] = "Work" # Factory
+    r = {
+    27:'Cluster ชลบุรี:Entertainment', # Chonburi - gambling
+    28:'Cluster เครือคัสเซ่อร์พีคโฮลดิ้ง (CPG,CPH):Work',
+    29:'ตรวจก่อนทำหัตถการ:Unknown', #'Check before the procedure'
+    30:'สัมผัสผู้เดินทางจากต่างประเทศ:Contact', # 'touch foreign travelers'
+    31:"Cluster Memory 90's กรุงเทพมหานคร:Entertainment",
+    32:'สัมผัสผู้ป่วยยืนยัน:Contact',
+    33:'ปอดอักเสบ (Pneumonia):Pneumonia',
+    34:'Cluster New Jazz กรุงเทพมหานคร:Entertainment',
+    35:'Cluster มหาสารคาม:Entertainment', # Cluster Mahasarakham
+    36:'ผู้ที่เดินทางมาจากต่างประเทศ และเข้า OQ:Imported',
+    37:'Cluster สมุทรปราการ (โรงงาน บริษัทเมทัล โปรดักส์):Work',
+    38:'สัมผัสใกล้ชิดผู้ป่วยยันยันก่อนหน้า:Contact',
+    39:'Cluster ตลาดบางพลี:Work',
+    40:'Cluster บ่อนเทพารักษ์:Community', # Bangplee Market'
+    41:'Cluster Icon siam:Community',
+    42:'Cluster The Lounge Salaya:Entertainment',
+    43:'Cluster ชลบุรี โรงเบียร์ 90:Entertainment',
+    44:'Cluster โรงงาน standard can:Work',
+    45:'Cluster ตราด:Community', # Trat?
+    46:'Cluster สถานบันเทิงย่านทองหล่อ:Entertainment',
+    47:'ไปยังพื้นที่ที่มีการระบาด:Community',
+    48:'Cluster สมุทรสาคร:Work', #Samut Sakhon   
+    49:'สัมผัสใกล้ชิดกับผู้ป่วยยืนยันรายก่อนหน้านี้:Contact', 
+    51:'อยู่ระหว่างสอบสวน:Unknown', 
+    }
+    for v in r.values():
+        key, cat = v.split(":")
+        risks[key] = cat
+    risks = pd.DataFrame(risks.items(), columns=["risk", "risk_group"]).set_index("risk")
+    cases_risks = cases.join(risks, on="risk")
+    unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
+    # Guess the unmatched
+    cases["risk_match"] = unmatched['risk'].map(lambda x: next(iter(difflib.get_close_matches(x, risks.index)),None), na_action="ignore")
+    cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
+
+    unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
+    unmatched['risk'].value_counts()
+    case_risks = pd.crosstab(cases_risks['Date'],cases_risks["risk_group"])
+    case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
+
+    return case_risks.combine_first(case_ages)
+
+
 
 
 def get_cases_by_area():
@@ -1684,9 +1757,31 @@ def briefing_case_types(date, pages):
         imported = ports + quarantine
 
         assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
-        rows.append([date, cases, walkins, proactive, imported])
+
+        # hospitalisations
+        numbers, rest = get_next_numbers(text, "อาการหนัก")
+        if numbers:                
+            severe, respirator, *_ = numbers
+            hospital,_ = get_next_number(text, "ใน รพ.")
+            field,_ = get_next_number(text, "รพ.สนาม")
+            num, _ = get_next_numbers(text, "ใน รพ.", before=True)
+            assert hospital + field == num[0]
+        else:
+            hospital, field, severe, respirator = [None]*4
+
+        rows.append([date, cases, walkins, proactive, imported, hospital, field, severe, respirator])
         break
-    df = pd.DataFrame(rows, columns=["Date", "Cases", "Cases Walkin", "Cases Proactive", "Cases Imported",]).set_index(['Date'])
+    df = pd.DataFrame(rows, columns=[
+        "Date", 
+        "Cases", 
+        "Cases Walkin", 
+        "Cases Proactive", 
+        "Cases Imported",
+        "Hospitalized Hospital",
+        "Hospitalized Field",
+        "Hospitalized Severe",
+        "Hospitalized Respirator",
+    ]).set_index(['Date'])
     print(df.to_string(header=False))
     return df
 
@@ -1789,9 +1884,19 @@ def get_cases_by_prov_briefings():
 ### Combine and plot
 
 def scrape_and_combine():
+    cases_by_age = get_cases_by_demographics_api()
+    df = pd.read_json(
+        "api/combined",
+        #date_format="iso",
+        #indent=3,
+        orient="records",
+    )
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.combine_first(cases_by_age)
+    return df.set_index("Date")
+
     cases_by_area = get_cases_by_area()
     situation = get_situation()
-    cases_by_age = get_cases_by_demographics_api()
 
     print(cases_by_area)
     print(situation)
@@ -1918,6 +2023,8 @@ def rearrange(l, *first):
     l = list(l)
     result = []
     for f in first:
+        if type(f) != int:
+            f = l.index(f)+1
         result.append(l[f-1])
         l[f-1] = None
     return result + [i for i in l if i is not None]
@@ -2036,7 +2143,6 @@ def save_plots(df):
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
         ax=ax,
-        kind="line",
         y=[
             "Positivity Public+Private (MA)",
         ],
@@ -2056,6 +2162,13 @@ def save_plots(df):
         ],
         colormap=plt.cm.Set1,
     )
+    df["2020-12-12":].plot(
+        ax=ax,
+        linestyle="--",
+        y=[
+            "Positivity XLS",
+        ],
+    )
     ax.legend(
         [
             "Positive Rate: Share of PCR tests that are postitive ",
@@ -2063,6 +2176,7 @@ def save_plots(df):
 #            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
             "Share of PUI that are Walkin Covid Cases",
+            "Positive Rate: unsmoothed"
         ]
     )
     plt.tight_layout()
@@ -2239,21 +2353,13 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_types_all.png")
 
-
-    cases_by_age = get_cases_by_demographics_api()
-    import numpy as np
-    cases = get_case_details_csv().reset_index()
-    labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
-    age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], labels=labels)
-    case_ages = pd.crosstab(cases['Date'],age_groups)
-    case_ages = case_ages.join(df['Cases'])
-    case_ages['Age Unknown'] = case_ages['Cases'].sub(case_ages[labels].sum(axis=1), fill_value=0).clip(lower=0)
-
+    cols = [c for c in df.columns if "Age " in str(c)]
+    df['Age Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
 
     fig, ax = plt.subplots(figsize=[20, 10])
-    case_ages["2020-12-12":].plot(
+    df["2020-12-12":].plot(
         ax=ax,
-        y=labels+['Age Unknown'],
+        y=cols+['Age Unknown'],
         kind="area",
         colormap="summer",
         title="Thailand Covid Cases by Age\n"
@@ -2262,10 +2368,9 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("cases_ages_2.png")
-
-    case_ages.plot(
+    df.plot(
         ax=ax,
-        y=labels+['Age Unknown'],
+        y=cols+['Age Unknown'],
         kind="area",
         colormap="summer",
         title="Thailand Covid Cases by Age\n"
@@ -2274,6 +2379,34 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("cases_ages_all.png")
+
+    title="Thailand Covid Cases by Risk\n"
+    f"Updated: {TODAY().date()}\n"
+    "https://github.com/djay/covidthailand"
+    cols = [c for c in df.columns if "Risk: " in str(c)]
+    cols = rearrange(cols, "Risk: Imported", "Risk: Symptoms", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", )
+    # TODO: take out unknown
+    df['Risk: Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) + df['Risk: Unknown']
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["2020-12-12":].plot(
+        ax=ax,
+        y=cols,
+        kind="area",
+        colormap="tab20",
+        title=title
+    )
+    plt.tight_layout()
+    plt.savefig("cases_causes_2.png")
+    df.plot(
+        ax=ax,
+        y=cols,
+        kind="area",
+        colormap="tab20",
+        title=title,
+    )
+    plt.tight_layout()
+    plt.savefig("cases_causes_all.png")
+
 
     ##########################
     # Tests by area

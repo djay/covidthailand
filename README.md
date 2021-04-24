@@ -44,6 +44,14 @@ The data is updated daily with most data changing around midday once the governm
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
+## Cases by Risk (Summarised)
+
+![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
+
+- Summarised from "Risk" reason in case details.
+- [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 ## Cases by Health District
 
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
@@ -53,6 +61,7 @@ The data is updated daily with most data changing around midday once the governm
 - You can also see [Cases by District broken down by walkin vs proactive](#cases-by-type-and-province) but there is no longer a data source to keep this updated.
 - Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
   [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
+
 ## Cases by test type
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
  - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
@@ -201,11 +210,17 @@ Bureau, Chaeng Watthana"
 ## Thailand
   - [Pete Scully: COVID-19 Thailand Public Data](https://petescully.co.uk/research/covid19-thailand-dashboards/) for added visulisations and comparisons
   - [Stefano Starita](https://twitter.com/DrSteStarita) - more excellent analysis and visualisations
-  - [Thai Gov Press: FB](https://www.facebook.com/ThaigovSpokesman), [Ministry of Healt: Twitter](https://twitter.com/thaimoph), [Thai Government PR](https://www.facebook.com/thailandprd)
+  - Gov news feeds
+    - [Thai Gov Spokesman: FB](https://www.facebook.com/ThaigovSpokesman), 
+    - [Thai Government PR: FB](https://www.facebook.com/thailandprd),
+    - [Ministry of Health: Twitter](https://twitter.com/thaimoph), 
+    - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
   - [MOPH GIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322)
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log
+- 2021-04-25 - Add graph of cases by risk.
+- 2021-04-25 - Scrape hospitalisation stats from briefing reports
 - 2021-04-23 - Fixed mistake in testing data where private tests was added again
 - 2021-04-22 - data for sym/asymptomatic and pui private vs pui public
 - 2021-04-20 - Added case age plot
@@ -221,7 +236,11 @@ Bureau, Chaeng Watthana"
 - put in plots of 
   - risk/source e.g entertainment vs factory vs prison vs friend 
   - severe cases vs mild vs deaths?
-
+- Extract from briefings
+  - field hospital vs normal hospital
+  - State Quarantine vs ASQ
+- find source for severe vs mild in hospital
+  - in info graphic https://www.facebook.com/photo?fbid=318400222979581
 - get data source for antigen and antibody tests
   - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
 - get source for sym/asym for latest cases
