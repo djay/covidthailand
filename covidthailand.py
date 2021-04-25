@@ -1881,19 +1881,28 @@ def get_cases_by_prov_briefings():
     return date_prov, types
 
 
+def get_arcgis_stats():
+    # PUI + confirmed, recovered etc stats
+    pui =  "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Corona_Date/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true",
+
+    icu = "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Private_ICU_Total%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&resultType=standard&cacheHint=true",
+    every_district = "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset=0&resultRecordCount=50&resultType=standard&cacheHint=true",
+
+
 ### Combine and plot
 
 def scrape_and_combine():
     cases_by_age = get_cases_by_demographics_api()
-    df = pd.read_json(
-        "api/combined",
-        #date_format="iso",
-        #indent=3,
-        orient="records",
-    )
-    df['Date'] = pd.to_datetime(df['Date'])
-    df = df.combine_first(cases_by_age)
-    return df.set_index("Date")
+    if True and os.path.exists("api/combined"):
+        df = pd.read_json(
+            "api/combined",
+            #date_format="iso",
+            #indent=3,
+            orient="records",
+        )
+        df['Date'] = pd.to_datetime(df['Date'])
+        df = df.combine_first(cases_by_age)
+        return df.set_index("Date")
 
     cases_by_area = get_cases_by_area()
     situation = get_situation()
