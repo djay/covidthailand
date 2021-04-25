@@ -1861,7 +1861,7 @@ def export(df, name):
     )
 
 
-USE_CACHE_DATA = True
+USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
     cases = get_cases()
     cases_demo = get_cases_by_demographics_api()
@@ -1882,7 +1882,7 @@ def scrape_and_combine():
             df = df.combine_first(locals()[f])
     print(df)
 
-    if USE_CACHE_DATA and os.path.exists("api/combined"):
+    if USE_CACHE_DATA:
         old = pd.read_json(
             "api/combined",
             #date_format="iso",
