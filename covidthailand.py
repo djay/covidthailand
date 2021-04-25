@@ -2354,7 +2354,7 @@ def save_plots(df):
     cols = [c for c in df.columns if "Risk: " in str(c)]
     cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", )
     # TODO: take out unknown
-    df['Risk: Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) + df['Risk: Unknown']
+    df['Risk: Unknown'] = df['Cases'].sub(df[cols].sum(axis=1, skipna=False), fill_value=0).add(df['Risk: Unknown'], fill_value=0).clip(lower=0)
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
         ax=ax,
