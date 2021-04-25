@@ -4,13 +4,59 @@ Thailand testing and case data gathered and combined from various sources for ot
 
 The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
-# Dashboard
+## [Cases](#cases) | [Hospitalisations](#hospitalisations) | [Testing](#testing) | (Downloads)(#downloads)
+
+
+# Cases
+
+## Cases by Health District
+
+![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+
+- [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
+- [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+- You can also see [Cases by District broken down by walkin vs proactive](#cases-by-type-and-province) but there is no longer a data source to keep this updated.
+- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
+  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
+
+## Cases by test type
+![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
+ - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
+- Contact tracing normally counts as a "Walkin"
+- Proactive tests are normally done on specific high risk locations
+- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
+  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
+
+## Cases by Risk Group
+
+![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
+
+- Grouped from original data which has over 70 risk categories. Clusters have
+  been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
+- Risk is most likely determined as part of the PUI criteria process?
+- [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+## Cases by Age
+![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
+
+- see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+# Hospitalisations
+
+![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_active_2.png)
+
+- see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+# Testing
 
 *WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
 
 *CORRECTION* Previous versions of these stats had a higher number for test data due to a mistake in interpreting the data. This hasn't change the positive rate significantly.
 
-# Positive Rate
+## Positive Rate
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
 
@@ -43,40 +89,6 @@ The data is updated daily with most data changing around midday once the governm
 - Gives an indication of which areas are doing less testing compared to cases.
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
-
-## Cases by Risk (Summarised)
-
-![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
-
-- Summarised from "Risk" reason in case details.
-- [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
-
-## Cases by Health District
-
-![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
-
-- [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
-- [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-- You can also see [Cases by District broken down by walkin vs proactive](#cases-by-type-and-province) but there is no longer a data source to keep this updated.
-- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
-  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
-
-## Cases by test type
-![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
- - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
-- Contact tracing normally counts as a "Walkin"
-- Proactive tests are normally done on specific high risk locations
-- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
-  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
-
-## Cases by Age
-![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
-
-- see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
-
-
 
 # Downloads
 

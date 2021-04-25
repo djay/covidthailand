@@ -796,35 +796,18 @@ def get_situation():
     if syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']:
         situation = situation.combine_first(today_situation)
 
-    os.makedirs("api", exist_ok=True)
-    situation.reset_index().to_json(
-        "api/situation_reports", 
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    situation.reset_index().to_csv(
-        "api/situation_reports.csv", 
-        index=False 
-    )
+    export(situation, "situation_reports")
     return situation
 
 
 def get_cases():
-    try:
-        timeline = s.get("https://covid19.th-stat.com/api/open/timeline").json()["Data"]
-    except JSONDecodeError:
-        return pd.DataFrame()
-
-    results = []
-    for d in timeline:
-        date = datetime.datetime.strptime(d["Date"], "%m/%d/%Y")
-        cases = d["NewConfirmed"]
-        # merge('timeline', date, (date, None, None, None, None, None, cases))
-        results.append((date, cases))
-    data = pd.DataFrame(results, columns=["Date", "Cases"]).set_index("Date")
-    print(data)
-    return data
+    file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline", dir="json"))
+    data = pd.DataFrame(json.loads(text)['Data'])
+    data['Date'] = pd.to_datetime(data['Date'])
+    data = data.set_index("Date")
+    cases = data[["NewConfirmed", "NewDeaths", "NewRecovered", "Hospitalized"]]
+    cases = cases.rename(columns=dict(NewConfirmed="Cases",NewDeaths="Deaths",NewRecovered="Recovered"))
+    return cases
 
 def get_tests_by_day():
     file = next(dav_files(ext="xlsx"))
@@ -931,17 +914,7 @@ def get_tests_by_area():
                 [[start,end,]+pos + tests],
                 columns=raw_cols
             ).set_index("Start"))
-    os.makedirs("api", exist_ok=True)
-    raw.reset_index().to_json(
-        "api/tests_by_area", 
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    raw.reset_index().to_csv(
-        "api/tests_by_area.csv",
-        index=False 
-    )
+    export(raw, "tests_by_area")
     return data
 
 
@@ -985,17 +958,7 @@ def get_tests_private_public():
             # TODO: There is also graphs splt by hospital
     data['Pos Public'] = data['Pos'] - data['Pos Private']
     data['Tests Public'] = data['Tests'] - data['Tests Private']
-    os.makedirs("api", exist_ok=True)
-    data.reset_index().to_json(
-        "api/tests_pubpriv",
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    data.reset_index().to_csv(
-        "api/tests_pubpriv.csv",
-        index=False 
-    )
+    export(data, "tests_pubpriv")
     return data
 
 def get_provinces():
@@ -1228,16 +1191,7 @@ def get_cases_by_area_type():
     # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
     dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
     # Now we can save raw table of provice numbers
-    dfprov.reset_index().to_json(
-        "api/cases_by_province",
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    dfprov.reset_index().to_csv(
-        "api/cases_by_province.csv",
-        index=False 
-    )
+    export(dfprov, "cases_by_province")
 
     # Reduce down to health areas
     dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum(min_count=1).reset_index()
@@ -1334,7 +1288,7 @@ def get_cases_by_demographics_api():
     risks['Cluster ผับ Thonglor'] = "Entertainment"
     risks['ผู้ที่เดินทางมาจากต่างประเทศ และเข้า ASQ/ALQ'] = 'Imported'
     risks['Cluster บางแค'] = "Community" # bangkhee
-    risks['Cluster ตลาดพรพัฒน์'] = "Work" #market
+    risks['Cluster ตลาดพรพัฒน์'] = "Community" #market
     risks['Cluster ระยอง'] = "Entertainment" # Rayong
     risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work" # work with forigners
     risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Work" # detention
@@ -1386,11 +1340,19 @@ def get_cases_by_demographics_api():
     # Guess the unmatched
     cases["risk_match"] = unmatched['risk'].map(lambda x: next(iter(difflib.get_close_matches(x, risks.index)),None), na_action="ignore")
     cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
+    matched = cases_risks[["risk", "risk_group"]]
 
     unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
     unmatched['risk'].value_counts()
     case_risks = pd.crosstab(cases_risks['Date'],cases_risks["risk_group"])
     case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
+
+    # dump mappings to file so can be inspected
+    matched.value_counts().reset_index().rename(columns={0:"count"}).to_csv(
+        "api/risk_groups.csv",
+        index=False 
+    )
+
 
     return case_risks.combine_first(case_ages)
 
@@ -1405,18 +1367,7 @@ def get_cases_by_area():
 
     case_areas = case_tweets.combine_first(case_areas)
 
-    os.makedirs("api", exist_ok=True)
-    case_areas.reset_index().to_json(
-        "api/cases_by_area",
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    case_areas.reset_index().to_csv(
-        "api/cases_by_area.csv",
-        index=False 
-    )
-
+    export(case_areas, "cases_by_area")
     
     return case_areas
 
@@ -1891,53 +1842,61 @@ def get_arcgis_stats():
 
 ### Combine and plot
 
+def export(df, name):
+    df = df.reset_index()
+    for c in df.select_dtypes(include=['datetime64']).columns:
+        df[c] = df[c].dt.strftime('%Y-%m-%d')
+    os.makedirs("api", exist_ok=True)
+    # TODO: save space by dropping nan
+    # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
+    df.to_json(
+        f"api/{name}",
+        date_format="iso",
+        indent=3,
+        orient="records",
+    )
+    df.to_csv(
+        f"api/{name}.csv",
+        index=False 
+    )
+
+
+USE_CACHE_DATA = True
 def scrape_and_combine():
-    cases_by_age = get_cases_by_demographics_api()
-    if True and os.path.exists("api/combined"):
-        df = pd.read_json(
+    cases = get_cases()
+    cases_demo = get_cases_by_demographics_api()
+    if not USE_CACHE_DATA:
+
+        cases_by_area = get_cases_by_area()
+        situation = get_situation()
+
+        print(cases_by_area)
+        print(situation)
+
+        tests = get_tests_by_day()
+        tests_by_area = get_tests_by_area()
+        privpublic = get_tests_private_public()
+    df = pd.DataFrame(columns=["Date"]).set_index("Date")
+    for f in ['cases', 'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo']:            
+        if f in locals():
+            df = df.combine_first(locals()[f])
+    print(df)
+
+    if USE_CACHE_DATA and os.path.exists("api/combined"):
+        old = pd.read_json(
             "api/combined",
             #date_format="iso",
             #indent=3,
             orient="records",
         )
-        df['Date'] = pd.to_datetime(df['Date'])
-        df = df.combine_first(cases_by_age)
-        return df.set_index("Date")
+        old['Date'] = pd.to_datetime(old['Date'])
+        old = old.set_index("Date")
+        df = df.combine_first(old)
 
-    cases_by_area = get_cases_by_area()
-    situation = get_situation()
-
-    print(cases_by_area)
-    print(situation)
-
-    tests = get_tests_by_day()
-    print(tests)
-    tests_by_area = get_tests_by_area()
-    cases = get_cases()
-    print(cases)
-    privpublic = get_tests_private_public()
-
-    df = cases # cases from situation can go wrong
-    df = df.combine_first(cases_by_area)
-    df = df.combine_first(situation)
-    df = df.combine_first(tests_by_area)
-    df = df.combine_first(tests)
-    df = df.combine_first(privpublic)
-    df = df.combine_first(cases_by_age)
-    print(df)
-
-    os.makedirs("api", exist_ok=True)
-    df.reset_index().to_json(
-        "api/combined",
-        date_format="iso",
-        indent=3,
-        orient="records",
-    )
-    df.reset_index().to_csv(
-        "api/combined.csv",
-        index=False 
-    )
-    return df
+        return df
+    else:
+        export(df, "combined")
+        return df
 
 
 def calc_cols(df):
@@ -2185,7 +2144,7 @@ def save_plots(df):
 #            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
             "Share of PUI that are Walkin Covid Cases",
-            "Positive Rate: unsmoothed"
+            "Positive Rate: without rolling average"
         ]
     )
     plt.tight_layout()
@@ -2771,6 +2730,41 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("cases_from_positives_area.png")
+
+
+
+    ############
+    # Hospital plots
+    ############
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
+    non_split = df[["Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]].sum(skipna=False, axis=1)
+    df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
+    cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field",]
+    df["2020-12-12":].plot.area(
+        ax=ax,
+        y=cols,
+        colormap="tab20",
+        title='Thailand Active Covid Cases\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend([
+        "On Respirator",
+        "Severe Case",
+        "Hospitalised Other",
+        "Field Hospital",
+    ])
+    # df['Severe Estimate'] = (df['Cases'].shift(+14) - df['Recovered']).clip(0)
+    # df["2020-12-12":].plot.line(
+    #     ax=ax,
+    #     y=['Severe Estimate', 'Cases'],
+    #     colormap="tab20",
+    # )
+    plt.tight_layout()
+    plt.savefig("cases_active_2.png")
+
 
 if __name__ == "__main__":
     df = scrape_and_combine()
