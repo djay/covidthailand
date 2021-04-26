@@ -33,6 +33,8 @@ The data is updated daily with most data changing around midday once the governm
 
 - Grouped from original data which has over 70 risk categories. Clusters have
   been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
+- Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to seperate out SS cluster cases
+  between those from factories and those from the market. This could change later. 
 - Risk is most likely determined as part of the PUI criteria process?
 - [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
@@ -88,6 +90,7 @@ The data is updated daily with most data changing around midday once the governm
 ![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
 
 - [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked.png)
+- [Proportion of positive rate contributed by health districts](https://raw.githubusercontent.com/wiki/djay/covidthailand/positivity_area_2.png)
 - Gives an indication of which areas are doing less testing compared to cases.
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
@@ -162,7 +165,7 @@ The data is updated daily with most data changing around midday once the governm
   - Cases Imported: Cases In Quarantine + Cases outside quarantine
   - Cases Proavtive: Local transmissions that aren't walkins
   - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
-  - Tested PUI: People Classified as Person Under Infestigation. Qualifies for free test.
+  - Tested PUI: People Classified as Person Under Infestigation.
   - Tested PUI Walkin Public: PUI classified at public hospitals/labs
   - Tested PUI Walkin Private: PUI classified at private hospitals/labs
 - The follwing are included but are *not useful data since 2020-08*.
@@ -245,6 +248,8 @@ Bureau, Chaeng Watthana"
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 # TODO (looking for contributors!)
+- Fix unknowns to make more clear
+  - e.g. risks should be "under investigation" or just don't show for data no collected yet?
 - start collecting data on hospital capacity from
   - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
   - probably no access to historical data
