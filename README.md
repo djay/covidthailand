@@ -233,7 +233,7 @@ Bureau, Chaeng Watthana"
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log
-- 2021-04-25 - Add graph of cases by risk.
+- 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
 - 2021-04-23 - Fixed mistake in testing data where private tests was added again
 - 2021-04-22 - data for sym/asymptomatic and pui private vs pui public
@@ -244,19 +244,34 @@ Bureau, Chaeng Watthana"
 - 2021-04-12 - Put in "unknown area" for tests and cases by district so totals are correct
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
-# TODO
-- switch to plotly or seaborn 
+# TODO (looking for contributors!)
+- start collecting data on hospital capacity from
+  - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
+  - probably no access to historical data
+  - not sure yet how accurate it is or how often it changes
+  - will have to checkout wiki store of data or start new report to keep data storage.
+- put hospitalisation data into situation_reports export rather than cases_by_area
+- find historical source for mild vs severe hospitalisations
+- get source for sym/asym for latest cases
+  - stopped being put in briefings
+- plot % subplots to get closer detail
+  - esp for the by district plots
+- vaccination per province
+  - https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd
+  - any easier data source?
+- switch to plotly to interactively inspect values
   - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
-- put in plots of 
-  - risk/source e.g entertainment vs factory vs prison vs friend 
-  - severe cases vs mild vs deaths?
 - Extract from briefings
   - State Quarantine vs ASQ
-- find source for severe vs mild in hospital
-  - in info graphic https://www.facebook.com/photo?fbid=318400222979581
 - get data source for antigen and antibody tests
-  - historical info out of https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
-- get source for sym/asym for latest cases
-- get data source for walkins or proactive investigated/tested
-- put in badges for date of last record per dataset
-- get data from older briefing reports to improve cases by area data
+- get data source 
+  - PUIs that didn't make the criteria - rejected. screened number?
+  - proactive screened
+- put in for date of last record in graph titles
+  - and more detail of start and end dates for data in data source descriptions
+- fix briefings parser to get more historical data 
+   - for sym/asym
+   - province data
+- work out if can incorporate province wealth
+  - https://data.go.th/dataset/http-mis-m-society-go-th-tab030104-php
+  - maybe for vaccinations or positive rate?
