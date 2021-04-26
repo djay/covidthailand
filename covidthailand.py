@@ -1716,11 +1716,12 @@ def briefing_case_types(date, pages):
             hospital,_ = get_next_number(text, "ใน รพ.")
             field,_ = get_next_number(text, "รพ.สนาม")
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
-            assert hospital + field == num[0]
+            hospitalised = num[0]
+            assert hospital + field == hospitalised
         else:
-            hospital, field, severe, respirator = [None]*4
+            hospital, field, severe, respirator, hospitalised = [None]*5
 
-        rows.append([date, cases, walkins, proactive, imported, hospital, field, severe, respirator])
+        rows.append([date, cases, walkins, proactive, imported, hospital, field, severe, respirator, hospitalised])
         break
     df = pd.DataFrame(rows, columns=[
         "Date", 
@@ -1732,6 +1733,7 @@ def briefing_case_types(date, pages):
         "Hospitalized Field",
         "Hospitalized Severe",
         "Hospitalized Respirator",
+        "Hospitalized",
     ]).set_index(['Date'])
     print(df.to_string(header=False))
     return df
@@ -1861,7 +1863,7 @@ def export(df, name):
     )
 
 
-USE_CACHE_DATA = True and os.path.exists("api/combined")
+USE_CACHE_DATA = False and os.path.exists("api/combined")
 def scrape_and_combine():
     cases = get_cases()
     cases_demo = get_cases_by_demographics_api()

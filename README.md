@@ -4,7 +4,7 @@ Thailand testing and case data gathered and combined from various sources for ot
 
 The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
-## [Cases](#cases) | [Hospitalisations](#hospitalisations) | [Testing](#testing) | [Downloads](#downloads)
+## [Cases](#cases) | [Active Cases](#active_cases) | [Testing](#testing) | [Downloads](#downloads)
 
 
 # Cases
@@ -45,11 +45,11 @@ The data is updated daily with most data changing around midday once the governm
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-# Hospitalisations
+# Active Cases
 
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_active_2.png)
 
-- Break down of active case status only available from 2020-04-24.
+- Break down of active case status only available from 2020-04-24 onwards.
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
 
@@ -250,6 +250,7 @@ Bureau, Chaeng Watthana"
 # TODO (looking for contributors!)
 - Fix unknowns to make more clear
   - e.g. risks should be "under investigation" or just don't show for data no collected yet?
+  - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
 - start collecting data on hospital capacity from
   - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
   - probably no access to historical data
