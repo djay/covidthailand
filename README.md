@@ -47,8 +47,10 @@ The data is updated daily with most data changing around midday once the governm
 
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_active_2.png)
 
+- Break down of active case status only available from 2020-04-24.
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+
 
 # Testing
 
@@ -249,7 +251,6 @@ Bureau, Chaeng Watthana"
   - risk/source e.g entertainment vs factory vs prison vs friend 
   - severe cases vs mild vs deaths?
 - Extract from briefings
-  - field hospital vs normal hospital
   - State Quarantine vs ASQ
 - find source for severe vs mild in hospital
   - in info graphic https://www.facebook.com/photo?fbid=318400222979581

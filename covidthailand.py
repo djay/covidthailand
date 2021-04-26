@@ -2747,6 +2747,7 @@ def save_plots(df):
         y=cols,
         colormap="tab20",
         title='Thailand Active Covid Cases\n'
+        "(Severe, field, respirator only avaiable from 2021-04-24 onwards)"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
