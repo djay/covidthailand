@@ -1,3 +1,4 @@
+# coding=utf8
 from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
 import requests
@@ -1905,13 +1906,13 @@ def export(df, name):
     )
 
 
-USE_CACHE_DATA = False and os.path.exists("api/combined")
+USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
     cases_demo = get_cases_by_demographics_api()
-    cases_by_area = get_cases_by_area()
     hospital = get_hospital_resources()
     cases = get_cases()
     if not USE_CACHE_DATA:
+        cases_by_area = get_cases_by_area()
 
         situation = get_situation()
 
@@ -2367,39 +2368,61 @@ def save_plots(df):
     plt.savefig("cases_types_all.png")
 
     cols = [c for c in df.columns if "Age " in str(c)]
-    df['Age Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    for c in cols:
+        df[f"{c} (MA)"] = df[c].rolling(7).mean()
+    macols = [f"{c} (MA)" for c in cols]
+    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    for c in cols:
+        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
+    perccols = [f"{c} (%)" for c in cols]
+    title="Thailand Covid Cases by Age\n"\
+        f"Updated: {TODAY().date()}\n"\
+        "(7 day rolling average)\n" \
+        "https://github.com/djay/covidthailand"
 
-    fig, ax = plt.subplots(figsize=[20, 10])
+    f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
     df["2020-12-12":].plot(
-        ax=ax,
-        y=cols+['Age Unknown'],
+        ax=a0,
+        y=macols+['Age Unknown'],
         kind="area",
         colormap="summer",
-        title="Thailand Covid Cases by Age\n"
-        f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        title=title,
     )
+    a0.set_ylabel("Cases")
+    a0.xaxis.label.set_visible(False)
+    df["2020-12-12":].plot(
+        ax=a1,
+        y=perccols,
+        kind="area",
+        colormap="summer",
+#        title=title,
+        #figsize=[20, 5]
+        legend=False,
+        #title="Thailand Covid Cases by Age (%)"
+    )
+    a1.set_ylabel("Percent")
+    a1.xaxis.label.set_visible(False)
     plt.tight_layout()
     plt.savefig("cases_ages_2.png")
+
     df.plot(
         ax=ax,
         y=cols+['Age Unknown'],
         kind="area",
         colormap="summer",
-        title="Thailand Covid Cases by Age\n"
-        f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        title=title
     )
     plt.tight_layout()
     plt.savefig("cases_ages_all.png")
 
-    title="Thailand Covid Cases by Risk\n"
-    f"Updated: {TODAY().date()}\n"
-    "https://github.com/djay/covidthailand"
+
+    title="Thailand Covid Cases by Risk\n"\
+        f"Updated: {TODAY().date()}\n"\
+        "https://github.com/djay/covidthailand"
     cols = [c for c in df.columns if "Risk: " in str(c)]
-    cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", )
+    cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )
     # TODO: take out unknown
-    df['Risk: Unknown'] = df['Cases'].sub(df[cols].sum(axis=1, skipna=False), fill_value=0).add(df['Risk: Unknown'], fill_value=0).clip(lower=0)
+    df['Risk: Investigating'] = df['Cases'].sub(df[cols].sum(axis=1, skipna=False), fill_value=0).add(df['Risk: Investigating'], fill_value=0).clip(lower=0)
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
         ax=ax,
@@ -2410,6 +2433,7 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("cases_causes_2.png")
+
     df.plot(
         ax=ax,
         y=cols,
@@ -2673,11 +2697,17 @@ def save_plots(df):
     # Case by area plots
     #########################
 
-    cols = [f"Cases Area {area}" for area in range(1, 14)]+["Cases Imported"]
-    df['Cases Area Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    for area in range(1,14):
+        df[f"Cases Area {area} (MA)"] = df[f"Cases Area {area}"].rolling(7).mean()
+    cols = [f"Cases Area {area} (MA)" for area in range(1, 14)]+["Cases Imported"]
+    df['Cases Area Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
     cols = cols+['Cases Area Unknown']
     assert df[cols][(df['Cases Area Unknown'] < 0)].empty
     legend = AREA_LEGEND + ["Imported Cases", "Unknown District"]
+    title="Thailand Covid Cases by Health District\n" \
+        "(7 day rolling average)\n" \
+        f"Updated: {TODAY().date()}\n" \
+        "https://github.com/djay/covidthailand"
 
     cols = rearrange(cols,*FIRST_AREAS)
     fig, ax = plt.subplots()
@@ -2687,9 +2717,7 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Thailand Covid Cases by Health District\n"
-        f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        title=title
     )
     ax.legend(legend)
     plt.tight_layout()
@@ -2702,9 +2730,7 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Thailand Covid Cases by health District\n"
-        f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        title=title
     )
     ax.legend(legend)
     plt.tight_layout()
@@ -2717,9 +2743,7 @@ def save_plots(df):
         kind="area",
         figsize=[20, 10],
         colormap=AREA_COLOURS,
-        title="Thailand Covid Cases by health District\n"
-        f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        title=title
     )
     ax.legend(legend)
     plt.tight_layout()
