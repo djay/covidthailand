@@ -801,7 +801,7 @@ def get_situation():
 
 
 def get_cases():
-    file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline", dir="json"))
+    file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline", dir="json", check=True))
     data = pd.DataFrame(json.loads(text)['Data'])
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.set_index("Date")
@@ -1182,6 +1182,35 @@ def get_provinces():
 
 PROVINCES = get_provinces()
 
+def get_province(prov):
+    prov = prov.strip().strip(".").replace(" ", "")
+    try:
+        prov = PROVINCES.loc[prov]['ProvinceEn']
+    except KeyError:
+        close = difflib.get_close_matches(prov, PROVINCES.index)[0]
+        try:
+            prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
+        except KeyError:
+                print(f"provinces.loc['{prov}'] = provinces.loc['x']")
+                raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
+                #continue
+
+    return prov
+
+
+def fuzzy_join(a,b, on, assert_perfect_match=False):
+    first = a.join(b, on=on)
+    test = list(b.columns)[0]
+    unmatched = first[first[test].isnull() & first[on].notna()]
+    a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(x, b.index)),None), na_action="ignore")
+    second = first.combine_first(a.join(b, on="fuzzy_match"))
+    del a["fuzzy_match"]
+    unmatched2 = second[second[test].isnull() & second[on].notna()]
+    if assert_perfect_match:
+        assert unmatched2.empty, f"Still some values left unmatched {unmatched[on]}"
+    return second
+
+
 
 def get_cases_by_area_type():
     briefings, cases = get_cases_by_prov_briefings()
@@ -1219,7 +1248,7 @@ def get_cases_by_area_type():
 
 def get_case_details_csv():
     url = "https://data.go.th/dataset/covid-19-daily"
-    file, text = next(web_files(url, dir="json"))
+    file, text = next(web_files(url, dir="json", check=True))
     data = re.search("packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
@@ -1254,13 +1283,11 @@ def get_case_details_api():
     cases = pd.DataFrame(records)
     return cases
 
+
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
-    # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
-    cases = cases.join(PROVINCES["Health District Number"], on="province_of_onset")
-    unjoined = cases.loc[(cases["Health District Number"].isnull()) & (cases["province_of_onset"].notnull())]
-    assert unjoined.empty, f"Missing prov: {list(unjoined['province_of_onset'])}"
+    cases = fuzzy_join(cases, PROVINCES[["Health District Number"]], "province_of_onset", True)
     case_areas = pd.crosstab(cases['Date'],cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     return case_areas
@@ -1335,15 +1362,16 @@ def get_cases_by_demographics_api():
         key, cat = v.split(":")
         risks[key] = cat
     risks = pd.DataFrame(risks.items(), columns=["risk", "risk_group"]).set_index("risk")
-    cases_risks = cases.join(risks, on="risk")
-    unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
+    cases_risks = fuzzy_join(cases, risks, on="risk")
+    #cases_risks = cases.join(risks, on="risk")
+    #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
     # Guess the unmatched
-    cases["risk_match"] = unmatched['risk'].map(lambda x: next(iter(difflib.get_close_matches(x, risks.index)),None), na_action="ignore")
-    cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
+    #cases["risk_match"] = unmatched['risk'].map(lambda x: next(iter(difflib.get_close_matches(x, risks.index)),None), na_action="ignore")
+    #cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
     matched = cases_risks[["risk", "risk_group"]]
 
     unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
-    unmatched['risk'].value_counts()
+    #unmatched['risk'].value_counts()
     case_risks = pd.crosstab(cases_risks['Date'],cases_risks["risk_group"])
     case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
@@ -1642,12 +1670,7 @@ def briefing_case_detail(date, pages):
                 #for prov in provs: # TODO: should really be 1. make split only split 1.
                     # TODO: sometimes cells/data seperated by "-" 2021-01-03
                     prov,num = prov_num.strip().split("(",1)
-                    prov = prov.strip().strip(".").replace(" ", "")
-                    try:
-                        prov = PROVINCES.loc[prov]['ProvinceEn']
-                    except KeyError:
-                        close = difflib.get_close_matches(prov, PROVINCES.index)[0]
-                        prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
+                    prov = get_province(prov)
                     num = int(num_people.search(num).group(1))
                     totals[title] = totals.get(title,0) + num
 
@@ -1763,12 +1786,7 @@ def briefing_province_cases(file, date, pages):
             linenum, prov, *parts = parts
             numbers, parts = parts[:9], parts[9:]
             thai = prov.strip().strip(" ี").strip(" ์").strip(" ิ")
-            try:
-                prov = PROVINCES["ProvinceEn"].loc[thai]
-            except KeyError:
-                print(f"provinces.loc['{thai}'] = provinces.loc['x']")
-                raise Exception(f"provinces.loc['{thai}'] = provinces.loc['x']")
-                #continue
+            prov = get_province(thai)
             numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
             numbers = numbers[1:-1] # last is total. first is previous days
             assert len(numbers) == 7
@@ -1844,7 +1862,7 @@ def get_hospital_resources():
     rows = []
     for page in range(0,2000,1000):
         every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"
-        file, content = next(web_files(every_district, dir="json"))
+        file, content = next(web_files(every_district, dir="json", check=True))
         jcontent = json.loads(content)
         rows.extend([x['attributes'] for x in jcontent['features']])
 
@@ -1889,12 +1907,12 @@ def export(df, name):
 
 USE_CACHE_DATA = False and os.path.exists("api/combined")
 def scrape_and_combine():
+    cases_demo = get_cases_by_demographics_api()
+    cases_by_area = get_cases_by_area()
     hospital = get_hospital_resources()
     cases = get_cases()
-    cases_demo = get_cases_by_demographics_api()
     if not USE_CACHE_DATA:
 
-        cases_by_area = get_cases_by_area()
         situation = get_situation()
 
         print(cases_by_area)
