@@ -4,7 +4,7 @@ Thailand testing and case data gathered and combined from various sources for ot
 
 The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
-## [Cases](#cases) | [Active Cases](#active_cases) | [Testing](#testing) | [Downloads](#downloads)
+## [Cases](#cases) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](#downloads)
 
 
 # Cases
@@ -262,6 +262,7 @@ Bureau, Chaeng Watthana"
   - stopped being put in briefings
 - plot % subplots to get closer detail
   - esp for the by district plots
+- rolling averages on area graphs to make them easier to read
 - vaccination per province
   - https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd
   - any easier data source?
