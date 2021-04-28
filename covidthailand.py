@@ -23,7 +23,7 @@ import json
 from pytwitterscraper import TwitterScraper
 def TODAY(): return datetime.datetime.today()
 from itertools import tee, islice, compress, cycle
-import camelot
+#import camelot
 import difflib
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))

@@ -12,7 +12,10 @@ python-pptx
 python-dateutil
 jupyter
 pytwitterscraper
-camelot-py[cv,plot]
+#camelot-py[cv,plot]
+#sktime
+#seaborn
+#prompt-toolkit<2.0.0
 #facebook-page-scraper # does work but requires selenium
 #facebook-scraper  #works but not for RB
 #scrape-facebook

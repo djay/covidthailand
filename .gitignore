@@ -1,3 +1,4 @@
+.env
 *.png
 *.pdf
 *.xlsx
@@ -9,3 +10,7 @@ situation_th
 tests_moph
 .venv
 __pycache__
+api
+json
+tweets
+html
