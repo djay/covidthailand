@@ -310,6 +310,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
         if is_remote_newer(file, modified, check):
+            print(f"Attempting to Download: {file}",end="")
             r = s.get(url)
             if r.status_code != 200:
                 continue
@@ -318,6 +319,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
                 for chunk in r.iter_content(chunk_size=512 * 1024):
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
+                        print(".", end="")
+            print("")
         with open(file, "rb") as f:
             content = f.read()
         yield file, content
