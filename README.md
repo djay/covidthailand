@@ -50,6 +50,7 @@ The data is updated daily with most data changing around midday once the governm
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_active_2.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
+- ```Hospitilised Other``` is everyone after they are a confirmed case once you take out recovered and those that died. This means it includes those confirmed that are yet to find a bed (isolating at home). There is currently no data source for actual hospital beds occupied.
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
 
