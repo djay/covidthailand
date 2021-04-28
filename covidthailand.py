@@ -2050,6 +2050,46 @@ TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
 
+def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=None, percent_fig=False, ma=False):
+    cols = [c for c in df.columns if prefix in str(c)]
+    # for c in cols:
+    #     df[f"{c} (MA)"] = df[c].rolling(7).mean()
+    macols = [f"{c} (MA)" for c in cols]
+    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    for c in cols:
+        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
+    perccols = [f"{c} (%)" for c in cols]
+    title=f"{title}\n"\
+        f"Updated: {TODAY().date()}\n"\
+        "(7 day rolling average)\n" \
+        "https://github.com/djay/covidthailand"
+    for suffix,dfplot in [('1', df[:"2020-12-12"]), ('2', df["2020-12-12":]), ('all', df)]:
+        f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+        dfplot.plot(
+            ax=a0,
+            y=macols+['Age Unknown'],
+            kind="area",
+            colormap="summer",
+            title=title,
+        )
+        a0.set_ylabel("Cases")
+        a0.xaxis.label.set_visible(False)
+        dfplot.plot(
+            ax=a1,
+            y=perccols,
+            kind="area",
+            colormap="summer",
+    #        title=title,
+            #figsize=[20, 5]
+            legend=False,
+            #title="Thailand Covid Cases by Age (%)"
+        )
+        a1.set_ylabel("Percent")
+        a1.xaxis.label.set_visible(False)
+        plt.tight_layout()
+        plt.savefig(f"{name}_{suffix}.png")
+
+
 def save_plots(df):
     matplotlib.use("AGG")
     plt.style.use('seaborn-whitegrid')
