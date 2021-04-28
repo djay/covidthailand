@@ -1802,7 +1802,7 @@ def briefing_province_cases(file, date, pages):
                     else:
                         print("no cases", linenum, thai, *numbers)
     df = pd.DataFrame(((d,p,c) for (d,p), c in rows.items()), columns=["Date", "Province", "Cases"]).set_index(["Date","Province"])
-    assert date >= d("2021-01-13") and not df.empty
+    assert date >= d("2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
     return df
 
 
@@ -1906,7 +1906,7 @@ def export(df, name):
     )
 
 
-USE_CACHE_DATA = True and os.path.exists("api/combined")
+USE_CACHE_DATA = False and os.path.exists("api/combined")
 def scrape_and_combine():
     cases_demo = get_cases_by_demographics_api()
     hospital = get_hospital_resources()
