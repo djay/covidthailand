@@ -1517,8 +1517,14 @@ def get_cases_by_prov_tweets():
         return int(s.replace(',','')) if s else None
 
     for date, text in officials.items():
-        imported = toint(re.search("\+([0-9,]+) imported", text).group(1))
-        local = toint(re.search("\+([0-9,]+) local", text).group(1))
+        imported = re.search("\+([0-9,]+) imported", text)
+        if imported:
+            assert imported, f"Failed to find imported in tweet {date}: {text}"
+            imported = toint(imported.group(1))
+        local = re.search("\+([0-9,]+) local", text)
+        if local:
+            assert local, f"Failed to find local in tweet {date}: {text}"
+            local = toint(local.group(1))
         cols = ["Date", "Cases Imported", "Cases Local Transmission"]
         row = [date,imported,local]
         df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
