@@ -57,17 +57,14 @@ The data is updated daily with most data changing around midday once the governm
 
 # Testing
 
-*WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
-
-*CORRECTION* Previous versions of these stats had a higher number for test data due to a mistake in interpreting the data. This hasn't change the positive rate significantly.
-
 ## Positive Rate
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
 
-- *NOTE* The actual positive rate is often delayed due to when testing data reports become available. Included is some other measures that give an indication what the rate might be.
-- [Positivity: Full year](https://github.com/djay/covidthailand/wiki/positivity.png) 
-- Read [Understanding the Positive Rate](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) to know why number of tests per population is not the best measure to compare countries on testing and why WHO suggests a positive rate of < %3.
+- [Enough testing is happening if positive rate is < %3](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) (not tests per population), however this works only if everyone who might have covid is equally likely to get tested. This has changed over time in thailand.
+- *NOTE* Cases/3*PUI seems to give an esitmate of positive rate (when proactive testing is low) so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
+- [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity.png) 
+- *WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
 - [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which could make Thailands positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed). You could argue excluding proactive testing gives a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling.
 - [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inversed) could be easier to understand.
 - Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
