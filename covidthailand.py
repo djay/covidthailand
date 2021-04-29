@@ -15,6 +15,7 @@ import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
 from pptx import Presentation
+from tika.tika import parse
 from urllib3.util.retry import Retry
 import dateutil
 from requests.adapters import HTTPAdapter, Retry
@@ -74,16 +75,21 @@ THAI_FULL_MONTHS = [
 
 def file2date(file):
     file = os.path.basename(file)
-    date = file.rsplit(".pdf", 1)[0]
-    if "-" in date:
-        date = date.rsplit("-", 1).pop()
-    else:
-        date = date.rsplit("_", 1).pop()
-
-    date = datetime.datetime(
-        day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
-    )
-    return date
+    file,*_ = file.rsplit(".",1)
+    if m := re.search("\d{4}-\d{2}-\d{2}", file):
+        return d(m.group(0))
+    #date = file.rsplit(".pdf", 1)[0]
+    # if "-" in file:
+    #     date = file.rsplit("-", 1).pop()
+    # else:
+    #     date = file.rsplit("_", 1).pop()
+    if m := re.search("\d{6}", file):
+        # thai date in briefing filenames
+        date = m.group(0)
+        return datetime.datetime(
+            day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
+        )
+    return None
 
 
 def find_dates(content):
@@ -192,7 +198,15 @@ def parse_file(filename, html=False, paged=True):
     # Read PDF file
     data = parser.from_file(filename, xmlContent=True)
     xhtml_data = BeautifulSoup(data["content"], features="lxml")
+    if html and not paged:
+        return xhtml_data
     pages = xhtml_data.find_all("div", attrs={"class": ["page", "slide-content"]})
+    if not pages:
+        if not paged:
+            return repr(xhtml_data)
+        else:
+            return [repr(xhtml_data)]
+
     # TODO: slides are divided by slide-content and slide-master-content rather than being contained
     for i, content in enumerate(pages):
         # Parse PDF data using TIKA (xml/html)
@@ -293,14 +307,19 @@ def is_remote_newer(file, remote_date, check=True):
         return True
     return False
 
-def web_links(*index_urls, ext=".pdf", dir="html"):
+def web_links(*index_urls, ext=".pdf", dir="html", match=None):
+    is_ext = lambda a: len(a.get("href").rsplit(ext))==2 if ext else True
+    is_match = lambda a: a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
+            soup = parse_file(file, html=True, paged=False)
+            return (urllib.parse.urljoin(index_url, a.get('href')) 
+                for a in soup.find_all('a') if is_match(a))
             # if index.status_code > 399: 
             #     continue
-            links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
-            for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
-                yield link
+            #links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
+            #for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
+            #    yield link
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
@@ -1784,7 +1803,9 @@ def briefing_case_types(date, pages):
     print(df.to_string(header=False))
     return df
 
-NUM_OR_DASH = re.compile("([0-9\,-]+)")
+NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
+parse_numbers = lambda lst: [float(i.replace(",","")) if i!="-" else 0 for i in lst]
+
 def briefing_province_cases(file, date, pages):
     if date < d("2021-01-13"):
         pages = []
@@ -1818,7 +1839,7 @@ def briefing_province_cases(file, date, pages):
                 # bangkok + subrubrs, resst of thailand
                 break
             prov = get_province(thai)
-            numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
+            numbers = parse_numbers(numbers)
             numbers = numbers[1:-1] # last is total. first is previous days
             assert len(numbers) == 7
             for i, cases in enumerate(reversed(numbers)):
@@ -1927,14 +1948,74 @@ def get_hospital_resources():
     export(data, "hospital_resources", csv_only=True)
     return data
 
+def any_in(target, *matches):
+    return any(m in target for m in matches)
 
+ALLOCATIONS = re.compile("(เข็มที.1 เข็มที.2){3}")
+VACCINATIONS = re.compile("(เข็มที.1 เข็มที.2){5}")
 def get_vaccinations():
-    url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
+    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd", ext=None, match=re.compile("2564"))
+    links = (l for f in folders for l in web_links(f, ext=".pdf"))
+    #url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
     # Just need the latest
-    file, text = next(web_files(*web_links(url), dir="vaccinations"))
-    #tables = tabula.read_pdf(file)
+    pages = ((page, file2date(f)) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f))
+    vaccinations = {}
+    for page, date in pages: # TODO: vaccinations are the day before I think
+        if not date or date <= d("2021-04-04"): #TODO: make go back later
+            continue
+        table = None
+        for line in [l.strip() for l in page.split('\n') if l.strip()]:
+            #next(r for m,r in {ALLOCATIONS:"alloc", VACCINATIONS: "given", "รวม":None}.items() if m in line)
+            headings = len(re.findall("(เข็ม(?:ที|ที่) .?(?:1|2)\s*)",line))
+            table = {10:"given", 6:"alloc"}.get(headings, table)
+            if not table:
+                continue
+            if headings:
+                print(f"{date}: {table} Vaccinations: {len(vaccinations)}")
+                continue
 
-
+            area, *rest = line.split(' ', 1)
+            if not NUM_OR_DASH.match(area) or not rest:
+                #table = None
+                continue
+            cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
+            prov, *cols = cols
+            prov = get_province(prov)
+            numbers = parse_numbers(cols)
+            if table=="alloc":
+                vaccinations[(date,prov)] = numbers[3:7]
+            elif table=="given":
+                assert len(numbers)==14
+                # TODO: work out why some are missing
+                alloc = vaccinations.get((date,prov), [None, None, None, None])
+                if len(alloc) == 4:
+                    # TODO: why duplication row?
+                    vaccinations[(date,prov)] = alloc + numbers
+     
+    df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
+        "Date",
+        "Province",
+        "Vaccinations Allocated Sinovac 1",
+        "Vaccinations Allocated Sinovac 2",
+        "Vaccinations Allocated AstraZeneca 1",
+        "Vaccinations Allocated AstraZeneca 2",
+        "Vaccinations Given 1 Cum",
+        "Vaccinations Given 1 %",
+        "Vaccinations Given 2 Cum",
+        "Vaccinations Given 2 %",
+        "Vaccinations Medical 1 Cum",
+        "Vaccinations Medical 2 Cum",
+        "Vaccinations Frontline 1 Cum",
+        "Vaccinations Frontline 2 Cum",
+        "Vaccinations Over60 1 Cum",
+        "Vaccinations Over60 2 Cum",
+        "Vaccinations Disease 1 Cum",
+        "Vaccinations Disease 2 Cum",
+        "Vaccinations RiskArea 1 Cum",
+        "Vaccinations RiskArea 2 Cum",
+    ])
+    export(df, "vaccinations")
+    return df
 
 
 ### Combine and plot
@@ -1980,7 +2061,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases', 'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo']:            
+    for f in ['cases', 'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
@@ -2894,6 +2975,7 @@ def save_plots(df):
     # )
     plt.tight_layout()
     plt.savefig("cases_active_2.png")
+
 
 
 if __name__ == "__main__":
