@@ -9,3 +9,8 @@ situation_th
 tests_moph
 .venv
 __pycache__
+api/
+html/
+json/
+tweets/
+.env
