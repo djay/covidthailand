@@ -524,7 +524,8 @@ def situation_pui(parsedPDF, date):
     if numbers:
         tests_total, pui, active_finding, asq, not_pui, pui2, pui_port, *rest = numbers
         pui = {309371:313813}.get(pui, pui) # 2020-07-01
-        pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073] else pui2
+        #TODO: find 1529045 below and see which is correct 20201-04-26
+        pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045] else pui2
         assert pui == pui2
     else:
         numbers, _ = get_next_numbers(
