@@ -1162,6 +1162,7 @@ def get_provinces():
     provinces.loc['อุทัยธาน'] = provinces.loc['Uthai Thani']
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
+    provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1199,13 +1200,13 @@ def get_province(prov):
     try:
         prov = PROVINCES.loc[prov]['ProvinceEn']
     except KeyError:
-        close = difflib.get_close_matches(prov, PROVINCES.index)[0]
         try:
-            prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
-        except KeyError:
+            close = difflib.get_close_matches(prov, PROVINCES.index)[0]
+        except IndexError:
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 #continue
+        prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
 
     return prov
 
@@ -1804,9 +1805,17 @@ def briefing_province_cases(file, date, pages):
             if len(parts) < 9:
                 # TODO: can be number unknown cases - e.g. หมายเหตุ : รอสอบสวนโรค จานวน 337 ราย
                 break
-            linenum, prov, *parts = parts
+            if NUM_OR_DASH.search(parts[0]):
+                linenum, prov, *parts = parts
+            else:
+                # for some reason the line number doesn't show up? but its there in the pdf...
+                break
+                #prov, *parts = parts 
             numbers, parts = parts[:9], parts[9:]
             thai = prov.strip().strip(" ี").strip(" ์").strip(" ิ")
+            if thai in ['กทม. และปรมิ ณฑล', 'รวมจงัหวดัอนื่ๆ(']:
+                # bangkok + subrubrs, resst of thailand
+                break
             prov = get_province(thai)
             numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
             numbers = numbers[1:-1] # last is total. first is previous days
@@ -1918,6 +1927,14 @@ def get_hospital_resources():
     return data
 
 
+def get_vaccinations():
+    url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
+    # Just need the latest
+    file, text = next(web_files(*web_links(url), dir="vaccinations"))
+    #tables = tabula.read_pdf(file)
+
+
+
 
 ### Combine and plot
 
@@ -1942,8 +1959,9 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = True and os.path.exists("api/combined")
+USE_CACHE_DATA = False and os.path.exists("api/combined")
 def scrape_and_combine():
+    vac = get_vaccinations()
     cases_demo = get_cases_by_demographics_api()
     hospital = get_hospital_resources()
     if not USE_CACHE_DATA:
