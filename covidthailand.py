@@ -11,6 +11,8 @@ import urllib.parse
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import numpy as np
 import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
@@ -1960,7 +1962,6 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = False and os.path.exists("api/combined")
 def scrape_and_combine():
     vac = get_vaccinations()
     cases_demo = get_cases_by_demographics_api()
@@ -2106,6 +2107,26 @@ AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
 AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
 TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
+
+
+def custom_cm(cm_name: str, size: int, last_colour: str, flip: bool = False) -> ListedColormap:
+    """Returns a ListedColorMap object built with the supplied color scheme and with the last color forced to be equal
+    to the parameter passed. The flip parameter allows to reverse the colour scheme if needed."""
+    summer = matplotlib.cm.get_cmap(cm_name)
+    if flip:
+        newcolors = summer(np.linspace(1, 0, size))
+    else:
+        newcolors = summer(np.linspace(0, 1, size))
+    newcolors[size - 1, :] = matplotlib.colors.to_rgba(last_colour)
+    return ListedColormap(newcolors)
+
+
+def cleanup_df_ages(df_all: pd.DataFrame, ages_cols: list) -> pd.DataFrame:
+    """Cleanup the data frame used for creating the 'ages' charts in case it contains missing data (NA)"""
+    df_ages = df_all['2020-12-12':][ages_cols]
+    df_ages.dropna(axis=0, how='any', inplace=True)
+
+    return df_ages
 
 
 def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=None, percent_fig=False, ma=False):
@@ -2426,6 +2447,7 @@ def save_plots(df):
     df.loc["2020-12-12":].plot(
         ax=ax,
         y=["Cases Imported","Cases Walkin", "Cases Proactive", "Cases Unknown"],
+        colormap=custom_cm('tab10', size=4, last_colour='lightgrey'),
         use_index=True,
         kind="area",
         figsize=[20, 10],
@@ -2481,35 +2503,37 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
 
     f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
-    df["2020-12-12":].plot(
+    df_ages = cleanup_df_ages(df_all=df, ages_cols=list(set(cols + perccols + macols + ['Age Unknown'])))
+
+    df_ages.plot(
         ax=a0,
-        y=macols+['Age Unknown'],
+        y=macols + ['Age Unknown'],
         kind="area",
-        colormap="summer",
+        colormap=custom_cm('summer', len(macols) + 1, 'lightgrey', flip=True),
         title=title,
     )
     a0.set_ylabel("Cases")
     a0.xaxis.label.set_visible(False)
-    df["2020-12-12":].plot(
+    df_ages.plot(
         ax=a1,
         y=perccols,
         kind="area",
-        colormap="summer",
-#        title=title,
-        #figsize=[20, 5]
+        colormap=custom_cm('summer', len(perccols), 'lightgrey', flip=True),
+        # title=title,
+        # figsize=[20, 5]
         legend=False,
-        #title="Thailand Covid Cases by Age (%)"
+        # title="Thailand Covid Cases by Age (%)"
     )
     a1.set_ylabel("Percent")
     a1.xaxis.label.set_visible(False)
     plt.tight_layout()
     plt.savefig("cases_ages_2.png")
 
-    df.plot(
+    df_ages.plot(
         ax=ax,
-        y=cols+['Age Unknown'],
+        y=cols + ['Age Unknown'],
         kind="area",
-        colormap="summer",
+        colormap=custom_cm('summer', len(cols) + 1, 'lightgrey', flip=True),
         title=title
     )
     plt.tight_layout()
@@ -2829,7 +2853,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap=AREA_COLOURS,
+        colormap=custom_cm('tab20', len(cols), last_colour='lightgrey'),
         title=title
     )
     ax.legend(legend)
@@ -2842,7 +2866,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap=AREA_COLOURS,
+        colormap=custom_cm('tab20', len(cols), last_colour='lightgrey'),
         title=title
     )
     ax.legend(legend)
@@ -2937,6 +2961,9 @@ def save_plots(df):
 
 
 if __name__ == "__main__":
+
+    USE_CACHE_DATA = False and os.path.exists("api/combined")
+
     df = scrape_and_combine()
     df = calc_cols(df)
-    df = save_plots(df)
+    save_plots(df)
