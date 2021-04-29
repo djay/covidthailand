@@ -10,7 +10,8 @@ situation_th
 tests_moph
 .venv
 __pycache__
-api
-json
-tweets
-html
+api/
+html/
+json/
+tweets/
+.env
