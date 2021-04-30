@@ -1969,8 +1969,6 @@ def area_crosstab(df, col, suffix):
     return given_by_area_2
 
 
-ALLOCATIONS = re.compile("(เข็มที.1 เข็มที.2){3}")
-VACCINATIONS = re.compile("(เข็มที.1 เข็มที.2){5}")
 def get_vaccinations():
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd", ext=None, match=re.compile("2564"))
     links = (l for f in folders for l in web_links(f, ext=".pdf"))
@@ -1978,45 +1976,59 @@ def get_vaccinations():
     # Just need the latest
     pages = ((page, file2date(f)) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f))
     vaccinations = {}
+    allocations = {}
     for page, date in pages: # TODO: vaccinations are the day before I think
-        if not date or date <= d("2021-04-04"): #TODO: make go back later
+        if not date or date <= d("2021-01-01"): #TODO: make go back later
             continue
-        table = None
-        for line in [l.strip() for l in page.split('\n') if l.strip()]:
-            #next(r for m,r in {ALLOCATIONS:"alloc", VACCINATIONS: "given", "รวม":None}.items() if m in line)
-            headings = len(re.findall("(เข็ม(?:ที|ที่) .?(?:1|2)\s*)",line))
-            table = {10:"given", 6:"alloc"}.get(headings, table)
+        lines = [l.strip() for l in page.split('\n') if l.strip()]
+        shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ)")
+        if date > d("2021-03-22"):
+            preamble, *rest = split(lines, shots.search)
+        else:
+            preamble, *rest = split(lines, oldhead.search)
+        for heading, lines in pairwise(rest):
+            headings = len(shots.findall(heading[0]))
+            table = {10:"given", 6:"alloc"}.get(headings, "old_given" if oldhead.search(heading[0]) else None)
             if not table:
                 continue
-            if headings:
-                print(f"{date}: {table} Vaccinations: {len(vaccinations)}")
-                continue
-
-            area, *rest = line.split(' ', 1)
-            if not NUM_OR_DASH.match(area) or not rest:
-                #table = None
-                continue
-            cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
-            prov, *cols = cols
-            prov = get_province(prov)
-            numbers = parse_numbers(cols)
-            if table=="alloc":
-                vaccinations[(date,prov)] = numbers[3:7]
-            elif table=="given":
-                assert len(numbers)==14
-                # TODO: work out why some are missing
-                alloc = vaccinations.get((date,prov), [None, None, None, None])
-                if len(alloc) == 4:
-                    # TODO: why duplication row?
-                    vaccinations[(date,prov)] = alloc + numbers
-     
+            added = 0
+            for line in lines:
+                area, *rest = line.split(' ', 1)
+                if area == "รวม" or not rest:
+                    break
+                if area in ["เข็มที่","และ"]: # Extra heading
+                    continue
+                cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
+                if len(cols) < 5:
+                    break
+                if NUM_OR_DASH.match(area):
+                    prov, *cols = cols
+                else:
+                    prov = area
+                prov = get_province(prov)
+                numbers = parse_numbers(cols)
+                added += 1
+                if table=="alloc":
+                    allocations[(date,prov)] = numbers[3:7]
+                elif table=="given":
+                    if len(numbers)==16:
+                        allocSino, allocAZ, *numbers = numbers
+                    assert len(numbers)==14
+                    vaccinations[(date,prov)] = numbers
+                elif table=="old_given":
+                    alloc, target_num, given, perc, *rest = numbers
+                    medical, frontline, disease, elders, riskarea, *rest = rest
+                    unknown = sum(rest) # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
+                    vaccinations[(date,prov)] = [given, perc, 0, 0] + \
+                        [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
+                    allocations[(date,prov)] = [alloc,0,0,0]
+            assert added > 7
+            print(f"{date}: {table} Vaccinations: {added}")
+            continue
     df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
         "Date",
         "Province",
-        "Vaccinations Allocated Sinovac 1",
-        "Vaccinations Allocated Sinovac 2",
-        "Vaccinations Allocated AstraZeneca 1",
-        "Vaccinations Allocated AstraZeneca 2",
         "Vaccinations Given 1 Cum",
         "Vaccinations Given 1 %",
         "Vaccinations Given 2 Cum",
@@ -2031,9 +2043,17 @@ def get_vaccinations():
         "Vaccinations Disease 2 Cum",
         "Vaccinations RiskArea 1 Cum",
         "Vaccinations RiskArea 2 Cum",
-    ])
+    ]).set_index("Date", "Province")
+    alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
+        "Date",
+        "Province",
+        "Vaccinations Allocated Sinovac 1",
+        "Vaccinations Allocated Sinovac 2",
+        "Vaccinations Allocated AstraZeneca 1",
+        "Vaccinations Allocated AstraZeneca 2",
+    ]).set_index("Date", "Province")
+    df = df.combine_first(alloc) # TODO: pesky 2021-04-26
     export(df, "vaccinations")
-    df = df.set_index("Date", "Province")
     df = df.join(PROVINCES['Health District Number'], on="Province")
     thaivac = df.groupby("Date").sum()
 
@@ -3027,7 +3047,7 @@ def save_plots(df):
     df["2020-12-12":].plot.area(
         ax=ax,
         y=cols,
-        colormap="tab20",
+        colormap="Paired",
         title='Thailand Vaccinations\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
