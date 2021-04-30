@@ -1564,7 +1564,7 @@ def get_cases_by_prov_tweets():
             local = toint(local.group(1))
         else:
             local = None
-        cases = get_next_numbers(text, "Since January 2020")
+        cases,_ = get_next_numbers(text, "Since January 2020")
         cases = cases[0] if cases else None
         
         cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum"]
@@ -1626,6 +1626,7 @@ def get_cases_by_prov_tweets():
     dfprov = pd.DataFrame(rows, columns=cols)
     index = pd.MultiIndex.from_frame(dfprov[['Date','Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
+    df = df.combine_first(cum2daily(df))
     return dfprov, df
 
 def seperate(seq, condition):
@@ -2025,7 +2026,11 @@ def get_vaccinations():
         "Vaccinations RiskArea 2 Cum",
     ])
     export(df, "vaccinations")
-    return df.set_index("Date", "Province")
+    df = df.set_index("Date", "Province")
+    df = df.combine_first(cum2daily(df))
+
+    # TODO: only return some daily summary stats
+
 
 
 ### Combine and plot
