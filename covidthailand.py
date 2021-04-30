@@ -2128,42 +2128,53 @@ def cleanup_df_ages(df_all: pd.DataFrame, ages_cols: list) -> pd.DataFrame:
     return df_ages
 
 
-def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=None, percent_fig=False, ma=False):
+def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=None, percent_fig=False, ma=False, cm="tab20"):
     cols = [c for c in df.columns if prefix in str(c)]
-    # for c in cols:
-    #     df[f"{c} (MA)"] = df[c].rolling(7).mean()
-    macols = [f"{c} (MA)" for c in cols]
-    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    for c in cols:
-        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
-    perccols = [f"{c} (%)" for c in cols]
-    title=f"{title}\n"\
-        f"Updated: {TODAY().date()}\n"\
-        "(7 day rolling average)\n" \
-        "https://github.com/djay/covidthailand"
+    if ma:
+        for c in cols:
+            df[f"{c} (MA)"] = df[c].rolling(7).mean()
+        cols = [f"{c} (MA)" for c in cols]
+        ma_suffix = " (MA)"
+    else:
+        ma_suffix = ""
+    if unknown_total:
+        df[f'{prefix} {unknown_name}'] = df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    if percent_fig:
+        for c in cols:
+            df[f"{c} (%)"] = df[f"{c}{ma_suffix}"] / df[cols].sum(axis=1) * 100
+        perccols = [f"{c} (%)" for c in cols]
+    title=f"{title}\n"
+    title += f"Updated: {TODAY().date()}\n"
+    # TODO: date of last interesting data should be max of cols but not includeing cases.
+    if ma:
+        title += "(7 day rolling average)\n"
+    title += "https://github.com/djay/covidthailand"
     for suffix,dfplot in [('1', df[:"2020-12-12"]), ('2', df["2020-12-12":]), ('all', df)]:
-        f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+        if percent_fig:
+            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+        else:
+            f, a0 = plt.subplots(figsize=[20, 12])
+
         dfplot.plot(
             ax=a0,
-            y=macols+['Age Unknown'],
+            y=cols+[f'{prefix} Unknown'],
             kind="area",
-            colormap="summer",
+            colormap=custom_cm(cm, len(cols) + 1, 'lightgrey', flip=True),
             title=title,
         )
-        a0.set_ylabel("Cases")
-        a0.xaxis.label.set_visible(False)
-        dfplot.plot(
-            ax=a1,
-            y=perccols,
-            kind="area",
-            colormap="summer",
-    #        title=title,
-            #figsize=[20, 5]
-            legend=False,
-            #title="Thailand Covid Cases by Age (%)"
-        )
-        a1.set_ylabel("Percent")
-        a1.xaxis.label.set_visible(False)
+        if unknown_total:
+            a0.set_ylabel(unknown_total)
+        if percent_fig:
+            a0.xaxis.label.set_visible(False)
+            dfplot.plot(
+                ax=a1,
+                y=perccols,
+                kind="area",
+                colormap=custom_cm(cm, len(cols) + 1, 'lightgrey', flip=True),
+                legend=False,
+            )
+            a1.set_ylabel("Percent")
+            a1.xaxis.label.set_visible(False)
         plt.tight_layout()
         plt.savefig(f"{name}_{suffix}.png")
 
@@ -2538,6 +2549,16 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_ages_all.png")
 
+    plot_area(
+        df, 
+        "cases_agesv2", 
+        prefix="Age ",
+        title="Thailand Covid Cases by Age",
+        percent_fig=True,
+        cm="summer",
+        unknown_name="Unknown",
+        unknown_total="Cases",
+        ma=True)
 
     title="Thailand Covid Cases by Risk\n"\
         f"Updated: {TODAY().date()}\n"\
@@ -2961,7 +2982,7 @@ def save_plots(df):
 
 if __name__ == "__main__":
 
-    USE_CACHE_DATA = False and os.path.exists("api/combined")
+    USE_CACHE_DATA = True and os.path.exists("api/combined")
 
     df = scrape_and_combine()
     df = calc_cols(df)
