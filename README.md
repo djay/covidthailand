@@ -212,6 +212,36 @@ Bureau, Chaeng Watthana"
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
+# Vaccinations
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- [Download JSON](https://github.com/djay/covidthailand/wiki/vaccinations), [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
+- e.g.
+```
+      "Date":"2021-04-25",
+      "Province":"Mae Hong Son",
+      "Vaccinations Allocated Sinovac 1":3840.0,
+      "Vaccinations Allocated Sinovac 2":3840.0,
+      "Vaccinations Allocated AstraZeneca 1":0.0,
+      "Vaccinations Allocated AstraZeneca 2":0.0,
+      "Vaccinations Given 1 Cum":3189.0,
+      "Vaccinations Given 1 %":83.0,
+      "Vaccinations Given 2 Cum":37.0,
+      "Vaccinations Given 2 %":1.0,
+      "Vaccinations Medical 1 Cum":1939.0,
+      "Vaccinations Medical 2 Cum":19.0,
+      "Vaccinations Frontline 1 Cum":1081.0,
+      "Vaccinations Frontline 2 Cum":18.0,
+      "Vaccinations Over60 1 Cum":0.0,
+      "Vaccinations Over60 2 Cum":0.0,
+      "Vaccinations Disease 1 Cum":54.0,
+      "Vaccinations Disease 2 Cum":0.0,
+      "Vaccinations RiskArea 1 Cum":115.0,
+      "Vaccinations RiskArea 2 Cum":0.0
+```
+- Note
+   - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
+   - 1/2 refers to shot 1 or shot 2.
+   - #TODO: put in thai group explanations.
 
 # Combined
 
@@ -234,6 +264,7 @@ Bureau, Chaeng Watthana"
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log
+- 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
 - 2021-04-23 - Fixed mistake in testing data where private tests was added again
@@ -260,10 +291,6 @@ Bureau, Chaeng Watthana"
   - stopped being put in briefings
 - plot % subplots to get closer detail
   - esp for the by district plots
-- rolling averages on area graphs to make them easier to read
-- vaccination per province
-  - https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd
-  - any easier data source?
 - switch to plotly to interactively inspect values
   - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
 - Extract from briefings
@@ -276,7 +303,7 @@ Bureau, Chaeng Watthana"
   - and more detail of start and end dates for data in data source descriptions
 - fix briefings parser to get more historical data 
    - for sym/asym
-   - province data
+   - more province data
 - work out if can incorporate province wealth
   - https://data.go.th/dataset/http-mis-m-society-go-th-tab030104-php
   - maybe for vaccinations or positive rate?
