@@ -2141,7 +2141,7 @@ def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=Non
         df[f'{prefix} {unknown_name}'] = df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     if percent_fig:
         for c in cols:
-            df[f"{c} (%)"] = df[f"{c}{ma_suffix}"] / df[cols].sum(axis=1) * 100
+            df[f"{c} (%)"] = df[f"{c}"] / df[cols].sum(axis=1) * 100
         perccols = [f"{c} (%)" for c in cols]
     title=f"{title}\n"
     title += f"Updated: {TODAY().date()}\n"
@@ -2499,59 +2499,59 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_types_all.png")
 
-    cols = [c for c in df.columns if "Age " in str(c)]
-    for c in cols:
-        df[f"{c} (MA)"] = df[c].rolling(7).mean()
-    macols = [f"{c} (MA)" for c in cols]
-    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    for c in cols:
-        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
-    perccols = [f"{c} (%)" for c in cols]
-    title="Thailand Covid Cases by Age\n"\
-        f"Updated: {TODAY().date()}\n"\
-        "(7 day rolling average)\n" \
-        "https://github.com/djay/covidthailand"
+    # cols = [c for c in df.columns if "Age " in str(c)]
+    # for c in cols:
+    #     df[f"{c} (MA)"] = df[c].rolling(7).mean()
+    # macols = [f"{c} (MA)" for c in cols]
+    # df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    # for c in cols:
+    #     df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
+    # perccols = [f"{c} (%)" for c in cols]
+    # title="Thailand Covid Cases by Age\n"\
+    #     f"Updated: {TODAY().date()}\n"\
+    #     "(7 day rolling average)\n" \
+    #     "https://github.com/djay/covidthailand"
 
-    f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
-    df_ages = cleanup_df_ages(df_all=df, ages_cols=list(set(cols + perccols + macols + ['Age Unknown'])))
+    # f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+    # df_ages = cleanup_df_ages(df_all=df, ages_cols=list(set(cols + perccols + macols + ['Age Unknown'])))
 
-    df_ages.plot(
-        ax=a0,
-        y=macols + ['Age Unknown'],
-        kind="area",
-        colormap=custom_cm('summer', len(macols) + 1, 'lightgrey', flip=True),
-        title=title,
-    )
-    a0.set_ylabel("Cases")
-    a0.xaxis.label.set_visible(False)
-    df_ages.plot(
-        ax=a1,
-        y=perccols,
-        kind="area",
-        colormap=custom_cm('summer', len(perccols), 'lightgrey', flip=True),
-        # title=title,
-        # figsize=[20, 5]
-        legend=False,
-        # title="Thailand Covid Cases by Age (%)"
-    )
-    a1.set_ylabel("Percent")
-    a1.xaxis.label.set_visible(False)
-    plt.tight_layout()
-    plt.savefig("cases_ages_2.png")
+    # df_ages.plot(
+    #     ax=a0,
+    #     y=macols + ['Age Unknown'],
+    #     kind="area",
+    #     colormap=custom_cm('summer', len(macols) + 1, 'lightgrey', flip=True),
+    #     title=title,
+    # )
+    # a0.set_ylabel("Cases")
+    # a0.xaxis.label.set_visible(False)
+    # df_ages.plot(
+    #     ax=a1,
+    #     y=perccols,
+    #     kind="area",
+    #     colormap=custom_cm('summer', len(perccols), 'lightgrey', flip=True),
+    #     # title=title,
+    #     # figsize=[20, 5]
+    #     legend=False,
+    #     # title="Thailand Covid Cases by Age (%)"
+    # )
+    # a1.set_ylabel("Percent")
+    # a1.xaxis.label.set_visible(False)
+    # plt.tight_layout()
+    # plt.savefig("cases_ages_2.png")
 
-    df_ages.plot(
-        ax=ax,
-        y=cols + ['Age Unknown'],
-        kind="area",
-        colormap=custom_cm('summer', len(cols) + 1, 'lightgrey', flip=True),
-        title=title
-    )
-    plt.tight_layout()
-    plt.savefig("cases_ages_all.png")
+    # df_ages.plot(
+    #     ax=ax,
+    #     y=cols + ['Age Unknown'],
+    #     kind="area",
+    #     colormap=custom_cm('summer', len(cols) + 1, 'lightgrey', flip=True),
+    #     title=title
+    # )
+    # plt.tight_layout()
+    # plt.savefig("cases_ages_all.png")
 
     plot_area(
         df, 
-        "cases_agesv2", 
+        "cases_ages", 
         prefix="Age ",
         title="Thailand Covid Cases by Age",
         percent_fig=True,
