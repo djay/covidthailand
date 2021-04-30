@@ -1424,10 +1424,10 @@ def get_cases_by_demographics_api():
 
 def get_cases_by_area():
     # we will add in the tweet data for the export
-    case_tweets = get_cases_by_area_type()
-    case_areas = get_cases_by_area_api() # can be very wrong for the last days
+    case_briefings_tweets = get_cases_by_area_type()
+    case_api = get_cases_by_area_api() # can be very wrong for the last days
 
-    case_areas = case_tweets.combine_first(case_areas)
+    case_areas = case_briefings_tweets.combine_first(case_api)
 
     export(case_areas, "cases_by_area")
     
@@ -1556,12 +1556,19 @@ def get_cases_by_prov_tweets():
         if imported:
             assert imported, f"Failed to find imported in tweet {date}: {text}"
             imported = toint(imported.group(1))
+        else:
+            imported = None
         local = re.search("\+([0-9,]+) local", text)
         if local:
             assert local, f"Failed to find local in tweet {date}: {text}"
             local = toint(local.group(1))
-        cols = ["Date", "Cases Imported", "Cases Local Transmission"]
-        row = [date,imported,local]
+        else:
+            local = None
+        cases = get_next_numbers(text, "Since January 2020")
+        cases = cases[0] if cases else None
+        
+        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum"]
+        row = [date, imported, local, cases]
         df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
 
     # get walkin vs proactive by area
@@ -1863,23 +1870,26 @@ def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date",]).set_index(['Date',])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
+
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13") #12th gets a bit messy but could be fixed
-    #start = d("2021-04-07")
     end = TODAY()
-    #end = d("2021-04-09")
     links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end,1))
-    links = reversed(list(links))
-    for file, text in web_files(*links, dir="briefings"):
+    for file, text in web_files(*reversed(list(links)), dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
         date = file2date(file)
-        df = briefing_case_detail(date, pages)
-        date_prov_types = date_prov_types.combine_first(df)
+
         today_types = briefing_case_types(date, pages)
         types = types.combine_first(today_types)
+
+        case_detail = briefing_case_detail(date, pages)
+        date_prov_types = date_prov_types.combine_first(case_detail)
+
         prov = briefing_province_cases(file, date, pages)
         date_prov = date_prov.combine_first(prov)
+
+        # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
@@ -2015,7 +2025,7 @@ def get_vaccinations():
         "Vaccinations RiskArea 2 Cum",
     ])
     export(df, "vaccinations")
-    return df
+    return df.set_index("Date", "Province")
 
 
 ### Combine and plot
@@ -2061,7 +2071,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases', 'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
+    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
