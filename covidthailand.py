@@ -1962,6 +1962,13 @@ def get_hospital_resources():
 def any_in(target, *matches):
     return any(m in target for m in matches)
 
+def area_crosstab(df, col, suffix):
+    given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
+    given_by_area_2 = pd.crosstab(given_2['Date'],given_2['Health District Number'])
+    given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
+    return given_by_area_2
+
+
 ALLOCATIONS = re.compile("(เข็มที.1 เข็มที.2){3}")
 VACCINATIONS = re.compile("(เข็มที.1 เข็มที.2){5}")
 def get_vaccinations():
@@ -2027,9 +2034,20 @@ def get_vaccinations():
     ])
     export(df, "vaccinations")
     df = df.set_index("Date", "Province")
-    df = df.combine_first(cum2daily(df))
+    df = df.join(PROVINCES['Health District Number'], on="Province")
+    thaivac = df.groupby("Date").sum()
+
+    # Get vaccinations by district
+    given_by_area_1 = area_crosstab(df, 'Vaccinations Given 1', ' Cum')
+    given_by_area_2 = area_crosstab(df, 'Vaccinations Given 2', ' Cum')
+
+    thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+    #thaivac = thaivac.combine_first(cum2daily(thaivac))
+    #thaivac = thaivac.drop([c for c in thaivac.columns if " Cum" in c], axis=1)
+    # TODO: remove cumlutive and other stats we don't want
 
     # TODO: only return some daily summary stats
+    return thaivac
 
 
 
@@ -2056,7 +2074,7 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = False and os.path.exists("api/combined")
+USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
     vac = get_vaccinations()
     cases_demo = get_cases_by_demographics_api()
@@ -2076,7 +2094,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo']:            
+    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
@@ -2991,6 +3009,35 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("cases_active_2.png")
 
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
+    cols = [
+        "Vaccinations Medical 1 Cum",
+        "Vaccinations Medical 2 Cum",
+        "Vaccinations Frontline 1 Cum",
+        "Vaccinations Frontline 2 Cum",
+        "Vaccinations Over60 1 Cum",
+        "Vaccinations Over60 2 Cum",
+        "Vaccinations Disease 1 Cum",
+        "Vaccinations Disease 2 Cum",
+        "Vaccinations RiskArea 1 Cum",
+        "Vaccinations RiskArea 2 Cum",
+    ]
+    df["2020-12-12":].plot.area(
+        ax=ax,
+        y=cols,
+        colormap="tab20",
+        title='Thailand Vaccinations\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    # ax.legend([
+    #     "Shot 1",
+    #     "Shot 2",
+    # ])
+    plt.tight_layout()
+    plt.savefig("vaccinations_shots_2.png")
 
 
 if __name__ == "__main__":

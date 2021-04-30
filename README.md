@@ -93,6 +93,10 @@ The data is updated daily with most data changing around midday once the governm
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
+# Vaccinations
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vaccinations_shots_2.png))
+- Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
+
 # Downloads
 
 ## Disclaimer
@@ -212,7 +216,7 @@ Bureau, Chaeng Watthana"
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
-# Vaccinations
+# Daily Vaccination Reports
 - Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
 - [Download JSON](https://github.com/djay/covidthailand/wiki/vaccinations), [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
 - e.g.
