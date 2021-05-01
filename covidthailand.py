@@ -1183,6 +1183,9 @@ def get_provinces():
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
     provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
+    provinces.loc['เพชรบรุี'] = provinces.loc['Phetchaburi']
+    provinces.loc['ปตัตำนี'] = provinces.loc['Pattani']
+    
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1985,6 +1988,8 @@ def get_vaccinations():
         oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ)")
         if date > d("2021-03-22"):
             preamble, *rest = split(lines, shots.search)
+            #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
+            #    continue
         else:
             preamble, *rest = split(lines, oldhead.search)
         for heading, lines in pairwise(rest):
@@ -2015,6 +2020,7 @@ def get_vaccinations():
                     if len(numbers)==16:
                         allocSino, allocAZ, *numbers = numbers
                     assert len(numbers)==14
+                    assert (date,prov) not in vaccinations or numbers == vaccinations[(date,prov)]
                     vaccinations[(date,prov)] = numbers
                 elif table=="old_given":
                     alloc, target_num, given, perc, *rest = numbers
