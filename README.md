@@ -168,13 +168,16 @@ The data is updated daily with most data changing around midday once the governm
   - Cases Proavtive: Local transmissions that aren't walkins
   - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
   - Tested PUI: People Classified as Person Under Infestigation.
-  - Tested PUI Walkin Public: PUI classified at public hospitals/labs
-  - Tested PUI Walkin Private: PUI classified at private hospitals/labs
+  - Tested PUI Walkin Public: "Sought medical services on their own at hospitals"/Public
+  - Tested PUI Walkin Private: "Sought medical services on their own at hospitals"/Private
 - The follwing are included but are *not useful data since 2020-08*.
-  - Tested: *Not different from PUI since 2020-08* says "Total number of laboratory tests" but is mislabeled. ~PUI + 30%
+  - Tested: *Not different from PUI since 2020-08* says "Total number of laboratory tests" but is mislabeled.
   - Tested Quarantine: *Not changed since 2020-08*. "Returnees in quarantine facilities/centers".
   - Tested Proactive: *Not changed since 2020-08*.Tested from "active case finding".
   - Tested Not PUI: *Not changed since 2020-08*. "People who did not meet the PUI criteria".
+- The following aren't yet included
+  - Screened Ports: "Type of Screened People and PUI / Ports of entry (Airports, ground ports, and seaports)"
+  - Screened Immigration "Type of Screened People and PUI / People renewing their passports at the Immigration Bureau, Chaeng Watthana"
 
 - Notes:
   - The only useful Tested number is "Tested PUI".
