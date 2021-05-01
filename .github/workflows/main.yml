@@ -67,7 +67,7 @@ jobs:
         run: |
             python covidthailand.py
       - name: Upload png to wiki
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == 'refs/heads/master' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "."
@@ -75,7 +75,7 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
       - name: Upload json to wiki
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == 'refs/heads/master' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"
