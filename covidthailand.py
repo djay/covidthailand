@@ -2138,11 +2138,15 @@ def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=Non
     else:
         ma_suffix = ""
     if unknown_total:
-        df[f'{prefix} {unknown_name}'] = df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+        df[f'{prefix} {unknown_name}{ma_suffix}'] = df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+        cols += [f'{prefix} {unknown_name}{ma_suffix}']
     if percent_fig:
         for c in cols:
-            df[f"{c} (%)"] = df[f"{c}"] / df[cols].sum(axis=1) * 100
+            df[f"{c} (%)"] = df[f"{c}"] / df[f'{unknown_total}{ma_suffix}'] * 100
         perccols = [f"{c} (%)" for c in cols]
+        if unknown_total:
+            df[f'{prefix} {unknown_name} (%){ma_suffix}'] = (100-df[perccols].sum(axis=1)).clip(lower=0)
+            perccols += [f'{prefix} {unknown_name} (%){ma_suffix}']
     title=f"{title}\n"
     title += f"Updated: {TODAY().date()}\n"
     # TODO: date of last interesting data should be max of cols but not includeing cases.
@@ -2157,7 +2161,7 @@ def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=Non
 
         dfplot.plot(
             ax=a0,
-            y=cols+[f'{prefix} Unknown'],
+            y=cols,
             kind="area",
             colormap=custom_cm(cm, len(cols) + 1, 'lightgrey', flip=True),
             title=title,
