@@ -3039,7 +3039,7 @@ def save_plots(df):
 
     fig, ax = plt.subplots(figsize=[20, 10])
     #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
-    cols = [c for c in df.cols if c.starswith("Vac Group")]
+    cols = [c for c in df.columns if c.startswith("Vac Group")]
     df["2020-12-12":].plot.area(
         ax=ax,
         y=cols,
