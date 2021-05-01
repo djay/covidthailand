@@ -1977,10 +1977,10 @@ def get_vaccinations():
     links = (l for f in folders for l in web_links(f, ext=".pdf"))
     #url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
     # Just need the latest
-    pages = ((page, file2date(f)) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f))
+    pages = ((page, file2date(f), f) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f) if file2date(f))
     vaccinations = {}
     allocations = {}
-    for page, date in pages: # TODO: vaccinations are the day before I think
+    for page, date , file in pages: # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"): #TODO: make go back later
             continue
         lines = [l.strip() for l in page.split('\n') if l.strip()]
@@ -2035,37 +2035,38 @@ def get_vaccinations():
     df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
         "Date",
         "Province",
-        "Vaccinations Given 1 Cum",
-        "Vaccinations Given 1 %",
-        "Vaccinations Given 2 Cum",
-        "Vaccinations Given 2 %",
-        "Vaccinations Medical 1 Cum",
-        "Vaccinations Medical 2 Cum",
-        "Vaccinations Frontline 1 Cum",
-        "Vaccinations Frontline 2 Cum",
-        "Vaccinations Over60 1 Cum",
-        "Vaccinations Over60 2 Cum",
-        "Vaccinations Disease 1 Cum",
-        "Vaccinations Disease 2 Cum",
-        "Vaccinations RiskArea 1 Cum",
-        "Vaccinations RiskArea 2 Cum",
+        "Vac Given 1 Cum",
+        "Vac Given 1 %",
+        "Vac Given 2 Cum",
+        "Vac Given 2 %",
+        "Vac Group Medical 1 Cum",
+        "Vac Group Medical 2 Cum",
+        "Vac Group Frontline 1 Cum",
+        "Vac Group Frontline 2 Cum",
+        "Vac Group Over60 1 Cum",
+        "Vac Group Over60 2 Cum",
+        "Vac Group Disease 1 Cum",
+        "Vac Group Disease 2 Cum",
+        "Vac Group RiskArea 1 Cum",
+        "Vac Group RiskArea 2 Cum",
     ]).set_index("Date", "Province")
     alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
         "Date",
         "Province",
-        "Vaccinations Allocated Sinovac 1",
-        "Vaccinations Allocated Sinovac 2",
-        "Vaccinations Allocated AstraZeneca 1",
-        "Vaccinations Allocated AstraZeneca 2",
+        "Vac Allocated Sinovac 1",
+        "Vac Allocated Sinovac 2",
+        "Vac Allocated AstraZeneca 1",
+        "Vac Allocated AstraZeneca 2",
     ]).set_index("Date", "Province")
     df = df.combine_first(alloc) # TODO: pesky 2021-04-26
     export(df, "vaccinations")
     df = df.join(PROVINCES['Health District Number'], on="Province")
     thaivac = df.groupby("Date").sum()
+    thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     # Get vaccinations by district
-    given_by_area_1 = area_crosstab(df, 'Vaccinations Given 1', ' Cum')
-    given_by_area_2 = area_crosstab(df, 'Vaccinations Given 2', ' Cum')
+    given_by_area_1 = area_crosstab(df, 'Vac Given 1', ' Cum')
+    given_by_area_2 = area_crosstab(df, 'Vac Given 2', ' Cum')
 
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
     #thaivac = thaivac.combine_first(cum2daily(thaivac))
@@ -2100,7 +2101,7 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = False and os.path.exists("api/combined")
+USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
     vac = get_vaccinations()
     cases_demo = get_cases_by_demographics_api()
@@ -3038,32 +3039,17 @@ def save_plots(df):
 
     fig, ax = plt.subplots(figsize=[20, 10])
     #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
-    cols = [
-        "Vaccinations Medical 1 Cum",
-        "Vaccinations Medical 2 Cum",
-        "Vaccinations Frontline 1 Cum",
-        "Vaccinations Frontline 2 Cum",
-        "Vaccinations Over60 1 Cum",
-        "Vaccinations Over60 2 Cum",
-        "Vaccinations Disease 1 Cum",
-        "Vaccinations Disease 2 Cum",
-        "Vaccinations RiskArea 1 Cum",
-        "Vaccinations RiskArea 2 Cum",
-    ]
+    cols = [c for c in df.cols if c.starswith("Vac Group")]
     df["2020-12-12":].plot.area(
         ax=ax,
         y=cols,
         colormap="Paired",
-        title='Thailand Vaccinations\n'
+        title='Thailand Vaccinations by Groups\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
-    # ax.legend([
-    #     "Shot 1",
-    #     "Shot 2",
-    # ])
     plt.tight_layout()
-    plt.savefig("vaccinations_shots_2.png")
+    plt.savefig("vac_groups_2.png")
 
 
 if __name__ == "__main__":
