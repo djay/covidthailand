@@ -1946,7 +1946,7 @@ def get_hospital_resources():
 
     data = pd.DataFrame(rows).groupby("province").sum()
     data['Date'] = TODAY().date()
-    data['Date'] = pd.to_datetime(data['Date']).dt.date
+    data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index("Date","province")
     print(data.sum().to_string())
     if os.path.exists("api/hospital_resources"):
@@ -1954,7 +1954,7 @@ def get_hospital_resources():
             "api/hospital_resources.csv",
             #orient="records",
         )
-        old['Date'] = pd.to_datetime(old['Date']).dt.date
+        old['Date'] = pd.to_datetime(old['Date'])
         old = old.set_index("Date", "province")
         # TODO: seems to be dropping old data. Need to test
         data = add_data(old, data)
@@ -2100,7 +2100,7 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = True and os.path.exists("api/combined")
+USE_CACHE_DATA = False and os.path.exists("api/combined")
 def scrape_and_combine():
     vac = get_vaccinations()
     cases_demo = get_cases_by_demographics_api()
