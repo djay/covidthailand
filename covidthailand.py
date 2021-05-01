@@ -2005,24 +2005,24 @@ def scrape_and_combine():
 def calc_cols(df):
     print("========Caclulated Values==========")
     # adding in rolling average to see the trends better
-    df["Tested (MA)"] = df["Tested"].rolling(7).mean()
-    df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7).mean()
-    df["Tested PUI Walkin Public (MA)"] = df["Tested PUI Walkin Public"].rolling(7).mean()
-    df["Tested PUI Walkin Private (MA)"] = df["Tested PUI Walkin Private"].rolling(7).mean()
-    df["Tested PUI Walkin (MA)"] = df["Tested PUI Walkin"].rolling(7).mean()
-    df["Cases (MA)"] = df["Cases"].rolling(7).mean()
-    df["Cases Walkin (MA)"] = df["Cases Walkin"].rolling(7).mean()
-    df["Cases Proactive (MA)"] = df["Cases Proactive"].rolling(7).mean()
-    df["Tests Area (MA)"] = df["Tests Area"].rolling(7).mean()
-    df["Pos Area (MA)"] = df["Pos Area"].rolling(7).mean()
-    df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7).mean()
-    df["Pos XLS (MA)"] = df["Pos XLS"].rolling(7).mean()
-    df["Pos (MA)"] = df["Pos"].rolling(7).mean()
-    df["Pos Public (MA)"] = df["Pos Public"].rolling(7).mean()
-    df["Pos Private (MA)"] = df["Pos Private"].rolling(7).mean()
-    df["Tests Public (MA)"] = df["Tests Public"].rolling(7).mean()
-    df["Tests Private (MA)"] = df["Tests Private"].rolling(7).mean()
-    df["Tests (MA)"] = df["Tests"].rolling(7).mean()
+    df["Tested (MA)"] = df["Tested"].rolling("7d").mean()
+    df["Tested PUI (MA)"] = df["Tested PUI"].rolling("7d").mean()
+    df["Tested PUI Walkin Public (MA)"] = df["Tested PUI Walkin Public"].rolling("7d").mean()
+    df["Tested PUI Walkin Private (MA)"] = df["Tested PUI Walkin Private"].rolling("7d").mean()
+    df["Tested PUI Walkin (MA)"] = df["Tested PUI Walkin"].rolling("7d").mean()
+    df["Cases (MA)"] = df["Cases"].rolling("7d").mean()
+    df["Cases Walkin (MA)"] = df["Cases Walkin"].rolling("7d").mean()
+    df["Cases Proactive (MA)"] = df["Cases Proactive"].rolling("7d").mean()
+    df["Tests Area (MA)"] = df["Tests Area"].rolling("7d").mean()
+    df["Pos Area (MA)"] = df["Pos Area"].rolling("7d").mean()
+    df["Tests XLS (MA)"] = df["Tests XLS"].rolling("7d").mean()
+    df["Pos XLS (MA)"] = df["Pos XLS"].rolling("7d").mean()
+    df["Pos (MA)"] = df["Pos"].rolling("7d").mean()
+    df["Pos Public (MA)"] = df["Pos Public"].rolling("7d").mean()
+    df["Pos Private (MA)"] = df["Pos Private"].rolling("7d").mean()
+    df["Tests Public (MA)"] = df["Tests Public"].rolling("7d").mean()
+    df["Tests Private (MA)"] = df["Tests Private"].rolling("7d").mean()
+    df["Tests (MA)"] = df["Tests"].rolling("7d").mean()
 
     # Calculate positive rate
     df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
@@ -2132,7 +2132,7 @@ def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=Non
     cols = [c for c in df.columns if prefix in str(c)]
     if ma:
         for c in cols:
-            df[f"{c} (MA)"] = df[c].rolling(7).mean()
+            df[f"{c} (MA)"] = df[c].rolling("7d").mean()
         cols = [f"{c} (MA)" for c in cols]
         ma_suffix = " (MA)"
     else:
@@ -2501,7 +2501,7 @@ def save_plots(df):
 
     # cols = [c for c in df.columns if "Age " in str(c)]
     # for c in cols:
-    #     df[f"{c} (MA)"] = df[c].rolling(7).mean()
+    #     df[f"{c} (MA)"] = df[c].rolling("7d").mean()
     # macols = [f"{c} (MA)" for c in cols]
     # df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
     # for c in cols:
@@ -2842,7 +2842,7 @@ def save_plots(df):
     #########################
 
     for area in range(1,14):
-        df[f"Cases Area {area} (MA)"] = df[f"Cases Area {area}"].rolling(7).mean()
+        df[f"Cases Area {area} (MA)"] = df[f"Cases Area {area}"].rolling("7d").mean()
     cols = [f"Cases Area {area} (MA)" for area in range(1, 14)]+["Cases Imported"]
     df['Cases Area Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
     cols = cols+['Cases Area Unknown']
