@@ -4,7 +4,7 @@ Thailand testing and case data gathered and combined from various sources for ot
 
 The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
-## [Cases](#cases) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](#downloads)
+## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Downloads](#downloads)
 
 
 # Cases
@@ -54,6 +54,11 @@ The data is updated daily with most data changing around midday once the governm
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
 
+# Deaths
+
+## Age Range of Thailand Covid Deaths
+
+![Thailand Covid Death Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
 
 # Testing
 
@@ -212,6 +217,22 @@ Bureau, Chaeng Watthana"
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
+## Deaths by Province
+- Source 
+   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+- e.g
+      "Date":"2021-04-27"
+      "death_num":149.0,
+      "gender":"Male",
+      "nationality":"\u0e44\u0e17\u0e22",
+      "age":47.0,
+      "Province":"Bangkok",
+      "congenital_disease":"\u0e04\u0e27\u0e32\u0e21\u0e14\u0e31\u0e19\u0e42\u0e25\u0e2b\u0e34\u0e15\u0e2a\u0e39\u0e07",
+      "case_history":"19 \u0e40\u0e21.\u0e22. \u0e21\u0e35\u0e44\u0e2d \u0e40\u0e2a\u0e21\u0e2b\u0e30 \u0e40\u0e08\u0e47\u0e1a\u0e04\u0e2d \n24 \u0e40\u0e21.\u0e22. \u0e1e\u0e1a\u0e40\u0e0a\u0e37\n\u0e49\u0e2d \u0e41\u0e25\u0e30\u0e40\u0e2a\u0e35\u0e22\u0e0a\u0e35\u0e27\u0e34\u0e15",
+      "risk_factor_sickness":"\u0e0d\u0e32\u0e15\u0e34\u0e21\u0e32\u0e40\u0e22\u0e35\n\u0e48\u0e22\u0e21\n\u0e08\u0e32\u0e01\u0e15\u0e48\u0e32\u0e07\u0e08\u0e31\u0e07\u0e2b\u0e27\u0e31\u0e14",
+      "risk_factor_death":"\u0e42\u0e23\u0e04\u0e1b\u0e23\u0e30\u0e08 \u0e32\u0e15\u0e31\u0e27",
+- Notes:
+  - Stopped being published 2021-04-28
 
 # Combined
 

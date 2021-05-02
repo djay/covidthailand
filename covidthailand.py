@@ -1875,7 +1875,7 @@ def briefing_deaths(file, date, pages):
 
             # TODO: what if they have more than one page?
             sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female]],
-                columns=["Date", "Deaths", "Death Medium Age", "Death Min Age", "Death Max Age", "Death Male", "Death Female"] 
+                columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
             ).set_index("Date")
             dfprov = pd.DataFrame(((date,p,c) for p,c in province_count.items()),
                 columns=["Date", "Province", "Deaths"]
@@ -1963,7 +1963,7 @@ def briefing_deaths(file, date, pages):
     if all.empty:
         print(f"Deaths: {date} None")
         sum = pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
-            columns=["Date", "Deaths", "Death Medium Age", "Death Min Age", "Death Max Age", "Death Male", "Death Female"] 
+            columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
         dfprov = pd.DataFrame(columns=["Date","Province","Deaths"]).set_index(["Date","Province"])        
     else:
@@ -1973,7 +1973,7 @@ def briefing_deaths(file, date, pages):
         g = all['gender'].value_counts()
         male,female = g.get('Male',0), g.get('Female',0)
         sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
-            columns=["Date", "Deaths", "Death Medium Age", "Death Min Age", "Death Max Age", "Death Male", "Death Female"] 
+            columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
         dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
     
@@ -2118,10 +2118,10 @@ def export(df, name, csv_only=False):
 
 USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
-    cases_by_area = get_cases_by_area()
-    cases_demo = get_cases_by_demographics_api()
-    hospital = get_hospital_resources()
     if not USE_CACHE_DATA:
+        cases_by_area = get_cases_by_area()
+        cases_demo = get_cases_by_demographics_api()
+        hospital = get_hospital_resources()
         vac = get_vaccinations()
 
         situation = get_situation()
@@ -3050,6 +3050,25 @@ def save_plots(df):
     # )
     plt.tight_layout()
     plt.savefig("cases_active_2.png")
+
+
+    ####################
+    # Deaths
+    ####################
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median (MA)'].rolling("3d").mean()
+    df["2021-04-01":].plot.line(
+        ax=ax,
+        y=["Deaths Age Max", "Deaths Age Median (MA)", "Deaths Age Min"],
+        colormap="tab20",
+        title='Thailand Covid Death Age Range\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
+    plt.tight_layout()
+    plt.savefig("deaths_age_3.png")
 
 
 if __name__ == "__main__":
