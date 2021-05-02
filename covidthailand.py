@@ -1211,6 +1211,8 @@ def get_province(prov):
 
     return prov
 
+def join_provinces(df, on):
+    return fuzzy_join(df, PROVINCES[["Health District Number"]], on, True)
 
 def fuzzy_join(a,b, on, assert_perfect_match=False):
     first = a.join(b, on=on)
@@ -1836,12 +1838,80 @@ def briefing_province_cases(file, date, pages):
     return df
 
 
+def briefing_deaths_summary(file, date, pages):
+    if date < d("2021-01-13"):
+        pages = []
+    rows = {}
+    for i,soup in enumerate(pages):
+        #camelot.read_pdf(file,pages=' '.join([str(i) for i in [i]]))
+        if "ผู้ป่วยโรคโควิด-19 เสียชีวิต ของประเทศไทย รายงานวันที่" not in str(soup):
+            continue
+        # Summary of locations, reasons, medium age, etc
+        parts = [l.get_text() for l in soup.find_all("p")]
+        parts = [l for l in parts if l]
+        #parts = list(split(parts, lambda x: "รวม" in x))[-1]
+        print(parts)
+
+parse_gender = lambda x: "Male" if "ชาย" in x else "Female"
+def briefing_deaths_detail(file, date, pages):
+    # Only before the 2021-04-29
+    all = pd.DataFrame(columns=['death_num']).set_index("death_num")
+    for i,soup in enumerate(pages):
+        #if "รายละเอียดผู้เสียชีวิตของประเทศไทย" not in str(soup):
+        if "วิตของประเทศไทย" not in str(soup):
+            continue
+        # Individual case detail for death
+        orig = camelot.read_pdf(file, pages=str(i+2), process_background=True)[0].df
+        if len(orig.columns) != 11:
+            cells = [orig.loc[i][c] for i in orig for c in orig.columns]
+            cells = [c for c in cells if c]
+            for cell in cells:
+                lines = cell.split("\n")
+                numbers, _ = get_next_numbers(cell, "")
+                death_num, age, *_ = numbers
+                gender = parse_gender(cell)
+                # handle province by itself on a line
+                p = [get_province(line) for line in lines[:3]]
+                p = [pr for pr in p if pr]
+                if p:
+                    province = p[0]
+                else:
+                    province = re.search("ขณะป่วย", cell) # TODO: work out how to grab just province
+                    continue
+                df = pd.DataFrame([[death_num, gender, age, province, date]],
+                    columns=["death_num", "gender", "age", "province", "Date"]
+                )
+            #print(f"Can't parse death table for {date}")
+            continue
+        df = orig.drop(columns=[0,10])
+        df.columns = ['death_num', "gender", "nationality", "age", "province", "congenital_disease", "case_history", "risk_factor_sickness","risk_factor_sickness" ]
+        df['death_num'] = pd.to_numeric(df['death_num'], errors="coerce")
+        df['age'] = pd.to_numeric(df['age'], errors="coerce")
+        df = df.dropna(subset=["death_num"])
+        df['Date'] = date
+        df['gender'] = df['gender'].map(parse_gender) # TODO: handle mispelling
+        df = df.set_index("death_num")
+        #df = join_provinces(df, "province")
+        df = all.combine_first(df)
+        # parts = [l.get_text() for l in soup.find_all("p")]
+        # parts = [l for l in parts if l]
+        # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
+        # for header,lines in pairwise(tables):
+        #     _, *row_pairs = split(lines, re.compile("(\d+\s*(?:ชาย|หญิง))").search)
+        #     for first, rest in pairwise(row_pairs):
+        #         row = ' '.join(first) + ' '.join(rest)
+        #         case_num, age, *dates = get_next_numbers("")
+        #         print(row)
+    return all
+
+
 
 def get_cases_by_prov_briefings():
     print("========Briefings==========")
     types = pd.DataFrame(columns=["Date",]).set_index(['Date',])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
+    deaths = pd.DataFrame(columns=["death_num"]).set_index("death_num")
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13") #12th gets a bit messy but could be fixed
     #start = d("2021-04-07")
@@ -1858,6 +1928,9 @@ def get_cases_by_prov_briefings():
         today_types = briefing_case_types(date, pages)
         types = types.combine_first(today_types)
         prov = briefing_province_cases(file, date, pages)
+        deaths = deaths.combine_first(briefing_deaths_detail(file, date, pages))
+        deaths_summary = briefing_deaths_summary(file, date, pages)
+
         date_prov = date_prov.combine_first(prov)
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
@@ -1880,6 +1953,8 @@ def get_cases_by_prov_briefings():
         date_prov_types = date_prov_types.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
         date_prov_types.columns = [f"Cases {c}" for c in date_prov_types.columns.get_level_values(1)]
         date_prov = date_prov.combine_first(date_prov_types)
+
+    export(deaths, "deaths")
 
     return date_prov, types
 
@@ -1960,13 +2035,13 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = False and os.path.exists("api/combined")
+USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
-    vac = get_vaccinations()
+    cases_by_area = get_cases_by_area()
     cases_demo = get_cases_by_demographics_api()
     hospital = get_hospital_resources()
     if not USE_CACHE_DATA:
-        cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
 
         situation = get_situation()
 
