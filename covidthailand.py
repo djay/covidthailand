@@ -1,4 +1,5 @@
 # coding=utf8
+import pathlib
 from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
 import requests
@@ -2116,6 +2117,9 @@ def save_plots(df):
     plt.rcParams.update({'font.size': 18})
     #plt.rcParams['legend.title_fontsize'] = 'small'
     plt.rc('legend',**{'fontsize':16})
+
+    # create directory if it does not exists
+    pathlib.Path("./outputs").mkdir(parents=True, exist_ok=True)
 
     fig, ax = plt.subplots()
     df.plot(
