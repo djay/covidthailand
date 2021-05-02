@@ -2143,7 +2143,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("tests.png")
+    plt.savefig("outputs/tests.png")
 
 
     fig, ax = plt.subplots()
@@ -2167,7 +2167,7 @@ def save_plots(df):
         ],
     )
     plt.tight_layout()
-    plt.savefig("tested_pui.png")
+    plt.savefig("outputs/tested_pui.png")
 
 
     ###############
@@ -2212,7 +2212,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("positivity.png")
+    plt.savefig("outputs/positivity.png")
 
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
@@ -2254,7 +2254,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("positivity_2.png")
+    plt.savefig("outputs/positivity_2.png")
 
     df["PUI per Case"] = df["Tested PUI (MA)"].divide(df["Cases (MA)"]) 
     df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
@@ -2298,7 +2298,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("tests_per_case.png")
+    plt.savefig("outputs/tests_per_case.png")
 
 
     fig, ax = plt.subplots()
@@ -2326,7 +2326,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("positivity_all.png")
+    plt.savefig("outputs/positivity_all.png")
 
     ##################
     # Test Plots
@@ -2356,7 +2356,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("cases.png")
+    plt.savefig("outputs/cases.png")
 
     fig, ax = plt.subplots()
     df.plot(
@@ -2378,7 +2378,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand",
     )
     plt.tight_layout()
-    plt.savefig("cases_all.png")
+    plt.savefig("outputs/cases_all.png")
 
 
 
@@ -2394,7 +2394,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("cases_types.png")
+    plt.savefig("outputs/cases_types.png")
 
     cols = ["Cases Symptomatic","Cases Asymptomatic"]
     df['Cases Symptomatic Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
@@ -2410,7 +2410,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("cases_sym.png")
+    plt.savefig("outputs/cases_sym.png")
 
 
     fig, ax = plt.subplots()
@@ -2425,7 +2425,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("cases_types_all.png")
+    plt.savefig("outputs/cases_types_all.png")
 
     cols = [c for c in df.columns if "Age " in str(c)]
     for c in cols:
@@ -2463,7 +2463,7 @@ def save_plots(df):
     a1.set_ylabel("Percent")
     a1.xaxis.label.set_visible(False)
     plt.tight_layout()
-    plt.savefig("cases_ages_2.png")
+    plt.savefig("outputs/cases_ages_2.png")
 
     df.plot(
         ax=ax,
@@ -2473,7 +2473,7 @@ def save_plots(df):
         title=title
     )
     plt.tight_layout()
-    plt.savefig("cases_ages_all.png")
+    plt.savefig("outputs/cases_ages_all.png")
 
 
     title="Thailand Covid Cases by Risk\n"\
@@ -2492,7 +2492,7 @@ def save_plots(df):
         title=title
     )
     plt.tight_layout()
-    plt.savefig("cases_causes_2.png")
+    plt.savefig("outputs/cases_causes_2.png")
 
     df.plot(
         ax=ax,
@@ -2502,7 +2502,7 @@ def save_plots(df):
         title=title,
     )
     plt.tight_layout()
-    plt.savefig("cases_causes_all.png")
+    plt.savefig("outputs/cases_causes_all.png")
 
 
     ##########################
@@ -2529,7 +2529,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("tests_area.png")
+    plt.savefig("outputs/tests_area.png")
 
     cols = [f"Pos Area {area}" for area in range(1, 15)]
     fig, ax = plt.subplots()
@@ -2547,7 +2547,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("pos_area.png")
+    plt.savefig("outputs/pos_area.png")
 
 
     cols = [f"Tests Daily {area}" for area in range(1, 14)]
@@ -2575,7 +2575,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("tests_area_daily_2.png")
+    plt.savefig("outputs/tests_area_daily_2.png")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2592,7 +2592,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("tests_area_daily.png")
+    plt.savefig("outputs/tests_area_daily.png")
 
     cols = [f"Pos Daily {area}" for area in range(1, 14)]
     pos_cols = [f"Pos Area {area}" for area in range(1, 14)]
@@ -2619,7 +2619,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("pos_area_daily_2.png")
+    plt.savefig("outputs/pos_area_daily_2.png")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2636,7 +2636,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("pos_area_daily.png")
+    plt.savefig("outputs/pos_area_daily.png")
 
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -2677,7 +2677,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("positivity_area.png")
+    plt.savefig("outputs/positivity_area.png")
 
     fig, ax = plt.subplots()
     df.loc["2020-12-12":].plot(
@@ -2694,7 +2694,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("positivity_area_2.png")
+    plt.savefig("outputs/positivity_area_2.png")
 
 
     for area in range(1, 15):
@@ -2714,7 +2714,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("positivity_area_unstacked_2.png")
+    plt.savefig("outputs/positivity_area_unstacked_2.png")
     fig, ax = plt.subplots(figsize=[20, 10])
     df.plot.area(
         ax=ax,
@@ -2728,7 +2728,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("positivity_area_unstacked.png")
+    plt.savefig("outputs/positivity_area_unstacked.png")
 
 
     for area in range(1, 14):
@@ -2751,7 +2751,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("casestests_area_unstacked_2.png")
+    plt.savefig("outputs/casestests_area_unstacked_2.png")
 
     #########################
     # Case by area plots
@@ -2781,7 +2781,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("cases_areas_1.png")
+    plt.savefig("outputs/cases_areas_1.png")
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -2794,7 +2794,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("cases_areas_2.png")
+    plt.savefig("outputs/cases_areas_2.png")
 
     fig, ax = plt.subplots()
     df.plot(
@@ -2807,7 +2807,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("cases_areas_all.png")
+    plt.savefig("outputs/cases_areas_all.png")
 
 
     cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 15)],*FIRST_AREAS)
@@ -2824,7 +2824,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("cases_areas_walkins.png")
+    plt.savefig("outputs/cases_areas_walkins.png")
 
     cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 15)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
@@ -2838,7 +2838,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("cases_areas_proactive.png")
+    plt.savefig("outputs/cases_areas_proactive.png")
 
 
     for area in range(1, 14):
@@ -2858,7 +2858,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("cases_from_positives_area.png")
+    plt.savefig("outputs/cases_from_positives_area.png")
 
 
 
@@ -2893,7 +2893,7 @@ def save_plots(df):
     #     colormap="tab20",
     # )
     plt.tight_layout()
-    plt.savefig("cases_active_2.png")
+    plt.savefig("outputs/cases_active_2.png")
 
 
 if __name__ == "__main__":
