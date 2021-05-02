@@ -1863,16 +1863,26 @@ def briefing_deaths_detail(file, date, pages):
         #if "รายละเอียดผู้เสียชีวิตของประเทศไทย" not in str(soup):
         if "วิตของประเทศไทย" not in str(soup):
             continue
-        # Individual case detail for death
-        orig = camelot.read_pdf(file, pages=str(i+2), process_background=True)[0].df
-        if len(orig.columns) != 11:
-            cells = [orig.loc[i][c] for i in orig for c in orig.columns]
-            cells = [c for c in cells if c]
+        orig = None
+        if date <= d("2021-04-19"):
+            cells = [soup.get_text()]
+        else:
+            # Individual case detail for death
+            orig = camelot.read_pdf(file, pages=str(i+2), process_background=True)[0].df
+            if len(orig.columns) != 11:
+                cells = [cell for r in orig.itertuples() for cell in r[1:] if cell]
+            else:
+                cells = []
+        if orig is None and not cells:
+            raise Exception(f"Couldn't parse deaths {date}")
+        elif cells:
+            #cells = [c for c in cells if c]
             rows = []
             for cell in cells:
                 lines = cell.split("\n")
                 numbers, _ = get_next_numbers(cell, "")
                 death_num, age, *_ = numbers
+                #assert age > 20
                 gender = parse_gender(cell)
                 # handle province by itself on a line
                 p = [get_province(line, True) for line in lines[:3]]
@@ -1880,9 +1890,10 @@ def briefing_deaths_detail(file, date, pages):
                 if p:
                     province = p[0]
                 else:
-                    match = re.search("ขณะป่วย (\S*)", cell).group(1) # TODO: work out how to grab just province
+                    match = re.search("ขณะป่วย (\S*)", cell) # TODO: work out how to grab just province
                     if match:
-                        province = get_province(province)
+                        prov = match.group(1).replace("จังหวัด","")
+                        province = get_province(prov)
                     else:
                         continue
                 rows.append([death_num, gender, age, province, date])
@@ -1892,25 +1903,30 @@ def briefing_deaths_detail(file, date, pages):
             all = all.combine_first(df)
             #print(f"Can't parse death table for {date}")
             continue
-        df = orig.drop(columns=[0,10])
-        df.columns = ['death_num', "gender", "nationality", "age", "province", "congenital_disease", "case_history", "risk_factor_sickness","risk_factor_sickness" ]
-        df['death_num'] = pd.to_numeric(df['death_num'], errors="coerce")
-        df['age'] = pd.to_numeric(df['age'], errors="coerce")
-        df = df.dropna(subset=["death_num"])
-        df['Date'] = date
-        df['gender'] = df['gender'].map(parse_gender) # TODO: handle mispelling
-        df = df.set_index("death_num")
-        #df = join_provinces(df, "province")
-        df = all.combine_first(df)
-        # parts = [l.get_text() for l in soup.find_all("p")]
-        # parts = [l for l in parts if l]
-        # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
-        # for header,lines in pairwise(tables):
-        #     _, *row_pairs = split(lines, re.compile("(\d+\s*(?:ชาย|หญิง))").search)
-        #     for first, rest in pairwise(row_pairs):
-        #         row = ' '.join(first) + ' '.join(rest)
-        #         case_num, age, *dates = get_next_numbers("")
-        #         print(row)
+        elif orig is not None:
+            df = orig.drop(columns=[0,10])
+            df.columns = ['death_num', "gender", "nationality", "age", "province", "congenital_disease", "case_history", "risk_factor_sickness","risk_factor_sickness" ]
+            df['death_num'] = pd.to_numeric(df['death_num'], errors="coerce")
+            df['age'] = pd.to_numeric(df['age'], errors="coerce")
+            df = df.dropna(subset=["death_num"])
+            df['Date'] = date
+            df['gender'] = df['gender'].map(parse_gender) # TODO: handle mispelling
+            df = df.set_index("death_num")
+            #df = join_provinces(df, "province")
+            df = all.combine_first(df)
+            # parts = [l.get_text() for l in soup.find_all("p")]
+            # parts = [l for l in parts if l]
+            # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
+            # for header,lines in pairwise(tables):
+            #     _, *row_pairs = split(lines, re.compile("(\d+\s*(?:ชาย|หญิง))").search)
+            #     for first, rest in pairwise(row_pairs):
+            #         row = ' '.join(first) + ' '.join(rest)
+            #         case_num, age, *dates = get_next_numbers("")
+            #         print(row)
+    if all.empty:
+        print(f"No Deaths found on {date}")
+    else:
+        print(all.to_string(header=False))
     return all
 
 
