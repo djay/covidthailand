@@ -1,6 +1,7 @@
 # coding=utf8
 from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
+from camelot.utils import validate_input
 import requests
 import tabula
 import os
@@ -1786,7 +1787,7 @@ def briefing_case_types(date, pages):
         "Hospitalized Respirator",
         "Hospitalized",
     ]).set_index(['Date'])
-    print(df.to_string(header=False))
+    print("Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
 NUM_OR_DASH = re.compile("([0-9\,-]+)")
@@ -1841,27 +1842,49 @@ def briefing_province_cases(file, date, pages):
     return df
 
 
-def briefing_deaths_summary(file, date, pages):
-    if date < d("2021-01-13"):
-        pages = []
-    rows = {}
-    for i,soup in enumerate(pages):
-        #camelot.read_pdf(file,pages=' '.join([str(i) for i in [i]]))
-        if "ผู้ป่วยโรคโควิด-19 เสียชีวิต ของประเทศไทย รายงานวันที่" not in str(soup):
-            continue
-        # Summary of locations, reasons, medium age, etc
-        parts = [l.get_text() for l in soup.find_all("p")]
-        parts = [l for l in parts if l]
-        #parts = list(split(parts, lambda x: "รวม" in x))[-1]
-        print(parts)
 
 parse_gender = lambda x: "Male" if "ชาย" in x else "Female"
-def briefing_deaths_detail(file, date, pages):
+def briefing_deaths(file, date, pages):
     # Only before the 2021-04-29
-    all = pd.DataFrame(columns=['death_num']).set_index("death_num")
+    all = pd.DataFrame()
     for i,soup in enumerate(pages):
-        #if "รายละเอียดผู้เสียชีวิตของประเทศไทย" not in str(soup):
-        if "วิตของประเทศไทย" not in str(soup):
+        text = soup.get_text()
+
+        if "ค่ามัธยฐานของอายุ" in text:
+            # Summary of locations, reasons, medium age, etc
+            tables = camelot.read_pdf(file, pages=str(i+2), process_background=True)
+            if len(tables)<2:
+                continue
+            df = tables[1].df
+            province_count = {}
+            for _, provinces, num in df[[0,1]].itertuples():
+                # len() < 2 because some stray modifier?
+                provs = [p for p in provinces.split() if len(p) > 1]
+                num, _ = get_next_number(num)
+                province_count.update(dict((get_province(p),num) for p in provs))
+            # Congenital disease / risk factor The severity of the disease
+            congenital_disease = df[2][0]  # TODO: parse?
+            # Risk factors for COVID-19 infection
+            risk_factors = df[3][0]
+            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", )
+            med_age, min_age, max_age, *_ = numbers
+            numbers, *_ = get_next_numbers(text, "ชาย")
+            male, female, *_ = numbers
+            
+            # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
+
+            # TODO: what if they have more than one page?
+            sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female]],
+                columns=["Date", "Deaths", "Death Medium Age", "Death Min Age", "Death Max Age", "Death Male", "Death Female"] 
+            ).set_index("Date")
+            dfprov = pd.DataFrame(((date,p,c) for p,c in province_count.items()),
+                columns=["Date", "Province", "Deaths"]
+            ).set_index(["Date", "Province"])
+            assert male+female == dfprov['Deaths'].sum()
+            print("Deaths:", sum.to_string(header=False, index=False))
+            return all, sum, dfprov
+
+        elif "วิตของประเทศไทย" not in text:
             continue
         orig = None
         if date <= d("2021-04-19"):
@@ -1876,44 +1899,58 @@ def briefing_deaths_detail(file, date, pages):
         if orig is None and not cells:
             raise Exception(f"Couldn't parse deaths {date}")
         elif cells:
-            #cells = [c for c in cells if c]
+            # Older style, not row per death
             rows = []
             for cell in cells:
-                lines = cell.split("\n")
-                numbers, _ = get_next_numbers(cell, "")
-                death_num, age, *_ = numbers
+                lines = [l for l in cell.split("\n") if l.strip()]
+                if "รายละเอียดผู้เสีย" in lines[0]:
+                    lines = lines[1:]
+                rest = '\n'.join(lines)
+                death_num, rest = get_next_number(rest, "รายที่", "รายที", remove=True)
+                age, rest = get_next_number(rest, "อายุ", "ผู้ป่ว", remove=True)
+                num_2ndwave, rest = get_next_number(rest, "ระลอกใหม่", remove=True)
+                numbers, _ = get_next_numbers(rest, "")
+                if age is not None and death_num is not None:
+                    pass
+                elif age:
+                    death_num, *_ = numbers
+                elif death_num:
+                    age, *_ = numbers
+                else:
+                    death_num, age, *_ = numbers
+                assert 1 < age < 110
+                assert 55 < death_num < 1500
                 #assert age > 20
                 gender = parse_gender(cell)
-                # handle province by itself on a line
-                p = [get_province(line, True) for line in lines[:3]]
-                p = [pr for pr in p if pr]
-                if p:
-                    province = p[0]
+                match = re.search("ขณะป่วย (\S*)", cell) # TODO: work out how to grab just province
+                if match:
+                    prov = match.group(1).replace("จังหวัด","")
+                    province = get_province(prov)
                 else:
-                    match = re.search("ขณะป่วย (\S*)", cell) # TODO: work out how to grab just province
-                    if match:
-                        prov = match.group(1).replace("จังหวัด","")
-                        province = get_province(prov)
+                    # handle province by itself on a line
+                    p = [get_province(word, True) for line in lines[:3] for word in line.split()]
+                    p = [pr for pr in p if pr]
+                    if p:
+                        province = p[0]
                     else:
-                        continue
-                rows.append([death_num, gender, age, province, date])
+                        raise Exception(f"no province found for death in: {cell}")
+                rows.append([float(death_num), date, gender, age, province, None, None, None, None, None])
             df= pd.DataFrame(rows,
-                columns=["death_num", "gender", "age", "province", "Date"]
+                columns = ['death_num', "Date", "gender", "age", "Province", "nationality", "congenital_disease", "case_history", "risk_factor_sickness", "risk_factor_death" ]
             ).set_index("death_num")
-            all = all.combine_first(df)
-            #print(f"Can't parse death table for {date}")
+            all = all.append(df, verify_integrity=True)
             continue
-        elif orig is not None:
+        elif orig is not None: # <= 2021-04-27
             df = orig.drop(columns=[0,10])
-            df.columns = ['death_num', "gender", "nationality", "age", "province", "congenital_disease", "case_history", "risk_factor_sickness","risk_factor_sickness" ]
+            df.columns = ['death_num', "gender", "nationality", "age", "Province", "congenital_disease", "case_history", "risk_factor_sickness", "risk_factor_death" ]
             df['death_num'] = pd.to_numeric(df['death_num'], errors="coerce")
             df['age'] = pd.to_numeric(df['age'], errors="coerce")
             df = df.dropna(subset=["death_num"])
             df['Date'] = date
             df['gender'] = df['gender'].map(parse_gender) # TODO: handle mispelling
             df = df.set_index("death_num")
-            #df = join_provinces(df, "province")
-            df = all.combine_first(df)
+            #df = join_provinces(df, "province") # TODO:
+            all = all.append(df, verify_integrity=True)
             # parts = [l.get_text() for l in soup.find_all("p")]
             # parts = [l for l in parts if l]
             # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
@@ -1924,10 +1961,24 @@ def briefing_deaths_detail(file, date, pages):
             #         case_num, age, *dates = get_next_numbers("")
             #         print(row)
     if all.empty:
-        print(f"No Deaths found on {date}")
+        print(f"Deaths: {date} None")
+        sum = pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
+            columns=["Date", "Deaths", "Death Medium Age", "Death Min Age", "Death Max Age", "Death Male", "Death Female"] 
+        ).set_index("Date")
+        dfprov = pd.DataFrame(columns=["Date","Province","Deaths"]).set_index(["Date","Province"])        
     else:
-        print(all.to_string(header=False))
-    return all
+        print("Deaths: ",all.to_string(header=False, index=False))
+        # calculate daily summary stats
+        med_age, min_age, max_age = all['age'].median(), all['age'].min(), all['age'].max()
+        g = all['gender'].value_counts()
+        male,female = g.get('Male',0), g.get('Female',0)
+        sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
+            columns=["Date", "Deaths", "Death Medium Age", "Death Min Age", "Death Max Age", "Death Male", "Death Female"] 
+        ).set_index("Date")
+        dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
+    
+    # calculate per provice counts
+    return all, sum, dfprov
 
 
 
@@ -1936,7 +1987,7 @@ def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date",]).set_index(['Date',])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
-    deaths = pd.DataFrame(columns=["death_num"]).set_index("death_num")
+    deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13") #12th gets a bit messy but could be fixed
     #start = d("2021-04-07")
@@ -1953,10 +2004,15 @@ def get_cases_by_prov_briefings():
         today_types = briefing_case_types(date, pages)
         types = types.combine_first(today_types)
         prov = briefing_province_cases(file, date, pages)
-        deaths = deaths.combine_first(briefing_deaths_detail(file, date, pages))
-        deaths_summary = briefing_deaths_summary(file, date, pages)
+
+        each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
+        deaths = deaths.append(each_death, verify_integrity=True)
+        date_prov = date_prov.combine_first(death_by_prov)
+        types = types.combine_first(death_sum)
 
         date_prov = date_prov.combine_first(prov)
+
+        # Do cross check
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
@@ -1968,6 +2024,8 @@ def get_cases_by_prov_briefings():
     # ขอนแกน่ 12 missing
     # ชุมพร 1 missing
 
+    export(deaths, "deaths")
+
 
     if not date_prov_types.empty:
         symptoms = date_prov_types[["Cases Symptomatic", "Cases Asymptomatic"]] # todo could keep province breakdown
@@ -1978,8 +2036,6 @@ def get_cases_by_prov_briefings():
         date_prov_types = date_prov_types.reset_index().pivot(index=["Date", "Province"],columns=['Case Type'])
         date_prov_types.columns = [f"Cases {c}" for c in date_prov_types.columns.get_level_values(1)]
         date_prov = date_prov.combine_first(date_prov_types)
-
-    export(deaths, "deaths")
 
     return date_prov, types
 
@@ -2012,15 +2068,15 @@ def get_hospital_resources():
     data = pd.DataFrame(rows).groupby("province").sum()
     data['Date'] = TODAY().date()
     data['Date'] = pd.to_datetime(data['Date']).dt.date
-    data = data.reset_index().set_index("Date","province")
-    print(data.sum().to_string())
+    data = data.reset_index().set_index(["Date","province"])
+    print("Active Cases:",data.sum().to_string(index=False, header=False))
     if os.path.exists("api/hospital_resources"):
         old = pd.read_csv(
             "api/hospital_resources.csv",
             #orient="records",
         )
         old['Date'] = pd.to_datetime(old['Date']).dt.date
-        old = old.set_index("Date", "province")
+        old = old.set_index(["Date", "province"])
         # TODO: seems to be dropping old data. Need to test
         data = add_data(old, data)
         #data = data.combine_first(old) # Overwrite todays data if called twice.
