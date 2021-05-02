@@ -1196,7 +1196,7 @@ def get_provinces():
 
 PROVINCES = get_provinces()
 
-def get_province(prov):
+def get_province(prov, ignore_error=False):
     prov = prov.strip().strip(".").replace(" ", "")
     try:
         prov = PROVINCES.loc[prov]['ProvinceEn']
@@ -1204,6 +1204,9 @@ def get_province(prov):
         try:
             close = difflib.get_close_matches(prov, PROVINCES.index)[0]
         except IndexError:
+            if ignore_error:
+                return None
+            else:
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 #continue
@@ -1865,22 +1868,28 @@ def briefing_deaths_detail(file, date, pages):
         if len(orig.columns) != 11:
             cells = [orig.loc[i][c] for i in orig for c in orig.columns]
             cells = [c for c in cells if c]
+            rows = []
             for cell in cells:
                 lines = cell.split("\n")
                 numbers, _ = get_next_numbers(cell, "")
                 death_num, age, *_ = numbers
                 gender = parse_gender(cell)
                 # handle province by itself on a line
-                p = [get_province(line) for line in lines[:3]]
+                p = [get_province(line, True) for line in lines[:3]]
                 p = [pr for pr in p if pr]
                 if p:
                     province = p[0]
                 else:
-                    province = re.search("ขณะป่วย", cell) # TODO: work out how to grab just province
-                    continue
-                df = pd.DataFrame([[death_num, gender, age, province, date]],
-                    columns=["death_num", "gender", "age", "province", "Date"]
-                )
+                    match = re.search("ขณะป่วย (\S*)", cell).group(1) # TODO: work out how to grab just province
+                    if match:
+                        province = get_province(province)
+                    else:
+                        continue
+                rows.append([death_num, gender, age, province, date])
+            df= pd.DataFrame(rows,
+                columns=["death_num", "gender", "age", "province", "Date"]
+            ).set_index("death_num")
+            all = all.combine_first(df)
             #print(f"Can't parse death table for {date}")
             continue
         df = orig.drop(columns=[0,10])
