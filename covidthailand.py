@@ -2128,32 +2128,36 @@ def cleanup_df_ages(df_all: pd.DataFrame, ages_cols: list) -> pd.DataFrame:
     return df_ages
 
 
-def plot_area(df, name, prefix, title, unknown_name="Unknown", unknown_total=None, percent_fig=False, ma=False, cm="tab20"):
+def plot_area(df, name, prefix, title, unknown_name='Unknown', unknown_total=None, percent_fig=False, ma=False, 
+              cm='tab20'):
     cols = [c for c in df.columns if prefix in str(c)]
     if ma:
         for c in cols:
-            df[f"{c} (MA)"] = df[c].rolling("7d").mean()
-        cols = [f"{c} (MA)" for c in cols]
-        ma_suffix = " (MA)"
+            df[f'{c} (MA)'] = df[c].rolling('7d').mean()
+        cols = [f'{c} (MA)' for c in cols]
+        ma_suffix = ' (MA)'
     else:
-        ma_suffix = ""
+        ma_suffix = ''
+
     if unknown_total:
-        df[f'{prefix} {unknown_name}{ma_suffix}'] = df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+        df[f'{prefix} {unknown_name}{ma_suffix}'] = \
+            df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
         cols += [f'{prefix} {unknown_name}{ma_suffix}']
+
     if percent_fig:
         for c in cols:
-            df[f"{c} (%)"] = df[f"{c}"] / df[f'{unknown_total}{ma_suffix}'] * 100
-        perccols = [f"{c} (%)" for c in cols]
-        if unknown_total:
-            df[f'{prefix} {unknown_name} (%){ma_suffix}'] = (100-df[perccols].sum(axis=1)).clip(lower=0)
-            perccols += [f'{prefix} {unknown_name} (%){ma_suffix}']
-    title=f"{title}\n"
-    title += f"Updated: {TODAY().date()}\n"
-    # TODO: date of last interesting data should be max of cols but not includeing cases.
+            df[f'{c} (%)'] = df[f'{c}'] / df[cols].sum(axis=1) * 100
+        perccols = [f'{c} (%)' for c in cols]
+        
+    title = f'{title}\n'
+    title += f'Updated: {TODAY().date()}\n'
+
+    # TODO: date of last interesting data should be max of cols but not including cases.
+
     if ma:
         title += "(7 day rolling average)\n"
     title += "https://github.com/djay/covidthailand"
-    for suffix,dfplot in [('1', df[:"2020-12-12"]), ('2', df["2020-12-12":]), ('all', df)]:
+    for suffix, dfplot in [('1', df[:"2020-12-12"]), ('2', df["2020-12-12":]), ('all', df)]:
         if percent_fig:
             f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
         else:
@@ -2556,7 +2560,7 @@ def save_plots(df):
     plot_area(
         df, 
         "cases_ages", 
-        prefix="Age ",
+        prefix="Age",
         title="Thailand Covid Cases by Age",
         percent_fig=True,
         cm="summer",
