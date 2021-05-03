@@ -2146,7 +2146,7 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = True and os.path.exists("api/combined")
+USE_CACHE_DATA = True and os.path.exists("api/combined.csv")
 def scrape_and_combine():
     
     if not USE_CACHE_DATA:
