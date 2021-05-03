@@ -4,7 +4,7 @@ Thailand testing and case data gathered and combined from various sources for ot
 
 The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
-## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Downloads](#downloads)
+## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads)
 
 
 # Cases
@@ -104,6 +104,18 @@ The data is updated daily with most data changing around midday once the governm
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
+# Vaccinations
+
+## Vacciations by Priority Groups
+
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vac_groups_3.png))
+- Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
+
+## Vacciations by Health District
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vac_areas_s2_3.png))
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vac_areas_s1_3.png))
+- Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
+
 # Downloads
 
 ## Disclaimer
@@ -175,13 +187,16 @@ The data is updated daily with most data changing around midday once the governm
   - Cases Proavtive: Local transmissions that aren't walkins
   - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
   - Tested PUI: People Classified as Person Under Infestigation.
-  - Tested PUI Walkin Public: PUI classified at public hospitals/labs
-  - Tested PUI Walkin Private: PUI classified at private hospitals/labs
+  - Tested PUI Walkin Public: "Sought medical services on their own at hospitals"/Public
+  - Tested PUI Walkin Private: "Sought medical services on their own at hospitals"/Private
 - The follwing are included but are *not useful data since 2020-08*.
-  - Tested: *Not different from PUI since 2020-08* says "Total number of laboratory tests" but is mislabeled. ~PUI + 30%
+  - Tested: *Not different from PUI since 2020-08* says "Total number of laboratory tests" but is mislabeled.
   - Tested Quarantine: *Not changed since 2020-08*. "Returnees in quarantine facilities/centers".
   - Tested Proactive: *Not changed since 2020-08*.Tested from "active case finding".
   - Tested Not PUI: *Not changed since 2020-08*. "People who did not meet the PUI criteria".
+- The following aren't yet included
+  - Screened Ports: "Type of Screened People and PUI / Ports of entry (Airports, ground ports, and seaports)"
+  - Screened Immigration "Type of Screened People and PUI / People renewing their passports at the Immigration Bureau, Chaeng Watthana"
 
 - Notes:
   - The only useful Tested number is "Tested PUI".
@@ -223,6 +238,37 @@ Bureau, Chaeng Watthana"
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
+# Daily Vaccination Reports
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- [Download JSON](https://github.com/djay/covidthailand/wiki/vaccinations), [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
+- e.g.
+```
+      "Date":"2021-04-25",
+      "Province":"Mae Hong Son",
+      "Vaccinations Allocated Sinovac 1":3840.0,
+      "Vaccinations Allocated Sinovac 2":3840.0,
+      "Vaccinations Allocated AstraZeneca 1":0.0,
+      "Vaccinations Allocated AstraZeneca 2":0.0,
+      "Vaccinations Given 1 Cum":3189.0,
+      "Vaccinations Given 1 %":83.0,
+      "Vaccinations Given 2 Cum":37.0,
+      "Vaccinations Given 2 %":1.0,
+      "Vaccinations Medical 1 Cum":1939.0,
+      "Vaccinations Medical 2 Cum":19.0,
+      "Vaccinations Frontline 1 Cum":1081.0,
+      "Vaccinations Frontline 2 Cum":18.0,
+      "Vaccinations Over60 1 Cum":0.0,
+      "Vaccinations Over60 2 Cum":0.0,
+      "Vaccinations Disease 1 Cum":54.0,
+      "Vaccinations Disease 2 Cum":0.0,
+      "Vaccinations RiskArea 1 Cum":115.0,
+      "Vaccinations RiskArea 2 Cum":0.0
+```
+- Note
+   - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
+   - 1/2 refers to shot 1 or shot 2.
+   - #TODO: put in thai group explanations.
+
 ## Deaths by Province
 - Source 
    - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
@@ -262,6 +308,7 @@ Bureau, Chaeng Watthana"
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
 # Change log
+- 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
 - 2021-04-23 - Fixed mistake in testing data where private tests was added again
@@ -288,10 +335,6 @@ Bureau, Chaeng Watthana"
   - stopped being put in briefings
 - plot % subplots to get closer detail
   - esp for the by district plots
-- rolling averages on area graphs to make them easier to read
-- vaccination per province
-  - https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd
-  - any easier data source?
 - switch to plotly to interactively inspect values
   - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
 - Extract from briefings
@@ -304,7 +347,7 @@ Bureau, Chaeng Watthana"
   - and more detail of start and end dates for data in data source descriptions
 - fix briefings parser to get more historical data 
    - for sym/asym
-   - province data
+   - more province data
 - work out if can incorporate province wealth
   - https://data.go.th/dataset/http-mis-m-society-go-th-tab030104-php
   - maybe for vaccinations or positive rate?

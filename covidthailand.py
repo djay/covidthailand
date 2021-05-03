@@ -18,6 +18,7 @@ import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
 from pptx import Presentation
+from tika.tika import parse
 from urllib3.util.retry import Retry
 import dateutil
 from requests.adapters import HTTPAdapter, Retry
@@ -28,6 +29,7 @@ def TODAY(): return datetime.datetime.today()
 from itertools import tee, islice, compress, cycle
 import camelot
 import difflib
+from matplotlib.ticker import FuncFormatter
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -82,16 +84,21 @@ THAI_FULL_MONTHS = [
 
 def file2date(file):
     file = os.path.basename(file)
-    date = file.rsplit(".pdf", 1)[0]
-    if "-" in date:
-        date = date.rsplit("-", 1).pop()
-    else:
-        date = date.rsplit("_", 1).pop()
-
-    date = datetime.datetime(
-        day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
-    )
-    return date
+    file,*_ = file.rsplit(".",1)
+    if m := re.search("\d{4}-\d{2}-\d{2}", file):
+        return d(m.group(0))
+    #date = file.rsplit(".pdf", 1)[0]
+    # if "-" in file:
+    #     date = file.rsplit("-", 1).pop()
+    # else:
+    #     date = file.rsplit("_", 1).pop()
+    if m := re.search("\d{6}", file):
+        # thai date in briefing filenames
+        date = m.group(0)
+        return datetime.datetime(
+            day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
+        )
+    return None
 
 
 def find_dates(content):
@@ -200,7 +207,15 @@ def parse_file(filename, html=False, paged=True):
     # Read PDF file
     data = parser.from_file(filename, xmlContent=True)
     xhtml_data = BeautifulSoup(data["content"], features="lxml")
+    if html and not paged:
+        return xhtml_data
     pages = xhtml_data.find_all("div", attrs={"class": ["page", "slide-content"]})
+    if not pages:
+        if not paged:
+            return repr(xhtml_data)
+        else:
+            return [repr(xhtml_data)]
+
     # TODO: slides are divided by slide-content and slide-master-content rather than being contained
     for i, content in enumerate(pages):
         # Parse PDF data using TIKA (xml/html)
@@ -301,14 +316,19 @@ def is_remote_newer(file, remote_date, check=True):
         return True
     return False
 
-def web_links(*index_urls, ext=".pdf", dir="html"):
+def web_links(*index_urls, ext=".pdf", dir="html", match=None):
+    is_ext = lambda a: len(a.get("href").rsplit(ext))==2 if ext else True
+    is_match = lambda a: a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
+            soup = parse_file(file, html=True, paged=False)
+            return (urllib.parse.urljoin(index_url, a.get('href')) 
+                for a in soup.find_all('a') if is_match(a))
             # if index.status_code > 399: 
             #     continue
-            links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
-            for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
-                yield link
+            #links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
+            #for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
+            #    yield link
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
@@ -1172,15 +1192,14 @@ def get_provinces():
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
     provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
+    provinces.loc['เพชรบรุี'] = provinces.loc['Phetchaburi']
+    provinces.loc['ปตัตำนี'] = provinces.loc['Pattani']
     provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
     provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
     provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
     provinces.loc['กทม'] = provinces.loc['Bangkok']
     provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
-    #provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
-    #provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
-    #provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1441,10 +1460,10 @@ def get_cases_by_demographics_api():
 
 def get_cases_by_area():
     # we will add in the tweet data for the export
-    case_tweets = get_cases_by_area_type()
-    case_areas = get_cases_by_area_api() # can be very wrong for the last days
+    case_briefings_tweets = get_cases_by_area_type()
+    case_api = get_cases_by_area_api() # can be very wrong for the last days
 
-    case_areas = case_tweets.combine_first(case_areas)
+    case_areas = case_briefings_tweets.combine_first(case_api)
 
     export(case_areas, "cases_by_area")
     
@@ -1573,12 +1592,19 @@ def get_cases_by_prov_tweets():
         if imported:
             assert imported, f"Failed to find imported in tweet {date}: {text}"
             imported = toint(imported.group(1))
+        else:
+            imported = None
         local = re.search("\+([0-9,]+) local", text)
         if local:
             assert local, f"Failed to find local in tweet {date}: {text}"
             local = toint(local.group(1))
-        cols = ["Date", "Cases Imported", "Cases Local Transmission"]
-        row = [date,imported,local]
+        else:
+            local = None
+        cases,_ = get_next_numbers(text, "Since January 2020")
+        cases = cases[0] if cases else None
+        
+        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum"]
+        row = [date, imported, local, cases]
         df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
 
     # get walkin vs proactive by area
@@ -1636,6 +1662,7 @@ def get_cases_by_prov_tweets():
     dfprov = pd.DataFrame(rows, columns=cols)
     index = pd.MultiIndex.from_frame(dfprov[['Date','Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
+    df = df.combine_first(cum2daily(df))
     return dfprov, df
 
 def seperate(seq, condition):
@@ -1820,7 +1847,9 @@ def briefing_case_types(date, pages):
     print("Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
-NUM_OR_DASH = re.compile("([0-9\,-]+)")
+NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
+parse_numbers = lambda lst: [float(i.replace(",","")) if i!="-" else 0 for i in lst]
+
 def briefing_province_cases(file, date, pages):
     if date < d("2021-01-13"):
         pages = []
@@ -1854,7 +1883,7 @@ def briefing_province_cases(file, date, pages):
                 # bangkok + subrubrs, resst of thailand
                 break
             prov = get_province(thai)
-            numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
+            numbers = parse_numbers(numbers)
             numbers = numbers[1:-1] # last is total. first is previous days
             assert len(numbers) == 7
             for i, cases in enumerate(reversed(numbers)):
@@ -2020,19 +2049,19 @@ def get_cases_by_prov_briefings():
     deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13") #12th gets a bit messy but could be fixed
-    #start = d("2021-04-07")
     end = TODAY()
-    #end = d("2021-04-09")
     links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end,1))
-    links = reversed(list(links))
-    for file, text in web_files(*links, dir="briefings"):
+    for file, text in web_files(*reversed(list(links)), dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
         date = file2date(file)
-        df = briefing_case_detail(date, pages)
-        date_prov_types = date_prov_types.combine_first(df)
+
         today_types = briefing_case_types(date, pages)
         types = types.combine_first(today_types)
+
+        case_detail = briefing_case_detail(date, pages)
+        date_prov_types = date_prov_types.combine_first(case_detail)
+
         prov = briefing_province_cases(file, date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
@@ -2042,7 +2071,7 @@ def get_cases_by_prov_briefings():
 
         date_prov = date_prov.combine_first(prov)
 
-        # Do cross check
+        # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
@@ -2097,7 +2126,7 @@ def get_hospital_resources():
 
     data = pd.DataFrame(rows).groupby("province").sum()
     data['Date'] = TODAY().date()
-    data['Date'] = pd.to_datetime(data['Date']).dt.date
+    data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index(["Date","province"])
     print("Active Cases:",data.sum().to_string(index=False, header=False))
     if os.path.exists("api/hospital_resources"):
@@ -2105,7 +2134,7 @@ def get_hospital_resources():
             "api/hospital_resources.csv",
             #orient="records",
         )
-        old['Date'] = pd.to_datetime(old['Date']).dt.date
+        old['Date'] = pd.to_datetime(old['Date'])
         old = old.set_index(["Date", "province"])
         # TODO: seems to be dropping old data. Need to test
         data = add_data(old, data)
@@ -2113,13 +2142,132 @@ def get_hospital_resources():
     export(data, "hospital_resources", csv_only=True)
     return data
 
+def any_in(target, *matches):
+    return any(m in target for m in matches)
+
+def area_crosstab(df, col, suffix):
+    given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
+    given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
+    given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
+    return given_by_area_2
+
 
 def get_vaccinations():
-    url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
+    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd", ext=None, match=re.compile("2564"))
+    links = (l for f in folders for l in web_links(f, ext=".pdf"))
+    #url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
     # Just need the latest
-    file, text = next(web_files(*web_links(url), dir="vaccinations"))
-    #tables = tabula.read_pdf(file)
+    pages = ((page, file2date(f), f) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f) if file2date(f))
+    vaccinations = {}
+    allocations = {}
+    for page, date , file in pages: # TODO: vaccinations are the day before I think
+        if not date or date <= d("2021-01-01"): #TODO: make go back later
+            continue
+        lines = [l.strip() for l in page.split('\n') if l.strip()]
+        shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+        #if date > d("2021-03-22"):
+        preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
+            #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
+            #    continue
+        # else:
+        #     preamble, *rest = split(lines, oldhead.search)
+        for headings, lines in pairwise(rest):
+            shot_count = max(len(shots.findall(h)) for h in headings)
+            oh_count = max(len(oldhead.findall(h)) for h in headings)
+            table = {10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
+            if not table:
+                continue
+            added = 0
+            for line in lines:
+                area, *rest = line.split(' ', 1)
+                if area == "รวม" or not rest:
+                    break
+                if area in ["เข็มที่","และ"]: # Extra heading
+                    continue
+                cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
+                if len(cols) < 5:
+                    break
+                if NUM_OR_DASH.match(area):
+                    prov, *cols = cols
+                else:
+                    prov = area
+                prov = get_province(prov)
+                numbers = parse_numbers(cols)
+                added += 1
+                if table=="alloc":
+                    allocations[(date,prov)] = numbers[3:7]
+                elif table=="given":
+                    if len(numbers)==16:
+                        allocSino, allocAZ, *numbers = numbers
+                    assert len(numbers)==14
+                    assert (date,prov) not in vaccinations or numbers == vaccinations[(date,prov)]
+                    vaccinations[(date,prov)] = numbers
+                elif table=="old_given":
+                    alloc, target_num, given, perc, *rest = numbers
+                    medical, frontline, disease, elders, riskarea, *rest = rest
+                    unknown = sum(rest) # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
+                    vaccinations[(date,prov)] = [given, perc, 0, 0] + \
+                        [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
+                    allocations[(date,prov)] = [alloc,0,0,0]
+            assert added > 7
+            print(f"{date}: {table} Vaccinations: {added}")
+            continue
+    df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Given 1 Cum",
+        "Vac Given 1 %",
+        "Vac Given 2 Cum",
+        "Vac Given 2 %",
+        "Vac Group Medical Staff 1 Cum",
+        "Vac Group Medical Staff 2 Cum",
+        "Vac Group Other Frontline Staff 1 Cum",
+        "Vac Group Other Frontline Staff 2 Cum",
+        "Vac Group Over 60 1 Cum",
+        "Vac Group Over 60 2 Cum",
+        "Vac Group Risk: Disease 1 Cum",
+        "Vac Group Risk: Disease 2 Cum",
+        "Vac Group Risk: Location 1 Cum",
+        "Vac Group Risk: Location 2 Cum",
+    ]).set_index(["Date", "Province"])
+    alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Allocated Sinovac 1",
+        "Vac Allocated Sinovac 2",
+        "Vac Allocated AstraZeneca 1",
+        "Vac Allocated AstraZeneca 2",
+    ]).set_index(["Date", "Province"])
+    all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
+    export(all_vac, "vaccinations", csv_only=True)
 
+    # Do cross check we got the same number of allocations to vaccination
+    counts = all_vac.groupby("Date").count()
+    missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group Risk: Location 2 Cum']]
+    # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
+    missing_data = missing_data["2021-04-09":]
+    # 2021-05-02 2021-05-01 - use images for just one table??
+
+    thaivac = all_vac.groupby("Date").sum()
+    thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
+
+    # Get vaccinations by district
+    all_vac = join_provinces(all_vac, on="Province")
+    given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
+    given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
+    thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+
+    # Need to drop any dates that are incomplete.
+    # TODO: could keep allocations?
+    thaivac = thaivac.drop(index=missing_data.index)
+
+    #thaivac = thaivac.combine_first(cum2daily(thaivac))
+    #thaivac = thaivac.drop([c for c in thaivac.columns if " Cum" in c], axis=1)
+    # TODO: remove cumlutive and other stats we don't want
+
+    # TODO: only return some daily summary stats
+    return thaivac
 
 
 
@@ -2135,25 +2283,25 @@ def export(df, name, csv_only=False):
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
     if not csv_only:
         df.to_json(
-            f"api/{name}",
+            os.path.join("api",name),
             date_format="iso",
             indent=3,
             orient="records",
         )
     df.to_csv(
-        f"api/{name}.csv",
+        os.path.join("api",f"{name}.csv"),
         index=False 
     )
 
 
-USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) and os.path.exists("api/combined.csv")
+USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
+    vac = get_vaccinations()
     
     if not USE_CACHE_DATA:
         cases_by_area = get_cases_by_area()
         cases_demo = get_cases_by_demographics_api()
         hospital = get_hospital_resources()
-        vac = get_vaccinations()
 
         situation = get_situation()
 
@@ -2167,7 +2315,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases', 'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo']:            
+    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
@@ -2276,6 +2424,14 @@ AREA_LEGEND = [
     "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
     "13: C: Bangkok",
 ]
+
+def human_format(num, pos):
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    # add more suffixes if you need them
+    return '%.1f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
 
 def rearrange(l, *first):
@@ -3102,7 +3258,7 @@ def save_plots(df):
     )
     plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
     plt.tight_layout()
-    plt.savefig("deaths_age_3.png")
+    plt.savefig("outputs/deaths_age_3.png")
 
     cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
     #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
@@ -3117,8 +3273,58 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("deaths_by_area_3.png")
+    plt.savefig("outputs/deaths_by_area_3.png")
 
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    #ax.get_yaxis().get_major_formatter().set_useOffset(False)
+    #ax.get_yaxis().get_major_formatter().set_scientific(False)
+    #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
+    cols = [c for c in df.columns if str(c).startswith("Vac Group")]
+    # some missing data. should be able to fill it in
+    df["2020-12-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap="Paired",
+        title='Thailand Vaccinations by Groups\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Shot 1").replace("2", "Shot 2")
+    ax.legend([leg(c) for c in cols])
+    plt.tight_layout()
+    plt.savefig("outputs/vac_groups_2.png")
+
+    cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Vaccinations (1st Shot) by Health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/vac_areas_s1_3.png")
+
+    cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Fully Vaccinatated (2nd Shot) by Health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/vac_areas_s2_3.png")
 
 if __name__ == "__main__":
     df = scrape_and_combine()
