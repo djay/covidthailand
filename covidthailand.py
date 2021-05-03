@@ -38,6 +38,11 @@ RETRY = Retry(
 s.mount("http://", HTTPAdapter(max_retries=RETRY))
 s.mount("https://", HTTPAdapter(max_retries=RETRY))
 
+def removeprefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    else:
+        return text
 
 ###############
 # Date helpers
@@ -1208,7 +1213,7 @@ def get_provinces():
 PROVINCES = get_provinces()
 
 def get_province(prov, ignore_error=False):
-    prov = prov.strip().strip(".").replace(" ", "").removeprefix("จ.")
+    prov = removeprefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     try:
         prov = PROVINCES.loc[prov]['ProvinceEn']
     except KeyError:
@@ -1226,7 +1231,7 @@ def get_province(prov, ignore_error=False):
     return prov
 
 def join_provinces(df, on):
-    trim = lambda x: x.removeprefix("จ.").strip(' .')
+    trim = lambda x: removeprefix(x,"จ.").strip(' .')
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
 def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
