@@ -2240,15 +2240,27 @@ def get_vaccinations():
     ]).set_index(["Date", "Province"])
     all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
     export(all_vac, "vaccinations", csv_only=True)
+
+    # Do cross check we got the same number of allocations to vaccination
+    counts = all_vac.groupby("Date").count()
+    missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group RiskArea 2 Cum']]
+    # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
+    missing_data = missing_data["2021-04-09":]
+    # 2021-05-02 2021-05-01 - use images for just one table??
+
     thaivac = all_vac.groupby("Date").sum()
     thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    all_vac = join_provinces(all_vac, on="Province")
     # Get vaccinations by district
+    all_vac = join_provinces(all_vac, on="Province")
     given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
-
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+
+    # Need to drop any dates that are incomplete.
+    # TODO: could keep allocations?
+    thaivac = thaivac.drop(index=missing_data.index)
+
     #thaivac = thaivac.combine_first(cum2daily(thaivac))
     #thaivac = thaivac.drop([c for c in thaivac.columns if " Cum" in c], axis=1)
     # TODO: remove cumlutive and other stats we don't want
@@ -2281,7 +2293,7 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) and os.path.exists("api/combined.csv")
+USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
     vac = get_vaccinations()
     
@@ -3258,7 +3270,8 @@ def save_plots(df):
     fig, ax = plt.subplots(figsize=[20, 10])
     #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
     cols = [c for c in df.columns if str(c).startswith("Vac Group")]
-    df["2020-12-12":].plot.area(
+    # some missing data. should be able to fill it in
+    df["2020-12-12":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
         colormap="Paired",
