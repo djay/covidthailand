@@ -2053,7 +2053,7 @@ def get_vaccinations():
         "Vaccinations Allocated AstraZeneca 2",
     ]).set_index("Date", "Province")
     df = df.combine_first(alloc) # TODO: pesky 2021-04-26
-    export(df, "vaccinations")
+    export(df, "vaccinations", csv_only=True)
     df = df.join(PROVINCES['Health District Number'], on="Province")
     thaivac = df.groupby("Date").sum()
 
