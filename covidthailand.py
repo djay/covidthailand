@@ -2868,7 +2868,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap=AREA_COLOURS,
+        colormap=custom_cm(AREA_COLOURS, len(cols), last_colour='lightgrey'),
         title=title
     )
     ax.legend(legend)
@@ -2881,7 +2881,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap=custom_cm('tab20', len(cols), last_colour='lightgrey'),
+        colormap=custom_cm(AREA_COLOURS, len(cols), last_colour='lightgrey'),
         title=title
     )
     ax.legend(legend)
@@ -2894,7 +2894,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap=custom_cm('tab20', len(cols), last_colour='lightgrey'),
+        colormap=custom_cm(AREA_COLOURS, len(cols), last_colour='lightgrey'),
         title=title
     )
     ax.legend(legend)
@@ -2909,7 +2909,7 @@ def save_plots(df):
         y=cols,
         kind="area",
         figsize=[20, 10],
-        colormap=AREA_COLOURS,
+        colormap=custom_cm(AREA_COLOURS, len(cols), last_colour='lightgrey'),
         title='Thailand "Walkin" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
@@ -2923,7 +2923,7 @@ def save_plots(df):
     df["2021-02-16":].plot.area(
         ax=ax,
         y=cols,
-        colormap=AREA_COLOURS,
+        colormap=custom_cm(AREA_COLOURS, len(cols), last_colour='lightgrey'),
         title='Thailand "Proactive" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
@@ -2943,7 +2943,7 @@ def save_plots(df):
         ax=ax,
         y=rearrange(cols, *FIRST_AREAS),
         stacked=False,
-        colormap=AREA_COLOURS,
+        colormap=custom_cm(AREA_COLOURS, len(rearrange(cols, *FIRST_AREAS)), last_colour='lightgrey'),
         title='Which districts have more cases than positive results\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
@@ -2951,8 +2951,6 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
     plt.savefig("cases_from_positives_area.png")
-
-
 
     ############
     # Hospital plots
