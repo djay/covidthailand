@@ -2,6 +2,7 @@
 from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
 from camelot.utils import validate_input
+from numpy import tril_indices_from
 import requests
 import tabula
 import os
@@ -1165,6 +1166,15 @@ def get_provinces():
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
     provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
+    provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
+    provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
+    provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
+    provinces.loc['กทม'] = provinces.loc['Bangkok']
+    provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
+    provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
+    #provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
+    #provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
+    #provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1198,7 +1208,7 @@ def get_provinces():
 PROVINCES = get_provinces()
 
 def get_province(prov, ignore_error=False):
-    prov = prov.strip().strip(".").replace(" ", "")
+    prov = prov.strip().strip(".").replace(" ", "").removeprefix("จ.")
     try:
         prov = PROVINCES.loc[prov]['ProvinceEn']
     except KeyError:
@@ -1216,18 +1226,31 @@ def get_province(prov, ignore_error=False):
     return prov
 
 def join_provinces(df, on):
-    return fuzzy_join(df, PROVINCES[["Health District Number"]], on, True)
+    trim = lambda x: x.removeprefix("จ.").strip(' .')
+    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
-def fuzzy_join(a,b, on, assert_perfect_match=False):
+def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
+    old_index = None
+    if on not in a.columns:
+        old_index = a.index.names
+        a = a.reset_index()
     first = a.join(b, on=on)
     test = list(b.columns)[0]
     unmatched = first[first[test].isnull() & first[on].notna()]
-    a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(x, b.index)),None), na_action="ignore")
-    second = first.combine_first(a.join(b, on="fuzzy_match"))
-    del a["fuzzy_match"]
-    unmatched2 = second[second[test].isnull() & second[on].notna()]
-    if assert_perfect_match:
-        assert unmatched2.empty, f"Still some values left unmatched {unmatched[on]}"
+    if unmatched.empty:
+        second = first
+    else:
+        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index)),None), na_action="ignore")
+        second = first.combine_first(a.join(b, on="fuzzy_match"))
+        del second["fuzzy_match"]
+        unmatched2 = second[second[test].isnull() & second[on].notna()]
+        if assert_perfect_match:
+            assert unmatched2.empty, f"Still some values left unmatched {list(unmatched2[on])}"
+    if replace_on_with is not None:
+        second[on] = second[replace_on_with]
+        del second[replace_on_with]
+    if old_index is not None:
+        second = second.set_index(old_index)
     return second
 
 
@@ -1238,7 +1261,8 @@ def get_cases_by_area_type():
     cases = cases.combine_first(twcases)
     dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
     # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
-    dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
+    #dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
+    dfprov = join_provinces(dfprov, on="Province")
     # Now we can save raw table of provice numbers
     export(dfprov, "cases_by_province")
 
@@ -1307,7 +1331,7 @@ def get_case_details_api():
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
-    cases = fuzzy_join(cases, PROVINCES[["Health District Number"]], "province_of_onset", True)
+    cases = join_provinces(cases, "province_of_onset")
     case_areas = pd.crosstab(cases['Date'],cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     return case_areas
@@ -1586,17 +1610,17 @@ def get_cases_by_prov_tweets():
                 raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
             if "proactive" in label:
                 proactive.update(dict(((date,k),v) for k,v in prov.items()))
-                proactive[(date,"All")] = total                                  
+                #proactive[(date,"All")] = total                                  
             elif "walk-in" in label:
                 walkins.update(dict(((date,k),v) for k,v in prov.items()))
-                walkins[(date,"All")] = total
+                #walkins[(date,"All")] = total
             else:
                 raise Exception()
     # Add in missing data
     date = d("2021-03-01")
-    p = {"All":36, "Pathum Thani": 35, "Nonthaburi": 1}
+    p = {"Pathum Thani": 35, "Nonthaburi": 1} # "All":36, 
     proactive.update(((date,k),v) for k,v in p.items())
-    w = {"All":28, "Samut Sakhon": 19, "Tak": 3, "Nakhon Pathom": 2, "Bangkok":2, "Chonburi": 1, "Ratchaburi": 1}
+    w = {"Samut Sakhon": 19, "Tak": 3, "Nakhon Pathom": 2, "Bangkok":2, "Chonburi": 1, "Ratchaburi": 1} # "All":28, 
     walkins.update(((date,k),v) for k,v in w.items())
                 
     cols = ["Date", "Province", "Cases Walkin", "Cases Proactive"]
@@ -1949,7 +1973,7 @@ def briefing_deaths(file, date, pages):
             df['Date'] = date
             df['gender'] = df['gender'].map(parse_gender) # TODO: handle mispelling
             df = df.set_index("death_num")
-            #df = join_provinces(df, "province") # TODO:
+            df = join_provinces(df, "Province")
             all = all.append(df, verify_integrity=True)
             # parts = [l.get_text() for l in soup.find_all("p")]
             # parts = [l for l in parts if l]
@@ -2118,6 +2142,7 @@ def export(df, name, csv_only=False):
 
 USE_CACHE_DATA = True and os.path.exists("api/combined")
 def scrape_and_combine():
+    
     if not USE_CACHE_DATA:
         cases_by_area = get_cases_by_area()
         cases_demo = get_cases_by_demographics_api()
@@ -3069,6 +3094,21 @@ def save_plots(df):
     plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
     plt.tight_layout()
     plt.savefig("deaths_age_3.png")
+
+    cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["2021-04-01":].plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Covid Deaths by health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("deaths_by_area_3.png")
 
 
 if __name__ == "__main__":
