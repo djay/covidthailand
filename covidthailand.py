@@ -2164,16 +2164,17 @@ def get_vaccinations():
             continue
         lines = [l.strip() for l in page.split('\n') if l.strip()]
         shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ)")
-        if date > d("2021-03-22"):
-            preamble, *rest = split(lines, shots.search)
+        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+        #if date > d("2021-03-22"):
+        preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
             #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
             #    continue
-        else:
-            preamble, *rest = split(lines, oldhead.search)
-        for heading, lines in pairwise(rest):
-            headings = len(shots.findall(heading[0]))
-            table = {10:"given", 6:"alloc"}.get(headings, "old_given" if oldhead.search(heading[0]) else None)
+        # else:
+        #     preamble, *rest = split(lines, oldhead.search)
+        for headings, lines in pairwise(rest):
+            shot_count = max(len(shots.findall(h)) for h in headings)
+            oh_count = max(len(oldhead.findall(h)) for h in headings)
+            table = {10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
             if not table:
                 continue
             added = 0
