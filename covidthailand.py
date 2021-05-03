@@ -2426,12 +2426,19 @@ AREA_LEGEND = [
 ]
 
 def human_format(num, pos):
+    pp = num/69630000*100
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
     # add more suffixes if you need them
-    return '%.1f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
+    suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
+    return f'{num:.1f}{suffix}/{pp:.1f}%'
+
+def thaipop(num, pos):
+    pp = num/69630000*100
+    num = num/1000000
+    return f'{num:.1f}M/{pp:.1f}%'
 
 
 def rearrange(l, *first):
@@ -3277,28 +3284,29 @@ def save_plots(df):
 
 
     fig, ax = plt.subplots(figsize=[20, 10])
-    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
     #ax.get_yaxis().get_major_formatter().set_useOffset(False)
     #ax.get_yaxis().get_major_formatter().set_scientific(False)
     #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
     cols = [c for c in df.columns if str(c).startswith("Vac Group")]
+    leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Dose 1").replace("2", "Dose 2")
+    cols.sort(key=lambda c: leg(c)[-1]+leg(c)) # put 2nd shot at end
     # some missing data. should be able to fill it in
-    df["2020-12-16":][cols].interpolate().plot.area(
+    df["2021-02-16":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
-        colormap="Paired",
+        colormap="Set3",
         title='Thailand Vaccinations by Groups\n'
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
-    leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Shot 1").replace("2", "Shot 2")
     ax.legend([leg(c) for c in cols])
     plt.tight_layout()
     plt.savefig("outputs/vac_groups_2.png")
 
     cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
-    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
     df["2021-02-16":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
@@ -3313,7 +3321,7 @@ def save_plots(df):
 
     cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
-    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
     df["2021-02-16":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
