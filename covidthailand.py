@@ -2280,14 +2280,14 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = True and os.path.exists("api/combined")
+USE_CACHE_DATA = True and os.path.exists("api/combined.csv")
 def scrape_and_combine():
     
     if not USE_CACHE_DATA:
+        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         cases_demo = get_cases_by_demographics_api()
         hospital = get_hospital_resources()
-        vac = get_vaccinations()
 
         situation = get_situation()
 
