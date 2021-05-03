@@ -105,7 +105,15 @@ The data is updated daily with most data changing around midday once the governm
 - Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
 
 # Vaccinations
-![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vaccinations_shots_2.png))
+
+## Vacciations by Priority Groups
+
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vac_groups_3.png))
+- Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
+
+## Vacciations by Health District
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vac_areas_s2_3.png))
+![Vaccinations in Thailand]((https://github.com/djay/covidthailand/wiki/vac_areas_s1_3.png))
 - Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
 
 # Downloads

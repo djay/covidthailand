@@ -29,6 +29,7 @@ def TODAY(): return datetime.datetime.today()
 from itertools import tee, islice, compress, cycle
 import camelot
 import difflib
+from matplotlib.ticker import FuncFormatter
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -2146,7 +2147,7 @@ def any_in(target, *matches):
 
 def area_crosstab(df, col, suffix):
     given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
-    given_by_area_2 = pd.crosstab(given_2['Date'],given_2['Health District Number'])
+    given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
     given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
     return given_by_area_2
 
@@ -2219,16 +2220,16 @@ def get_vaccinations():
         "Vac Given 1 %",
         "Vac Given 2 Cum",
         "Vac Given 2 %",
-        "Vac Group Medical 1 Cum",
-        "Vac Group Medical 2 Cum",
-        "Vac Group Frontline 1 Cum",
-        "Vac Group Frontline 2 Cum",
-        "Vac Group Over60 1 Cum",
-        "Vac Group Over60 2 Cum",
-        "Vac Group Disease 1 Cum",
-        "Vac Group Disease 2 Cum",
-        "Vac Group RiskArea 1 Cum",
-        "Vac Group RiskArea 2 Cum",
+        "Vac Group Medical Staff 1 Cum",
+        "Vac Group Medical Staff 2 Cum",
+        "Vac Group Other Frontline Staff 1 Cum",
+        "Vac Group Other Frontline Staff 2 Cum",
+        "Vac Group Over 60 1 Cum",
+        "Vac Group Over 60 2 Cum",
+        "Vac Group Risk: Disease 1 Cum",
+        "Vac Group Risk: Disease 2 Cum",
+        "Vac Group Risk: Location 1 Cum",
+        "Vac Group Risk: Location 2 Cum",
     ]).set_index(["Date", "Province"])
     alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
         "Date",
@@ -2243,7 +2244,7 @@ def get_vaccinations():
 
     # Do cross check we got the same number of allocations to vaccination
     counts = all_vac.groupby("Date").count()
-    missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group RiskArea 2 Cum']]
+    missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group Risk: Location 2 Cum']]
     # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
     missing_data = missing_data["2021-04-09":]
     # 2021-05-02 2021-05-01 - use images for just one table??
@@ -2423,6 +2424,14 @@ AREA_LEGEND = [
     "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
     "13: C: Bangkok",
 ]
+
+def human_format(num, pos):
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    # add more suffixes if you need them
+    return '%.1f%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
 
 def rearrange(l, *first):
@@ -3249,7 +3258,7 @@ def save_plots(df):
     )
     plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
     plt.tight_layout()
-    plt.savefig("deaths_age_3.png")
+    plt.savefig("outputs/deaths_age_3.png")
 
     cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
     #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
@@ -3264,14 +3273,17 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("deaths_by_area_3.png")
+    plt.savefig("outputs/deaths_by_area_3.png")
 
 
     fig, ax = plt.subplots(figsize=[20, 10])
+    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    #ax.get_yaxis().get_major_formatter().set_useOffset(False)
+    #ax.get_yaxis().get_major_formatter().set_scientific(False)
     #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
     cols = [c for c in df.columns if str(c).startswith("Vac Group")]
     # some missing data. should be able to fill it in
-    df["2020-12-12":][cols].interpolate().plot.area(
+    df["2020-12-16":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
         colormap="Paired",
@@ -3279,9 +3291,40 @@ def save_plots(df):
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
+    leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Shot 1").replace("2", "Shot 2")
+    ax.legend([leg(c) for c in cols])
     plt.tight_layout()
-    plt.savefig("vac_groups_2.png")
+    plt.savefig("outputs/vac_groups_2.png")
 
+    cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Vaccinations (1st Shot) by Health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/vac_areas_s1_3.png")
+
+    cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    ax.yaxis.set_major_formatter(FuncFormatter(human_format))
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Fully Vaccinatated (2nd Shot) by Health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/vac_areas_s2_3.png")
 
 if __name__ == "__main__":
     df = scrape_and_combine()
