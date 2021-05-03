@@ -2780,7 +2780,7 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("outputs/cases_types_all.png")
 
-    cols = [c for c in df.columns if "Age " in str(c)]
+    cols = [c for c in df.columns if str(c).startswith("Age ")]
     for c in cols:
         df[f"{c} (MA)"] = df[c].rolling(7).mean()
     macols = [f"{c} (MA)" for c in cols]
@@ -2832,7 +2832,7 @@ def save_plots(df):
     title="Thailand Covid Cases by Risk\n"\
         f"Updated: {TODAY().date()}\n"\
         "https://github.com/djay/covidthailand"
-    cols = [c for c in df.columns if "Risk: " in str(c)]
+    cols = [c for c in df.columns if str(c).startswith("Risk: ")]
     cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )
     # TODO: take out unknown
     df['Risk: Investigating'] = df['Cases'].sub(df[cols].sum(axis=1, skipna=False), fill_value=0).add(df['Risk: Investigating'], fill_value=0).clip(lower=0)
@@ -3302,7 +3302,7 @@ def save_plots(df):
     )
     ax.legend([leg(c) for c in cols])
     plt.tight_layout()
-    plt.savefig("outputs/vac_groups_2.png")
+    plt.savefig("outputs/vac_groups_3.png")
 
     cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
