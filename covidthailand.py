@@ -2167,11 +2167,11 @@ def scrape_and_combine():
     print(df)
 
     if USE_CACHE_DATA:
-        old = pd.read_json(
-            "api/combined",
+        old = pd.read_csv(
+            "api/combined.csv",
             #date_format="iso",
             #indent=3,
-            orient="records",
+            #orient="records",
         )
         old['Date'] = pd.to_datetime(old['Date'])
         old = old.set_index("Date")
@@ -2179,7 +2179,7 @@ def scrape_and_combine():
 
         return df
     else:
-        export(df, "combined")
+        export(df, "combined", csv_only=True)
         return df
 
 

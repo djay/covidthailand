@@ -56,9 +56,15 @@ The data is updated daily with most data changing around midday once the governm
 
 # Deaths
 
-## Age Range of Thailand Covid Deaths
 
-![Thailand Covid Death Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
+## Covid Deaths by Health District
+
+![Thailand Covid Deaths by Health District](https://github.com/djay/covidthailand/wiki/deaths_by_area_3.png)
+
+
+## Covid Deaths Age Range
+
+![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
 
 # Testing
 
@@ -220,26 +226,27 @@ Bureau, Chaeng Watthana"
 ## Deaths by Province
 - Source 
    - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
-- e.g
-      "Date":"2021-04-27"
-      "death_num":149.0,
-      "gender":"Male",
-      "nationality":"\u0e44\u0e17\u0e22",
-      "age":47.0,
-      "Province":"Bangkok",
-      "congenital_disease":"\u0e04\u0e27\u0e32\u0e21\u0e14\u0e31\u0e19\u0e42\u0e25\u0e2b\u0e34\u0e15\u0e2a\u0e39\u0e07",
-      "case_history":"19 \u0e40\u0e21.\u0e22. \u0e21\u0e35\u0e44\u0e2d \u0e40\u0e2a\u0e21\u0e2b\u0e30 \u0e40\u0e08\u0e47\u0e1a\u0e04\u0e2d \n24 \u0e40\u0e21.\u0e22. \u0e1e\u0e1a\u0e40\u0e0a\u0e37\n\u0e49\u0e2d \u0e41\u0e25\u0e30\u0e40\u0e2a\u0e35\u0e22\u0e0a\u0e35\u0e27\u0e34\u0e15",
-      "risk_factor_sickness":"\u0e0d\u0e32\u0e15\u0e34\u0e21\u0e32\u0e40\u0e22\u0e35\n\u0e48\u0e22\u0e21\n\u0e08\u0e32\u0e01\u0e15\u0e48\u0e32\u0e07\u0e08\u0e31\u0e07\u0e2b\u0e27\u0e31\u0e14",
-      "risk_factor_death":"\u0e42\u0e23\u0e04\u0e1b\u0e23\u0e30\u0e08 \u0e32\u0e15\u0e31\u0e27",
+   - e.g
+      - "Date":"2021-04-27"
+      - "death_num":149.0,
+      - "gender":"Male",
+      - "nationality":"\u0e44\u0e17\u0e22",
+      - "age":47.0,
+      - "Province":"Bangkok"
+    - Following information is extracted by not properly parsed yet
+      - "congenital_disease":
+      - "case_history":
+      - "risk_factor_sickness":
+      - "risk_factor_death":
 - Notes:
-  - Stopped being published 2021-04-28
+  - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
 # Combined
 
 - Source: 
   - All of the above
   - plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/combined), [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
+- Downloads: [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
   - See all of the above for data definitions
 
 # Other sources of data
