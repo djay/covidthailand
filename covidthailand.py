@@ -2228,7 +2228,7 @@ def get_vaccinations():
         "Vac Group Disease 2 Cum",
         "Vac Group RiskArea 1 Cum",
         "Vac Group RiskArea 2 Cum",
-    ]).set_index("Date", "Province")
+    ]).set_index(["Date", "Province"])
     alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
         "Date",
         "Province",
@@ -2236,16 +2236,16 @@ def get_vaccinations():
         "Vac Allocated Sinovac 2",
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
-    ]).set_index("Date", "Province")
-    df = df.combine_first(alloc) # TODO: pesky 2021-04-26
-    export(df, "vaccinations", csv_only=True)
-    df = df.join(PROVINCES['Health District Number'], on="Province")
-    thaivac = df.groupby("Date").sum()
+    ]).set_index(["Date", "Province"])
+    all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
+    export(all_vac, "vaccinations", csv_only=True)
+    thaivac = all_vac.groupby("Date").sum()
     thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
+    all_vac = join_provinces(all_vac, on="Province")
     # Get vaccinations by district
-    given_by_area_1 = area_crosstab(df, 'Vac Given 1', ' Cum')
-    given_by_area_2 = area_crosstab(df, 'Vac Given 2', ' Cum')
+    given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
+    given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
 
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
     #thaivac = thaivac.combine_first(cum2daily(thaivac))
@@ -2269,13 +2269,13 @@ def export(df, name, csv_only=False):
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
     if not csv_only:
         df.to_json(
-            f"api/{name}",
+            os.path.join("api",name),
             date_format="iso",
             indent=3,
             orient="records",
         )
     df.to_csv(
-        f"api/{name}.csv",
+        os.path.join("api",f"{name}.csv"),
         index=False 
     )
 
