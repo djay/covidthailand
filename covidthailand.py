@@ -3254,7 +3254,7 @@ def save_plots(df):
     ####################
 
     fig, ax = plt.subplots(figsize=[20, 10])
-    df['Deaths Age Median (MA)'] = df['Deaths Age Median (MA)'].rolling("3d").mean()
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling("3d").mean()
     df["2021-04-01":].plot.line(
         ax=ax,
         y=["Deaths Age Max", "Deaths Age Median (MA)", "Deaths Age Min"],
