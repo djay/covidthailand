@@ -4,7 +4,7 @@ Thailand testing and case data gathered and combined from various sources for ot
 
 The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
 
-## [Cases](#cases) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](#downloads)
+## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads)
 
 
 # Cases
@@ -54,6 +54,17 @@ The data is updated daily with most data changing around midday once the governm
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
 
+# Deaths
+
+
+## Covid Deaths by Health District
+
+![Thailand Covid Deaths by Health District](https://github.com/djay/covidthailand/wiki/deaths_by_area_3.png)
+
+
+## Covid Deaths Age Range
+
+![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
 
 # Testing
 
@@ -250,12 +261,30 @@ Bureau, Chaeng Watthana"
    - 1/2 refers to shot 1 or shot 2.
    - #TODO: put in thai group explanations.
 
+## Deaths by Province
+- Source 
+   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - e.g
+      - "Date":"2021-04-27"
+      - "death_num":149.0,
+      - "gender":"Male",
+      - "nationality":"\u0e44\u0e17\u0e22",
+      - "age":47.0,
+      - "Province":"Bangkok"
+    - Following information is extracted by not properly parsed yet
+      - "congenital_disease":
+      - "case_history":
+      - "risk_factor_sickness":
+      - "risk_factor_death":
+- Notes:
+  - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
+
 # Combined
 
 - Source: 
   - All of the above
   - plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/combined), [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
+- Downloads: [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
   - See all of the above for data definitions
 
 # Other sources of data
