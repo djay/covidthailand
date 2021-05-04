@@ -2482,7 +2482,7 @@ def cleanup_df_ages(df_all: pd.DataFrame, ages_cols: list) -> pd.DataFrame:
 
 def plot_area(df, name, prefix, title, unknown_name='Unknown', unknown_total=None, percent_fig=False, ma=False, 
               cm='tab20'):
-    cols = [c for c in df.columns if prefix in str(c)]
+    cols = [c for c in df.columns if c.startswith(prefix)]
     if ma:
         for c in cols:
             df[f'{c} (MA)'] = df[c].rolling('7d').mean()
@@ -2536,7 +2536,7 @@ def plot_area(df, name, prefix, title, unknown_name='Unknown', unknown_total=Non
             a1.set_ylabel("Percent")
             a1.xaxis.label.set_visible(False)
         plt.tight_layout()
-        plt.savefig(f"{name}_{suffix}.png")
+        plt.savefig(f"outputs/{name}_{suffix}.png")
 
 
 def save_plots(df):
@@ -2862,53 +2862,53 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("outputs/cases_types_all.png")
 
-    cols = [c for c in df.columns if str(c).startswith("Age ")]
-    for c in cols:
-        df[f"{c} (MA)"] = df[c].rolling(7).mean()
-    macols = [f"{c} (MA)" for c in cols]
-    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    for c in cols:
-        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
-    perccols = [f"{c} (%)" for c in cols]
-    title="Thailand Covid Cases by Age\n"\
-        f"Updated: {TODAY().date()}\n"\
-        "(7 day rolling average)\n" \
-        "https://github.com/djay/covidthailand"
-
-    f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
-    df["2020-12-12":].plot(
-        ax=a0,
-        y=macols+['Age Unknown'],
-        kind="area",
-        colormap="summer",
-        title=title,
-    )
-    a0.set_ylabel("Cases")
-    a0.xaxis.label.set_visible(False)
-    df["2020-12-12":].plot(
-        ax=a1,
-        y=perccols,
-        kind="area",
-        colormap="summer",
-#        title=title,
-        #figsize=[20, 5]
-        legend=False,
-        #title="Thailand Covid Cases by Age (%)"
-    )
-    a1.set_ylabel("Percent")
-    a1.xaxis.label.set_visible(False)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_ages_2.png")
-
-    df.plot(
-        ax=ax,
-        y=cols+['Age Unknown'],
-        kind="area",
-        colormap="summer",
-        title=title
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_ages_all.png")
+#     cols = [c for c in df.columns if str(c).startswith("Age ")]
+#     for c in cols:
+#         df[f"{c} (MA)"] = df[c].rolling(7).mean()
+#     macols = [f"{c} (MA)" for c in cols]
+#     df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+#     for c in cols:
+#         df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
+#     perccols = [f"{c} (%)" for c in cols]
+#     title="Thailand Covid Cases by Age\n"\
+#         f"Updated: {TODAY().date()}\n"\
+#         "(7 day rolling average)\n" \
+#         "https://github.com/djay/covidthailand"
+#
+#     f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+#     df["2020-12-12":].plot(
+#         ax=a0,
+#         y=macols+['Age Unknown'],
+#         kind="area",
+#         colormap="summer",
+#         title=title,
+#     )
+#     a0.set_ylabel("Cases")
+#     a0.xaxis.label.set_visible(False)
+#     df["2020-12-12":].plot(
+#         ax=a1,
+#         y=perccols,
+#         kind="area",
+#         colormap="summer",
+# #        title=title,
+#         #figsize=[20, 5]
+#         legend=False,
+#         #title="Thailand Covid Cases by Age (%)"
+#     )
+#     a1.set_ylabel("Percent")
+#     a1.xaxis.label.set_visible(False)
+#     plt.tight_layout()
+#     plt.savefig("outputs/cases_ages_2.png")
+#
+#     df.plot(
+#         ax=ax,
+#         y=cols+['Age Unknown'],
+#         kind="area",
+#         colormap="summer",
+#         title=title
+#     )
+#     plt.tight_layout()
+#     plt.savefig("outputs/cases_ages_all.png")
 
     plot_area(
         df, 
