@@ -2521,7 +2521,7 @@ def save_plots(df):
         title="Thailand PCR Tests and PUI\n"
         "(7 day rolling mean. Test totals exclude some proactive testing)\n"
         f"Checked: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(
         [
@@ -2544,7 +2544,7 @@ def save_plots(df):
         title="PCR Tests and PUI in Thailand\n"
         "(7 day rolling mean. Excludes some proactive test)\n"
         f"Checked: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
         y=[
             'Tested Cum', 
             "Tested PUI Cum", 
@@ -2579,7 +2579,7 @@ def save_plots(df):
         title="Positive Rate: Is enough testing happening?\n"
         "(7 day rolling mean)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     df.plot(
         ax=ax,
@@ -2613,7 +2613,7 @@ def save_plots(df):
         title="Positive Rate: Is enough testing happening?\n"
         "(7 day rolling mean)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     df["2020-12-12":].plot(
         ax=ax,
@@ -2675,7 +2675,7 @@ def save_plots(df):
         title="Thailand Tests per Confirmed Case\n" 
         "(7 day rolling mean)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(
         [
@@ -2735,7 +2735,7 @@ def save_plots(df):
         title="Positive Test results compared to Confirmed Cases\n"
         "(7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(
         [
@@ -2764,7 +2764,7 @@ def save_plots(df):
         title="Positive Test results compared to Confirmed Cases\n"
         "(7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     plt.tight_layout()
     plt.savefig("outputs/cases_all.png")
@@ -2780,7 +2780,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Thailand Covid Cases by Test Type\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     plt.tight_layout()
     plt.savefig("outputs/cases_types.png")
@@ -2796,7 +2796,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Thailand Covid Cases by Symptoms\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     plt.tight_layout()
     plt.savefig("outputs/cases_sym.png")
@@ -2811,7 +2811,7 @@ def save_plots(df):
         figsize=[20, 10],
         title="Thailand Covid Cases by Test Type\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     plt.tight_layout()
     plt.savefig("outputs/cases_types_all.png")
@@ -2827,7 +2827,7 @@ def save_plots(df):
     title="Thailand Covid Cases by Age\n"\
         f"Updated: {TODAY().date()}\n"\
         "(7 day rolling average)\n" \
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
 
     f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
     df["2020-12-12":].plot(
@@ -2867,7 +2867,7 @@ def save_plots(df):
 
     title="Thailand Covid Cases by Risk\n"\
         f"Updated: {TODAY().date()}\n"\
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
     cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )
     # TODO: take out unknown
@@ -2913,7 +2913,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title="PCR Tests by Health District\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2931,7 +2931,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title="PCR Positive Test Results by Health District\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2959,7 +2959,7 @@ def save_plots(df):
         title="PCR Tests by Thailand Health District\n"
         "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -2976,7 +2976,7 @@ def save_plots(df):
         title="PCR Tests by Thailand Health District\n"
         "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -3003,7 +3003,7 @@ def save_plots(df):
         title="Positive PCR Tests by Thailand Health District\n"
         "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -3020,7 +3020,7 @@ def save_plots(df):
         title="Positive PCR Tests by Thailand Health District\n"
         "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -3061,7 +3061,7 @@ def save_plots(df):
         title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
         "(excludes some proactive tests, 7 day rolling average)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
@@ -3079,7 +3079,7 @@ def save_plots(df):
         title="Positive Rate by Health Area in proportion to Thailand Positive Rate\n"
         "(excludes some proactive tests)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -3099,7 +3099,7 @@ def save_plots(df):
         title="Health Districts with the highest Positive Rate\n"
         "(excludes some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -3113,7 +3113,7 @@ def save_plots(df):
         title="Health Districts with the highest Positive Rate\n"
         "(excludes some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -3136,7 +3136,7 @@ def save_plots(df):
         title="Health Districts with the highest Cases/Tests\n"
         "(excludes some proactive tests)\n"
         f"Updated: {TODAY().date()}\n"
-        "https://github.com/djay/covidthailand",
+        "djay.github.io/covidthailand",
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
@@ -3156,7 +3156,7 @@ def save_plots(df):
     title="Thailand Covid Cases by Health District\n" \
         "(7 day rolling average)\n" \
         f"Updated: {TODAY().date()}\n" \
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
 
     cols = rearrange(cols,*FIRST_AREAS)
     fig, ax = plt.subplots()
@@ -3209,7 +3209,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title='Thailand "Walkin" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -3223,7 +3223,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title='Thailand "Proactive" Covid Cases by health District\n'
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -3243,7 +3243,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title='Which districts have more cases than positive results\n'
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
@@ -3267,7 +3267,7 @@ def save_plots(df):
         title='Thailand Active Covid Cases\n'
         "(Severe, field, respirator only avaiable from 2021-04-24 onwards)"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend([
         "On Respirator",
@@ -3302,7 +3302,7 @@ def save_plots(df):
         title='Thailand Covid Death Age Range\n'
         "(7d rolling averge)\n"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
     plt.tight_layout()
@@ -3317,7 +3317,7 @@ def save_plots(df):
         colormap=AREA_COLOURS,
         title='Thailand Covid Deaths by health District\n'
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
@@ -3340,7 +3340,7 @@ def save_plots(df):
         title='Thailand Vaccinations by Groups\n'
         "(% of 2 doses per Thai population)\n"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend([leg(c) for c in cols])
     plt.tight_layout()
@@ -3356,7 +3356,7 @@ def save_plots(df):
         title='Thailand Vaccinations (1st Shot) by Health District\n'
         "(% per population)\n"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
@@ -3372,7 +3372,7 @@ def save_plots(df):
         title='Thailand Fully Vaccinatated (2nd Shot) by Health District\n'
         "(% population full vaccinated)\n"
         f"Updated: {TODAY().date()}\n"        
-        "https://github.com/djay/covidthailand"
+        "djay.github.io/covidthailand"
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()

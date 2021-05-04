@@ -4,6 +4,7 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 
 ## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
 
+*Note* Now available full page at https://djay.github.io/covidthailand
 # Cases
 
 ## Cases by Health District
@@ -298,6 +299,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 ## Contributors
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
+- [Submit or contribute: Github](https://github.com/djay/covidthailand/issues)
 
 ## Other sources of visualisations/Data for Thailand
 
@@ -350,3 +352,5 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - work out if can incorporate province wealth
   - https://data.go.th/dataset/http-mis-m-society-go-th-tab030104-php
   - maybe for vaccinations or positive rate?
+
+<a href="https://github.com/djay/covidthailand"><img loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_white_ffffff.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a>
