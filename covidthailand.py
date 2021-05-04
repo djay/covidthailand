@@ -29,6 +29,7 @@ import json
 from pytwitterscraper import TwitterScraper
 def TODAY(): return datetime.datetime.today()
 from itertools import tee, islice, compress, cycle
+import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
 
