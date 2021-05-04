@@ -74,16 +74,16 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 - [Enough testing is happening if positive rate is < %3](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) (not tests per population), however this works only if everyone who might have covid is equally likely to get tested. This has changed over time in thailand.
 - *NOTE* Cases/3*PUI seems to give an esitmate of positive rate (when proactive testing is low) so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
 - [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity.png) 
-- *WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#dl-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
-- [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which could make Thailands positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) during times of high proactive testing. You could argue excluding proactive testing gives a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling.
+- This postitive rate is based on [DMSC: Thailand Laboratory testing data](#dl-testing). In the [Daily MOPH Situation Reports](#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). 
+- [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which has previously made Thailands positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) during times of high proactive testing. However excluding proactive testing mayb give a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling of the general population.
 - [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inversed) could be easier to understand.
-- Sources: [Daily situation Reports](#dl-situation-reports), [DMSC: Thailand Laboratory testing data](#dl-testing)
+- Sources: [DMSC: Thailand Laboratory testing data](#dl-testing), [Daily situation Reports](#dl-situation-reports)
 
 ## PCR Tests in Thailand by day
 
 ![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
 
-- Tests and PUI numbers don't seem to include all proactive tests so the actual tests could be higher. see [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
+- Note, In the past Thailand seems to have confirmed some cases from proactive testing without using PCR tests which makes the number of tests publishd lower than it might be.  see [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
 - Sources: [Daily situation Reports](#dl-situation-reports), [DMSC: Thailand Laboratory testing data](#dl-testing)
 
 ## PCR Tests by Health District
@@ -298,6 +298,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 ## Contributors
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
+
 ## Other sources of visualisations/Data for Thailand
 
 - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases) - best way to compare against other countries
@@ -327,9 +328,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 
 ## TODO (looking for contributors!)
 - Fix unknowns to make more clear
-  - e.g. risks should be "under investigation" or just don't show for data no collected yet?
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
-- put hospitalisation data into situation_reports export rather than cases_by_area
 - find historical source for mild vs severe hospitalisations
 - get source for sym/asym for latest cases
   - stopped being put in briefings

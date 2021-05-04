@@ -1835,7 +1835,27 @@ def briefing_case_types(date, pages):
         else:
             hospital, field, severe, respirator, hospitalised = [None]*5
 
-        rows.append([date, cases, walkins, proactive, imported, hospital, field, severe, respirator, hospitalised])
+        # cases by region
+        # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
+        # north, _ = get_next_number(text, "ภาคเหนือ") 
+        # south, _ = get_next_number(text, "ภาคใต้")
+        # east, _ = get_next_number(text, "ภาคตะวันออก")
+        # central, _ = get_next_number(text, "ภาคกลาง")
+        # all_regions = north+south+east+central
+        # assert hospitalised == all_regions, f"Regional hospitalised {all_regions} != {hospitalised}"
+
+        rows.append([
+            date, 
+            cases, 
+            walkins, 
+            proactive, 
+            imported, 
+            hospital, 
+            field, 
+            severe, 
+            respirator, 
+            hospitalised,
+        ])
         break
     df = pd.DataFrame(rows, columns=[
         "Date", 
@@ -2307,14 +2327,15 @@ def export(df, name, csv_only=False):
 
 USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
-    cases_demo = get_cases_by_demographics_api()
-    
+    cases_by_area = get_cases_by_area()
+    situation = get_situation()
     if not USE_CACHE_DATA:
+        
+        cases_demo = get_cases_by_demographics_api()
         vac = get_vaccinations()
-        cases_by_area = get_cases_by_area()
+        
         hospital = get_hospital_resources()
 
-        situation = get_situation()
 
         #print(cases_by_area)
         #print(situation)
@@ -3269,12 +3290,17 @@ def save_plots(df):
     ####################
 
     fig, ax = plt.subplots(figsize=[20, 10])
-    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling("3d").mean()
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling("7d").mean()
+    df['Deaths Age Min (MA)'] = df['Deaths Age Min'].rolling("7d").mean()
+    df['Deaths Age Max (MA)'] = df['Deaths Age Max'].rolling("7d").mean()
+    ax.set_ylim(bottom=0,top=100)
     df["2021-04-01":].plot.line(
         ax=ax,
-        y=["Deaths Age Max", "Deaths Age Median (MA)", "Deaths Age Min"],
-        colormap="tab20",
+        y=["Deaths Age Max", "Deaths Age Median", "Deaths Age Min"],
+        colormap="tab10",
+        linewidth=5,
         title='Thailand Covid Death Age Range\n'
+        "(7d rolling averge)\n"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
