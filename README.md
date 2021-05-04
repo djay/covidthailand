@@ -1,11 +1,8 @@
 # Covidthailand: Thailand Covid testing stats
 
-Thailand testing and case data gathered and combined from various sources for others to download and use.
+Thailand Covid case/test/vaccination data gathered and combined from various government sources for others to download and use. Updated between 11:30-12:30 daily [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). 
 
-The data is updated daily with most data changing around midday once the government daily briefing has been uploaded [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). Want to know how to do similar data collection and analysis? Watch the [Thailand Python Meetup where I explained how I did this](https://www.facebook.com/watch/live/?v=2890282134582879&ref=search) (1h mark).
-
-## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads)
-
+## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
 
 # Cases
 
@@ -16,16 +13,16 @@ The data is updated daily with most data changing around midday once the governm
 - [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 - You can also see [Cases by District broken down by walkin vs proactive](#cases-by-type-and-province) but there is no longer a data source to keep this updated.
-- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
-  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
+- Sources: [CCSA Daily Briefing](#dl-briefings),
+  [MOPH daily situation report](#dl-situation-reports)
 
 ## Cases by test type
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
  - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 - Contact tracing normally counts as a "Walkin"
 - Proactive tests are normally done on specific high risk locations
-- Sources: [CCSA Daily Briefing](#cases-by-type-and-province),
-  [MOPH daily situation report](#cases-types-and-pui-counts-daily-situation-reports)
+- Sources: [CCSA Daily Briefing](#dl-briefings),
+  [MOPH daily situation report](#dl-situation-reports)
 
 ## Cases by Risk Group
 
@@ -52,7 +49,7 @@ The data is updated daily with most data changing around midday once the governm
 - Break down of active case status only available from 2020-04-24 onwards.
 - ```Hospitilised Other``` is everyone after they are a confirmed case once you take out recovered and those that died. This means it includes those confirmed that are yet to find a bed (isolating at home). There is currently no data source for actual hospital beds occupied.
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](#dl-briefings) - 12pm each day
 
 # Deaths
 
@@ -60,11 +57,13 @@ The data is updated daily with most data changing around midday once the governm
 ## Covid Deaths by Health District
 
 ![Thailand Covid Deaths by Health District](https://github.com/djay/covidthailand/wiki/deaths_by_area_3.png)
+- source: [CCSA Daily Briefing ](#dl-briefings)
 
 
 ## Covid Deaths Age Range
 
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
+- Source: [CCSA Daily Briefing ](#dl-briefings) 
 
 # Testing
 
@@ -78,14 +77,14 @@ The data is updated daily with most data changing around midday once the governm
 - *WARNING* - Many people incorrectly take a number labeled as ```Total number of laboratory tests``` from the [Daily MOPH Situation Reports](#cases-types-and-pui-counts-daily-situation-reports) as the number of tests. [```Total number of laboratory tests``` is mislablled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). The true number of tests per day is often 3 times higher. If someone is using this incorrect number to determine a positive rate then they will get a incorrect rate higher than reality. 
 - [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which could make Thailands positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed). You could argue excluding proactive testing gives a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling.
 - [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inversed) could be easier to understand.
-- Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
+- Sources: [Daily situation Reports](#dl-situation-reports), [DMSC: Thailand Laboratory testing data](#dl-testing)
 
 ## PCR Tests in Thailand by day
 
 ![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests.png)
 
 - Tests and PUI numbers don't seem to include all proactive tests so the actual tests could be higher. see [Understanding Thailands Covid Positive Rate](https://github.com/djay/covidthailand/wiki)
-- Sources: [Daily situation Reports](#cases-types-and-pui-counts-daily-situation-reports), [DMSC: Thailand Laboratory testing data](#tests-privatepublic)
+- Sources: [Daily situation Reports](#dl-situation-reports), [DMSC: Thailand Laboratory testing data](#dl-testing)
 
 ## PCR Tests by Health District
 
@@ -93,7 +92,7 @@ The data is updated daily with most data changing around midday once the governm
 
 - [Tests by health area: Full Year](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
-- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
+- Source: [DMSC: Thailand Laboratory testing data](#dl-testing)
 ## Positive Rate by Health District
 
 ![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
@@ -102,36 +101,40 @@ The data is updated daily with most data changing around midday once the governm
 - [Proportion of positive rate contributed by health districts](https://raw.githubusercontent.com/wiki/djay/covidthailand/positivity_area_2.png)
 - Gives an indication of which areas are doing less testing compared to cases.
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
-- Source: [DMSC: Thailand Laboratory testing data](#tests-by-health-area)
+- Source: [DMSC: Thailand Laboratory testing data](#dl-testing)
 
 # Vaccinations
 
 ## Vacciations by Priority Groups
 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
-- Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
+- Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 ## Vacciations by Health District
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_areas_s2_3.png)
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_areas_s1_3.png)
-- Source: [DDC Daily Vaccination Reports](#daily-vaccination-reports)
+- Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 # Downloads
 
 ## Disclaimer
 - Some data sources are missing days or numbers (e.g. situation reports and tests)
 - Some are scraped from text and the code to do this might not be perfect
-- Some are translations where mistypings have happened
+- Some are translations where mistypings have happened. Some manual corrections are included
 - I take no responsibility for the accuracy of this data.
 
-## Daily Tests Private+Public
-
-![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
-![Private and Public Positive Tests](https://github.com/djay/covidthailand/wiki/tests.png)
+## Testing Data <a name="dl-testing"> 
 
 - Source: 
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
-   -  Latest [Thailand_COVID-19_testing_data-update.xlsx](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom of page) (updated weekly but sparodic)
+
+![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
+![Private and Public Positive Tests](https://github.com/djay/covidthailand/wiki/tests.png)
+![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
+![PCR Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
+![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area.png)
+
+### Daily Tests Private+Public
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
    - Date: e.g "2021-04-06"
    - Tests: PCR tests
@@ -146,17 +149,8 @@ The data is updated daily with most data changing around midday once the governm
   - The Test XLS data includes a number tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
   should be the same numbers as ```Pos``` and ```Tests```. 
 
-## Tests by Health District  
+### Tests by Health District  
 
-![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
-
-![PCR Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
-
-![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area.png)
-
-
-- Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
    - Start: e.g "2021-04-06"
    - End: e.g "2021-04-13"
@@ -168,16 +162,17 @@ The data is updated daily with most data changing around midday once the governm
   - There is missing files so some weeks data are not shown
   - The example graphs shown have been extrapolated using daily totals from the test daily data
 
-## Cases Types and PUI counts (Daily Situation Reports)
+## Daily Situation Reports <a name="dl-situation-reports">
+Cases Types and PUI counts
+
+- Sources: 
+  - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
+  - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php)) (Updated a few days later)
+  - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Todays PUI count
 
 ![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
 ![Case Types](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 
-
-- Source: 
-  - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
-  - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php)) (Updated a few days later)
-  - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Todays PUI count
 
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports), [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
   - Date: e.g "2021-04-06"
@@ -212,16 +207,18 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitized
 
-# Cases by province by case type
+## Daily CCSA Briefings <a name="dl-briefings">
+- Sources 
+   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
+
 ![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 ![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
 ![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
 ![Cases by symptoms by Health Area](https://github.com/djay/covidthailand/wiki/cases_sym.png)
 
-- Source: 
-   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
-   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
+### Cases/Deaths per province
 - Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
   - "Date": e.g "2021-04-06"
   - "Province": e.g "Samut Sakhon"
@@ -230,7 +227,8 @@ Bureau, Chaeng Watthana"
   - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid. *No longer updated*
   - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
-- Downloads summary by health district [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
+### Cases/Deaths per Health District
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - Date: e.g "2021-04-06"
   - Cases Area {1-13}: Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
   - Cases Proactive Area {1-13}: Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
@@ -238,40 +236,8 @@ Bureau, Chaeng Watthana"
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
-# Daily Vaccination Reports
-- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
-- [Download JSON](https://github.com/djay/covidthailand/wiki/vaccinations), [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
-- e.g.
-```
-      "Date":"2021-04-25",
-      "Province":"Mae Hong Son",
-      "Vaccinations Allocated Sinovac 1":3840.0,
-      "Vaccinations Allocated Sinovac 2":3840.0,
-      "Vaccinations Allocated AstraZeneca 1":0.0,
-      "Vaccinations Allocated AstraZeneca 2":0.0,
-      "Vaccinations Given 1 Cum":3189.0,
-      "Vaccinations Given 1 %":83.0,
-      "Vaccinations Given 2 Cum":37.0,
-      "Vaccinations Given 2 %":1.0,
-      "Vaccinations Medical 1 Cum":1939.0,
-      "Vaccinations Medical 2 Cum":19.0,
-      "Vaccinations Frontline 1 Cum":1081.0,
-      "Vaccinations Frontline 2 Cum":18.0,
-      "Vaccinations Over60 1 Cum":0.0,
-      "Vaccinations Over60 2 Cum":0.0,
-      "Vaccinations Disease 1 Cum":54.0,
-      "Vaccinations Disease 2 Cum":0.0,
-      "Vaccinations RiskArea 1 Cum":115.0,
-      "Vaccinations RiskArea 2 Cum":0.0
-```
-- Note
-   - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
-   - 1/2 refers to shot 1 or shot 2.
-   - #TODO: put in thai group explanations.
-
-## Deaths by Province
-- Source 
-   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+### Deaths by Province
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/deaths), [Download CSV](https://github.com/djay/covidthailand/wiki/deaths.csv)
    - e.g
       - "Date":"2021-04-27"
       - "death_num":149.0,
@@ -287,16 +253,50 @@ Bureau, Chaeng Watthana"
 - Notes:
   - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
-# Combined
+## Daily DDC Vaccination Reports <a name="dl-vac">
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
+- e.g.
+```
+      "Date":"2021-04-25",
+      "Province":"Mae Hong Son",
+      "Vaccinations Allocated Sinovac {1|2}":3840.0,
+      "Vaccinations Allocated AstraZeneca {1|2}":0.0,
+      "Vaccinations Given {1|2} Cum":3189.0,
+      "Vaccinations Given {1|2} %":83.0,
+      "Vaccinations Group Medical Staff {1|2} Cum":1939.0,
+      "Vaccinations Group Other Frontline Staff {1|2} Cum":1081.0,
+      "Vaccinations Group Over 60 {1|2} Cum":0.0,
+      "Vaccinations Group Risk: Disease {1|2} Cum":54.0,
+      "Vaccinations Group Risk: Location {1|2} Cum":115.0,
+```
+- Note
+   - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
+   - 1/2 refers to shot 1 or shot 2.
+   - Some days some tables are images so there is missing data. 
+   - Summary vaccination data included in the combine download
+   - #TODO: put in thai group explanations.
 
+
+## Combined <a name="dl-combined">
 - Source: 
   - All of the above
   - plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
 - Downloads: [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
   - See all of the above for data definitions
 
-# Other sources of data
-## Thailand
+# About
+
+Made with python/pandas/matplotlib. Dylan Jay gave a talk on how easy it is to extract data from PDFs
+and powerpoints and plot data at [Bangkok's Monthly ThaiPy Event](https://www.meetup.com/en-AU/ThaiPy-Bangkok-Python-Meetup) [Video: "How I scraped Thailands covid data" (1h mark)](https://www.facebook.com/watch/live/?v=2890282134582879)
+
+Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and others.
+
+## Contributors
+- [Dylan Jay](https://github.com/djay)
+- [Vincent](https://github.com/flyingvince)
+## Other sources of visualisations/Data for Thailand
+
   - [Pete Scully: COVID-19 Thailand Public Data](https://petescully.co.uk/research/covid19-thailand-dashboards/) for added visulisations and comparisons
   - [Stefano Starita](https://twitter.com/DrSteStarita) - more excellent analysis and visualisations
   - Gov news feeds
@@ -304,10 +304,10 @@ Bureau, Chaeng Watthana"
     - [Thai Government PR: FB](https://www.facebook.com/thailandprd),
     - [Ministry of Health: Twitter](https://twitter.com/thaimoph), 
     - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
-  - [MOPH GIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322)
+  - [MOPH GIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322) - PUI + worldwide covid stats
   - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
 
-# Change log
+## Change log
 - 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
@@ -320,7 +320,7 @@ Bureau, Chaeng Watthana"
 - 2021-04-12 - Put in "unknown area" for tests and cases by district so totals are correct
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
-# TODO (looking for contributors!)
+## TODO (looking for contributors!)
 - Fix unknowns to make more clear
   - e.g. risks should be "under investigation" or just don't show for data no collected yet?
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
