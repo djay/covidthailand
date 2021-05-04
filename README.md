@@ -128,11 +128,11 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 - Source: 
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sparodic)
 
-![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png)
-![Private and Public Positive Tests](https://github.com/djay/covidthailand/wiki/tests.png)
-![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png)
-![PCR Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png)
-![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area.png)
+![Private and Public Positive Test Results](https://github.com/djay/covidthailand/wiki/cases.png | width=200)
+![Private and Public Positive Tests](https://github.com/djay/covidthailand/wiki/tests.png | width=200)
+![Positive Test Results by health area](https://github.com/djay/covidthailand/wiki/pos_area_daily.png | width=200)
+![PCR Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily.png | width=200)
+![Positive Rate by Health District in overall positive rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area.png | width=200)
 
 ### Daily Tests Private+Public
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
@@ -170,8 +170,8 @@ Cases Types and PUI counts
   - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php)) (Updated a few days later)
   - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Todays PUI count
 
-![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png)
-![Case Types](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
+![PUI from situation reports](https://github.com/djay/covidthailand/wiki/tested_pui.png) | width=200
+![Case Types](https://github.com/djay/covidthailand/wiki/cases_types_all.png | width=200)
 
 
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports), [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
@@ -213,10 +213,10 @@ Bureau, Chaeng Watthana"
    - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
-![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
-![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png)
-![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png)
-![Cases by symptoms by Health Area](https://github.com/djay/covidthailand/wiki/cases_sym.png)
+![Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_all.png | width=200)
+![Walkin Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png | width=200)
+![Proactive Cases by Health Area](https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png | width=200)
+![Cases by symptoms by Health Area](https://github.com/djay/covidthailand/wiki/cases_sym.png | width=200)
 
 ### Cases/Deaths per province
 - Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
@@ -294,19 +294,21 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 
 ## Contributors
 - [Dylan Jay](https://github.com/djay)
-- [Vincent](https://github.com/flyingvince)
+- [Vincent Casagrande](https://github.com/flyingvince)
 ## Other sources of visualisations/Data for Thailand
 
-  - [Pete Scully: COVID-19 Thailand Public Data](https://petescully.co.uk/research/covid19-thailand-dashboards/) for added visulisations and comparisons
-  - [Stefano Starita](https://twitter.com/DrSteStarita) - more excellent analysis and visualisations
-  - Gov news feeds
-    - [Thai Gov Spokesman: FB](https://www.facebook.com/ThaigovSpokesman), 
-    - [Thai Government PR: FB](https://www.facebook.com/thailandprd),
-    - [Ministry of Health: Twitter](https://twitter.com/thaimoph), 
-    - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
-  - [MOPH GIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322) - PUI + worldwide covid stats
-  - [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases)
-
+- [Our World in Data: Thailand Profile](https://ourworldindata.org/coronavirus/country/thailand?country=~THA#what-is-the-daily-number-of-confirmed-cases) - best way to compare against other countries
+- [Pete Scully: COVID-19 Thailand Public Data](https://petescully.co.uk/research/covid19-thailand-dashboards/) for added visulisations and comparisons
+- [Stefano Starita](https://twitter.com/DrSteStarita) - more excellent analysis and visualisations
+- [Richard Barrow](https://www.facebook.com/richardbarrowthailand) - maybe the fastest way to get covid updates in English
+- Thai Gov news feeds
+  - [Thai Gov Spokesman: FB](https://www.facebook.com/ThaigovSpokesman), 
+  - [Thai Government PR: FB](https://www.facebook.com/thailandprd),
+  - [Ministry of Health: Twitter](https://twitter.com/thaimoph), 
+  - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
+- [MOPH ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322) - PUI + worldwide covid stats
+- [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
+  
 ## Change log
 - 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
@@ -324,11 +326,6 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - Fix unknowns to make more clear
   - e.g. risks should be "under investigation" or just don't show for data no collected yet?
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
-- start collecting data on hospital capacity from
-  - https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?
-  - probably no access to historical data
-  - not sure yet how accurate it is or how often it changes
-  - will have to checkout wiki store of data or start new report to keep data storage.
 - put hospitalisation data into situation_reports export rather than cases_by_area
 - find historical source for mild vs severe hospitalisations
 - get source for sym/asym for latest cases
