@@ -1918,8 +1918,13 @@ def briefing_deaths(file, date, pages):
             province_count = {}
             for _, provinces, num in df[[0,1]].itertuples():
                 # len() < 2 because some stray modifier?
-                provs = [p for p in provinces.split() if len(p) > 1]
+                text_num, rest = get_next_number(provinces, remove=True)
+                provs = [p.strip("() ") for p in rest.split() if len(p) > 1 and p.strip("() ")]
                 num, _ = get_next_number(num)
+                if num is None and text_num is not None:
+                    num = text_num
+                elif num is None:
+                    raise Exception(f"No number of deaths found {date}: {text}")
                 province_count.update(dict((get_province(p),num) for p in provs))
             # Congenital disease / risk factor The severity of the disease
             congenital_disease = df[2][0]  # TODO: parse?
