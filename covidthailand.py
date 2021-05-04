@@ -1092,7 +1092,7 @@ def get_provinces():
     provinces.loc['ศรสีะเกษ'] = provinces.loc['Si Sa Ket']
     provinces.loc['ตรงั'] = provinces.loc['Trang']
     provinces.loc['พจิติร'] = provinces.loc['Phichit']
-    provinces.loc['ปตัตานี'] = provinces.loc['Phichit']
+    provinces.loc['ปตัตานี'] = provinces.loc['Pattani']
     provinces.loc['ชยันาท'] = provinces.loc['Chai Nat']
     provinces.loc['พทัลงุ'] = provinces.loc['Phatthalung']
     provinces.loc['มกุดาหาร'] = provinces.loc['Mukdahan']
@@ -2194,10 +2194,10 @@ def get_vaccinations():
                 if len(cols) < 5:
                     break
                 if NUM_OR_DASH.match(area):
-                    prov, *cols = cols
+                    thaiprov, *cols = cols
                 else:
-                    prov = area
-                prov = get_province(prov)
+                    thaiprov = area
+                prov = get_province(thaiprov)
                 numbers = parse_numbers(cols)
                 added += 1
                 if table=="alloc":
@@ -2206,7 +2206,7 @@ def get_vaccinations():
                     if len(numbers)==16:
                         allocSino, allocAZ, *numbers = numbers
                     assert len(numbers)==14
-                    assert (date,prov) not in vaccinations or numbers == vaccinations[(date,prov)]
+                    assert vaccinations.get((date,prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
                     vaccinations[(date,prov)] = numbers
                 elif table=="old_given":
                     alloc, target_num, given, perc, *rest = numbers
