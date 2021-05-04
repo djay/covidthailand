@@ -2482,7 +2482,7 @@ def cleanup_df_ages(df_all: pd.DataFrame, ages_cols: list) -> pd.DataFrame:
 
 def plot_area(df, name, prefix, title, unknown_name='Unknown', unknown_total=None, percent_fig=False, ma=False, 
               cm='tab20'):
-    cols = [c for c in df.columns if c.startswith(prefix)]
+    cols = [c for c in df.columns if str(c).startswith(prefix)]
     if ma:
         for c in cols:
             df[f'{c} (MA)'] = df[c].rolling('7d').mean()
