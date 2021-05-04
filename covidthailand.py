@@ -2168,6 +2168,7 @@ def get_vaccinations():
     for page, date , file in pages: # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"): #TODO: make go back later
             continue
+        date = date-datetime.timedelta(days=1) # TODO: get actual date from titles. maybe not always be 1 day delay
         lines = [l.strip() for l in page.split('\n') if l.strip()]
         shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
         oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
