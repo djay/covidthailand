@@ -2432,19 +2432,22 @@ AREA_LEGEND = [
 ]
 
 def human_format(num, pos):
-    pp = num/69630000*100
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
     # add more suffixes if you need them
     suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
-    return f'{num:.1f}{suffix}/{pp:.1f}%'
+    return f'{num:.1f}{suffix}'
 
 def thaipop(num, pos):
     pp = num/69630000*100
     num = num/1000000
-    return f'{num:.1f}M/{pp:.1f}%'
+    return f'{num:.1f}M / {pp:.1f}%'
+def thaipop2(num, pos):
+    pp = num/69630000/2*100
+    num = num/1000000
+    return f'{num:.1f}M / {pp:.1f}%'
 
 
 def rearrange(l, *first):
@@ -3290,7 +3293,7 @@ def save_plots(df):
 
 
     fig, ax = plt.subplots(figsize=[20, 10])
-    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop2))
     #ax.get_yaxis().get_major_formatter().set_useOffset(False)
     #ax.get_yaxis().get_major_formatter().set_scientific(False)
     #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
