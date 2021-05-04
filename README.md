@@ -101,8 +101,8 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 ![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
 - Shows which districts have the highest positive rate
 
-- [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked.png)
-- Gives an indication of which areas are doing less testing compared to cases.
+- see also [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked.png)
+
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#dl-testing)
 

@@ -2449,6 +2449,7 @@ def thaipop(num, pos):
     pp = num/69630000*100
     num = num/1000000
     return f'{num:.1f}M / {pp:.1f}%'
+
 def thaipop2(num, pos):
     pp = num/69630000/2*100
     num = num/1000000
@@ -3311,6 +3312,7 @@ def save_plots(df):
         y=cols,
         colormap="Set3",
         title='Thailand Vaccinations by Groups\n'
+        "(% of 2 doses per Thai population)\n"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
@@ -3326,6 +3328,7 @@ def save_plots(df):
         y=cols,
         colormap=AREA_COLOURS,
         title='Thailand Vaccinations (1st Shot) by Health District\n'
+        "(% per population)\n"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
@@ -3341,6 +3344,7 @@ def save_plots(df):
         y=cols,
         colormap=AREA_COLOURS,
         title='Thailand Fully Vaccinatated (2nd Shot) by Health District\n'
+        "(% population full vaccinated)\n"
         f"Updated: {TODAY().date()}\n"        
         "https://github.com/djay/covidthailand"
     )
