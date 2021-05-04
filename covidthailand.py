@@ -1323,7 +1323,12 @@ def get_case_details_csv():
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     #links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
     file, _ = next(web_files(*links, dir="json"))
-    cases = pd.read_csv(file)
+    if file.endswith(".xlsx"):
+        cases = pd.read_excel(file)
+    elif file.endswith(".csv"):
+        cases = pd.read_csv(file)
+    else:
+        raise Exception(f"Unknown filetype for covid19daily {file}")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
@@ -2302,11 +2307,11 @@ def export(df, name, csv_only=False):
 
 USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
-    vac = get_vaccinations()
+    cases_demo = get_cases_by_demographics_api()
     
     if not USE_CACHE_DATA:
+        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
-        cases_demo = get_cases_by_demographics_api()
         hospital = get_hospital_resources()
 
         situation = get_situation()
