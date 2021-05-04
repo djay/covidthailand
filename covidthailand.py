@@ -1,6 +1,9 @@
 # coding=utf8
+import pathlib
 from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
+from camelot.utils import validate_input
+from numpy import tril_indices_from
 import requests
 import tabula
 import os
@@ -17,6 +20,7 @@ import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
 from pptx import Presentation
+from tika.tika import parse
 from urllib3.util.retry import Retry
 import dateutil
 from requests.adapters import HTTPAdapter, Retry
@@ -26,6 +30,7 @@ from pytwitterscraper import TwitterScraper
 def TODAY(): return datetime.datetime.today()
 from itertools import tee, islice, compress, cycle
 import difflib
+from matplotlib.ticker import FuncFormatter
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -37,6 +42,11 @@ RETRY = Retry(
 s.mount("http://", HTTPAdapter(max_retries=RETRY))
 s.mount("https://", HTTPAdapter(max_retries=RETRY))
 
+def removeprefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    else:
+        return text
 
 ###############
 # Date helpers
@@ -75,16 +85,21 @@ THAI_FULL_MONTHS = [
 
 def file2date(file):
     file = os.path.basename(file)
-    date = file.rsplit(".pdf", 1)[0]
-    if "-" in date:
-        date = date.rsplit("-", 1).pop()
-    else:
-        date = date.rsplit("_", 1).pop()
-
-    date = datetime.datetime(
-        day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
-    )
-    return date
+    file,*_ = file.rsplit(".",1)
+    if m := re.search("\d{4}-\d{2}-\d{2}", file):
+        return d(m.group(0))
+    #date = file.rsplit(".pdf", 1)[0]
+    # if "-" in file:
+    #     date = file.rsplit("-", 1).pop()
+    # else:
+    #     date = file.rsplit("_", 1).pop()
+    if m := re.search("\d{6}", file):
+        # thai date in briefing filenames
+        date = m.group(0)
+        return datetime.datetime(
+            day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
+        )
+    return None
 
 
 def find_dates(content):
@@ -193,7 +208,15 @@ def parse_file(filename, html=False, paged=True):
     # Read PDF file
     data = parser.from_file(filename, xmlContent=True)
     xhtml_data = BeautifulSoup(data["content"], features="lxml")
+    if html and not paged:
+        return xhtml_data
     pages = xhtml_data.find_all("div", attrs={"class": ["page", "slide-content"]})
+    if not pages:
+        if not paged:
+            return repr(xhtml_data)
+        else:
+            return [repr(xhtml_data)]
+
     # TODO: slides are divided by slide-content and slide-master-content rather than being contained
     for i, content in enumerate(pages):
         # Parse PDF data using TIKA (xml/html)
@@ -294,14 +317,19 @@ def is_remote_newer(file, remote_date, check=True):
         return True
     return False
 
-def web_links(*index_urls, ext=".pdf", dir="html"):
+def web_links(*index_urls, ext=".pdf", dir="html", match=None):
+    is_ext = lambda a: len(a.get("href").rsplit(ext))==2 if ext else True
+    is_match = lambda a: a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
+            soup = parse_file(file, html=True, paged=False)
+            return (urllib.parse.urljoin(index_url, a.get('href')) 
+                for a in soup.find_all('a') if is_match(a))
             # if index.status_code > 399: 
             #     continue
-            links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
-            for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
-                yield link
+            #links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
+            #for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
+            #    yield link
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
@@ -1165,6 +1193,14 @@ def get_provinces():
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
     provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
+    provinces.loc['เพชรบรุี'] = provinces.loc['Phetchaburi']
+    provinces.loc['ปตัตำนี'] = provinces.loc['Pattani']
+    provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
+    provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
+    provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
+    provinces.loc['กทม'] = provinces.loc['Bangkok']
+    provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
+    provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1197,14 +1233,17 @@ def get_provinces():
 
 PROVINCES = get_provinces()
 
-def get_province(prov):
-    prov = prov.strip().strip(".").replace(" ", "")
+def get_province(prov, ignore_error=False):
+    prov = removeprefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     try:
         prov = PROVINCES.loc[prov]['ProvinceEn']
     except KeyError:
         try:
             close = difflib.get_close_matches(prov, PROVINCES.index)[0]
         except IndexError:
+            if ignore_error:
+                return None
+            else:
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 #continue
@@ -1212,17 +1251,32 @@ def get_province(prov):
 
     return prov
 
+def join_provinces(df, on):
+    trim = lambda x: removeprefix(x,"จ.").strip(' .')
+    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
-def fuzzy_join(a,b, on, assert_perfect_match=False):
+def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
+    old_index = None
+    if on not in a.columns:
+        old_index = a.index.names
+        a = a.reset_index()
     first = a.join(b, on=on)
     test = list(b.columns)[0]
     unmatched = first[first[test].isnull() & first[on].notna()]
-    a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(x, b.index)),None), na_action="ignore")
-    second = first.combine_first(a.join(b, on="fuzzy_match"))
-    del a["fuzzy_match"]
-    unmatched2 = second[second[test].isnull() & second[on].notna()]
-    if assert_perfect_match:
-        assert unmatched2.empty, f"Still some values left unmatched {unmatched[on]}"
+    if unmatched.empty:
+        second = first
+    else:
+        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index)),None), na_action="ignore")
+        second = first.combine_first(a.join(b, on="fuzzy_match"))
+        del second["fuzzy_match"]
+        unmatched2 = second[second[test].isnull() & second[on].notna()]
+        if assert_perfect_match:
+            assert unmatched2.empty, f"Still some values left unmatched {list(unmatched2[on])}"
+    if replace_on_with is not None:
+        second[on] = second[replace_on_with]
+        del second[replace_on_with]
+    if old_index is not None:
+        second = second.set_index(old_index)
     return second
 
 
@@ -1233,7 +1287,8 @@ def get_cases_by_area_type():
     cases = cases.combine_first(twcases)
     dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
     # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
-    dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
+    #dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
+    dfprov = join_provinces(dfprov, on="Province")
     # Now we can save raw table of provice numbers
     export(dfprov, "cases_by_province")
 
@@ -1302,7 +1357,7 @@ def get_case_details_api():
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
-    cases = fuzzy_join(cases, PROVINCES[["Health District Number"]], "province_of_onset", True)
+    cases = join_provinces(cases, "province_of_onset")
     case_areas = pd.crosstab(cases['Date'],cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
     return case_areas
@@ -1406,10 +1461,10 @@ def get_cases_by_demographics_api():
 
 def get_cases_by_area():
     # we will add in the tweet data for the export
-    case_tweets = get_cases_by_area_type()
-    case_areas = get_cases_by_area_api() # can be very wrong for the last days
+    case_briefings_tweets = get_cases_by_area_type()
+    case_api = get_cases_by_area_api() # can be very wrong for the last days
 
-    case_areas = case_tweets.combine_first(case_areas)
+    case_areas = case_briefings_tweets.combine_first(case_api)
 
     export(case_areas, "cases_by_area")
     
@@ -1538,12 +1593,19 @@ def get_cases_by_prov_tweets():
         if imported:
             assert imported, f"Failed to find imported in tweet {date}: {text}"
             imported = toint(imported.group(1))
+        else:
+            imported = None
         local = re.search("\+([0-9,]+) local", text)
         if local:
             assert local, f"Failed to find local in tweet {date}: {text}"
             local = toint(local.group(1))
-        cols = ["Date", "Cases Imported", "Cases Local Transmission"]
-        row = [date,imported,local]
+        else:
+            local = None
+        cases,_ = get_next_numbers(text, "Since January 2020")
+        cases = cases[0] if cases else None
+        
+        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum"]
+        row = [date, imported, local, cases]
         df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
 
     # get walkin vs proactive by area
@@ -1581,17 +1643,17 @@ def get_cases_by_prov_tweets():
                 raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
             if "proactive" in label:
                 proactive.update(dict(((date,k),v) for k,v in prov.items()))
-                proactive[(date,"All")] = total                                  
+                #proactive[(date,"All")] = total                                  
             elif "walk-in" in label:
                 walkins.update(dict(((date,k),v) for k,v in prov.items()))
-                walkins[(date,"All")] = total
+                #walkins[(date,"All")] = total
             else:
                 raise Exception()
     # Add in missing data
     date = d("2021-03-01")
-    p = {"All":36, "Pathum Thani": 35, "Nonthaburi": 1}
+    p = {"Pathum Thani": 35, "Nonthaburi": 1} # "All":36, 
     proactive.update(((date,k),v) for k,v in p.items())
-    w = {"All":28, "Samut Sakhon": 19, "Tak": 3, "Nakhon Pathom": 2, "Bangkok":2, "Chonburi": 1, "Ratchaburi": 1}
+    w = {"Samut Sakhon": 19, "Tak": 3, "Nakhon Pathom": 2, "Bangkok":2, "Chonburi": 1, "Ratchaburi": 1} # "All":28, 
     walkins.update(((date,k),v) for k,v in w.items())
                 
     cols = ["Date", "Province", "Cases Walkin", "Cases Proactive"]
@@ -1601,6 +1663,7 @@ def get_cases_by_prov_tweets():
     dfprov = pd.DataFrame(rows, columns=cols)
     index = pd.MultiIndex.from_frame(dfprov[['Date','Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
+    df = df.combine_first(cum2daily(df))
     return dfprov, df
 
 def seperate(seq, condition):
@@ -1782,10 +1845,12 @@ def briefing_case_types(date, pages):
         "Hospitalized Respirator",
         "Hospitalized",
     ]).set_index(['Date'])
-    print(df.to_string(header=False))
+    print("Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
-NUM_OR_DASH = re.compile("([0-9\,-]+)")
+NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
+parse_numbers = lambda lst: [float(i.replace(",","")) if i!="-" else 0 for i in lst]
+
 def briefing_province_cases(file, date, pages):
     if date < d("2021-01-13"):
         pages = []
@@ -1819,7 +1884,7 @@ def briefing_province_cases(file, date, pages):
                 # bangkok + subrubrs, resst of thailand
                 break
             prov = get_province(thai)
-            numbers = [float(i.replace(",","")) if i!="-" else 0 for i in numbers]
+            numbers = parse_numbers(numbers)
             numbers = numbers[1:-1] # last is total. first is previous days
             assert len(numbers) == 7
             for i, cases in enumerate(reversed(numbers)):
@@ -1838,28 +1903,176 @@ def briefing_province_cases(file, date, pages):
 
 
 
+parse_gender = lambda x: "Male" if "ชาย" in x else "Female"
+def briefing_deaths(file, date, pages):
+    # Only before the 2021-04-29
+    all = pd.DataFrame()
+    for i,soup in enumerate(pages):
+        text = soup.get_text()
+
+        if "ค่ามัธยฐานของอายุ" in text:
+            # Summary of locations, reasons, medium age, etc
+            tables = camelot.read_pdf(file, pages=str(i+2), process_background=True)
+            if len(tables)<2:
+                continue
+            df = tables[1].df
+            province_count = {}
+            for _, provinces, num in df[[0,1]].itertuples():
+                # len() < 2 because some stray modifier?
+                provs = [p for p in provinces.split() if len(p) > 1]
+                num, _ = get_next_number(num)
+                province_count.update(dict((get_province(p),num) for p in provs))
+            # Congenital disease / risk factor The severity of the disease
+            congenital_disease = df[2][0]  # TODO: parse?
+            # Risk factors for COVID-19 infection
+            risk_factors = df[3][0]
+            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", )
+            med_age, min_age, max_age, *_ = numbers
+            numbers, *_ = get_next_numbers(text, "ชาย")
+            male, female, *_ = numbers
+            
+            # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
+
+            # TODO: what if they have more than one page?
+            sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female]],
+                columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
+            ).set_index("Date")
+            dfprov = pd.DataFrame(((date,p,c) for p,c in province_count.items()),
+                columns=["Date", "Province", "Deaths"]
+            ).set_index(["Date", "Province"])
+            assert male+female == dfprov['Deaths'].sum()
+            print("Deaths:", sum.to_string(header=False, index=False))
+            return all, sum, dfprov
+
+        elif "วิตของประเทศไทย" not in text:
+            continue
+        orig = None
+        if date <= d("2021-04-19"):
+            cells = [soup.get_text()]
+        else:
+            # Individual case detail for death
+            orig = camelot.read_pdf(file, pages=str(i+2), process_background=True)[0].df
+            if len(orig.columns) != 11:
+                cells = [cell for r in orig.itertuples() for cell in r[1:] if cell]
+            else:
+                cells = []
+        if orig is None and not cells:
+            raise Exception(f"Couldn't parse deaths {date}")
+        elif cells:
+            # Older style, not row per death
+            rows = []
+            for cell in cells:
+                lines = [l for l in cell.split("\n") if l.strip()]
+                if "รายละเอียดผู้เสีย" in lines[0]:
+                    lines = lines[1:]
+                rest = '\n'.join(lines)
+                death_num, rest = get_next_number(rest, "รายที่", "รายที", remove=True)
+                age, rest = get_next_number(rest, "อายุ", "ผู้ป่ว", remove=True)
+                num_2ndwave, rest = get_next_number(rest, "ระลอกใหม่", remove=True)
+                numbers, _ = get_next_numbers(rest, "")
+                if age is not None and death_num is not None:
+                    pass
+                elif age:
+                    death_num, *_ = numbers
+                elif death_num:
+                    age, *_ = numbers
+                else:
+                    death_num, age, *_ = numbers
+                assert 1 < age < 110
+                assert 55 < death_num < 1500
+                #assert age > 20
+                gender = parse_gender(cell)
+                match = re.search("ขณะป่วย (\S*)", cell) # TODO: work out how to grab just province
+                if match:
+                    prov = match.group(1).replace("จังหวัด","")
+                    province = get_province(prov)
+                else:
+                    # handle province by itself on a line
+                    p = [get_province(word, True) for line in lines[:3] for word in line.split()]
+                    p = [pr for pr in p if pr]
+                    if p:
+                        province = p[0]
+                    else:
+                        raise Exception(f"no province found for death in: {cell}")
+                rows.append([float(death_num), date, gender, age, province, None, None, None, None, None])
+            df= pd.DataFrame(rows,
+                columns = ['death_num', "Date", "gender", "age", "Province", "nationality", "congenital_disease", "case_history", "risk_factor_sickness", "risk_factor_death" ]
+            ).set_index("death_num")
+            all = all.append(df, verify_integrity=True)
+            continue
+        elif orig is not None: # <= 2021-04-27
+            df = orig.drop(columns=[0,10])
+            df.columns = ['death_num', "gender", "nationality", "age", "Province", "congenital_disease", "case_history", "risk_factor_sickness", "risk_factor_death" ]
+            df['death_num'] = pd.to_numeric(df['death_num'], errors="coerce")
+            df['age'] = pd.to_numeric(df['age'], errors="coerce")
+            df = df.dropna(subset=["death_num"])
+            df['Date'] = date
+            df['gender'] = df['gender'].map(parse_gender) # TODO: handle mispelling
+            df = df.set_index("death_num")
+            df = join_provinces(df, "Province")
+            all = all.append(df, verify_integrity=True)
+            # parts = [l.get_text() for l in soup.find_all("p")]
+            # parts = [l for l in parts if l]
+            # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
+            # for header,lines in pairwise(tables):
+            #     _, *row_pairs = split(lines, re.compile("(\d+\s*(?:ชาย|หญิง))").search)
+            #     for first, rest in pairwise(row_pairs):
+            #         row = ' '.join(first) + ' '.join(rest)
+            #         case_num, age, *dates = get_next_numbers("")
+            #         print(row)
+    if all.empty:
+        print(f"Deaths: {date} None")
+        sum = pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
+            columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
+        ).set_index("Date")
+        dfprov = pd.DataFrame(columns=["Date","Province","Deaths"]).set_index(["Date","Province"])        
+    else:
+        print("Deaths: ",all.to_string(header=False, index=False))
+        # calculate daily summary stats
+        med_age, min_age, max_age = all['age'].median(), all['age'].min(), all['age'].max()
+        g = all['gender'].value_counts()
+        male,female = g.get('Male',0), g.get('Female',0)
+        sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
+            columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
+        ).set_index("Date")
+        dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
+    
+    # calculate per provice counts
+    return all, sum, dfprov
+
+
+
 def get_cases_by_prov_briefings():
     print("========Briefings==========")
     types = pd.DataFrame(columns=["Date",]).set_index(['Date',])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
+    deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13") #12th gets a bit messy but could be fixed
-    #start = d("2021-04-07")
     end = TODAY()
-    #end = d("2021-04-09")
     links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end,1))
-    links = reversed(list(links))
-    for file, text in web_files(*links, dir="briefings"):
+    for file, text in web_files(*reversed(list(links)), dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
         date = file2date(file)
-        df = briefing_case_detail(date, pages)
-        date_prov_types = date_prov_types.combine_first(df)
+
         today_types = briefing_case_types(date, pages)
         types = types.combine_first(today_types)
+
+        case_detail = briefing_case_detail(date, pages)
+        date_prov_types = date_prov_types.combine_first(case_detail)
+
         prov = briefing_province_cases(file, date, pages)
+
+        each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
+        deaths = deaths.append(each_death, verify_integrity=True)
+        date_prov = date_prov.combine_first(death_by_prov)
+        types = types.combine_first(death_sum)
+
         date_prov = date_prov.combine_first(prov)
+
+        # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
@@ -1870,6 +2083,8 @@ def get_cases_by_prov_briefings():
         # Phetchabun                  1.0 extra
     # ขอนแกน่ 12 missing
     # ชุมพร 1 missing
+
+    export(deaths, "deaths")
 
 
     if not date_prov_types.empty:
@@ -1912,29 +2127,148 @@ def get_hospital_resources():
 
     data = pd.DataFrame(rows).groupby("province").sum()
     data['Date'] = TODAY().date()
-    data['Date'] = pd.to_datetime(data['Date']).dt.date
-    data = data.reset_index().set_index("Date","province")
-    print(data.sum().to_string())
+    data['Date'] = pd.to_datetime(data['Date'])
+    data = data.reset_index().set_index(["Date","province"])
+    print("Active Cases:",data.sum().to_string(index=False, header=False))
     if os.path.exists("api/hospital_resources"):
         old = pd.read_csv(
             "api/hospital_resources.csv",
             #orient="records",
         )
-        old['Date'] = pd.to_datetime(old['Date']).dt.date
-        old = old.set_index("Date", "province")
+        old['Date'] = pd.to_datetime(old['Date'])
+        old = old.set_index(["Date", "province"])
         # TODO: seems to be dropping old data. Need to test
         data = add_data(old, data)
         #data = data.combine_first(old) # Overwrite todays data if called twice.
     export(data, "hospital_resources", csv_only=True)
     return data
 
+def any_in(target, *matches):
+    return any(m in target for m in matches)
+
+def area_crosstab(df, col, suffix):
+    given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
+    given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
+    given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
+    return given_by_area_2
+
 
 def get_vaccinations():
-    url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
+    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd", ext=None, match=re.compile("2564"))
+    links = (l for f in folders for l in web_links(f, ext=".pdf"))
+    #url = "https://ddc.moph.go.th/dcd/pagecontent.php?page=647&dept=dcd"
     # Just need the latest
-    file, text = next(web_files(*web_links(url), dir="vaccinations"))
-    #tables = tabula.read_pdf(file)
+    pages = ((page, file2date(f), f) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f) if file2date(f))
+    vaccinations = {}
+    allocations = {}
+    for page, date , file in pages: # TODO: vaccinations are the day before I think
+        if not date or date <= d("2021-01-01"): #TODO: make go back later
+            continue
+        lines = [l.strip() for l in page.split('\n') if l.strip()]
+        shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+        #if date > d("2021-03-22"):
+        preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
+            #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
+            #    continue
+        # else:
+        #     preamble, *rest = split(lines, oldhead.search)
+        for headings, lines in pairwise(rest):
+            shot_count = max(len(shots.findall(h)) for h in headings)
+            oh_count = max(len(oldhead.findall(h)) for h in headings)
+            table = {10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
+            if not table:
+                continue
+            added = 0
+            for line in lines:
+                area, *rest = line.split(' ', 1)
+                if area == "รวม" or not rest:
+                    break
+                if area in ["เข็มที่","และ"]: # Extra heading
+                    continue
+                cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
+                if len(cols) < 5:
+                    break
+                if NUM_OR_DASH.match(area):
+                    prov, *cols = cols
+                else:
+                    prov = area
+                prov = get_province(prov)
+                numbers = parse_numbers(cols)
+                added += 1
+                if table=="alloc":
+                    allocations[(date,prov)] = numbers[3:7]
+                elif table=="given":
+                    if len(numbers)==16:
+                        allocSino, allocAZ, *numbers = numbers
+                    assert len(numbers)==14
+                    assert (date,prov) not in vaccinations or numbers == vaccinations[(date,prov)]
+                    vaccinations[(date,prov)] = numbers
+                elif table=="old_given":
+                    alloc, target_num, given, perc, *rest = numbers
+                    medical, frontline, disease, elders, riskarea, *rest = rest
+                    unknown = sum(rest) # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
+                    vaccinations[(date,prov)] = [given, perc, 0, 0] + \
+                        [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
+                    allocations[(date,prov)] = [alloc,0,0,0]
+            assert added > 7
+            print(f"{date}: {table} Vaccinations: {added}")
+            continue
+    df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Given 1 Cum",
+        "Vac Given 1 %",
+        "Vac Given 2 Cum",
+        "Vac Given 2 %",
+        "Vac Group Medical Staff 1 Cum",
+        "Vac Group Medical Staff 2 Cum",
+        "Vac Group Other Frontline Staff 1 Cum",
+        "Vac Group Other Frontline Staff 2 Cum",
+        "Vac Group Over 60 1 Cum",
+        "Vac Group Over 60 2 Cum",
+        "Vac Group Risk: Disease 1 Cum",
+        "Vac Group Risk: Disease 2 Cum",
+        "Vac Group Risk: Location 1 Cum",
+        "Vac Group Risk: Location 2 Cum",
+    ]).set_index(["Date", "Province"])
+    alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Allocated Sinovac 1",
+        "Vac Allocated Sinovac 2",
+        "Vac Allocated AstraZeneca 1",
+        "Vac Allocated AstraZeneca 2",
+    ]).set_index(["Date", "Province"])
+    all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
+    export(all_vac, "vaccinations", csv_only=True)
 
+    # Do cross check we got the same number of allocations to vaccination
+    counts = all_vac.groupby("Date").count()
+    missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group Risk: Location 2 Cum']]
+    # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
+    missing_data = missing_data["2021-04-09":]
+    # 2021-05-02 2021-05-01 - use images for just one table??
+
+    thaivac = all_vac.groupby("Date").sum()
+    thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
+
+    # Get vaccinations by district
+    all_vac = join_provinces(all_vac, on="Province")
+    given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
+    given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
+    thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+
+    # Need to drop any dates that are incomplete.
+    # TODO: could keep allocations?
+    thaivac = thaivac.drop(index=missing_data.index)
+
+    #thaivac = thaivac.combine_first(cum2daily(thaivac))
+    #thaivac = thaivac.drop([c for c in thaivac.columns if " Cum" in c], axis=1)
+    # TODO: remove cumlutive and other stats we don't want
+
+    # TODO: only return some daily summary stats
+    return thaivac
 
 
 
@@ -1950,23 +2284,25 @@ def export(df, name, csv_only=False):
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
     if not csv_only:
         df.to_json(
-            f"api/{name}",
+            os.path.join("api",name),
             date_format="iso",
             indent=3,
             orient="records",
         )
     df.to_csv(
-        f"api/{name}.csv",
+        os.path.join("api",f"{name}.csv"),
         index=False 
     )
 
 
+USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
     vac = get_vaccinations()
-    cases_demo = get_cases_by_demographics_api()
-    hospital = get_hospital_resources()
+    
     if not USE_CACHE_DATA:
         cases_by_area = get_cases_by_area()
+        cases_demo = get_cases_by_demographics_api()
+        hospital = get_hospital_resources()
 
         situation = get_situation()
 
@@ -1980,17 +2316,17 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases', 'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo']:            
+    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
 
     if USE_CACHE_DATA:
-        old = pd.read_json(
-            "api/combined",
+        old = pd.read_csv(
+            "api/combined.csv",
             #date_format="iso",
             #indent=3,
-            orient="records",
+            #orient="records",
         )
         old['Date'] = pd.to_datetime(old['Date'])
         old = old.set_index("Date")
@@ -1998,7 +2334,7 @@ def scrape_and_combine():
 
         return df
     else:
-        export(df, "combined")
+        export(df, "combined", csv_only=True)
         return df
 
 
@@ -2089,6 +2425,21 @@ AREA_LEGEND = [
     "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
     "13: C: Bangkok",
 ]
+
+def human_format(num, pos):
+    pp = num/69630000*100
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    # add more suffixes if you need them
+    suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
+    return f'{num:.1f}{suffix}/{pp:.1f}%'
+
+def thaipop(num, pos):
+    pp = num/69630000*100
+    num = num/1000000
+    return f'{num:.1f}M/{pp:.1f}%'
 
 
 def rearrange(l, *first):
@@ -2196,6 +2547,9 @@ def save_plots(df):
     #plt.rcParams['legend.title_fontsize'] = 'small'
     plt.rc('legend',**{'fontsize':16})
 
+    # create directory if it does not exists
+    pathlib.Path("./outputs").mkdir(parents=True, exist_ok=True)
+
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2222,7 +2576,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("tests.png")
+    plt.savefig("outputs/tests.png")
 
 
     fig, ax = plt.subplots()
@@ -2246,7 +2600,7 @@ def save_plots(df):
         ],
     )
     plt.tight_layout()
-    plt.savefig("tested_pui.png")
+    plt.savefig("outputs/tested_pui.png")
 
 
     ###############
@@ -2291,7 +2645,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("positivity.png")
+    plt.savefig("outputs/positivity.png")
 
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
@@ -2333,7 +2687,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("positivity_2.png")
+    plt.savefig("outputs/positivity_2.png")
 
     df["PUI per Case"] = df["Tested PUI (MA)"].divide(df["Cases (MA)"]) 
     df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
@@ -2377,7 +2731,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("tests_per_case.png")
+    plt.savefig("outputs/tests_per_case.png")
 
 
     fig, ax = plt.subplots()
@@ -2405,7 +2759,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("positivity_all.png")
+    plt.savefig("outputs/positivity_all.png")
 
     ##################
     # Test Plots
@@ -2435,7 +2789,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("cases.png")
+    plt.savefig("outputs/cases.png")
 
     fig, ax = plt.subplots()
     df.plot(
@@ -2457,7 +2811,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand",
     )
     plt.tight_layout()
-    plt.savefig("cases_all.png")
+    plt.savefig("outputs/cases_all.png")
 
 
 
@@ -2474,7 +2828,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("cases_types.png")
+    plt.savefig("outputs/cases_types.png")
 
     cols = ["Cases Symptomatic","Cases Asymptomatic"]
     df['Cases Symptomatic Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
@@ -2490,7 +2844,7 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("cases_sym.png")
+    plt.savefig("outputs/cases_sym.png")
 
 
     fig, ax = plt.subplots()
@@ -2505,57 +2859,55 @@ def save_plots(df):
         "https://github.com/djay/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("cases_types_all.png")
+    plt.savefig("outputs/cases_types_all.png")
 
-    # cols = [c for c in df.columns if "Age " in str(c)]
-    # for c in cols:
-    #     df[f"{c} (MA)"] = df[c].rolling("7d").mean()
-    # macols = [f"{c} (MA)" for c in cols]
-    # df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    # for c in cols:
-    #     df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
-    # perccols = [f"{c} (%)" for c in cols]
-    # title="Thailand Covid Cases by Age\n"\
-    #     f"Updated: {TODAY().date()}\n"\
-    #     "(7 day rolling average)\n" \
-    #     "https://github.com/djay/covidthailand"
+    cols = [c for c in df.columns if str(c).startswith("Age ")]
+    for c in cols:
+        df[f"{c} (MA)"] = df[c].rolling(7).mean()
+    macols = [f"{c} (MA)" for c in cols]
+    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
+    for c in cols:
+        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
+    perccols = [f"{c} (%)" for c in cols]
+    title="Thailand Covid Cases by Age\n"\
+        f"Updated: {TODAY().date()}\n"\
+        "(7 day rolling average)\n" \
+        "https://github.com/djay/covidthailand"
 
-    # f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
-    # df_ages = cleanup_df_ages(df_all=df, ages_cols=list(set(cols + perccols + macols + ['Age Unknown'])))
+    f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+    df["2020-12-12":].plot(
+        ax=a0,
+        y=macols+['Age Unknown'],
+        kind="area",
+        colormap="summer",
+        title=title,
+    )
+    a0.set_ylabel("Cases")
+    a0.xaxis.label.set_visible(False)
+    df["2020-12-12":].plot(
+        ax=a1,
+        y=perccols,
+        kind="area",
+        colormap="summer",
+#        title=title,
+        #figsize=[20, 5]
+        legend=False,
+        #title="Thailand Covid Cases by Age (%)"
+    )
+    a1.set_ylabel("Percent")
+    a1.xaxis.label.set_visible(False)
+    plt.tight_layout()
+    plt.savefig("outputs/cases_ages_2.png")
 
-    # df_ages.plot(
-    #     ax=a0,
-    #     y=macols + ['Age Unknown'],
-    #     kind="area",
-    #     colormap=custom_cm('summer', len(macols) + 1, 'lightgrey', flip=True),
-    #     title=title,
-    # )
-    # a0.set_ylabel("Cases")
-    # a0.xaxis.label.set_visible(False)
-    # df_ages.plot(
-    #     ax=a1,
-    #     y=perccols,
-    #     kind="area",
-    #     colormap=custom_cm('summer', len(perccols), 'lightgrey', flip=True),
-    #     # title=title,
-    #     # figsize=[20, 5]
-    #     legend=False,
-    #     # title="Thailand Covid Cases by Age (%)"
-    # )
-    # a1.set_ylabel("Percent")
-    # a1.xaxis.label.set_visible(False)
-    # plt.tight_layout()
-    # plt.savefig("cases_ages_2.png")
-
-    # df_ages.plot(
-    #     ax=ax,
-    #     y=cols + ['Age Unknown'],
-    #     kind="area",
-    #     colormap=custom_cm('summer', len(cols) + 1, 'lightgrey', flip=True),
-    #     title=title
-    # )
-    # plt.tight_layout()
-    # plt.savefig("cases_ages_all.png")
+    df.plot(
+        ax=ax,
+        y=cols+['Age Unknown'],
+        kind="area",
+        colormap="summer",
+        title=title
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/cases_ages_all.png")
 
     plot_area(
         df, 
@@ -2571,7 +2923,7 @@ def save_plots(df):
     title="Thailand Covid Cases by Risk\n"\
         f"Updated: {TODAY().date()}\n"\
         "https://github.com/djay/covidthailand"
-    cols = [c for c in df.columns if "Risk: " in str(c)]
+    cols = [c for c in df.columns if str(c).startswith("Risk: ")]
     cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )
     # TODO: take out unknown
     df['Risk: Investigating'] = df['Cases'].sub(df[cols].sum(axis=1, skipna=False), fill_value=0).add(df['Risk: Investigating'], fill_value=0).clip(lower=0)
@@ -2584,7 +2936,7 @@ def save_plots(df):
         title=title
     )
     plt.tight_layout()
-    plt.savefig("cases_causes_2.png")
+    plt.savefig("outputs/cases_causes_2.png")
 
     df.plot(
         ax=ax,
@@ -2594,7 +2946,7 @@ def save_plots(df):
         title=title,
     )
     plt.tight_layout()
-    plt.savefig("cases_causes_all.png")
+    plt.savefig("outputs/cases_causes_all.png")
 
 
     ##########################
@@ -2621,7 +2973,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("tests_area.png")
+    plt.savefig("outputs/tests_area.png")
 
     cols = [f"Pos Area {area}" for area in range(1, 15)]
     fig, ax = plt.subplots()
@@ -2639,7 +2991,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("pos_area.png")
+    plt.savefig("outputs/pos_area.png")
 
 
     cols = [f"Tests Daily {area}" for area in range(1, 14)]
@@ -2667,7 +3019,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("tests_area_daily_2.png")
+    plt.savefig("outputs/tests_area_daily_2.png")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2684,7 +3036,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("tests_area_daily.png")
+    plt.savefig("outputs/tests_area_daily.png")
 
     cols = [f"Pos Daily {area}" for area in range(1, 14)]
     pos_cols = [f"Pos Area {area}" for area in range(1, 14)]
@@ -2711,7 +3063,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("pos_area_daily_2.png")
+    plt.savefig("outputs/pos_area_daily_2.png")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2728,7 +3080,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("pos_area_daily.png")
+    plt.savefig("outputs/pos_area_daily.png")
 
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -2769,7 +3121,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("positivity_area.png")
+    plt.savefig("outputs/positivity_area.png")
 
     fig, ax = plt.subplots()
     df.loc["2020-12-12":].plot(
@@ -2786,7 +3138,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("positivity_area_2.png")
+    plt.savefig("outputs/positivity_area_2.png")
 
 
     for area in range(1, 15):
@@ -2806,7 +3158,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("positivity_area_unstacked_2.png")
+    plt.savefig("outputs/positivity_area_unstacked_2.png")
     fig, ax = plt.subplots(figsize=[20, 10])
     df.plot.area(
         ax=ax,
@@ -2820,7 +3172,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("positivity_area_unstacked.png")
+    plt.savefig("outputs/positivity_area_unstacked.png")
 
 
     for area in range(1, 14):
@@ -2843,7 +3195,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("casestests_area_unstacked_2.png")
+    plt.savefig("outputs/casestests_area_unstacked_2.png")
 
     #########################
     # Case by area plots
@@ -2873,7 +3225,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("cases_areas_1.png")
+    plt.savefig("outputs/cases_areas_1.png")
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -2886,7 +3238,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("cases_areas_2.png")
+    plt.savefig("outputs/cases_areas_2.png")
 
     fig, ax = plt.subplots()
     df.plot(
@@ -2899,7 +3251,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("cases_areas_all.png")
+    plt.savefig("outputs/cases_areas_all.png")
 
 
     cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 15)],*FIRST_AREAS)
@@ -2916,7 +3268,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("cases_areas_walkins.png")
+    plt.savefig("outputs/cases_areas_walkins.png")
 
     cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 15)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
@@ -2930,7 +3282,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("cases_areas_proactive.png")
+    plt.savefig("outputs/cases_areas_proactive.png")
 
 
     for area in range(1, 14):
@@ -2950,7 +3302,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("cases_from_positives_area.png")
+    plt.savefig("outputs/cases_from_positives_area.png")
 
     ############
     # Hospital plots
@@ -2983,8 +3335,93 @@ def save_plots(df):
     #     colormap="tab20",
     # )
     plt.tight_layout()
-    plt.savefig("cases_active_2.png")
+    plt.savefig("outputs/cases_active_2.png")
 
+
+    ####################
+    # Deaths
+    ####################
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling("3d").mean()
+    df["2021-04-01":].plot.line(
+        ax=ax,
+        y=["Deaths Age Max", "Deaths Age Median (MA)", "Deaths Age Min"],
+        colormap="tab20",
+        title='Thailand Covid Death Age Range\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
+    plt.tight_layout()
+    plt.savefig("outputs/deaths_age_3.png")
+
+    cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
+    #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["2021-04-01":].plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Covid Deaths by health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/deaths_by_area_3.png")
+
+
+    fig, ax = plt.subplots(figsize=[20, 10])
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
+    #ax.get_yaxis().get_major_formatter().set_useOffset(False)
+    #ax.get_yaxis().get_major_formatter().set_scientific(False)
+    #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
+    cols = [c for c in df.columns if str(c).startswith("Vac Group")]
+    leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Dose 1").replace("2", "Dose 2")
+    cols.sort(key=lambda c: leg(c)[-1]+leg(c)) # put 2nd shot at end
+    # some missing data. should be able to fill it in
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap="Set3",
+        title='Thailand Vaccinations by Groups\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend([leg(c) for c in cols])
+    plt.tight_layout()
+    plt.savefig("outputs/vac_groups_3.png")
+
+    cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Vaccinations (1st Shot) by Health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/vac_areas_s1_3.png")
+
+    cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
+    df["2021-02-16":][cols].interpolate().plot.area(
+        ax=ax,
+        y=cols,
+        colormap=AREA_COLOURS,
+        title='Thailand Fully Vaccinatated (2nd Shot) by Health District\n'
+        f"Updated: {TODAY().date()}\n"        
+        "https://github.com/djay/covidthailand"
+    )
+    ax.legend(AREA_LEGEND)
+    plt.tight_layout()
+    plt.savefig("outputs/vac_areas_s2_3.png")
 
 if __name__ == "__main__":
 
