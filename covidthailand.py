@@ -3296,7 +3296,7 @@ def save_plots(df):
     ax.set_ylim(bottom=0,top=100)
     df["2021-04-01":].plot.line(
         ax=ax,
-        y=["Deaths Age Max", "Deaths Age Median", "Deaths Age Min"],
+        y=["Deaths Age Max", "Deaths Age Median (MA)", "Deaths Age Min"],
         colormap="tab10",
         linewidth=5,
         title='Thailand Covid Death Age Range\n'
