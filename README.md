@@ -45,7 +45,7 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 
 # Active Cases
 
-![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_active_2.png)
+![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - ```Hospitilised Other``` is everyone after they are a confirmed case once you take out recovered and those that died. This means it includes those confirmed that are yet to find a bed (isolating at home). There is currently no data source for actual hospital beds occupied.
@@ -232,13 +232,13 @@ Bureau, Chaeng Watthana"
      - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
      - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid. *No longer updated*
      - "Deaths": 31.0
-     
+
 ### Cases/Deaths per Health District
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - "Date": e.g "2021-04-06"
   - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
   - "Deaths":27.0,
-  - "Deaths Age {Min|Max}":92.0,
+  - "Deaths Age (Min|Max)":92.0,
   - "Deaths Age Median":66.0,
   - "Deaths Area {1-13}":3.0,  
   - "Hospitalized":30011.0,
@@ -249,7 +249,7 @@ Bureau, Chaeng Watthana"
   - The following are no longer updated but have some historical data
     - "Cases Proactive Area {1-13}": Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
     - "Cases Walkin Area {1-13}": Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-    - "Cases {Asymptomatic|Symptomatic}":null, - No longer reported in briefing reports
+    - "Cases (Asymptomatic|Symptomatic)":null, - No longer reported in briefing reports
 
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
@@ -343,6 +343,9 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- plot top 5 fully vaccinated provices
+- plot cumulative cases, recoveries, deaths
+   - maybe from different start points? like 3rd wave etc.
 - Fix unknowns to make more clear
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
 - find historical source for mild vs severe hospitalisations

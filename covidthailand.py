@@ -261,8 +261,8 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
         print(content)
     return [], content
 
-def get_next_number(content, *matches, default=None, remove=False):
-    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0)
+def get_next_number(content, *matches, default=None, remove=False, before=False):
+    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before)
     return num[0] if num else default, rest
 
 def slide2text(slide):
@@ -1835,6 +1835,9 @@ def briefing_case_types(date, pages):
         else:
             hospital, field, severe, respirator, hospitalised = [None]*5
 
+        recovered,_ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)")
+        assert recovered is not None
+
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
         # north, _ = get_next_number(text, "ภาคเหนือ") 
@@ -1855,6 +1858,7 @@ def briefing_case_types(date, pages):
             severe, 
             respirator, 
             hospitalised,
+            recovered,
         ])
         break
     df = pd.DataFrame(rows, columns=[
@@ -1868,6 +1872,7 @@ def briefing_case_types(date, pages):
         "Hospitalized Severe",
         "Hospitalized Respirator",
         "Hospitalized",
+        "Recovered",
     ]).set_index(['Date'])
     print("Briefing Cases:", df.to_string(header=False, index=False))
     return df
@@ -2327,10 +2332,13 @@ def export(df, name, csv_only=False):
 
 USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
-    cases_by_area = get_cases_by_area()
-    situation = get_situation()
-    if not USE_CACHE_DATA:
+    if USE_CACHE_DATA:
+        # Comment out what you don't need to run
+        cases_by_area = get_cases_by_area()
+    else:
+        cases_by_area = get_cases_by_area()
         
+        situation = get_situation()
         cases_demo = get_cases_by_demographics_api()
         vac = get_vaccinations()
         
@@ -2565,83 +2573,69 @@ def save_plots(df):
 
 
     df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
+    df["Positive Rate Public (MA)"] = (df["Pos Public"] / df["Tests Public"]).rolling("7d").mean() * 100
     df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
-
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df.plot(
-        ax=ax,
-        kind="line",
-        y=[
+    cols = [
             "Positivity Public+Private (MA)",
-        ],
-        linewidth=5,
-        title="Positive Rate: Is enough testing happening?\n"
-        "(7 day rolling mean)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    df.plot(
-        ax=ax,
-        y=[
             "Cases per Tests (MA)",
 #            "Positivity PUI (MA)",
             "Cases per PUI3",
-            "Positivity Walkins/PUI (MA)",
-        ],
-        colormap=plt.cm.Set1,
-    )
-    ax.legend(
-        [
+            #"Positivity Walkins/PUI (MA)",
+            "Positive Rate Public (MA)",
+        ]
+    un_ma = [
+            "Positivity XLS",
+        ]
+    legend =         [
             "Positive Rate: Share of PCR tests that are postitive ",
             "Share of PCR tests that have Covid",
 #            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
-            "Share of PUI that are Walkin Covid Cases",
+#            "Share of PUI that are Walkin Covid Cases",
+            "Share of Public PCR tests that have covid",
+            #"Positive Rate: without rolling average"
         ]
+    title = "Positive Rate: Is enough testing happening?\n" \
+        "(7 day rolling mean)\n" \
+        f"Updated: {TODAY().date()}\n" \
+        "djay.github.io/covidthailand" \
+    
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df.plot(
+        ax=ax,
+        kind="line",
+        y=cols[:1],
+        linewidth=5,
+        title=title,
     )
+    df.plot(
+        ax=ax,
+        y=cols[1:],
+        colormap=plt.cm.Set1,
+    )
+    ax.legend(legend)
     plt.tight_layout()
     plt.savefig("outputs/positivity.png")
 
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
         ax=ax,
-        y=[
-            "Positivity Public+Private (MA)",
-        ],
+        y=cols[:1],
         linewidth=5,
-        title="Positive Rate: Is enough testing happening?\n"
-        "(7 day rolling mean)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
+        title=title
     )
     df["2020-12-12":].plot(
         ax=ax,
-        y=[
-            "Cases per Tests (MA)",
-#            "Positivity PUI (MA)",
-            "Cases per PUI3",
-            "Positivity Walkins/PUI (MA)",
-        ],
+        y=cols[1:],
         colormap=plt.cm.Set1,
     )
-    df["2020-12-12":].plot(
-        ax=ax,
-        linestyle="--",
-        y=[
-            "Positivity XLS",
-        ],
-    )
-    ax.legend(
-        [
-            "Positive Rate: Share of PCR tests that are postitive ",
-            "Share of PCR tests that have Covid",
-#            "Share of PUI that have Covid",
-            "Share of PUI*3 that have Covid",
-            "Share of PUI that are Walkin Covid Cases",
-            "Positive Rate: without rolling average"
-        ]
-    )
+    # df["2020-12-12":].plot(
+    #     ax=ax,
+    #     linestyle="--",
+    #     y=un_ma,
+    # )
+    ax.legend(legend)
     plt.tight_layout()
     plt.savefig("outputs/positivity_2.png")
 
@@ -2716,6 +2710,34 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("outputs/positivity_all.png")
+
+
+    #################
+    # Public vs Private
+    ################
+
+    fig, ax = plt.subplots(figsize=[20, 10],)
+    df['Tests Private Ratio'] = (df["Tests Private"] / df["Tests Public"] ).rolling("7d").mean()
+    df['Tests Positive Private Ratio'] = (df["Pos Private"] / df["Pos Public"] ).rolling("7d").mean()
+    df['Positive Rate Private Ratio'] = (df["Pos Private"] / (df["Tests Private"] ) / (df["Pos Public"] / df["Tests Public"])).rolling("7d").mean()
+    df['PUI Private Ratio'] = (df["Tested PUI Walkin Private"] / df["Tested PUI Walkin Public"]).rolling("7d").mean()
+    df["2020-12-12":].plot(
+        ax=ax,
+        colormap="Set1",
+        y=[
+            'Tests Private Ratio',
+            'Tests Positive Private Ratio',
+            'PUI Private Ratio',
+            'Positive Rate Private Ratio',
+        ],
+        title="Testing Private Ratio\n" 
+        "(7 day rolling mean)\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand"
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/tests_public_ratio.png")
+
 
     ##################
     # Test Plots
@@ -3283,6 +3305,49 @@ def save_plots(df):
     # )
     plt.tight_layout()
     plt.savefig("outputs/cases_active_2.png")
+
+
+    # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["Recovered since 2021-04-01"] = df["2021-04-14":]['Recovered'].cumsum()
+    df["Died since 2021-04-01"] = df["2021-04-01":]['Deaths'].cumsum()
+    df["Cases since 2021-04-01"] = df["2021-04-01":]['Cases'].cumsum()
+    df["Other Active Cases"] = df['Cases since 2021-04-01'].sub(non_split, fill_value=0).sub(df["Recovered since 2021-04-01"], fill_value=0)
+
+    cols = [
+        "Died since 2021-04-01", 
+        "Hospitalized Respirator",
+        "Hospitalized Severe",
+        "In Hospital",
+        "Hospitalized Field",
+        "Recovered since 2021-04-01", 
+    ]
+    df["2021-04-01":].plot.line(
+        ax=ax,
+        y="Cases since 2021-04-01",
+        #colormap="tab20",
+    )
+    df["2021-04-01":].plot.area(
+        ax=ax,
+        y=cols,
+        colormap="tab20",
+        title='Current outcome of Covid Cases since 1st April 2021\n'
+        f"Updated: {TODAY().date()}\n"        
+        "djay.github.io/covidthailand"
+    )
+    ax.legend([
+        "Deaths from cases since 1st April", 
+        "On Ventilator",
+        "In severe condition",
+        "Other Active cases",
+        "In Field Hospital",
+        "Recovered from cases since 1st April",
+        "Cases since 1st April" 
+    ])
+
+    plt.tight_layout()
+    plt.savefig("outputs/cases_cumulitive_3.png")
+
 
 
     ####################
