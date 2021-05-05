@@ -1231,10 +1231,13 @@ def get_provinces():
     # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
 
     # Add in population data
-    popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
-    file, _ = next(web_files(popurl, dir="json", check=False))
-    #pop = pd.read_excel(file)
+    #popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
+    popurl = "https://en.wikipedia.org/wiki/Provinces_of_Thailand"
+    file, _ = next(web_files(popurl, dir="html", check=False))
+    pop = pd.read_html(file)[2]
+    pop = pop.join(provinces, on="Name(in Thai)").set_index("ProvinceEn").rename(columns={"Population (2019)[1]":"Population"})
 
+    provinces = provinces.join(pop["Population"], on="ProvinceEn")
 
     return provinces
 
@@ -2344,7 +2347,8 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
+        pass
     else:
         cases_by_area = get_cases_by_area()
         
@@ -3452,6 +3456,17 @@ def save_plots(df):
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
     plt.savefig("outputs/vac_areas_s2_3.png")
+
+
+    # Top 5 vaccine rollouts
+    vac = pd.read_csv("api/vaccinations.csv")
+    vac = vac.join(PROVINCES["Population"], on="Province")
+    vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
+    vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
+    #vac = vac.set_index(["Date","Province"])
+    top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 1")['Province']
+
+
 
 if __name__ == "__main__":
     df = scrape_and_combine()
