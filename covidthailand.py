@@ -2289,7 +2289,6 @@ def get_vaccinations():
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
     all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
-    export(all_vac, "vaccinations", csv_only=True)
 
     # Do cross check we got the same number of allocations to vaccination
     counts = all_vac.groupby("Date").count()
@@ -2297,6 +2296,9 @@ def get_vaccinations():
     # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
     missing_data = missing_data["2021-04-09":]
     # 2021-05-02 2021-05-01 - use images for just one table??
+
+    all_vac = all_vac.drop(index=missing_data.index)
+    export(all_vac, "vaccinations", csv_only=True)
 
     thaivac = all_vac.groupby("Date").sum()
     thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
@@ -2309,7 +2311,7 @@ def get_vaccinations():
 
     # Need to drop any dates that are incomplete.
     # TODO: could keep allocations?
-    thaivac = thaivac.drop(index=missing_data.index)
+    #thaivac = thaivac.drop(index=missing_data.index)
 
     #thaivac = thaivac.combine_first(cum2daily(thaivac))
     #thaivac = thaivac.drop([c for c in thaivac.columns if " Cum" in c], axis=1)
@@ -2348,15 +2350,16 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #cases_by_area = get_cases_by_area()
+        #vac = get_vaccinations()
         pass
     else:
         cases_by_area = get_cases_by_area()
         
         situation = get_situation()
         cases_demo = get_cases_by_demographics_api()
-        vac = get_vaccinations()
         
         hospital = get_hospital_resources()
+        vac = get_vaccinations()
 
 
         #print(cases_by_area)
@@ -3460,11 +3463,36 @@ def save_plots(df):
 
     # Top 5 vaccine rollouts
     vac = pd.read_csv("api/vaccinations.csv")
+    vac['Date'] = pd.to_datetime(vac["Date"])
     vac = vac.join(PROVINCES["Population"], on="Province")
     vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
     vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
     #vac = vac.set_index(["Date","Province"])
-    top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 1")['Province']
+    top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 2")
+    # sort data into top 5 + rest
+    top5['Top 5 Vaccinated Provinces'] = top5['Province']
+    vac = vac.join(top5.set_index("Province")['Top 5 Vaccinated Provinces'], on="Province")
+    vac['Top 5 Vaccinated Provinces'] = vac["Top 5 Vaccinated Provinces"].fillna("Other Provinces")
+    vac = vac.groupby(["Date","Top 5 Vaccinated Provinces"]).sum().reset_index()
+    # recalculate for other category
+    vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
+    vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
+    # TODO: could I have just done crosstab with mean instead?
+    
+    series = pd.crosstab(vac['Date'], vac['Top 5 Vaccinated Provinces'], vac[ "Vac Complete % 2"], aggfunc="sum")
+
+    cols = list(top5['Top 5 Vaccinated Provinces (% pp)'])
+    fig, ax = plt.subplots(figsize=[20, 10])
+    series.loc["2021-02-16":].plot.area(
+        ax=ax,
+        y = cols + ["Other Provinces"],
+        stacked=False,
+        title="Top 5 Thai Provinces Closest to Fully Vaccinated\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand",
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/vac_top5_full_3.png")
 
 
 

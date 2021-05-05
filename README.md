@@ -114,6 +114,10 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
+## Provinces most fully vaccinated
+
+![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_top5_full_3.png)
+
 ## Vacciations by Health District
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_areas_s2_3.png)
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_areas_s1_3.png)
