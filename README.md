@@ -227,16 +227,30 @@ Bureau, Chaeng Watthana"
   - "Date": e.g "2021-04-06"
   - "Province": e.g "Samut Sakhon"
   - "Cases": Confirmed cases in this province
-  - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
-  - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid. *No longer updated*
   - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-
+  - The following is no longer updated
+     - "Cases Walkin": Confirmed cases found those requestings tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
+     - "Cases Proactive": Confirmed cases found goverment has gone to specific areas to mass test due to high risk of covid. *No longer updated*
+     - "Deaths": 31.0
+     
 ### Cases/Deaths per Health District
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
-  - Date: e.g "2021-04-06"
-  - Cases Area {1-13}: Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - Cases Proactive Area {1-13}: Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - Cases Walkin Area {1-13}: Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - "Date": e.g "2021-04-06"
+  - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - "Deaths":27.0,
+  - "Deaths Age {Min|Max}":92.0,
+  - "Deaths Age Median":66.0,
+  - "Deaths Area {1-13}":3.0,  
+  - "Hospitalized":30011.0,
+  - "Hospitalized Field":8558.0,
+  - "Hospitalized Hospital":21453.0, - total current active cases - anyone confirmed is considered hospitalised
+  - "Hospitalized Respirator":311.0,
+  - "Hospitalized Severe":1009.0  
+  - The following are no longer updated but have some historical data
+    - "Cases Proactive Area {1-13}": Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+    - "Cases Walkin Area {1-13}": Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+    - "Cases {Asymptomatic|Symptomatic}":null, - No longer reported in briefing reports
+
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
@@ -246,7 +260,7 @@ Bureau, Chaeng Watthana"
       - "Date":"2021-04-27"
       - "death_num":149.0,
       - "gender":"Male",
-      - "nationality":"\u0e44\u0e17\u0e22",
+      - "nationality":"ไทย",
       - "age":47.0,
       - "Province":"Bangkok"
     - Following information is extracted by not properly parsed yet
