@@ -1216,7 +1216,9 @@ def get_provinces():
     provinces = provinces.combine_first(lup_province)
 
     # bring in some appreviations
-    abr = pd.read_csv("https://raw.githubusercontent.com/kristw/gridmap-layout-thailand/master/src/input/provinces.csv")
+    lupurl = "https://raw.githubusercontent.com/kristw/gridmap-layout-thailand/master/src/input/provinces.csv"
+    file, _ = next(web_files(lupurl, dir="json", check=False))
+    abr = pd.read_csv(file)
     on_enname = abr.merge(provinces, right_index=True, left_on="enName")
     provinces = provinces.combine_first(on_enname.rename(columns=dict(thName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thAbbr"]))
     provinces = provinces.combine_first(on_enname.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
@@ -1227,6 +1229,12 @@ def get_provinces():
     provinces = provinces.combine_first(on_thai.rename(columns=dict(enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["thAbbr", "enName","thName"]))
 
     # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
+
+    # Add in population data
+    popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
+    file, _ = next(web_files(popurl, dir="json", check=False))
+    #pop = pd.read_excel(file)
+
 
     return provinces
 
@@ -2216,6 +2224,8 @@ def get_vaccinations():
                 continue
             added = 0
             for line in lines:
+                # fix some number broken in the middle
+                line = re.sub("(\d+ ,\d+)", lambda x: x.group(0).replace(" ",""), line)
                 area, *rest = line.split(' ', 1)
                 if area == "รวม" or not rest:
                     break
@@ -3318,7 +3328,7 @@ def save_plots(df):
         "Died since 2021-04-01", 
         "Hospitalized Respirator",
         "Hospitalized Severe",
-        "In Hospital",
+        "Other Active Cases",
         "Hospitalized Field",
         "Recovered since 2021-04-01", 
     ]
