@@ -3360,7 +3360,7 @@ def save_plots(df):
     ])
 
     plt.tight_layout()
-    plt.savefig("outputs/cases_cumulitive_3.png")
+    plt.savefig("outputs/cases_cumulative_3.png")
 
 
 
