@@ -246,7 +246,7 @@ Bureau, Chaeng Watthana"
       - "Date":"2021-04-27"
       - "death_num":149.0,
       - "gender":"Male",
-      - "nationality":"\u0e44\u0e17\u0e22",
+      - "nationality":"ไทย",
       - "age":47.0,
       - "Province":"Bangkok"
     - Following information is extracted by not properly parsed yet
