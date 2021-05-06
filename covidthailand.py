@@ -3571,7 +3571,7 @@ def save_plots(df):
     
     series = pd.crosstab(vac['Date'], vac['Top 5 Vaccinated Provinces'], vac[ "Vac Complete % 2"], aggfunc="sum")
 
-    cols = list(top5['Top 5 Vaccinated Provinces (% pp)'])
+    cols = list(top5['Top 5 Vaccinated Provinces'])
     fig, ax = plt.subplots(figsize=[20, 10])
     series.loc["2021-02-16":].plot.area(
         ax=ax,
