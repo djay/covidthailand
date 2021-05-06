@@ -31,6 +31,8 @@ import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
 
+d = dateutil.parser.parse
+
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
 requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
@@ -292,6 +294,106 @@ def slide2chartdata(slide):
         yield chart, title, start, end, series
 
 
+def seperate(seq, condition):
+    a, b = [], []
+    for item in seq:
+        (a if condition(item) else b).append(item)
+    return a, b
+
+def split(seq, condition, maxsplit=0):
+    "Similar to str.split except works on lists of lines"
+    run = []
+    last = False
+    splits = 0
+    for i in seq:
+        if (maxsplit and splits >= maxsplit) or bool(condition(i)) == last:
+            run.append(i)
+        else:
+            splits += 1
+            yield run
+            run = [i]
+            last = not last            
+    yield run
+
+# def nwise(iterable, n=2):                                                      
+#     iters = tee(iterable, n)                                                     
+#     for i, it in enumerate(iters):                                               
+#         next(islice(it, i, i), None)                                               
+#     return zip(*iters)   
+
+def pairwise(lst):
+    "Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"
+    lst = list(lst)
+    return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))    
+
+def any_in(target, *matches):
+    return any(m in target for m in matches)
+
+
+####################
+# Pandas helpers
+####################
+
+
+def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
+    "does a pandas join but matching very similar entries"
+    old_index = None
+    if on not in a.columns:
+        old_index = a.index.names
+        a = a.reset_index()
+    first = a.join(b, on=on)
+    test = list(b.columns)[0]
+    unmatched = first[first[test].isnull() & first[on].notna()]
+    if unmatched.empty:
+        second = first
+    else:
+        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index)),None), na_action="ignore")
+        second = first.combine_first(a.join(b, on="fuzzy_match"))
+        del second["fuzzy_match"]
+        unmatched2 = second[second[test].isnull() & second[on].notna()]
+        if assert_perfect_match:
+            assert unmatched2.empty, f"Still some values left unmatched {list(unmatched2[on])}"
+    if replace_on_with is not None:
+        second[on] = second[replace_on_with]
+        del second[replace_on_with]
+    if old_index is not None:
+        second = second.set_index(old_index)
+    return second
+
+
+def add_data(data, df):
+    "Appends while dropping any duplicate rows"
+    try:
+        data = data.append(df, verify_integrity=True)
+    except ValueError:
+        print('detected duplicates; dropping only the duplicate rows')
+        idx_names = data.index.names
+        data = data.reset_index().append(df.reset_index()).drop_duplicates()
+        data = data.set_index(idx_names)
+    return data
+
+
+def export(df, name, csv_only=False):
+    print(f"Exporting: {name}")
+    df = df.reset_index()
+    for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
+        df[c] = df[c].dt.strftime('%Y-%m-%d')
+    os.makedirs("api", exist_ok=True)
+    # TODO: save space by dropping nan
+    # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
+    if not csv_only:
+        df.to_json(
+            os.path.join("api",name),
+            date_format="iso",
+            indent=3,
+            orient="records",
+        )
+    df.to_csv(
+        os.path.join("api",f"{name}.csv"),
+        index=False 
+    )
+
+
 ####################
 # Download helpers
 ####################
@@ -386,11 +488,281 @@ def dav_files(
             client.download_file(file, target)
         yield target
 
+############
+# Thai province helpers
+############
+
+
+def get_provinces():
+    #_, districts = next(web_files("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts", dir="html"))
+    areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
+    provinces = areas.assign(Provinces=areas['Provinces'].str.split(",")).explode("Provinces")
+    provinces['Provinces'] = provinces['Provinces'].str.strip()
+    provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
+    provinces['ProvinceAlt'] = provinces['ProvinceEn']
+    provinces = provinces.set_index("ProvinceAlt")
+    provinces.loc["Bangkok"] = [13, "Central", "Bangkok"]
+    provinces.loc["Unknown"] = [14, "", "Unknown"]
+
+    # extra spellings for matching
+    provinces.loc['Korat'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['Khorat'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['Suphanburi'] = provinces.loc['Suphan Buri']
+    provinces.loc["Ayutthaya"] = provinces.loc["Phra Nakhon Si Ayutthaya"]
+    provinces.loc["Phathum Thani"] = provinces.loc["Pathum Thani"]
+    provinces.loc["Pathom Thani"] = provinces.loc["Pathum Thani"]
+    provinces.loc["Ubon Thani"] = provinces.loc["Udon Thani"]
+    provinces.loc["Bung Kan"] = provinces.loc["Bueng Kan"]
+    provinces.loc["Chainat"] = provinces.loc["Chai Nat"]
+    provinces.loc["Chon Buri"] = provinces.loc["Chonburi"]
+    provinces.loc["ลาปาง"] = provinces.loc["Lampang"]
+    provinces.loc["หนองบัวลาภู"] = provinces.loc["Nong Bua Lamphu"]
+    provinces.loc["ปทุุมธานี"] = provinces.loc["Pathum Thani"]
+    provinces.loc["เพชรบุรีี"] = provinces.loc["Phetchaburi"]
+    provinces.loc["เพชรบุรีี"] = provinces.loc["Phetchaburi"]
+    provinces.loc["เพชรบุุรี"] = provinces.loc["Phetchaburi"]
+
+    provinces.loc["สมุุทรสาคร"] = provinces.loc["Samut Sakhon"]
+    provinces.loc["สมุทธสาคร"] = provinces.loc["Samut Sakhon"]
+    provinces.loc["กรุงเทพฯ"] = provinces.loc["Bangkok"]
+    provinces.loc["กรุงเทพ"] = provinces.loc["Bangkok"]
+    provinces.loc["กรงุเทพมหานคร"] = provinces.loc["Bangkok"]
+    provinces.loc["พระนครศรีอยุธา"] = provinces.loc["Ayutthaya"]
+    provinces.loc["อยุธยา"] = provinces.loc["Ayutthaya"]
+    provinces.loc["สมุุทรสงคราม"] = provinces.loc["Samut Songkhram"]
+    provinces.loc["สมุุทรปราการ"] = provinces.loc["Samut Prakan"]
+    provinces.loc["สระบุุรี"] = provinces.loc["Saraburi"]
+    provinces.loc["พม่า"] = provinces.loc["Nong Khai"] # it's really burma, but have to put it somewhere
+    provinces.loc["ชลบุุรี"] = provinces.loc["Chon Buri"]
+    provinces.loc["นนทบุุรี"] = provinces.loc["Nonthaburi"]
+    # from prov table in briefings
+    provinces.loc["เชยีงใหม่"] = provinces.loc["Chiang Mai"]
+    provinces.loc['จนัทบรุ'] = provinces.loc['Chanthaburi']
+    provinces.loc['บรุรีมัย'] = provinces.loc['Buriram']
+    provinces.loc['กาญจนบรุ'] = provinces.loc['Kanchanaburi']
+    provinces.loc['Prachin Buri'] = provinces.loc['Prachinburi']
+    provinces.loc['ปราจนีบรุ'] = provinces.loc['Prachin Buri']
+    provinces.loc['ลพบรุ'] = provinces.loc['Lopburi']
+    provinces.loc['พษิณุโลก'] = provinces.loc['Phitsanulok']
+    provinces.loc['นครศรธีรรมราช'] = provinces.loc['Nakhon Si Thammarat']
+    provinces.loc['เพชรบรูณ์'] = provinces.loc['Phetchabun']
+    provinces.loc['อา่งทอง'] = provinces.loc['Ang Thong']
+    provinces.loc['ชยัภมู'] = provinces.loc['Chaiyaphum']
+    provinces.loc['รอ้ยเอ็ด'] = provinces.loc['Roi Et']
+    provinces.loc['อทุยัธานี'] = provinces.loc['Uthai Thani']
+    provinces.loc['ชลบรุ'] = provinces.loc['Chon Buri']
+    provinces.loc['สมทุรปราการ'] = provinces.loc['Samut Prakan']
+    provinces.loc['นราธวิาส'] = provinces.loc['Narathiwat']
+    provinces.loc['ประจวบครีขีนัธ'] = provinces.loc['Prachuap Khiri Khan']
+    provinces.loc['สมทุรสาคร'] = provinces.loc['Samut Sakhon']
+    provinces.loc['ปทมุธานี'] = provinces.loc['Pathum Thani']
+    provinces.loc['สระแกว้'] = provinces.loc['Sa Kaeo']
+    provinces.loc['นครราชสมีา'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['นนทบรุ'] = provinces.loc['Nonthaburi']
+    provinces.loc['ภเูก็ต'] = provinces.loc['Phuket']
+    provinces.loc['สพุรรณบรุี'] = provinces.loc['Suphan Buri']
+    provinces.loc['อดุรธานี'] = provinces.loc['Udon Thani']
+    provinces.loc['พระนครศรอียธุยา'] = provinces.loc['Ayutthaya']
+    provinces.loc['สระบรุ'] = provinces.loc['Saraburi']
+    provinces.loc['เพชรบรุ'] = provinces.loc['Phetchabun']
+    provinces.loc['ราชบรุ'] = provinces.loc['Ratchaburi']
+    provinces.loc['เชยีงราย'] = provinces.loc['Chiang Rai']
+    provinces.loc['อบุลราชธานี'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['สรุาษฎรธ์านี'] = provinces.loc['Surat Thani']
+    provinces.loc['ฉะเชงิเทรา'] = provinces.loc['Chachoengsao']
+    provinces.loc['สมทุรสงคราม'] = provinces.loc['Samut Songkhram']
+    provinces.loc['แมฮ่อ่งสอน'] = provinces.loc['Mae Hong Son']
+    provinces.loc['สโุขทยั'] = provinces.loc['Sukhothai']
+    provinces.loc['นา่น'] = provinces.loc['Nan']
+    provinces.loc['อตุรดติถ'] = provinces.loc['Uttaradit']
+    provinces.loc['Nong Bua Lam Phu'] = provinces.loc['Nong Bua Lamphu']
+    provinces.loc['หนองบวัล'] = provinces.loc['Nong Bua Lam Phu']
+    provinces.loc['พงังา'] = provinces.loc['Phang Nga']
+    provinces.loc['สรุนิทร'] = provinces.loc['Surin']
+    provinces.loc['Si Sa Ket'] = provinces.loc['Sisaket']
+    provinces.loc['ศรสีะเกษ'] = provinces.loc['Si Sa Ket']
+    provinces.loc['ตรงั'] = provinces.loc['Trang']
+    provinces.loc['พจิติร'] = provinces.loc['Phichit']
+    provinces.loc['ปตัตานี'] = provinces.loc['Pattani']
+    provinces.loc['ชยันาท'] = provinces.loc['Chai Nat']
+    provinces.loc['พทัลงุ'] = provinces.loc['Phatthalung']
+    provinces.loc['มกุดาหาร'] = provinces.loc['Mukdahan']
+    provinces.loc['บงึกาฬ'] = provinces.loc['Bueng Kan']
+    provinces.loc['กาฬสนิธุ'] = provinces.loc['Kalasin']
+    provinces.loc['สงิหบ์รุ'] = provinces.loc['Sing Buri']
+    provinces.loc['ปทมุธาน'] = provinces.loc['Pathum Thani']
+    provinces.loc['สพุรรณบรุ'] = provinces.loc['Suphan Buri']
+    provinces.loc['อดุรธาน'] = provinces.loc['Udon Thani']
+    provinces.loc['อบุลราชธาน'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['สรุาษฎรธ์าน'] = provinces.loc['Surat Thani']
+    provinces.loc['นครสวรรค'] = provinces.loc['Nakhon Sawan']
+    provinces.loc['ล าพนู'] = provinces.loc['Lamphun']
+    provinces.loc['ล าปาง'] = provinces.loc['Lampang']
+    provinces.loc['เพชรบรูณ'] = provinces.loc['Phetchabun']
+    provinces.loc['อทุยัธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['ก าแพงเพชร'] = provinces.loc['Kamphaeng Phet']
+    provinces.loc['Lam Phu'] = provinces.loc['Nong Bua Lamphu']
+    provinces.loc['หนองบวัล าภู'] = provinces.loc['Lam Phu']
+    provinces.loc['ปตัตาน'] = provinces.loc['Pattani']
+    provinces.loc['บรุรีัมย'] = provinces.loc['Buriram']
+    provinces.loc['Buri Ram'] = provinces.loc['Buriram']
+    provinces.loc['บรุรัีมย'] = provinces.loc['Buri Ram']
+    provinces.loc['จันทบรุ'] = provinces.loc['Chanthaburi']
+    provinces.loc['ชมุพร'] = provinces.loc['Chumphon']
+    provinces.loc['อทุัยธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['อ านาจเจรญ'] = provinces.loc['Amnat Charoen']
+    provinces.loc['สโุขทัย'] = provinces.loc['Sukhothai']
+    provinces.loc['ปัตตาน'] = provinces.loc['Pattani']
+    provinces.loc['พัทลงุ'] = provinces.loc['Phatthalung']
+    provinces.loc['ขอนแกน่'] = provinces.loc['Khon Kaen']
+    provinces.loc['อทัุยธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['หนองบัวล าภู'] = provinces.loc['Nong Bua Lam Phu']
+    provinces.loc['สตลู'] = provinces.loc['Satun']
+    provinces.loc['ปทุมธาน'] = provinces.loc['Pathum Thani']
+    provinces.loc['ชลบุร'] = provinces.loc['Chon Buri']
+    provinces.loc['จันทบุร'] = provinces.loc['Chanthaburi']
+    provinces.loc['นนทบุร'] = provinces.loc['Nonthaburi']
+    provinces.loc['เพชรบุร'] = provinces.loc['Phetchaburi']
+    provinces.loc['ราชบุร'] = provinces.loc['Ratchaburi']
+    provinces.loc['ลพบุร'] = provinces.loc['Lopburi']
+    provinces.loc['สระบุร'] = provinces.loc['Saraburi']
+    provinces.loc['สิงห์บุร'] = provinces.loc['Sing Buri']
+    provinces.loc['ปราจีนบุร'] = provinces.loc['Prachin Buri']
+    provinces.loc['สุราษฎร์ธาน'] = provinces.loc['Surat Thani']
+    provinces.loc['ชัยภูม'] = provinces.loc['Chaiyaphum']
+    provinces.loc['สุรินทร'] = provinces.loc['Surin']
+    provinces.loc['อุบลราชธาน'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['ประจวบคีรีขันธ'] = provinces.loc['Prachuap Khiri Khan']
+    provinces.loc['อุตรดิตถ'] = provinces.loc['Uttaradit']
+    provinces.loc['อ านาจเจริญ'] = provinces.loc['Amnat Charoen']
+    provinces.loc['อุดรธาน'] = provinces.loc['Udon Thani']
+    provinces.loc['เพชรบูรณ'] = provinces.loc['Phetchabun']
+    provinces.loc['บุรีรัมย'] = provinces.loc['Buri Ram']
+    provinces.loc['กาฬสินธุ'] = provinces.loc['Kalasin']
+    provinces.loc['สุพรรณบุร'] = provinces.loc['Suphanburi']
+    provinces.loc['กาญจนบุร'] = provinces.loc['Kanchanaburi']
+    provinces.loc['ล าพูน'] = provinces.loc['Lamphun']
+    provinces.loc["บึงกาฬ"] = provinces.loc["Bueng Kan"]
+    provinces.loc['สมทุรสำคร'] = provinces.loc['Samut Sakhon']
+    provinces.loc['กรงุเทพมหำนคร'] = provinces.loc['Bangkok']
+    provinces.loc['สมทุรปรำกำร'] = provinces.loc['Samut Prakan']
+    provinces.loc['อำ่งทอง'] = provinces.loc['Ang Thong']
+    provinces.loc['ปทมุธำน'] = provinces.loc['Pathum Thani']
+    provinces.loc['สมทุรสงครำม'] = provinces.loc['Samut Songkhram']
+    provinces.loc['พระนครศรอียธุยำ'] = provinces.loc['Ayutthaya']
+    provinces.loc['ตำก'] = provinces.loc['Tak']
+    provinces.loc['ตรำด'] = provinces.loc['Trat']
+    provinces.loc['รำชบรุ'] = provinces.loc['Ratchaburi']
+    provinces.loc['ฉะเชงิเทรำ'] = provinces.loc['Chachoengsao']
+    provinces.loc['Mahasarakham'] = provinces.loc['Maha Sarakham']
+    provinces.loc['มหำสำรคำม'] = provinces.loc['Mahasarakham']
+    provinces.loc['สรุำษฎรธ์ำน'] = provinces.loc['Surat Thani']
+    provinces.loc['นครรำชสมีำ'] = provinces.loc['Nakhon Ratchasima']
+    provinces.loc['ปรำจนีบรุ'] = provinces.loc['Prachinburi']
+    provinces.loc['ชยันำท'] = provinces.loc['Chai Nat']
+    provinces.loc['กำญจนบรุ'] = provinces.loc['Kanchanaburi']
+    provinces.loc['อบุลรำชธำน'] = provinces.loc['Ubon Ratchathani']
+    provinces.loc['นครศรธีรรมรำช'] = provinces.loc['Nakhon Si Thammarat']
+    provinces.loc['นครนำยก'] = provinces.loc['Nakhon Nayok']
+    provinces.loc['ล ำปำง'] = provinces.loc['Lampang']
+    provinces.loc['นรำธวิำส'] = provinces.loc['Narathiwat']
+    provinces.loc['สงขลำ'] = provinces.loc['Songkhla']
+    provinces.loc['ล ำพนู'] = provinces.loc['Lamphun']
+    provinces.loc['อ ำนำจเจรญ'] = provinces.loc['Amnat Charoen']
+    provinces.loc['หนองคำย'] = provinces.loc['Nong Khai']
+    provinces.loc['หนองบวัล ำภู'] = provinces.loc['Nong Bua Lam Phu']
+    provinces.loc['อดุรธำน'] = provinces.loc['Udon Thani']
+    provinces.loc['นำ่น'] = provinces.loc['Nan']
+    provinces.loc['เชยีงรำย'] = provinces.loc['Chiang Rai']
+    provinces.loc['ก ำแพงเพชร'] = provinces.loc['Kamphaeng Phet']
+    provinces.loc['พทัลงุ*'] = provinces.loc['Phatthalung']
+    provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
+    provinces.loc['เชีียงราย'] = provinces.loc['Chiang Rai']
+    provinces.loc['เวียงจันทร์'] = provinces.loc['Nong Khai']# TODO: it's really vientiane
+    provinces.loc['อุทัยธาน'] = provinces.loc['Uthai Thani']
+    provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
+    provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
+    provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
+    provinces.loc['เพชรบรุี'] = provinces.loc['Phetchaburi']
+    provinces.loc['ปตัตำนี'] = provinces.loc['Pattani']
+    provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
+    provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
+    provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
+    provinces.loc['กทม'] = provinces.loc['Bangkok']
+    provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
+    provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
+
+    # use the case data as it has a mapping between thai and english names
+    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
+    cases = pd.DataFrame(json.loads(cases)["Data"])
+    cases = cases.rename(columns=dict(Province="ProvinceTh", ProvinceAlt="Provinces"))
+    lup_province = cases.groupby(['ProvinceId', 'ProvinceTh', 'ProvinceEn']).size().reset_index().rename({0:'count'}, axis=1).sort_values('count', ascending=False).set_index("ProvinceEn")
+    # get the proper names from provinces
+    lup_province = lup_province.reset_index().rename(columns=dict(ProvinceEn="ProvinceAlt"))
+    lup_province = lup_province.set_index("ProvinceAlt").join(provinces)
+    lup_province = lup_province.drop(index="Unknown")
+    lup_province = lup_province.set_index("ProvinceTh").drop(columns="count")
+
+    # now bring in the thainames as extra altnames
+    provinces = provinces.combine_first(lup_province)
+
+    # bring in some appreviations
+    lupurl = "https://raw.githubusercontent.com/kristw/gridmap-layout-thailand/master/src/input/provinces.csv"
+    file, _ = next(web_files(lupurl, dir="json", check=False))
+    abr = pd.read_csv(file)
+    on_enname = abr.merge(provinces, right_index=True, left_on="enName")
+    provinces = provinces.combine_first(on_enname.rename(columns=dict(thName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thAbbr"]))
+    provinces = provinces.combine_first(on_enname.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
+
+    on_thai = abr.merge(provinces, right_index=True, left_on="thName")
+    provinces = provinces.combine_first(on_thai.rename(columns=dict(enName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "thName","thAbbr"]))
+    provinces = provinces.combine_first(on_thai.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
+    provinces = provinces.combine_first(on_thai.rename(columns=dict(enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["thAbbr", "enName","thName"]))
+
+    # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
+
+    # Add in population data
+    #popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
+    popurl = "https://en.wikipedia.org/wiki/Provinces_of_Thailand"
+    file, _ = next(web_files(popurl, dir="html", check=False))
+    pop = pd.read_html(file)[2]
+    pop = pop.join(provinces, on="Name(in Thai)").set_index("ProvinceEn").rename(columns={"Population (2019)[1]":"Population"})
+
+    provinces = provinces.join(pop["Population"], on="ProvinceEn")
+
+    return provinces
+
+PROVINCES = get_provinces()
+
+def get_province(prov, ignore_error=False):
+    prov = removeprefix(prov.strip().strip(".").replace(" ", ""), "จ.")
+    try:
+        prov = PROVINCES.loc[prov]['ProvinceEn']
+    except KeyError:
+        try:
+            close = difflib.get_close_matches(prov, PROVINCES.index)[0]
+        except IndexError:
+            if ignore_error:
+                return None
+            else:
+                print(f"provinces.loc['{prov}'] = provinces.loc['x']")
+                raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
+                #continue
+        prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
+
+    return prov
+
+def join_provinces(df, on):
+    trim = lambda x: removeprefix(x,"จ.").strip(' .')
+    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
+
+
+
+
 
 ##########################################
 # download and parse thailand covid data
 ##########################################
-d = dateutil.parser.parse
 
 def situation_cases_cum(parsedPDF, date):
     _,rest = get_next_numbers(parsedPDF, "The Disease Situation in Thailand", debug=True)
@@ -1002,294 +1374,6 @@ def get_tests_private_public():
     export(data, "tests_pubpriv")
     return data
 
-def get_provinces():
-    #_, districts = next(web_files("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts", dir="html"))
-    areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
-    provinces = areas.assign(Provinces=areas['Provinces'].str.split(",")).explode("Provinces")
-    provinces['Provinces'] = provinces['Provinces'].str.strip()
-    provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
-    provinces['ProvinceAlt'] = provinces['ProvinceEn']
-    provinces = provinces.set_index("ProvinceAlt")
-    provinces.loc["Bangkok"] = [13, "Central", "Bangkok"]
-    provinces.loc["Unknown"] = [14, "", "Unknown"]
-
-    # extra spellings for matching
-    provinces.loc['Korat'] = provinces.loc['Nakhon Ratchasima']
-    provinces.loc['Khorat'] = provinces.loc['Nakhon Ratchasima']
-    provinces.loc['Suphanburi'] = provinces.loc['Suphan Buri']
-    provinces.loc["Ayutthaya"] = provinces.loc["Phra Nakhon Si Ayutthaya"]
-    provinces.loc["Phathum Thani"] = provinces.loc["Pathum Thani"]
-    provinces.loc["Pathom Thani"] = provinces.loc["Pathum Thani"]
-    provinces.loc["Ubon Thani"] = provinces.loc["Udon Thani"]
-    provinces.loc["Bung Kan"] = provinces.loc["Bueng Kan"]
-    provinces.loc["Chainat"] = provinces.loc["Chai Nat"]
-    provinces.loc["Chon Buri"] = provinces.loc["Chonburi"]
-    provinces.loc["ลาปาง"] = provinces.loc["Lampang"]
-    provinces.loc["หนองบัวลาภู"] = provinces.loc["Nong Bua Lamphu"]
-    provinces.loc["ปทุุมธานี"] = provinces.loc["Pathum Thani"]
-    provinces.loc["เพชรบุรีี"] = provinces.loc["Phetchaburi"]
-    provinces.loc["เพชรบุรีี"] = provinces.loc["Phetchaburi"]
-    provinces.loc["เพชรบุุรี"] = provinces.loc["Phetchaburi"]
-
-    provinces.loc["สมุุทรสาคร"] = provinces.loc["Samut Sakhon"]
-    provinces.loc["สมุทธสาคร"] = provinces.loc["Samut Sakhon"]
-    provinces.loc["กรุงเทพฯ"] = provinces.loc["Bangkok"]
-    provinces.loc["กรุงเทพ"] = provinces.loc["Bangkok"]
-    provinces.loc["กรงุเทพมหานคร"] = provinces.loc["Bangkok"]
-    provinces.loc["พระนครศรีอยุธา"] = provinces.loc["Ayutthaya"]
-    provinces.loc["อยุธยา"] = provinces.loc["Ayutthaya"]
-    provinces.loc["สมุุทรสงคราม"] = provinces.loc["Samut Songkhram"]
-    provinces.loc["สมุุทรปราการ"] = provinces.loc["Samut Prakan"]
-    provinces.loc["สระบุุรี"] = provinces.loc["Saraburi"]
-    provinces.loc["พม่า"] = provinces.loc["Nong Khai"] # it's really burma, but have to put it somewhere
-    provinces.loc["ชลบุุรี"] = provinces.loc["Chon Buri"]
-    provinces.loc["นนทบุุรี"] = provinces.loc["Nonthaburi"]
-    # from prov table in briefings
-    provinces.loc["เชยีงใหม่"] = provinces.loc["Chiang Mai"]
-    provinces.loc['จนัทบรุ'] = provinces.loc['Chanthaburi']
-    provinces.loc['บรุรีมัย'] = provinces.loc['Buriram']
-    provinces.loc['กาญจนบรุ'] = provinces.loc['Kanchanaburi']
-    provinces.loc['Prachin Buri'] = provinces.loc['Prachinburi']
-    provinces.loc['ปราจนีบรุ'] = provinces.loc['Prachin Buri']
-    provinces.loc['ลพบรุ'] = provinces.loc['Lopburi']
-    provinces.loc['พษิณุโลก'] = provinces.loc['Phitsanulok']
-    provinces.loc['นครศรธีรรมราช'] = provinces.loc['Nakhon Si Thammarat']
-    provinces.loc['เพชรบรูณ์'] = provinces.loc['Phetchabun']
-    provinces.loc['อา่งทอง'] = provinces.loc['Ang Thong']
-    provinces.loc['ชยัภมู'] = provinces.loc['Chaiyaphum']
-    provinces.loc['รอ้ยเอ็ด'] = provinces.loc['Roi Et']
-    provinces.loc['อทุยัธานี'] = provinces.loc['Uthai Thani']
-    provinces.loc['ชลบรุ'] = provinces.loc['Chon Buri']
-    provinces.loc['สมทุรปราการ'] = provinces.loc['Samut Prakan']
-    provinces.loc['นราธวิาส'] = provinces.loc['Narathiwat']
-    provinces.loc['ประจวบครีขีนัธ'] = provinces.loc['Prachuap Khiri Khan']
-    provinces.loc['สมทุรสาคร'] = provinces.loc['Samut Sakhon']
-    provinces.loc['ปทมุธานี'] = provinces.loc['Pathum Thani']
-    provinces.loc['สระแกว้'] = provinces.loc['Sa Kaeo']
-    provinces.loc['นครราชสมีา'] = provinces.loc['Nakhon Ratchasima']
-    provinces.loc['นนทบรุ'] = provinces.loc['Nonthaburi']
-    provinces.loc['ภเูก็ต'] = provinces.loc['Phuket']
-    provinces.loc['สพุรรณบรุี'] = provinces.loc['Suphan Buri']
-    provinces.loc['อดุรธานี'] = provinces.loc['Udon Thani']
-    provinces.loc['พระนครศรอียธุยา'] = provinces.loc['Ayutthaya']
-    provinces.loc['สระบรุ'] = provinces.loc['Saraburi']
-    provinces.loc['เพชรบรุ'] = provinces.loc['Phetchabun']
-    provinces.loc['ราชบรุ'] = provinces.loc['Ratchaburi']
-    provinces.loc['เชยีงราย'] = provinces.loc['Chiang Rai']
-    provinces.loc['อบุลราชธานี'] = provinces.loc['Ubon Ratchathani']
-    provinces.loc['สรุาษฎรธ์านี'] = provinces.loc['Surat Thani']
-    provinces.loc['ฉะเชงิเทรา'] = provinces.loc['Chachoengsao']
-    provinces.loc['สมทุรสงคราม'] = provinces.loc['Samut Songkhram']
-    provinces.loc['แมฮ่อ่งสอน'] = provinces.loc['Mae Hong Son']
-    provinces.loc['สโุขทยั'] = provinces.loc['Sukhothai']
-    provinces.loc['นา่น'] = provinces.loc['Nan']
-    provinces.loc['อตุรดติถ'] = provinces.loc['Uttaradit']
-    provinces.loc['Nong Bua Lam Phu'] = provinces.loc['Nong Bua Lamphu']
-    provinces.loc['หนองบวัล'] = provinces.loc['Nong Bua Lam Phu']
-    provinces.loc['พงังา'] = provinces.loc['Phang Nga']
-    provinces.loc['สรุนิทร'] = provinces.loc['Surin']
-    provinces.loc['Si Sa Ket'] = provinces.loc['Sisaket']
-    provinces.loc['ศรสีะเกษ'] = provinces.loc['Si Sa Ket']
-    provinces.loc['ตรงั'] = provinces.loc['Trang']
-    provinces.loc['พจิติร'] = provinces.loc['Phichit']
-    provinces.loc['ปตัตานี'] = provinces.loc['Pattani']
-    provinces.loc['ชยันาท'] = provinces.loc['Chai Nat']
-    provinces.loc['พทัลงุ'] = provinces.loc['Phatthalung']
-    provinces.loc['มกุดาหาร'] = provinces.loc['Mukdahan']
-    provinces.loc['บงึกาฬ'] = provinces.loc['Bueng Kan']
-    provinces.loc['กาฬสนิธุ'] = provinces.loc['Kalasin']
-    provinces.loc['สงิหบ์รุ'] = provinces.loc['Sing Buri']
-    provinces.loc['ปทมุธาน'] = provinces.loc['Pathum Thani']
-    provinces.loc['สพุรรณบรุ'] = provinces.loc['Suphan Buri']
-    provinces.loc['อดุรธาน'] = provinces.loc['Udon Thani']
-    provinces.loc['อบุลราชธาน'] = provinces.loc['Ubon Ratchathani']
-    provinces.loc['สรุาษฎรธ์าน'] = provinces.loc['Surat Thani']
-    provinces.loc['นครสวรรค'] = provinces.loc['Nakhon Sawan']
-    provinces.loc['ล าพนู'] = provinces.loc['Lamphun']
-    provinces.loc['ล าปาง'] = provinces.loc['Lampang']
-    provinces.loc['เพชรบรูณ'] = provinces.loc['Phetchabun']
-    provinces.loc['อทุยัธาน'] = provinces.loc['Uthai Thani']
-    provinces.loc['ก าแพงเพชร'] = provinces.loc['Kamphaeng Phet']
-    provinces.loc['Lam Phu'] = provinces.loc['Nong Bua Lamphu']
-    provinces.loc['หนองบวัล าภู'] = provinces.loc['Lam Phu']
-    provinces.loc['ปตัตาน'] = provinces.loc['Pattani']
-    provinces.loc['บรุรีัมย'] = provinces.loc['Buriram']
-    provinces.loc['Buri Ram'] = provinces.loc['Buriram']
-    provinces.loc['บรุรัีมย'] = provinces.loc['Buri Ram']
-    provinces.loc['จันทบรุ'] = provinces.loc['Chanthaburi']
-    provinces.loc['ชมุพร'] = provinces.loc['Chumphon']
-    provinces.loc['อทุัยธาน'] = provinces.loc['Uthai Thani']
-    provinces.loc['อ านาจเจรญ'] = provinces.loc['Amnat Charoen']
-    provinces.loc['สโุขทัย'] = provinces.loc['Sukhothai']
-    provinces.loc['ปัตตาน'] = provinces.loc['Pattani']
-    provinces.loc['พัทลงุ'] = provinces.loc['Phatthalung']
-    provinces.loc['ขอนแกน่'] = provinces.loc['Khon Kaen']
-    provinces.loc['อทัุยธาน'] = provinces.loc['Uthai Thani']
-    provinces.loc['หนองบัวล าภู'] = provinces.loc['Nong Bua Lam Phu']
-    provinces.loc['สตลู'] = provinces.loc['Satun']
-    provinces.loc['ปทุมธาน'] = provinces.loc['Pathum Thani']
-    provinces.loc['ชลบุร'] = provinces.loc['Chon Buri']
-    provinces.loc['จันทบุร'] = provinces.loc['Chanthaburi']
-    provinces.loc['นนทบุร'] = provinces.loc['Nonthaburi']
-    provinces.loc['เพชรบุร'] = provinces.loc['Phetchaburi']
-    provinces.loc['ราชบุร'] = provinces.loc['Ratchaburi']
-    provinces.loc['ลพบุร'] = provinces.loc['Lopburi']
-    provinces.loc['สระบุร'] = provinces.loc['Saraburi']
-    provinces.loc['สิงห์บุร'] = provinces.loc['Sing Buri']
-    provinces.loc['ปราจีนบุร'] = provinces.loc['Prachin Buri']
-    provinces.loc['สุราษฎร์ธาน'] = provinces.loc['Surat Thani']
-    provinces.loc['ชัยภูม'] = provinces.loc['Chaiyaphum']
-    provinces.loc['สุรินทร'] = provinces.loc['Surin']
-    provinces.loc['อุบลราชธาน'] = provinces.loc['Ubon Ratchathani']
-    provinces.loc['ประจวบคีรีขันธ'] = provinces.loc['Prachuap Khiri Khan']
-    provinces.loc['อุตรดิตถ'] = provinces.loc['Uttaradit']
-    provinces.loc['อ านาจเจริญ'] = provinces.loc['Amnat Charoen']
-    provinces.loc['อุดรธาน'] = provinces.loc['Udon Thani']
-    provinces.loc['เพชรบูรณ'] = provinces.loc['Phetchabun']
-    provinces.loc['บุรีรัมย'] = provinces.loc['Buri Ram']
-    provinces.loc['กาฬสินธุ'] = provinces.loc['Kalasin']
-    provinces.loc['สุพรรณบุร'] = provinces.loc['Suphanburi']
-    provinces.loc['กาญจนบุร'] = provinces.loc['Kanchanaburi']
-    provinces.loc['ล าพูน'] = provinces.loc['Lamphun']
-    provinces.loc["บึงกาฬ"] = provinces.loc["Bueng Kan"]
-    provinces.loc['สมทุรสำคร'] = provinces.loc['Samut Sakhon']
-    provinces.loc['กรงุเทพมหำนคร'] = provinces.loc['Bangkok']
-    provinces.loc['สมทุรปรำกำร'] = provinces.loc['Samut Prakan']
-    provinces.loc['อำ่งทอง'] = provinces.loc['Ang Thong']
-    provinces.loc['ปทมุธำน'] = provinces.loc['Pathum Thani']
-    provinces.loc['สมทุรสงครำม'] = provinces.loc['Samut Songkhram']
-    provinces.loc['พระนครศรอียธุยำ'] = provinces.loc['Ayutthaya']
-    provinces.loc['ตำก'] = provinces.loc['Tak']
-    provinces.loc['ตรำด'] = provinces.loc['Trat']
-    provinces.loc['รำชบรุ'] = provinces.loc['Ratchaburi']
-    provinces.loc['ฉะเชงิเทรำ'] = provinces.loc['Chachoengsao']
-    provinces.loc['Mahasarakham'] = provinces.loc['Maha Sarakham']
-    provinces.loc['มหำสำรคำม'] = provinces.loc['Mahasarakham']
-    provinces.loc['สรุำษฎรธ์ำน'] = provinces.loc['Surat Thani']
-    provinces.loc['นครรำชสมีำ'] = provinces.loc['Nakhon Ratchasima']
-    provinces.loc['ปรำจนีบรุ'] = provinces.loc['Prachinburi']
-    provinces.loc['ชยันำท'] = provinces.loc['Chai Nat']
-    provinces.loc['กำญจนบรุ'] = provinces.loc['Kanchanaburi']
-    provinces.loc['อบุลรำชธำน'] = provinces.loc['Ubon Ratchathani']
-    provinces.loc['นครศรธีรรมรำช'] = provinces.loc['Nakhon Si Thammarat']
-    provinces.loc['นครนำยก'] = provinces.loc['Nakhon Nayok']
-    provinces.loc['ล ำปำง'] = provinces.loc['Lampang']
-    provinces.loc['นรำธวิำส'] = provinces.loc['Narathiwat']
-    provinces.loc['สงขลำ'] = provinces.loc['Songkhla']
-    provinces.loc['ล ำพนู'] = provinces.loc['Lamphun']
-    provinces.loc['อ ำนำจเจรญ'] = provinces.loc['Amnat Charoen']
-    provinces.loc['หนองคำย'] = provinces.loc['Nong Khai']
-    provinces.loc['หนองบวัล ำภู'] = provinces.loc['Nong Bua Lam Phu']
-    provinces.loc['อดุรธำน'] = provinces.loc['Udon Thani']
-    provinces.loc['นำ่น'] = provinces.loc['Nan']
-    provinces.loc['เชยีงรำย'] = provinces.loc['Chiang Rai']
-    provinces.loc['ก ำแพงเพชร'] = provinces.loc['Kamphaeng Phet']
-    provinces.loc['พทัลงุ*'] = provinces.loc['Phatthalung']
-    provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
-    provinces.loc['เชีียงราย'] = provinces.loc['Chiang Rai']
-    provinces.loc['เวียงจันทร์'] = provinces.loc['Nong Khai']# TODO: it's really vientiane
-    provinces.loc['อุทัยธาน'] = provinces.loc['Uthai Thani']
-    provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
-    provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
-    provinces.loc['ปรมิณฑล'] = provinces.loc['Bangkok']
-    provinces.loc['เพชรบรุี'] = provinces.loc['Phetchaburi']
-    provinces.loc['ปตัตำนี'] = provinces.loc['Pattani']
-    provinces.loc['นครสวรรค์'] = provinces.loc['Nakhon Sawan']
-    provinces.loc['เพชรบุรี'] = provinces.loc['Phetchaburi']
-    provinces.loc['สมุทรปราการ'] = provinces.loc['Samut Prakan']
-    provinces.loc['กทม'] = provinces.loc['Bangkok']
-    provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
-    provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
-
-    # use the case data as it has a mapping between thai and english names
-    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
-    cases = pd.DataFrame(json.loads(cases)["Data"])
-    cases = cases.rename(columns=dict(Province="ProvinceTh", ProvinceAlt="Provinces"))
-    lup_province = cases.groupby(['ProvinceId', 'ProvinceTh', 'ProvinceEn']).size().reset_index().rename({0:'count'}, axis=1).sort_values('count', ascending=False).set_index("ProvinceEn")
-    # get the proper names from provinces
-    lup_province = lup_province.reset_index().rename(columns=dict(ProvinceEn="ProvinceAlt"))
-    lup_province = lup_province.set_index("ProvinceAlt").join(provinces)
-    lup_province = lup_province.drop(index="Unknown")
-    lup_province = lup_province.set_index("ProvinceTh").drop(columns="count")
-
-    # now bring in the thainames as extra altnames
-    provinces = provinces.combine_first(lup_province)
-
-    # bring in some appreviations
-    lupurl = "https://raw.githubusercontent.com/kristw/gridmap-layout-thailand/master/src/input/provinces.csv"
-    file, _ = next(web_files(lupurl, dir="json", check=False))
-    abr = pd.read_csv(file)
-    on_enname = abr.merge(provinces, right_index=True, left_on="enName")
-    provinces = provinces.combine_first(on_enname.rename(columns=dict(thName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thAbbr"]))
-    provinces = provinces.combine_first(on_enname.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
-
-    on_thai = abr.merge(provinces, right_index=True, left_on="thName")
-    provinces = provinces.combine_first(on_thai.rename(columns=dict(enName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "thName","thAbbr"]))
-    provinces = provinces.combine_first(on_thai.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName","thName"]))
-    provinces = provinces.combine_first(on_thai.rename(columns=dict(enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["thAbbr", "enName","thName"]))
-
-    # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
-
-    # Add in population data
-    #popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
-    popurl = "https://en.wikipedia.org/wiki/Provinces_of_Thailand"
-    file, _ = next(web_files(popurl, dir="html", check=False))
-    pop = pd.read_html(file)[2]
-    pop = pop.join(provinces, on="Name(in Thai)").set_index("ProvinceEn").rename(columns={"Population (2019)[1]":"Population"})
-
-    provinces = provinces.join(pop["Population"], on="ProvinceEn")
-
-    return provinces
-
-PROVINCES = get_provinces()
-
-def get_province(prov, ignore_error=False):
-    prov = removeprefix(prov.strip().strip(".").replace(" ", ""), "จ.")
-    try:
-        prov = PROVINCES.loc[prov]['ProvinceEn']
-    except KeyError:
-        try:
-            close = difflib.get_close_matches(prov, PROVINCES.index)[0]
-        except IndexError:
-            if ignore_error:
-                return None
-            else:
-                print(f"provinces.loc['{prov}'] = provinces.loc['x']")
-                raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
-                #continue
-        prov = PROVINCES.loc[close]['ProvinceEn'] # get english name here so we know we got it
-
-    return prov
-
-def join_provinces(df, on):
-    trim = lambda x: removeprefix(x,"จ.").strip(' .')
-    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
-
-def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
-    old_index = None
-    if on not in a.columns:
-        old_index = a.index.names
-        a = a.reset_index()
-    first = a.join(b, on=on)
-    test = list(b.columns)[0]
-    unmatched = first[first[test].isnull() & first[on].notna()]
-    if unmatched.empty:
-        second = first
-    else:
-        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index)),None), na_action="ignore")
-        second = first.combine_first(a.join(b, on="fuzzy_match"))
-        del second["fuzzy_match"]
-        unmatched2 = second[second[test].isnull() & second[on].notna()]
-        if assert_perfect_match:
-            assert unmatched2.empty, f"Still some values left unmatched {list(unmatched2[on])}"
-    if replace_on_with is not None:
-        second[on] = second[replace_on_with]
-        del second[replace_on_with]
-    if old_index is not None:
-        second = second.set_index(old_index)
-    return second
-
-
 
 def get_cases_by_area_type():
     briefings, cases = get_cases_by_prov_briefings()
@@ -1681,35 +1765,6 @@ def get_cases_by_prov_tweets():
     df = df.combine_first(cum2daily(df))
     return dfprov, df
 
-def seperate(seq, condition):
-    a, b = [], []
-    for item in seq:
-        (a if condition(item) else b).append(item)
-    return a, b
-
-def split(seq, condition, maxsplit=0):
-    run = []
-    last = False
-    splits = 0
-    for i in seq:
-        if (maxsplit and splits >= maxsplit) or bool(condition(i)) == last:
-            run.append(i)
-        else:
-            splits += 1
-            yield run
-            run = [i]
-            last = not last            
-    yield run
-
-# def nwise(iterable, n=2):                                                      
-#     iters = tee(iterable, n)                                                     
-#     for i, it in enumerate(iters):                                               
-#         next(islice(it, i, i), None)                                               
-#     return zip(*iters)   
-
-def pairwise(lst):
-    lst = list(lst)
-    return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))    
 
 is_header = lambda x: "ลักษณะผู้ติดเชื้อ" in x
 title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
@@ -2144,16 +2199,6 @@ def get_cases_by_prov_briefings():
 
     return date_prov, types
 
-def add_data(data, df):
-    try:
-        data = data.append(df, verify_integrity=True)
-    except ValueError:
-        print('detected duplicates; dropping only the duplicate rows')
-        idx_names = data.index.names
-        data = data.reset_index().append(df.reset_index()).drop_duplicates()
-        data = data.set_index(idx_names)
-    return data
-
 def get_hospital_resources():
     print("========ArcGIS==========")
 
@@ -2188,8 +2233,6 @@ def get_hospital_resources():
     export(data, "hospital_resources", csv_only=True)
     return data
 
-def any_in(target, *matches):
-    return any(m in target for m in matches)
 
 def area_crosstab(df, col, suffix):
     given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
@@ -2321,77 +2364,9 @@ def get_vaccinations():
     return thaivac
 
 
-
+#########################
 ### Combine and plot
-
-def export(df, name, csv_only=False):
-    print(f"Exporting: {name}")
-    df = df.reset_index()
-    for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
-        df[c] = df[c].dt.strftime('%Y-%m-%d')
-    os.makedirs("api", exist_ok=True)
-    # TODO: save space by dropping nan
-    # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
-    if not csv_only:
-        df.to_json(
-            os.path.join("api",name),
-            date_format="iso",
-            indent=3,
-            orient="records",
-        )
-    df.to_csv(
-        os.path.join("api",f"{name}.csv"),
-        index=False 
-    )
-
-
-USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
-def scrape_and_combine():
-    if USE_CACHE_DATA:
-        # Comment out what you don't need to run
-        #cases_by_area = get_cases_by_area()
-        #vac = get_vaccinations()
-        pass
-    else:
-        cases_by_area = get_cases_by_area()
-        
-        situation = get_situation()
-        cases_demo = get_cases_by_demographics_api()
-        
-        hospital = get_hospital_resources()
-        vac = get_vaccinations()
-
-
-        #print(cases_by_area)
-        #print(situation)
-
-        tests = get_tests_by_day()
-        tests_by_area = get_tests_by_area()
-        privpublic = get_tests_private_public()
-        cases = get_cases()
-
-    print("========Combine all data sources==========")
-    df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
-        if f in locals():
-            df = df.combine_first(locals()[f])
-    print(df)
-
-    if USE_CACHE_DATA:
-        old = pd.read_csv(
-            "api/combined.csv",
-            #date_format="iso",
-            #indent=3,
-            #orient="records",
-        )
-        old['Date'] = pd.to_datetime(old['Date'])
-        old = old.set_index("Date")
-        df = df.combine_first(old)
-
-        return df
-    else:
-        export(df, "combined", csv_only=True)
-        return df
+#########################
 
 
 def calc_cols(df):
@@ -3493,6 +3468,56 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("outputs/vac_top5_full_3.png")
+
+
+
+USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists(os.path.join("api","combined.csv"))
+def scrape_and_combine():
+    if USE_CACHE_DATA:
+        # Comment out what you don't need to run
+        #cases_by_area = get_cases_by_area()
+        #vac = get_vaccinations()
+        pass
+    else:
+        cases_by_area = get_cases_by_area()
+        
+        situation = get_situation()
+        cases_demo = get_cases_by_demographics_api()
+        
+        hospital = get_hospital_resources()
+        vac = get_vaccinations()
+
+
+        #print(cases_by_area)
+        #print(situation)
+
+        tests = get_tests_by_day()
+        tests_by_area = get_tests_by_area()
+        privpublic = get_tests_private_public()
+        cases = get_cases()
+
+    print("========Combine all data sources==========")
+    df = pd.DataFrame(columns=["Date"]).set_index("Date")
+    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
+        if f in locals():
+            df = df.combine_first(locals()[f])
+    print(df)
+
+    if USE_CACHE_DATA:
+        old = pd.read_csv(
+            "api/combined.csv",
+            #date_format="iso",
+            #indent=3,
+            #orient="records",
+        )
+        old['Date'] = pd.to_datetime(old['Date'])
+        old = old.set_index("Date")
+        df = df.combine_first(old)
+
+        return df
+    else:
+        export(df, "combined", csv_only=True)
+        return df
 
 
 
