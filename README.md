@@ -2,9 +2,20 @@
 
 Thailand Covid case/test/vaccination data gathered and combined from various government sources for others to view or download. Updated between 11:30-12:30 daily [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml)). 
 
-## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
+## [Active Cases](#active-cases) | [Cases](#cases) |  [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
 
 *Note* Now available full page at https://djay.github.io/covidthailand
+
+# Active Cases 3rd Wave <a name="active-cases">
+
+![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
+
+- Break down of active case status only available from 2020-04-24 onwards.
+- Other Active Cases + severe + ventilator + field hospitals = Hospitalised, which is everyone who is 
+  confirmed (for 14days at least)
+- see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
+- Source: [CCSA Daily Briefing ](#dl-briefings)
+
 # Cases
 
 ## Cases by Health District
@@ -43,17 +54,8 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-# Active Cases
-
-![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
-
-- Break down of active case status only available from 2020-04-24 onwards.
-- ```Hospitilised Other``` is everyone after they are a confirmed case once you take out recovered and those that died. This means it includes those confirmed that are yet to find a bed (isolating at home). There is currently no data source for actual hospital beds occupied.
-- see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily), [CCSA Daily Briefing ](#dl-briefings) - 12pm each day
 
 # Deaths
-
 
 ## Covid Deaths by Health District
 
@@ -334,6 +336,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-04-05 - added recoverd to active cases
+- 2021-04-04 - plots of deaths and vaccinations
 - 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
