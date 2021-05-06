@@ -1849,6 +1849,8 @@ def briefing_case_types(date, pages):
         recovered,_ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)")
         assert recovered is not None
 
+        deaths, _ = get_next_number(text, "เสียชีวิตสะสม", before=True)
+
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
         # north, _ = get_next_number(text, "ภาคเหนือ") 
@@ -1870,6 +1872,7 @@ def briefing_case_types(date, pages):
             respirator, 
             hospitalised,
             recovered,
+            deaths,
         ])
         break
     df = pd.DataFrame(rows, columns=[
@@ -1884,6 +1887,7 @@ def briefing_case_types(date, pages):
         "Hospitalized Respirator",
         "Hospitalized",
         "Recovered",
+        "Deaths",
     ]).set_index(['Date'])
     print("Briefing Cases:", df.to_string(header=False, index=False))
     return df
@@ -2111,6 +2115,7 @@ def get_cases_by_prov_briefings():
         prov = briefing_province_cases(file, date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
+        assert (death_sum['Deaths'] == today_types['Deaths']).all(), f"{date} Death details {death_sum['Deaths']} didn't match total {today_types['Deaths']}"
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
         types = types.combine_first(death_sum)
@@ -2349,7 +2354,7 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         pass
     else:
