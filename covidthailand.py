@@ -30,6 +30,7 @@ from itertools import tee, islice, compress, cycle
 import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
+import pickle
 
 d = dateutil.parser.parse
 
@@ -293,6 +294,9 @@ def slide2chartdata(slide):
 
         yield chart, title, start, end, series
 
+#############
+# general utils
+############
 
 def seperate(seq, condition):
     a, b = [], []
@@ -328,6 +332,17 @@ def pairwise(lst):
 
 def any_in(target, *matches):
     return any(m in target for m in matches)
+
+def rearrange(l, *first):
+    "reorder a list by moving first items to the front. Can be index or value"
+    l = list(l)
+    result = []
+    for f in first:
+        if type(f) != int:
+            f = l.index(f)+1
+        result.append(l[f-1])
+        l[f-1] = None
+    return result + [i for i in l if i is not None]
 
 
 ####################
@@ -393,6 +408,18 @@ def export(df, name, csv_only=False):
         index=False 
     )
 
+def import_csv(name):
+    path = os.path.join("api", f"{name}.csv")
+    if not os.path.exists(path):
+        return None
+    old = pd.read_csv(path)
+    old['Date'] = pd.to_datetime(old['Date'])
+    return old
+
+
+def savefig(plt, name, dir="outputs"):
+    plt.savefig(os.path.join("outputs", name))
+    plt.close()
 
 ####################
 # Download helpers
@@ -487,6 +514,78 @@ def dav_files(
         if is_remote_newer(target, info["modified"]):
             client.download_file(file, target)
         yield target
+
+############
+# Twitter helpers
+############
+
+
+def parse_tweet(tw, tweet, found, *matches):
+    
+    is_match = lambda tweet, *matches: any(m in tweet for m in matches)
+    if not is_match(tweet.get('text',tweet.get("comment","")), *matches):
+        return ""
+    text = tw.get_tweetinfo(tweet['id']).contents['text']
+    if any(text in t for t in found):
+        return ""
+    # TODO: ensure tweets are [1/2] etc not just "[" and by same person
+    if "[" not in text:
+        return text
+    for t in sorted(tw.get_tweetcomments(tweet['id']).contents, key=lambda t:t['id']):
+        rest = parse_tweet(tw, t, found+[text], *matches)
+        if rest and rest not in text:
+            text += " " + rest 
+    return text
+
+def get_tweets_from(userid, datefrom, dateto, *matches):
+    "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
+
+    tw = TwitterScraper()
+    filename = os.path.join("tweets", f"tweets2_{userid}.pickle")
+    os.makedirs("tweets", exist_ok=True)
+    #is_match = lambda tweet, *matches: any(m in tweet for m in matches)
+    try:
+        with open(filename,"rb") as fp:
+            tweets = pickle.load(fp)
+    except:
+        tweets = {}
+    latest = max(tweets.keys()) if tweets else None
+    if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
+        return tweets
+    for limit in ([50,2000,5000] if tweets else [5000]):
+        print(f"Getting {limit} tweets")       
+        for tweet in sorted(tw.get_tweets(userid, count=limit).contents,key=lambda t:t['id']):
+            date = tweet['created_at'].date()
+            text = parse_tweet(tw, tweet, tweets.get(date,[]), *matches)
+            if text:
+                tweets[date] = tweets.get(date,[]) + [text]
+            # if not is_match(tweet['text'], *matches):
+            #     continue
+            # text = tw.get_tweetinfo(tweet['id']).contents['text']
+            # if text not in tweets.get(date,[]):
+            #     tweets[date] = tweets.get(date,[]) + [text]
+            # # TODO: ensure tweets are [1/2] etc not just "[" and by same person
+            # if "[" not in text:
+            #     continue
+            # rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if is_match(t['comment'],"[", *matches)]
+            # for t in rest:
+            #     text = tw.get_tweetinfo(t['id']).contents['text'] 
+            #     if text not in tweets.get(date,[]):
+            #         tweets[date] = tweets.get(date,[]) + [text]
+
+                
+        earliest = min(tweets.keys())
+        latest = max(tweets.keys())
+        print(f"got tweets {earliest} to {latest} {len(tweets)}")
+        if earliest <= datefrom.date(): #TODO: ensure we have every tweet in sequence?
+            break
+        else:
+            print(f"Retrying: Earliest {earliest}")
+    with open(filename,"wb") as fp:
+        pickle.dump(tweets, fp)
+    return tweets
+
+
 
 ############
 # Thai province helpers
@@ -755,6 +854,14 @@ def get_province(prov, ignore_error=False):
 def join_provinces(df, on):
     trim = lambda x: removeprefix(x,"จ.").strip(' .')
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
+
+
+def area_crosstab(df, col, suffix):
+    given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
+    given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
+    given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
+    return given_by_area_2
+
 
 
 
@@ -1547,11 +1654,8 @@ def get_cases_by_demographics_api():
     case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
     # dump mappings to file so can be inspected
-    matched.value_counts().reset_index().rename(columns={0:"count"}).to_csv(
-        "api/risk_groups.csv",
-        index=False 
-    )
-
+    counts = matched.value_counts().to_frame("count")
+    export(counts, "risk_groups", csv_only=True)
 
     return case_risks.combine_first(case_ages)
 
@@ -1568,93 +1672,6 @@ def get_cases_by_area():
     export(case_areas, "cases_by_area")
     
     return case_areas
-
-
-def parse_tweet(tw, tweet, found, *matches):
-    is_match = lambda tweet, *matches: any(m in tweet for m in matches)
-    if not is_match(tweet.get('text',tweet.get("comment","")), *matches):
-        return ""
-    text = tw.get_tweetinfo(tweet['id']).contents['text']
-    if any(text in t for t in found):
-        return ""
-    # TODO: ensure tweets are [1/2] etc not just "[" and by same person
-    if "[" not in text:
-        return text
-    for t in sorted(tw.get_tweetcomments(tweet['id']).contents, key=lambda t:t['id']):
-        rest = parse_tweet(tw, t, found+[text], *matches)
-        if rest and rest not in text:
-            text += " " + rest 
-    return text
-
-def get_tweets_from(userid, datefrom, dateto, *matches):
-    import pickle
-    tw = TwitterScraper()
-    filename = f"tweets/tweets2_{userid}.pickle"
-    os.makedirs("tweets", exist_ok=True)
-    #is_match = lambda tweet, *matches: any(m in tweet for m in matches)
-    try:
-        with open(filename,"rb") as fp:
-            tweets = pickle.load(fp)
-    except:
-        tweets = {}
-    latest = max(tweets.keys()) if tweets else None
-    if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
-        return tweets
-    for limit in ([50,2000,5000] if tweets else [5000]):
-        print(f"Getting {limit} tweets")       
-        for tweet in sorted(tw.get_tweets(userid, count=limit).contents,key=lambda t:t['id']):
-            date = tweet['created_at'].date()
-            text = parse_tweet(tw, tweet, tweets.get(date,[]), *matches)
-            if text:
-                tweets[date] = tweets.get(date,[]) + [text]
-            # if not is_match(tweet['text'], *matches):
-            #     continue
-            # text = tw.get_tweetinfo(tweet['id']).contents['text']
-            # if text not in tweets.get(date,[]):
-            #     tweets[date] = tweets.get(date,[]) + [text]
-            # # TODO: ensure tweets are [1/2] etc not just "[" and by same person
-            # if "[" not in text:
-            #     continue
-            # rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if is_match(t['comment'],"[", *matches)]
-            # for t in rest:
-            #     text = tw.get_tweetinfo(t['id']).contents['text'] 
-            #     if text not in tweets.get(date,[]):
-            #         tweets[date] = tweets.get(date,[]) + [text]
-
-                
-        earliest = min(tweets.keys())
-        latest = max(tweets.keys())
-        print(f"got tweets {earliest} to {latest} {len(tweets)}")
-        if earliest <= datefrom.date(): #TODO: ensure we have every tweet in sequence?
-            break
-        else:
-            print(f"Retrying: Earliest {earliest}")
-    with open(filename,"wb") as fp:
-        pickle.dump(tweets, fp)
-
-    # # join tweets
-    # for date,lines in tweets.items():
-    #     newlines = []
-    #     tomerge = []
-    #     i=1
-    #     for line in lines:
-    #         m = re.search(r"\[([0-9]+)\/([0-9]+)\]", line)
-    #         if m:
-    #             i = int(m.group(1))
-    #             of = int(m.group(2))
-    #             tomerge.append( (i,of, line))
-    #         elif "[" in line:
-    #             tomerge.append((i,0,line))
-    #             i+=1
-    #         else:
-    #             newlines.append(line)
-    #     # TODO: somethings he forgets to put in [2/2]. need to use threads
-    #     if tomerge:        
-    #         tomerge.sort()
-    #         text = ' '.join(text for i,of,text in tomerge)
-    #         newlines.append(text)
-    #     tweets[date] = newlines
-    return tweets
 
 
 
@@ -1766,8 +1783,7 @@ def get_cases_by_prov_tweets():
     return dfprov, df
 
 
-is_header = lambda x: "ลักษณะผู้ติดเชื้อ" in x
-title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
+#title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
 
 def briefing_case_detail_lines(soup):
     parts = soup.find_all('p')
@@ -1785,7 +1801,8 @@ def briefing_case_detail_lines(soup):
         extras = table.pop(0)
     # if only one table we can use camelot to get the table. will be slow but less problems
     #ctable = camelot.read_pdf(file, pages="6", process_background=True)[0].df
-        
+    is_header = lambda x: "ลักษณะผู้ติดเชื้อ" in x
+
     for titles,cells in pairwise(table):
         title = titles[0].strip("(ต่อ)").strip()
         header, cells = seperate(cells, is_header)
@@ -2220,25 +2237,13 @@ def get_hospital_resources():
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index(["Date","province"])
     print("Active Cases:",data.sum().to_string(index=False, header=False))
-    if os.path.exists("api/hospital_resources"):
-        old = pd.read_csv(
-            "api/hospital_resources.csv",
-            #orient="records",
-        )
-        old['Date'] = pd.to_datetime(old['Date'])
+    old = import_csv("hospital_resources")
+    if old is not None:
         old = old.set_index(["Date", "province"])
         # TODO: seems to be dropping old data. Need to test
         data = add_data(old, data)
-        #data = data.combine_first(old) # Overwrite todays data if called twice.
     export(data, "hospital_resources", csv_only=True)
     return data
-
-
-def area_crosstab(df, col, suffix):
-    given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
-    given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
-    given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
-    return given_by_area_2
 
 
 def get_vaccinations():
@@ -2477,15 +2482,6 @@ def thaipop2(num, pos):
     return f'{num:.1f}M / {pp:.1f}%'
 
 
-def rearrange(l, *first):
-    l = list(l)
-    result = []
-    for f in first:
-        if type(f) != int:
-            f = l.index(f)+1
-        result.append(l[f-1])
-        l[f-1] = None
-    return result + [i for i in l if i is not None]
 
 FIRST_AREAS = [13, 4, 5, 6, 1] # based on size-ish
 AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
@@ -2532,7 +2528,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("outputs/tests.png")
+    savefig(plt,"tests.png")
 
 
     fig, ax = plt.subplots()
@@ -2556,7 +2552,7 @@ def save_plots(df):
         ],
     )
     plt.tight_layout()
-    plt.savefig("outputs/tested_pui.png")
+    savefig(plt,"tested_pui.png")
 
 
     ###############
@@ -2608,7 +2604,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("outputs/positivity.png")
+    savefig(plt,"positivity.png")
 
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2020-12-12":].plot(
@@ -2629,7 +2625,7 @@ def save_plots(df):
     # )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("outputs/positivity_2.png")
+    savefig(plt,"positivity_2.png")
 
     df["PUI per Case"] = df["Tested PUI (MA)"].divide(df["Cases (MA)"]) 
     df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
@@ -2673,7 +2669,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("outputs/tests_per_case.png")
+    savefig(plt,"tests_per_case.png")
 
 
     fig, ax = plt.subplots()
@@ -2701,7 +2697,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("outputs/positivity_all.png")
+    savefig(plt,"positivity_all.png")
 
 
     #################
@@ -2728,7 +2724,7 @@ def save_plots(df):
         "djay.github.io/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("outputs/tests_public_ratio.png")
+    savefig(plt,"tests_public_ratio.png")
 
 
     ##################
@@ -2759,7 +2755,7 @@ def save_plots(df):
         ]
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases.png")
+    savefig(plt,"cases.png")
 
     fig, ax = plt.subplots()
     df.plot(
@@ -2781,7 +2777,7 @@ def save_plots(df):
         "djay.github.io/covidthailand",
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_all.png")
+    savefig(plt,"cases_all.png")
 
 
 
@@ -2797,7 +2793,7 @@ def save_plots(df):
         "djay.github.io/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_types.png")
+    savefig(plt,"cases_types.png")
 
     cols = ["Cases Symptomatic","Cases Asymptomatic"]
     df['Cases Symptomatic Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
@@ -2813,7 +2809,7 @@ def save_plots(df):
         "djay.github.io/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_sym.png")
+    savefig(plt,"cases_sym.png")
 
 
     fig, ax = plt.subplots()
@@ -2828,7 +2824,7 @@ def save_plots(df):
         "djay.github.io/covidthailand"
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_types_all.png")
+    savefig(plt,"cases_types_all.png")
 
     cols = [c for c in df.columns if str(c).startswith("Age ")]
     for c in cols:
@@ -2866,7 +2862,7 @@ def save_plots(df):
     a1.set_ylabel("Percent")
     a1.xaxis.label.set_visible(False)
     plt.tight_layout()
-    plt.savefig("outputs/cases_ages_2.png")
+    savefig(plt,"cases_ages_2.png")
 
     df.plot(
         ax=ax,
@@ -2876,7 +2872,7 @@ def save_plots(df):
         title=title
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_ages_all.png")
+    savefig(plt,"cases_ages_all.png")
 
 
     title="Thailand Covid Cases by Risk\n"\
@@ -2895,7 +2891,7 @@ def save_plots(df):
         title=title
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_causes_2.png")
+    savefig(plt,"cases_causes_2.png")
 
     df.plot(
         ax=ax,
@@ -2905,7 +2901,7 @@ def save_plots(df):
         title=title,
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_causes_all.png")
+    savefig(plt,"cases_causes_all.png")
 
 
     ##########################
@@ -2932,7 +2928,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/tests_area.png")
+    savefig(plt,"tests_area.png")
 
     cols = [f"Pos Area {area}" for area in range(1, 15)]
     fig, ax = plt.subplots()
@@ -2950,7 +2946,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/pos_area.png")
+    savefig(plt,"pos_area.png")
 
 
     cols = [f"Tests Daily {area}" for area in range(1, 14)]
@@ -2978,7 +2974,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/tests_area_daily_2.png")
+    savefig(plt,"tests_area_daily_2.png")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -2995,7 +2991,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/tests_area_daily.png")
+    savefig(plt,"tests_area_daily.png")
 
     cols = [f"Pos Daily {area}" for area in range(1, 14)]
     pos_cols = [f"Pos Area {area}" for area in range(1, 14)]
@@ -3022,7 +3018,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/pos_area_daily_2.png")
+    savefig(plt,"pos_area_daily_2.png")
     fig, ax = plt.subplots()
     df.plot(
         ax=ax,
@@ -3039,7 +3035,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/pos_area_daily.png")
+    savefig(plt,"pos_area_daily.png")
 
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -3080,7 +3076,7 @@ def save_plots(df):
     ax.legend(AREA_LEGEND_UNKNOWN)
     #ax.subtitle("Excludes proactive & private tests")
     plt.tight_layout()
-    plt.savefig("outputs/positivity_area.png")
+    savefig(plt,"positivity_area.png")
 
     fig, ax = plt.subplots()
     df.loc["2020-12-12":].plot(
@@ -3097,7 +3093,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("outputs/positivity_area_2.png")
+    savefig(plt,"positivity_area_2.png")
 
 
     for area in range(1, 15):
@@ -3117,7 +3113,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("outputs/positivity_area_unstacked_2.png")
+    savefig(plt,"positivity_area_unstacked_2.png")
     fig, ax = plt.subplots(figsize=[20, 10])
     df.plot.area(
         ax=ax,
@@ -3131,7 +3127,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("outputs/positivity_area_unstacked.png")
+    savefig(plt,"positivity_area_unstacked.png")
 
 
     for area in range(1, 14):
@@ -3154,7 +3150,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("outputs/casestests_area_unstacked_2.png")
+    savefig(plt,"casestests_area_unstacked_2.png")
 
     #########################
     # Case by area plots
@@ -3184,7 +3180,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("outputs/cases_areas_1.png")
+    savefig(plt,"cases_areas_1.png")
 
     fig, ax = plt.subplots()
     df["2020-12-12":].plot(
@@ -3197,7 +3193,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("outputs/cases_areas_2.png")
+    savefig(plt,"cases_areas_2.png")
 
     fig, ax = plt.subplots()
     df.plot(
@@ -3210,7 +3206,7 @@ def save_plots(df):
     )
     ax.legend(legend)
     plt.tight_layout()
-    plt.savefig("outputs/cases_areas_all.png")
+    savefig(plt,"cases_areas_all.png")
 
 
     cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 15)],*FIRST_AREAS)
@@ -3227,7 +3223,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("outputs/cases_areas_walkins.png")
+    savefig(plt,"cases_areas_walkins.png")
 
     cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 15)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
@@ -3241,7 +3237,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("outputs/cases_areas_proactive.png")
+    savefig(plt,"cases_areas_proactive.png")
 
 
     for area in range(1, 14):
@@ -3261,7 +3257,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND_UNKNOWN)
     plt.tight_layout()
-    plt.savefig("outputs/cases_from_positives_area.png")
+    savefig(plt,"cases_from_positives_area.png")
 
 
 
@@ -3296,7 +3292,7 @@ def save_plots(df):
     #     colormap="tab20",
     # )
     plt.tight_layout()
-    plt.savefig("outputs/cases_active_2.png")
+    savefig(plt,"cases_active_2.png")
 
 
     # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
@@ -3338,7 +3334,7 @@ def save_plots(df):
     ])
 
     plt.tight_layout()
-    plt.savefig("outputs/cases_cumulative_3.png")
+    savefig(plt,"cases_cumulative_3.png")
 
 
 
@@ -3363,7 +3359,7 @@ def save_plots(df):
     )
     plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
     plt.tight_layout()
-    plt.savefig("outputs/deaths_age_3.png")
+    savefig(plt,"deaths_age_3.png")
 
     cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
     #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
@@ -3378,7 +3374,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("outputs/deaths_by_area_3.png")
+    savefig(plt,"deaths_by_area_3.png")
 
 
     fig, ax = plt.subplots(figsize=[20, 10])
@@ -3401,7 +3397,7 @@ def save_plots(df):
     )
     ax.legend([leg(c) for c in cols])
     plt.tight_layout()
-    plt.savefig("outputs/vac_groups_3.png")
+    savefig(plt,"vac_groups_3.png")
 
     cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
@@ -3417,7 +3413,7 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("outputs/vac_areas_s1_3.png")
+    savefig(plt,"vac_areas_s1_3.png")
 
     cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
@@ -3433,11 +3429,11 @@ def save_plots(df):
     )
     ax.legend(AREA_LEGEND)
     plt.tight_layout()
-    plt.savefig("outputs/vac_areas_s2_3.png")
+    savefig(plt,"vac_areas_s2_3.png")
 
 
     # Top 5 vaccine rollouts
-    vac = pd.read_csv("api/vaccinations.csv")
+    vac = import_csv("vaccinations")
     vac['Date'] = pd.to_datetime(vac["Date"])
     vac = vac.join(PROVINCES["Population"], on="Province")
     vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
@@ -3467,7 +3463,7 @@ def save_plots(df):
         "djay.github.io/covidthailand",
     )
     plt.tight_layout()
-    plt.savefig("outputs/vac_top5_full_3.png")
+    savefig(plt,"vac_top5_full_3.png")
 
 
 
@@ -3477,6 +3473,7 @@ def scrape_and_combine():
         # Comment out what you don't need to run
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
+        cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()
@@ -3486,10 +3483,6 @@ def scrape_and_combine():
         
         hospital = get_hospital_resources()
         vac = get_vaccinations()
-
-
-        #print(cases_by_area)
-        #print(situation)
 
         tests = get_tests_by_day()
         tests_by_area = get_tests_by_area()
@@ -3504,13 +3497,7 @@ def scrape_and_combine():
     print(df)
 
     if USE_CACHE_DATA:
-        old = pd.read_csv(
-            "api/combined.csv",
-            #date_format="iso",
-            #indent=3,
-            #orient="records",
-        )
-        old['Date'] = pd.to_datetime(old['Date'])
+        old = import_csv("combined")
         old = old.set_index("Date")
         df = df.combine_first(old)
 
