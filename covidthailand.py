@@ -2658,7 +2658,7 @@ def save_plots(df):
 #            "Positivity PUI (MA)",
             "Cases per PUI3",
             #"Positivity Walkins/PUI (MA)",
-            "Positive Rate Public (MA)",
+            "Positive Rate Private (MA)",
         ]
     un_ma = [
             "Positivity XLS",
@@ -3398,11 +3398,11 @@ def save_plots(df):
         "Hospitalized Field",
         "Recovered since 2021-04-01", 
     ]
-    df["2021-04-01":].plot.line(
-        ax=ax,
-        y="Cases since 2021-04-01",
-        #colormap="tab20",
-    )
+    # df["2021-04-01":].plot.line(
+    #     ax=ax,
+    #     y="Cases since 2021-04-01",
+    #     #colormap="tab20",
+    # )
     df["2021-04-01":].plot.area(
         ax=ax,
         y=cols,
@@ -3412,13 +3412,13 @@ def save_plots(df):
         "djay.github.io/covidthailand"
     )
     ax.legend([
+#        "Cases since 1st April" 
         "Deaths from cases since 1st April", 
         "On Ventilator",
         "In severe condition",
-        "Other Active cases",
+        "In Hospital",
         "In Field Hospital",
         "Recovered from cases since 1st April",
-        "Cases since 1st April" 
     ])
 
     plt.tight_layout()
