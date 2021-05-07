@@ -1768,7 +1768,7 @@ def briefing_case_detail(date, pages):
             else:
                 case_type = "Walkin"
             all_cells.setdefault(title,[]).append(lines)
-            print(title,case_type)
+            #print(title,case_type)
 
             for prov_num, line in lines:
                 #for prov in provs: # TODO: should really be 1. make split only split 1.
@@ -1802,7 +1802,7 @@ def briefing_case_detail(date, pages):
                         sym, asym, unknown = None, None, None
                     else:
                         assert asym + sym + unknown == num
-                    print(num,prov)
+                    #print(num,prov)
                     rows.append((date, prov,case_type, num, asym, sym))
     # checksum on title totals
     for title, total in totals.items():
@@ -1891,7 +1891,7 @@ def briefing_case_types(date, pages):
         "Recovered",
         "Deaths",
     ]).set_index(['Date'])
-    print("Briefing Cases:", df.to_string(header=False, index=False))
+    print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
 NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
@@ -1997,7 +1997,7 @@ def briefing_deaths(file, date, pages):
                 columns=["Date", "Province", "Deaths"]
             ).set_index(["Date", "Province"])
             assert male+female == dfprov['Deaths'].sum()
-            print("Deaths:", sum.to_string(header=False, index=False))
+            print(f"{date.date()} Deaths:", sum.to_string(header=False, index=False))
             return all, sum, dfprov
 
         elif "วิตของประเทศไทย" not in text:
@@ -2077,13 +2077,13 @@ def briefing_deaths(file, date, pages):
             #         case_num, age, *dates = get_next_numbers("")
             #         print(row)
     if all.empty:
-        print(f"Deaths: {date} None")
+        print(f"{date.date()}: Deaths:  0")
         sum = pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
             columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
         dfprov = pd.DataFrame(columns=["Date","Province","Deaths"]).set_index(["Date","Province"])        
     else:
-        print("Deaths: ",all.to_string(header=False, index=False))
+        #print("{date.date()} Deaths: ",all.to_string(header=False, index=False))
         # calculate daily summary stats
         med_age, min_age, max_age = all['age'].median(), all['age'].min(), all['age'].max()
         g = all['gender'].value_counts()
@@ -2091,6 +2091,7 @@ def briefing_deaths(file, date, pages):
         sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
             columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
+        print("{date.date()} Deaths: ",sum.to_string(header=False, index=False))
         dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
     
     # calculate per provice counts
@@ -2146,7 +2147,7 @@ def get_cases_by_prov_briefings():
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
-            print(f"WARNING: briefing provs={prov_total}, cases={today_total}")
+            print(f"{date.date()} WARNING: briefing provs={prov_total}, cases={today_total}")
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
