@@ -336,8 +336,9 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
-- 2021-04-05 - added recoverd to active cases
-- 2021-04-04 - plots of deaths and vaccinations
+- 2021-05-06 - add top 5 fully vaccinated provinces
+- 2021-05-05 - added recoverd to active cases
+- 2021-05-04 - plots of deaths and vaccinations
 - 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
@@ -351,9 +352,9 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
-- plot top 5 fully vaccinated provices
-- plot cumulative cases, recoveries, deaths
-   - maybe from different start points? like 3rd wave etc.
+- plot top 5 provinces for cases - increasing?
+- parse unofficial tweets to get cases/deaths earlier 
+  - e.g https://twitter.com/ThaiNewsReports/status/1390108647573778438
 - Fix unknowns to make more clear
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
 - find historical source for mild vs severe hospitalisations
