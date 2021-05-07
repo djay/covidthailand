@@ -2374,7 +2374,7 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         pass
     else:
@@ -2542,6 +2542,34 @@ AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
 AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
 TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
+
+
+def top_provinces(df, metricfunc, valuefunc, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
+    "return df with columns of valuefunc for the top x provinces by metricfunc"
+    # Top 5 dfcine rollouts
+    old_index = df.index.names
+    df["metric"] = metricfunc(df)
+    last_day = df.reset_index().set_index("Date")
+    last_day = last_day.loc[last_day.last_valid_index()]
+    top5 = last_day.nlargest(num, "metric").reset_index()
+    # sort data into top 5 + rest
+    top5[name] = top5['Province']
+    df = df.join(top5.set_index("Province")[name], on="Province").reset_index()
+    if other_name:
+        df[name] = df[name].fillna(other_name)
+        df = df.groupby(["Date",name]).sum().reset_index()
+    if old_index[0]:
+        df = df.set_index(old_index)
+    df['values'] = valuefunc(df)
+    df = df.reset_index()
+    series = pd.crosstab(df['Date'], df[name], df['values'], aggfunc="sum")
+
+    cols =list(top5[name]) # in right order
+    if other_name:
+        return series[cols+[other_name]]
+    else:
+        return series[cols]
+        
 
 
 def save_plots(df):
@@ -3489,28 +3517,31 @@ def save_plots(df):
     # Top 5 vaccine rollouts
     vac = pd.read_csv("api/vaccinations.csv")
     vac['Date'] = pd.to_datetime(vac["Date"])
+    vac = vac.set_index('Date')
     vac = vac.join(PROVINCES["Population"], on="Province")
-    vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
-    vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
-    #vac = vac.set_index(["Date","Province"])
-    top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 2")
-    # sort data into top 5 + rest
-    top5['Top 5 Vaccinated Provinces'] = top5['Province']
-    vac = vac.join(top5.set_index("Province")['Top 5 Vaccinated Provinces'], on="Province")
-    vac['Top 5 Vaccinated Provinces'] = vac["Top 5 Vaccinated Provinces"].fillna("Other Provinces")
-    vac = vac.groupby(["Date","Top 5 Vaccinated Provinces"]).sum().reset_index()
-    # recalculate for other category
-    vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
-    vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
-    # TODO: could I have just done crosstab with mean instead?
-    
-    series = pd.crosstab(vac['Date'], vac['Top 5 Vaccinated Provinces'], vac[ "Vac Complete % 2"], aggfunc="sum")
+    valuefunc = lambda df: df["Vac Given 2 Cum"] / df['Population'] * 100
+    top5 = top_provinces(vac, valuefunc, valuefunc)
 
-    cols = list(top5['Top 5 Vaccinated Provinces'])
+    # vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
+    # vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
+    # #vac = vac.set_index(["Date","Province"])
+    # top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 2")
+    # # sort data into top 5 + rest
+    # top5['Top 5 Vaccinated Provinces'] = top5['Province']
+    # vac = vac.join(top5.set_index("Province")['Top 5 Vaccinated Provinces'], on="Province")
+    # vac['Top 5 Vaccinated Provinces'] = vac["Top 5 Vaccinated Provinces"].fillna("Other Provinces")
+    # vac = vac.groupby(["Date","Top 5 Vaccinated Provinces"]).sum().reset_index()
+    # # recalculate for other category
+    # vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
+    # vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
+    # # TODO: could I have just done crosstab with mean instead?
+    
+    # series = pd.crosstab(vac['Date'], vac['Top 5 Vaccinated Provinces'], vac[ "Vac Complete % 2"], aggfunc="sum")
+
+    # cols = list(top5['Top 5 Vaccinated Provinces'])
     fig, ax = plt.subplots(figsize=[20, 10])
-    series.loc["2021-02-16":].plot.area(
+    top5.loc["2021-02-16":].plot.area(
         ax=ax,
-        y = cols + ["Other Provinces"],
         stacked=False,
         title="Top 5 Thai Provinces Closest to Fully Vaccinated\n"
         f"Updated: {TODAY().date()}\n"
@@ -3519,6 +3550,25 @@ def save_plots(df):
     plt.tight_layout()
     plt.savefig("outputs/vac_top5_full_3.png")
 
+
+    cases = pd.read_csv("api/cases_by_province.csv")
+    cases['Date'] = pd.to_datetime(cases["Date"])
+    cases = cases.set_index(["Date","Province"])
+
+    cases["Cases (MA)"] = cases["Cases"].rolling(7, min_periods=1).mean()
+    metricfunc = lambda df: df["Cases (MA)"].pct_change(periods=3).rolling(7, min_periods=1).mean() 
+    valuefunc = lambda df: df["Cases"] 
+    top5 = top_provinces(cases, metricfunc, valuefunc, other_name=None)
+    fig, ax = plt.subplots(figsize=[20, 10])
+    top5.loc["2021-02-16":].plot.line(
+        ax=ax,
+        #stacked=False,
+        title="Top 5 Thai Provinces by Cases\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand",
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/cases_top5_3.png")
 
 
 if __name__ == "__main__":
