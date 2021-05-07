@@ -404,7 +404,7 @@ def situation_cases_cum(parsedPDF, date):
         debug=False
     )
     if not cases:
-        return
+        return pd.DataFrame()
     cases, *_ = cases
     if date < d("2020-04-09"):
         return pd.DataFrame([(date, cases)],columns=["Date", "Cases Cum"]).set_index("Date")
@@ -494,7 +494,7 @@ def situation_cases_cum(parsedPDF, date):
 
 def situation_cases_new(parsedPDF, date):
     if date < d("2020-11-02"):
-        return
+        return pd.DataFrame()
     _,rest = get_next_numbers(
         parsedPDF, 
         "The Disease Situation in Thailand", 
@@ -506,7 +506,7 @@ def situation_cases_new(parsedPDF, date):
         debug=False
     )
     if not cases or date < d("2020-05-09"):
-        return
+        return pd.DataFrame()
     cases, *_ = cases
     local, _ = get_next_numbers(rest, "(?i)(?:Local )?Transmission", debug=False)
     local, *_ = local if local else [None]
@@ -564,7 +564,7 @@ def situation_pui(parsedPDF, date):
         if date > dateutil.parser.parse("2020-01-30") and not numbers:
             raise Exception(f"Problem parsing {date}")
         elif not numbers:
-            return
+            return pd.DataFrame()
         tests_total, active_finding, asq, not_pui = [None] * 4
         pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
         pui_port = pui_airport + pui_seaport
@@ -618,30 +618,25 @@ def get_en_situation():
         date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
             continue # TODO: can manually put in numbers before this
-        df = situation_pui(parsedPDF, date)
-        if df is not None:
-            results = results.combine_first(df)
-        df = situation_cases_cum(parsedPDF, date)
-        if df is not None:
-            results = results.combine_first(df)
-        df = situation_cases_new(parsedPDF, date)
-        if df is not None:
-            results = results.combine_first(df)
+        pui = situation_pui(parsedPDF, date)
+        cases = situation_cases_cum(parsedPDF, date)
+        new_cases = situation_cases_new(parsedPDF, date)
+        row = pui.combine_first(cases).combine_first(new_cases)
+        results = results.combine_first(row)
         cums = [c for c in results.columns if ' Cum' in c]
         # if len(results) > 1 and (results.iloc[0][cums] > results.iloc[1][cums]).any():
         #     print((results.iloc[0][cums] > results.iloc[1][cums]))
         #     print(results.iloc[0:2])
             #raise Exception("Cumulative data didn't increase")
-        row = results.iloc[0].to_dict()
-        print(
-            file, 
-            "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
-            "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
-            "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
-            "i{Cases Imported Cum:.0f}({Cases Imported:.0f})\t"
-            "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
-            "".format(**row)
-        )
+        #row = results.iloc[0].to_dict()
+        print(date.date(), file, row.to_string(header=False, index=False))
+        #     "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
+        #     "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
+        #     "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
+        #     "i{Cases Imported Cum:.0f}({Cases Imported:.0f})\t"
+        #     "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
+        #     "".format(**row)
+        # )
     # Missing data. filled in from th infographic
     missing = [
         (d("2020-12-19"),2476,0, 0),
@@ -791,16 +786,16 @@ def get_thai_situation():
         df = situation_pui_th(parsedPDF, date, results)
         if df is not None:
             results = results.combine_first(df)
-            print(
-                file, 
-                "p{Tested PUI Cum:.0f}\t"
-                "t{Tested Cum:.0f}\t"
-                "{Tested Proactive Cum:.0f}\t"
-                "{Tested Quarantine Cum:.0f}\t" 
-                "{Tested Not PUI Cum:.0f}\t"
-                "".format(**results.iloc[0].to_dict()))
+            print(date.date(), file, df.to_string(header=False, index=False))
+                # file, 
+                # "p{Tested PUI Cum:.0f}\t"
+                # "t{Tested Cum:.0f}\t"
+                # "{Tested Proactive Cum:.0f}\t"
+                # "{Tested Quarantine Cum:.0f}\t" 
+                # "{Tested Not PUI Cum:.0f}\t"
+                # "".format(**results.iloc[0].to_dict()))
 
-    print(results)
+    #print(results)
     return results
 
 def cum2daily(results):
@@ -869,14 +864,15 @@ def get_tests_by_day():
         row.Pos = float(row.Pos) + row.Pos / all_pos * pos
         row.Total = float(row.Total) + row.Total / all_total * total
     # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
-    print(tests["Pos"].sum(), pos + all_pos)
-    print(tests["Total"].sum(), total + all_total)
+    #print(tests["Pos"].sum(), pos + all_pos)
+    #print(tests["Total"].sum(), total + all_total)
     # fix datetime
     tests.reset_index(drop=False, inplace=True)
     tests["Date"] = pd.to_datetime(tests["Date"])
     tests.set_index("Date", inplace=True)
 
     tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
+    print(file, len(tests))
 
     return tests
 
@@ -906,12 +902,13 @@ def get_tests_by_area():
                 tests = list(series["จำนวนตรวจ"])
                 row = pos + tests + [sum(pos), sum(tests)]
                 results = spread_date_range(start, end, row, columns)
-                print(results)
+                #print(results)
                 data = data.combine_first(results)
                 raw = raw.combine_first(pd.DataFrame(
                     [[start,end,]+pos + tests],
                     columns=raw_cols
                 ).set_index("Start"))
+        print(file)
     # Also need pdf copies becaus of missing pptx
     for file in dav_files(ext=".pdf"):
         pages = parse_file(file, html=False, paged=True)
@@ -949,12 +946,13 @@ def get_tests_by_area():
             tests = numbers[tests_start : tests_start + 13]
             row = pos + tests + [sum(pos), sum(tests)]
             results = spread_date_range(start, end, row, columns)
-            print(results)
+            #print(results)
             data = data.combine_first(results)
             raw = raw.combine_first(pd.DataFrame(
                 [[start,end,]+pos + tests],
                 columns=raw_cols
             ).set_index("Start"))
+        print(file)
     export(raw, "tests_by_area")
     return data
 
@@ -996,9 +994,12 @@ def get_tests_private_public():
                 df[f"Pos{private}"] = (
                     df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
                 )
-                print(df)
+                #print(df)
                 data = data.combine_first(df)
             # TODO: There is also graphs splt by hospital
+        print(file, len(data))
+        if not data.empty:
+            break # we only need the latest
     data['Pos Public'] = data['Pos'] - data['Pos Private']
     data['Tests Public'] = data['Tests'] - data['Tests Private']
     export(data, "tests_pubpriv")
@@ -1345,6 +1346,7 @@ def get_case_details_csv():
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
+    print("Covid19daily", file, cases.reset_index().iloc[-1].to_string(header=False, index=False))
     return cases
 
 def get_case_details_api():
@@ -2091,7 +2093,7 @@ def briefing_deaths(file, date, pages):
         sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
             columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
-        print("{date.date()} Deaths: ",sum.to_string(header=False, index=False))
+        print(f"{date.date()} Deaths: ",sum.to_string(header=False, index=False))
         dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
     
     # calculate per provice counts
@@ -2200,7 +2202,7 @@ def get_hospital_resources():
     data['Date'] = TODAY().date()
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index(["Date","province"])
-    print("Active Cases:",data.sum().to_string(index=False, header=False))
+    #print("Active Cases:",data.sum().to_string(index=False, header=False))
     if os.path.exists("api/hospital_resources"):
         old = pd.read_csv(
             "api/hospital_resources.csv",
@@ -2286,7 +2288,7 @@ def get_vaccinations():
                         [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                     allocations[(date,prov)] = [alloc,0,0,0]
             assert added > 7
-            print(f"{date}: {table} Vaccinations: {added}")
+            print(f"{date.date()}: {table} Vaccinations: {added}")
             continue
     df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
         "Date",
