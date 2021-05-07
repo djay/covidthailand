@@ -2544,25 +2544,28 @@ TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
 
-def top_provinces(df, metricfunc, valuefunc, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
+def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
     "return df with columns of valuefunc for the top x provinces by metricfunc"
     # Top 5 dfcine rollouts
     old_index = df.index.names
-    df["metric"] = metricfunc(df)
-    last_day = df.reset_index().set_index("Date")
-    last_day = last_day.loc[last_day.last_valid_index()]
-    top5 = last_day.nlargest(num, "metric").reset_index()
+    valuefunc = metricfunc if valuefunc is None else valuefunc
+
+    # Apply metric on each province by itself
+    with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(0).reset_index().set_index("Date")
+ 
+    # = metricfunc(df)
+    last_day = with_metric.loc[with_metric.last_valid_index()]
+    top5 = last_day.nlargest(num, 0).reset_index()
     # sort data into top 5 + rest
     top5[name] = top5['Province']
     df = df.join(top5.set_index("Province")[name], on="Province").reset_index()
     if other_name:
         df[name] = df[name].fillna(other_name)
         df = df.groupby(["Date",name]).sum().reset_index()
-    if old_index[0]:
-        df = df.set_index(old_index)
-    df['values'] = valuefunc(df)
-    df = df.reset_index()
-    series = pd.crosstab(df['Date'], df[name], df['values'], aggfunc="sum")
+    # apply the value function to get all the values
+    values = df.reset_index().set_index("Date").groupby(name).apply(valuefunc).rename(0).reset_index()
+    # put the provinces into cols
+    series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="sum")
 
     cols =list(top5[name]) # in right order
     if other_name:
@@ -3520,25 +3523,7 @@ def save_plots(df):
     vac = vac.set_index('Date')
     vac = vac.join(PROVINCES["Population"], on="Province")
     valuefunc = lambda df: df["Vac Given 2 Cum"] / df['Population'] * 100
-    top5 = top_provinces(vac, valuefunc, valuefunc)
-
-    # vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
-    # vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
-    # #vac = vac.set_index(["Date","Province"])
-    # top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 2")
-    # # sort data into top 5 + rest
-    # top5['Top 5 Vaccinated Provinces'] = top5['Province']
-    # vac = vac.join(top5.set_index("Province")['Top 5 Vaccinated Provinces'], on="Province")
-    # vac['Top 5 Vaccinated Provinces'] = vac["Top 5 Vaccinated Provinces"].fillna("Other Provinces")
-    # vac = vac.groupby(["Date","Top 5 Vaccinated Provinces"]).sum().reset_index()
-    # # recalculate for other category
-    # vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
-    # vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
-    # # TODO: could I have just done crosstab with mean instead?
-    
-    # series = pd.crosstab(vac['Date'], vac['Top 5 Vaccinated Provinces'], vac[ "Vac Complete % 2"], aggfunc="sum")
-
-    # cols = list(top5['Top 5 Vaccinated Provinces'])
+    top5 = vac.pipe(topprov, valuefunc)
     fig, ax = plt.subplots(figsize=[20, 10])
     top5.loc["2021-02-16":].plot.area(
         ax=ax,
@@ -3555,20 +3540,21 @@ def save_plots(df):
     cases['Date'] = pd.to_datetime(cases["Date"])
     cases = cases.set_index(["Date","Province"])
 
-    cases["Cases (MA)"] = cases["Cases"].rolling(7, min_periods=1).mean()
-    metricfunc = lambda df: df["Cases (MA)"].pct_change(periods=3).rolling(7, min_periods=1).mean() 
-    valuefunc = lambda df: df["Cases"] 
-    top5 = top_provinces(cases, metricfunc, valuefunc, other_name=None)
+    #cases["Cases (MA)"] = cases["Cases"].rolling(7, min_periods=1).mean()
+    # could try polyfit = https://stackoverflow.com/questions/42920537/finding-increasing-trend-in-pandas
+    increasing = lambda adf: adf["Cases"].rolling(7, min_periods=1).mean().pct_change(periods=5) * adf["Cases"]
+    casesma = lambda adf: adf["Cases"].rolling(7, min_periods=1).mean() 
+    top5 = cases.pipe(topprov, increasing, casesma, other_name=None)
     fig, ax = plt.subplots(figsize=[20, 10])
-    top5.loc["2021-02-16":].plot.line(
+    top5.last("30d").plot.line(
         ax=ax,
         #stacked=False,
-        title="Top 5 Thai Provinces by Cases\n"
+        title="Provinces Most Increasing in Cases\n"
         f"Updated: {TODAY().date()}\n"
         "djay.github.io/covidthailand",
     )
     plt.tight_layout()
-    plt.savefig("outputs/cases_top5_3.png")
+    plt.savefig("outputs/cases_prov_increasing.png")
 
 
 if __name__ == "__main__":

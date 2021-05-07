@@ -25,8 +25,12 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 - [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 - You can also see [Cases by District broken down by walkin vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
-- Sources: [CCSA Daily Briefing](#dl-briefings),
-  [MOPH daily situation report](#dl-situation-reports)
+- Sources: [CCSA Daily Briefing](#dl-briefings)
+
+## Provinces with Growing Cases
+
+![Cases by Provinces Growing](https://github.com/djay/covidthailand/wiki/cases_prov_increasing.png)
+- Sources: [CCSA Daily Briefing](#dl-briefings)
 
 ## Cases by test type
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types.png)
@@ -336,8 +340,10 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
-- 2021-04-05 - added recoverd to active cases
-- 2021-04-04 - plots of deaths and vaccinations
+- 2021-05-07 - add top 5 increasing provinces
+- 2021-05-06 - add top 5 fully vaccinated provinces
+- 2021-05-05 - added recoverd to active cases
+- 2021-05-04 - plots of deaths and vaccinations
 - 2021-04-28 - rolling averages on area graphs to make them easier to read
 - 2021-04-25 - Add graph of cases by risk and active cases (inc severe)
 - 2021-04-25 - Scrape hospitalisation stats from briefing reports
@@ -351,9 +357,12 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
-- plot top 5 fully vaccinated provices
-- plot cumulative cases, recoveries, deaths
-   - maybe from different start points? like 3rd wave etc.
+- plot top 5 provinces for cases - increasing?
+- parse unofficial tweets to get cases/deaths earlier 
+  - e.g https://twitter.com/ThaiNewsReports/status/139010864757377843
+- do some graphs showing north, south, east, central, bangkok.
+  - same breakdown as briefing infographic
+- think of a metric that shows test capacity bottleneck or reluctance to test
 - Fix unknowns to make more clear
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?
 - find historical source for mild vs severe hospitalisations
@@ -363,6 +372,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
   - esp for the by district plots
 - switch to plotly to interactively inspect values
   - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
+  - or another way to show values at an x position. such as SVG, or css imgmap?
 - Extract from briefings
   - State Quarantine vs ASQ
 - get data source for antigen and antibody tests
