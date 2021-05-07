@@ -2372,7 +2372,6 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
@@ -3610,10 +3609,11 @@ def save_plots(df):
     plt.savefig("outputs/vac_top5_full_3.png")
 
 
-
 if __name__ == "__main__":
 
-    USE_CACHE_DATA = True and os.path.exists("api/combined")
+    # USE_CACHE_DATA = True and os.path.exists("api/combined")
+    USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
+    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\n\n')
 
     df = scrape_and_combine()
     df = calc_cols(df)
