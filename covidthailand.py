@@ -2618,7 +2618,7 @@ def save_plots(df):
 
 
     df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
-    df["Positive Rate Public (MA)"] = (df["Pos Public"] / df["Tests Public"]).rolling("7d").mean() * 100
+    df["Positive Rate Private (MA)"] = (df["Pos Private"] / df["Tests Private"]).rolling(7).mean() * 100
     df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     cols = [
@@ -2638,7 +2638,7 @@ def save_plots(df):
 #            "Share of PUI that have Covid",
             "Share of PUI*3 that have Covid",
 #            "Share of PUI that are Walkin Covid Cases",
-            "Share of Public PCR tests that have covid",
+            "Share of Private PCR tests that are positive",
             #"Positive Rate: without rolling average"
         ]
     title = "Positive Rate: Is enough testing happening?\n" \
