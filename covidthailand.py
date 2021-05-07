@@ -245,7 +245,9 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
-        ahead, *behind = re.split(f"({match})", content,1) if match else ("", "", content)
+        if type(match)==str:
+            match = re.compile(f"({match})")
+        ahead, *behind = match.split(content,1) if match else ("", "", content)
         if not behind:
             continue
         matched, *behind = behind
@@ -340,10 +342,10 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
         if is_remote_newer(file, modified, check):
-            print(f"Download: {file}",end="")
             r = s.get(url)
             if r.status_code != 200:
                 continue
+            print(f"Download: {file}",end="")
             os.makedirs(os.path.dirname(file), exist_ok=True)
             with open(file, "wb") as f:
                 for chunk in r.iter_content(chunk_size=512 * 1024):
@@ -1851,6 +1853,8 @@ def briefing_case_types(date, pages):
         recovered,_ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)")
         assert recovered is not None
 
+        deaths, _ = get_next_number(text, "เสียชีวิตสะสม", before=True)
+
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
         # north, _ = get_next_number(text, "ภาคเหนือ") 
@@ -1872,6 +1876,7 @@ def briefing_case_types(date, pages):
             respirator, 
             hospitalised,
             recovered,
+            deaths,
         ])
         break
     df = pd.DataFrame(rows, columns=[
@@ -1886,6 +1891,7 @@ def briefing_case_types(date, pages):
         "Hospitalized Respirator",
         "Hospitalized",
         "Recovered",
+        "Deaths",
     ]).set_index(['Date'])
     print("Briefing Cases:", df.to_string(header=False, index=False))
     return df
@@ -1951,12 +1957,13 @@ def briefing_deaths(file, date, pages):
     all = pd.DataFrame()
     for i,soup in enumerate(pages):
         text = soup.get_text()
-
-        if "ค่ามัธยฐานของอายุ" in text:
+        title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19)")
+        if title_re.search(text):
             # Summary of locations, reasons, medium age, etc
             tables = camelot.read_pdf(file, pages=str(i+2), process_background=True)
             if len(tables)<2:
                 continue
+
             df = tables[1].df
             province_count = {}
             for _, provinces, num in df[[0,1]].itertuples():
@@ -1973,11 +1980,15 @@ def briefing_deaths(file, date, pages):
             congenital_disease = df[2][0]  # TODO: parse?
             # Risk factors for COVID-19 infection
             risk_factors = df[3][0]
-            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", )
+            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ")
             med_age, min_age, max_age, *_ = numbers
             numbers, *_ = get_next_numbers(text, "ชาย")
             male, female, *_ = numbers
-            
+
+            title_num, _ = get_next_numbers(text, title_re)
+            day, year, deaths_title, *_ = title_num
+
+            assert male+female == deaths_title
             # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
 
             # TODO: what if they have more than one page?
@@ -2113,6 +2124,20 @@ def get_cases_by_prov_briefings():
         prov = briefing_province_cases(file, date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
+        
+        wrong_deaths_report = date in [
+            d("2021-03-19"), # 19th was reported on 18th
+            d("2021-03-18"), 
+            d("2021-03-17"), # 15th and 17th no details of death
+            d("2021-03-15"), 
+            d("2021-02-24"), # 02-24 infographic is image
+            d("2021-02-19"), # 02-19 death deatils is graphic (the doctor)
+            d("2021-02-15"), # no details of deaths (2)
+            d("2021-02-10"), # no details of deaths (1)
+        ] or date < d("2021-02-01") # TODO: check out why later
+        ideaths,ddeaths = today_types['Deaths'], death_sum['Deaths']
+        assert wrong_deaths_report or (ddeaths == ideaths).all(), f"Death details {ddeaths} didn't match total {ideaths}"
+
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
         types = types.combine_first(death_sum)
@@ -2351,7 +2376,7 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         pass
     else:
