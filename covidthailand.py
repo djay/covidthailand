@@ -4,6 +4,7 @@ from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
 from camelot.utils import validate_input
 from numpy import tril_indices_from
+import numpy as np
 import requests
 import tabula
 import os
@@ -3543,10 +3544,17 @@ def save_plots(df):
     cases['Date'] = pd.to_datetime(cases["Date"])
     cases = cases.set_index(["Date","Province"])
 
+    def trendline(data, order=1):
+        # simulate dates with equal numbers
+        dates = range(0,len(data.index.values))
+        coeffs = np.polyfit(dates, list(data), order)
+        slope = coeffs[-2]
+        return float(slope)
+
     #cases["Cases (MA)"] = cases["Cases"].rolling(7, min_periods=1).mean()
     # could try polyfit = https://stackoverflow.com/questions/42920537/finding-increasing-trend-in-pandas
-    increasing = lambda adf: adf["Cases"].rolling(7, min_periods=1).mean().pct_change(periods=5) * adf["Cases"]
-    casesma = lambda adf: adf["Cases"].rolling(7, min_periods=1).mean() 
+    increasing = lambda adf: adf["Cases"].rolling(7).mean().rolling(3).apply(trendline)
+    casesma = lambda adf: adf["Cases"].rolling(7).mean() 
     top5 = cases.pipe(topprov, increasing, casesma, other_name=None)
     fig, ax = plt.subplots(figsize=[20, 10])
     top5.last("30d").plot.line(
@@ -3558,6 +3566,20 @@ def save_plots(df):
     )
     plt.tight_layout()
     plt.savefig("outputs/cases_prov_increasing.png")
+
+    decreasing = lambda adf: 1/increasing(adf)
+    casesma = lambda adf: adf["Cases"].rolling(7).mean() 
+    top5 = cases.pipe(topprov, decreasing, casesma, other_name=None)
+    fig, ax = plt.subplots(figsize=[20, 10])
+    top5.last("30d").plot.line(
+        ax=ax,
+        #stacked=False,
+        title="Provinces Decreasing in Cases\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand",
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/cases_prov_decreasing.png")
 
 
 if __name__ == "__main__":
