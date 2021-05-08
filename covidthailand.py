@@ -3750,6 +3750,7 @@ def save_plots(df):
     plt.savefig("outputs/vac_top5_full_3.png")
 
 
+if __name__ == "__main__":
 
     # USE_CACHE_DATA = True and os.path.exists("api/combined")
     USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
