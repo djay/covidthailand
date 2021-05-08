@@ -407,7 +407,7 @@ def situation_cases_cum(parsedPDF, date):
         debug=False
     )
     if not cases:
-        return
+        return pd.DataFrame()
     cases, *_ = cases
     if date < d("2020-04-09"):
         return pd.DataFrame([(date, cases)],columns=["Date", "Cases Cum"]).set_index("Date")
@@ -497,7 +497,7 @@ def situation_cases_cum(parsedPDF, date):
 
 def situation_cases_new(parsedPDF, date):
     if date < d("2020-11-02"):
-        return
+        return pd.DataFrame()
     _,rest = get_next_numbers(
         parsedPDF, 
         "The Disease Situation in Thailand", 
@@ -509,7 +509,7 @@ def situation_cases_new(parsedPDF, date):
         debug=False
     )
     if not cases or date < d("2020-05-09"):
-        return
+        return pd.DataFrame()
     cases, *_ = cases
     local, _ = get_next_numbers(rest, "(?i)(?:Local )?Transmission", debug=False)
     local, *_ = local if local else [None]
@@ -567,7 +567,7 @@ def situation_pui(parsedPDF, date):
         if date > dateutil.parser.parse("2020-01-30") and not numbers:
             raise Exception(f"Problem parsing {date}")
         elif not numbers:
-            return
+            return pd.DataFrame()
         tests_total, active_finding, asq, not_pui = [None] * 4
         pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
         pui_port = pui_airport + pui_seaport
@@ -621,30 +621,25 @@ def get_en_situation():
         date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
             continue # TODO: can manually put in numbers before this
-        df = situation_pui(parsedPDF, date)
-        if df is not None:
-            results = results.combine_first(df)
-        df = situation_cases_cum(parsedPDF, date)
-        if df is not None:
-            results = results.combine_first(df)
-        df = situation_cases_new(parsedPDF, date)
-        if df is not None:
-            results = results.combine_first(df)
+        pui = situation_pui(parsedPDF, date)
+        cases = situation_cases_cum(parsedPDF, date)
+        new_cases = situation_cases_new(parsedPDF, date)
+        row = pui.combine_first(cases).combine_first(new_cases)
+        results = results.combine_first(row)
         cums = [c for c in results.columns if ' Cum' in c]
         # if len(results) > 1 and (results.iloc[0][cums] > results.iloc[1][cums]).any():
         #     print((results.iloc[0][cums] > results.iloc[1][cums]))
         #     print(results.iloc[0:2])
             #raise Exception("Cumulative data didn't increase")
-        row = results.iloc[0].to_dict()
-        print(
-            file, 
-            "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
-            "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
-            "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
-            "i{Cases Imported Cum:.0f}({Cases Imported:.0f})\t"
-            "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
-            "".format(**row)
-        )
+        #row = results.iloc[0].to_dict()
+        print(date.date(), file, row.to_string(header=False, index=False))
+        #     "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
+        #     "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
+        #     "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
+        #     "i{Cases Imported Cum:.0f}({Cases Imported:.0f})\t"
+        #     "q{Cases In Quarantine Cum:.0f}({Cases In Quarantine:.0f})\t"
+        #     "".format(**row)
+        # )
     # Missing data. filled in from th infographic
     missing = [
         (d("2020-12-19"),2476,0, 0),
@@ -794,16 +789,16 @@ def get_thai_situation():
         df = situation_pui_th(parsedPDF, date, results)
         if df is not None:
             results = results.combine_first(df)
-            print(
-                file, 
-                "p{Tested PUI Cum:.0f}\t"
-                "t{Tested Cum:.0f}\t"
-                "{Tested Proactive Cum:.0f}\t"
-                "{Tested Quarantine Cum:.0f}\t" 
-                "{Tested Not PUI Cum:.0f}\t"
-                "".format(**results.iloc[0].to_dict()))
+            print(date.date(), file, df.to_string(header=False, index=False))
+                # file, 
+                # "p{Tested PUI Cum:.0f}\t"
+                # "t{Tested Cum:.0f}\t"
+                # "{Tested Proactive Cum:.0f}\t"
+                # "{Tested Quarantine Cum:.0f}\t" 
+                # "{Tested Not PUI Cum:.0f}\t"
+                # "".format(**results.iloc[0].to_dict()))
 
-    print(results)
+    #print(results)
     return results
 
 def cum2daily(results):
@@ -872,14 +867,15 @@ def get_tests_by_day():
         row.Pos = float(row.Pos) + row.Pos / all_pos * pos
         row.Total = float(row.Total) + row.Total / all_total * total
     # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
-    print(tests["Pos"].sum(), pos + all_pos)
-    print(tests["Total"].sum(), total + all_total)
+    #print(tests["Pos"].sum(), pos + all_pos)
+    #print(tests["Total"].sum(), total + all_total)
     # fix datetime
     tests.reset_index(drop=False, inplace=True)
     tests["Date"] = pd.to_datetime(tests["Date"])
     tests.set_index("Date", inplace=True)
 
     tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
+    print(file, len(tests))
 
     return tests
 
@@ -909,12 +905,13 @@ def get_tests_by_area():
                 tests = list(series["จำนวนตรวจ"])
                 row = pos + tests + [sum(pos), sum(tests)]
                 results = spread_date_range(start, end, row, columns)
-                print(results)
+                #print(results)
                 data = data.combine_first(results)
                 raw = raw.combine_first(pd.DataFrame(
                     [[start,end,]+pos + tests],
                     columns=raw_cols
                 ).set_index("Start"))
+        print(file)
     # Also need pdf copies becaus of missing pptx
     for file in dav_files(ext=".pdf"):
         pages = parse_file(file, html=False, paged=True)
@@ -952,12 +949,13 @@ def get_tests_by_area():
             tests = numbers[tests_start : tests_start + 13]
             row = pos + tests + [sum(pos), sum(tests)]
             results = spread_date_range(start, end, row, columns)
-            print(results)
+            #print(results)
             data = data.combine_first(results)
             raw = raw.combine_first(pd.DataFrame(
                 [[start,end,]+pos + tests],
                 columns=raw_cols
             ).set_index("Start"))
+        print(file)
     export(raw, "tests_by_area")
     return data
 
@@ -999,9 +997,12 @@ def get_tests_private_public():
                 df[f"Pos{private}"] = (
                     df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
                 )
-                print(df)
+                #print(df)
                 data = data.combine_first(df)
             # TODO: There is also graphs splt by hospital
+        print(file, len(data))
+        if not data.empty:
+            break # we only need the latest
     data['Pos Public'] = data['Pos'] - data['Pos Private']
     data['Tests Public'] = data['Tests'] - data['Tests Private']
     export(data, "tests_pubpriv")
@@ -1348,6 +1349,7 @@ def get_case_details_csv():
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
+    print("Covid19daily", file, cases.reset_index().iloc[-1].to_string(header=False, index=False))
     return cases
 
 def get_case_details_api():
@@ -1771,7 +1773,7 @@ def briefing_case_detail(date, pages):
             else:
                 case_type = "Walkin"
             all_cells.setdefault(title,[]).append(lines)
-            print(title,case_type)
+            #print(title,case_type)
 
             for prov_num, line in lines:
                 #for prov in provs: # TODO: should really be 1. make split only split 1.
@@ -1805,7 +1807,7 @@ def briefing_case_detail(date, pages):
                         sym, asym, unknown = None, None, None
                     else:
                         assert asym + sym + unknown == num
-                    print(num,prov)
+                    #print(num,prov)
                     rows.append((date, prov,case_type, num, asym, sym))
     # checksum on title totals
     for title, total in totals.items():
@@ -1894,7 +1896,7 @@ def briefing_case_types(date, pages):
         "Recovered",
         "Deaths",
     ]).set_index(['Date'])
-    print("Briefing Cases:", df.to_string(header=False, index=False))
+    print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
 NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
@@ -2000,7 +2002,7 @@ def briefing_deaths(file, date, pages):
                 columns=["Date", "Province", "Deaths"]
             ).set_index(["Date", "Province"])
             assert male+female == dfprov['Deaths'].sum()
-            print("Deaths:", sum.to_string(header=False, index=False))
+            print(f"{date.date()} Deaths:", sum.to_string(header=False, index=False))
             return all, sum, dfprov
 
         elif "วิตของประเทศไทย" not in text:
@@ -2080,13 +2082,13 @@ def briefing_deaths(file, date, pages):
             #         case_num, age, *dates = get_next_numbers("")
             #         print(row)
     if all.empty:
-        print(f"Deaths: {date} None")
+        print(f"{date.date()}: Deaths:  0")
         sum = pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
             columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
         dfprov = pd.DataFrame(columns=["Date","Province","Deaths"]).set_index(["Date","Province"])        
     else:
-        print("Deaths: ",all.to_string(header=False, index=False))
+        #print("{date.date()} Deaths: ",all.to_string(header=False, index=False))
         # calculate daily summary stats
         med_age, min_age, max_age = all['age'].median(), all['age'].min(), all['age'].max()
         g = all['gender'].value_counts()
@@ -2094,6 +2096,7 @@ def briefing_deaths(file, date, pages):
         sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
             columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
         ).set_index("Date")
+        print(f"{date.date()} Deaths: ",sum.to_string(header=False, index=False))
         dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
     
     # calculate per provice counts
@@ -2149,7 +2152,7 @@ def get_cases_by_prov_briefings():
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
         if today_total != prov_total:
-            print(f"WARNING: briefing provs={prov_total}, cases={today_total}")
+            print(f"{date.date()} WARNING: briefing provs={prov_total}, cases={today_total}")
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
@@ -2202,7 +2205,7 @@ def get_hospital_resources():
     data['Date'] = TODAY().date()
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index(["Date","province"])
-    print("Active Cases:",data.sum().to_string(index=False, header=False))
+    #print("Active Cases:",data.sum().to_string(index=False, header=False))
     if os.path.exists("api/hospital_resources"):
         old = pd.read_csv(
             "api/hospital_resources.csv",
@@ -2288,7 +2291,7 @@ def get_vaccinations():
                         [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                     allocations[(date,prov)] = [alloc,0,0,0]
             assert added > 7
-            print(f"{date}: {table} Vaccinations: {added}")
+            print(f"{date.date()}: {table} Vaccinations: {added}")
             continue
     df = pd.DataFrame((list(key)+value for key,value in vaccinations.items()), columns=[
         "Date",
@@ -2376,7 +2379,7 @@ def export(df, name, csv_only=False):
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         pass
     else:
@@ -2544,6 +2547,37 @@ AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
 AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
 TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
+
+
+def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
+    "return df with columns of valuefunc for the top x provinces by metricfunc"
+    # Top 5 dfcine rollouts
+    old_index = df.index.names
+    valuefunc = metricfunc if valuefunc is None else valuefunc
+
+    # Apply metric on each province by itself
+    with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(
+        0).reset_index().set_index("Date")
+
+    # = metricfunc(df)
+    last_day = with_metric.loc[with_metric.last_valid_index()]
+    top5 = last_day.nlargest(num, 0).reset_index()
+    # sort data into top 5 + rest
+    top5[name] = top5['Province']
+    df = df.join(top5.set_index("Province")[name], on="Province").reset_index()
+    if other_name:
+        df[name] = df[name].fillna(other_name)
+        df = df.groupby(["Date", name]).sum().reset_index()
+    # apply the value function to get all the values
+    values = df.reset_index().set_index("Date").groupby(name).apply(valuefunc).rename(0).reset_index()
+    # put the provinces into cols
+    series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="sum")
+
+    cols = list(top5[name])  # in right order
+    if other_name:
+        return series[cols + [other_name]]
+    else:
+        return series[cols]
 
 
 def custom_cm(cm_name: str, size: int, last_colour: str, flip: bool = False) -> ListedColormap:
@@ -2727,7 +2761,7 @@ def save_plots(df):
 
 
     df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
-    df["Positive Rate Public (MA)"] = (df["Pos Public"] / df["Tests Public"]).rolling("7d").mean() * 100
+    df["Positive Rate Private (MA)"] = (df["Pos Private"] / df["Tests Private"]).rolling(7).mean() * 100
     df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
     df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
 #     cols = [
@@ -2794,25 +2828,67 @@ def save_plots(df):
 #     plt.savefig("outputs/positivity_2.png")
 
     cols = [
-        "Positivity Public+Private (MA)",
-        "Cases per Tests (MA)",
-        #            "Positivity PUI (MA)",
-        "Cases per PUI3",
-        # "Positivity Walkins/PUI (MA)",
-        "Positive Rate Public (MA)",
-    ]
-    legends = [
-        "Positive Rate: Share of PCR tests that are postitive ",
-        "Share of PCR tests that have Covid",
-        #            "Share of PUI that have Covid",
-        "Share of PUI*3 that have Covid",
-        #            "Share of PUI that are Walkin Covid Cases",
-        "Share of Public PCR tests that have covid",
-        # "Positive Rate: without rolling average"
-    ]
-    plot_area(df=df, png_prefix='positivity', cols_subset=cols, title='Positive Rate: Is enough testing happening?',
-              legends=legends, ma=True)
+            "Positivity Public+Private (MA)",
+            "Cases per Tests (MA)",
+#            "Positivity PUI (MA)",
+            "Cases per PUI3",
+            #"Positivity Walkins/PUI (MA)",
+            "Positive Rate Private (MA)",
+        ]
+    un_ma = [
+            "Positivity XLS",
+        ]
+    legend =         [
+            "Positive Rate: Share of PCR tests that are postitive ",
+            "Share of PCR tests that have Covid",
+#            "Share of PUI that have Covid",
+            "Share of PUI*3 that have Covid",
+#            "Share of PUI that are Walkin Covid Cases",
+            "Share of Private PCR tests that are positive",
+            #"Positive Rate: without rolling average"
+        ]
+    title = "Positive Rate: Is enough testing happening?\n" \
+        "(7 day rolling mean)\n" \
+        f"Updated: {TODAY().date()}\n" \
+        "djay.github.io/covidthailand" \
+    
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df.plot(
+        ax=ax,
+        kind="line",
+        y=cols[:1],
+        linewidth=5,
+        title=title,
+    )
+    df.plot(
+        ax=ax,
+        y=cols[1:],
+        colormap=plt.cm.Set1,
+    )
+    ax.legend(legend)
+    plt.tight_layout()
+    plt.savefig("outputs/positivity.png")
 
+    fig, ax = plt.subplots(figsize=[20, 10])
+    df["2020-12-12":].plot(
+        ax=ax,
+        y=cols[:1],
+        linewidth=5,
+        title=title
+    )
+    df["2020-12-12":].plot(
+        ax=ax,
+        y=cols[1:],
+        colormap=plt.cm.Set1,
+    )
+    # df["2020-12-12":].plot(
+    #     ax=ax,
+    #     linestyle="--",
+    #     y=un_ma,
+    # )
+    ax.legend(legend)
+    plt.tight_layout()
+    plt.savefig("outputs/positivity_2.png")
 
     df["PUI per Case"] = df["Tested PUI (MA)"].divide(df["Cases (MA)"]) 
     df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
@@ -3533,11 +3609,11 @@ def save_plots(df):
         "Hospitalized Field",
         "Recovered since 2021-04-01", 
     ]
-    df["2021-04-01":].plot.line(
-        ax=ax,
-        y="Cases since 2021-04-01",
-        #colormap="tab20",
-    )
+    # df["2021-04-01":].plot.line(
+    #     ax=ax,
+    #     y="Cases since 2021-04-01",
+    #     #colormap="tab20",
+    # )
     df["2021-04-01":].plot.area(
         ax=ax,
         y=cols,
@@ -3547,13 +3623,13 @@ def save_plots(df):
         "djay.github.io/covidthailand"
     )
     ax.legend([
+#        "Cases since 1st April" 
         "Deaths from cases since 1st April", 
         "On Ventilator",
         "In severe condition",
-        "Other Active cases",
+        "In Hospital",
         "In Field Hospital",
         "Recovered from cases since 1st April",
-        "Cases since 1st April" 
     ])
 
     plt.tight_layout()
@@ -3658,28 +3734,13 @@ def save_plots(df):
     # Top 5 vaccine rollouts
     vac = pd.read_csv("api/vaccinations.csv")
     vac['Date'] = pd.to_datetime(vac["Date"])
+    vac = vac.set_index('Date')
     vac = vac.join(PROVINCES["Population"], on="Province")
-    vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
-    vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
-    #vac = vac.set_index(["Date","Province"])
-    top5 = vac.set_index("Date").loc[vac['Date'].max()].nlargest(5, "Vac Complete % 2")
-    # sort data into top 5 + rest
-    top5['Top 5 Vaccinated Provinces'] = top5['Province']
-    vac = vac.join(top5.set_index("Province")['Top 5 Vaccinated Provinces'], on="Province")
-    vac['Top 5 Vaccinated Provinces'] = vac["Top 5 Vaccinated Provinces"].fillna("Other Provinces")
-    vac = vac.groupby(["Date","Top 5 Vaccinated Provinces"]).sum().reset_index()
-    # recalculate for other category
-    vac["Vac Complete % 1"] = vac["Vac Given 1 Cum"] / vac['Population'] * 100
-    vac["Vac Complete % 2"] = vac["Vac Given 2 Cum"] / vac['Population'] * 100
-    # TODO: could I have just done crosstab with mean instead?
-    
-    series = pd.crosstab(vac['Date'], vac['Top 5 Vaccinated Provinces'], vac[ "Vac Complete % 2"], aggfunc="sum")
-
-    cols = list(top5['Top 5 Vaccinated Provinces'])
+    valuefunc = lambda df: df["Vac Given 2 Cum"] / df['Population'] * 100
+    top5 = vac.pipe(topprov, valuefunc)
     fig, ax = plt.subplots(figsize=[20, 10])
-    series.loc["2021-02-16":].plot.area(
+    top5.loc["2021-02-16":].plot.area(
         ax=ax,
-        y = cols + ["Other Provinces"],
         stacked=False,
         title="Top 5 Thai Provinces Closest to Fully Vaccinated\n"
         f"Updated: {TODAY().date()}\n"
@@ -3689,7 +3750,6 @@ def save_plots(df):
     plt.savefig("outputs/vac_top5_full_3.png")
 
 
-if __name__ == "__main__":
 
     # USE_CACHE_DATA = True and os.path.exists("api/combined")
     USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
