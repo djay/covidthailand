@@ -2593,8 +2593,8 @@ def custom_cm(cm_name: str, size: int, last_colour: str, flip: bool = False) -> 
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
-              legends: Union[None, List[str]] = None, percent_fig: bool = True, 
-              unknown_name: str = 'Unknown', unknown_total: Union[None, str] = None,
+              legends: List[str] = None, percent_fig: bool = True,
+              unknown_name: str = 'Unknown', unknown_total: str = None,
               ma: bool = False, cmap: str = 'tab20', flip_cmap: bool = False) -> None:
     """Creates one .png file and plots 2 charts, showing data in absolute numbers and percentage terms. 
     
