@@ -3553,13 +3553,13 @@ def save_plots(df):
 
     increasing = lambda adf: adf["Cases"].rolling(3).mean().rolling(3).apply(trendline)
     casesma = lambda adf: adf["Cases"].rolling(3).mean()
-    top5 = cases.pipe(topprov, increasing, casesma, other_name=None, num=5)
+    top5 = cases.pipe(topprov, increasing, casesma, name="Province Cases (3d MA)", other_name=None, num=5)
     fig, ax = plt.subplots(figsize=[20, 10])
     top5.last("30d").plot.line(
         ax=ax,
         #stacked=False,
-        title="Provinces Most Increasing in Cases in last 3 days\n"
-        "(using 3 days rolling average)\n"
+        title="Provinces with Cases Trending Up\n"
+        "in last 3 days (using 3 days rolling average)\n"
         f"Updated: {TODAY().date()}\n"
         "djay.github.io/covidthailand",
     )
@@ -3567,13 +3567,13 @@ def save_plots(df):
     plt.savefig("outputs/cases_prov_increasing.png")
 
     decreasing = lambda adf: 1/increasing(adf)
-    top5 = cases.pipe(topprov, decreasing, casesma, other_name=None, num=5)
+    top5 = cases.pipe(topprov, decreasing, casesma, name="Province Cases (3d MA)", other_name=None, num=5)
     fig, ax = plt.subplots(figsize=[20, 10])
     top5.last("30d").plot.line(
         ax=ax,
         #stacked=False,
-        title="Provinces Decreasing in Cases in last 3 days\n"
-        "(using 3 days rolling average)\n"
+        title="Provinces with Cases Trending Down\n"
+        " in the last 3 days (using 3 days rolling average)\n"
         f"Updated: {TODAY().date()}\n"
         "djay.github.io/covidthailand",
     )
