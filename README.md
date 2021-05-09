@@ -27,9 +27,11 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 - You can also see [Cases by District broken down by walkin vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
-## Provinces with Growing Cases
+## Top Provinces increasing/decreasing in cases
 
-![Cases by Provinces Growing](https://github.com/djay/covidthailand/wiki/cases_prov_increasing.png)
+![Cases by Provinces Increasing](https://github.com/djay/covidthailand/wiki/cases_prov_increasing.png)
+
+![Cases by Provinces Decreasing](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing.png)
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
 ## Cases by test type

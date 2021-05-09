@@ -3558,7 +3558,8 @@ def save_plots(df):
     top5.last("30d").plot.line(
         ax=ax,
         #stacked=False,
-        title="Provinces Most Increasing in Cases\n"
+        title="Provinces Most Increasing in Cases in last 3 days\n"
+        "(using 3 days rolling average)\n"
         f"Updated: {TODAY().date()}\n"
         "djay.github.io/covidthailand",
     )
@@ -3571,7 +3572,8 @@ def save_plots(df):
     top5.last("30d").plot.line(
         ax=ax,
         #stacked=False,
-        title="Provinces Decreasing in Cases\n"
+        title="Provinces Decreasing in Cases in last 3 days\n"
+        "(using 3 days rolling average)\n"
         f"Updated: {TODAY().date()}\n"
         "djay.github.io/covidthailand",
     )
