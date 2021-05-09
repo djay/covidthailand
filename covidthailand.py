@@ -3545,17 +3545,15 @@ def save_plots(df):
     cases = cases.set_index(["Date","Province"])
 
     def trendline(data, order=1):
-        # simulate dates with equal numbers
+        # simulate dates with monotpnic inc numbers
         dates = range(0,len(data.index.values))
         coeffs = np.polyfit(dates, list(data), order)
         slope = coeffs[-2]
         return float(slope)
 
-    #cases["Cases (MA)"] = cases["Cases"].rolling(7, min_periods=1).mean()
-    # could try polyfit = https://stackoverflow.com/questions/42920537/finding-increasing-trend-in-pandas
-    increasing = lambda adf: adf["Cases"].rolling(7).mean().rolling(3).apply(trendline)
-    casesma = lambda adf: adf["Cases"].rolling(7).mean() 
-    top5 = cases.pipe(topprov, increasing, casesma, other_name=None)
+    increasing = lambda adf: adf["Cases"].rolling(3).mean().rolling(3).apply(trendline)
+    casesma = lambda adf: adf["Cases"].rolling(3).mean()
+    top5 = cases.pipe(topprov, increasing, casesma, other_name=None, num=5)
     fig, ax = plt.subplots(figsize=[20, 10])
     top5.last("30d").plot.line(
         ax=ax,
@@ -3568,8 +3566,7 @@ def save_plots(df):
     plt.savefig("outputs/cases_prov_increasing.png")
 
     decreasing = lambda adf: 1/increasing(adf)
-    casesma = lambda adf: adf["Cases"].rolling(7).mean() 
-    top5 = cases.pipe(topprov, decreasing, casesma, other_name=None)
+    top5 = cases.pipe(topprov, decreasing, casesma, other_name=None, num=5)
     fig, ax = plt.subplots(figsize=[20, 10])
     top5.last("30d").plot.line(
         ax=ax,
