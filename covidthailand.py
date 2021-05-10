@@ -1269,7 +1269,7 @@ def join_provinces(df, on):
     trim = lambda x: removeprefix(x,"จ.").strip(' .')
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
-def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
+def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None, return_unmatched=False):
     old_index = None
     if on not in a.columns:
         old_index = a.index.names
@@ -1291,7 +1291,11 @@ def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_
         del second[replace_on_with]
     if old_index is not None:
         second = second.set_index(old_index)
-    return second
+    if return_unmatched:
+        unmatched_counts = unmatched[[on]].join(second[[test]]).value_counts().reset_index().rename(columns={0:"count"})
+        return second, unmatched_counts
+    else:
+        return second
 
 
 
@@ -1448,13 +1452,24 @@ def get_cases_by_demographics_api():
     47:'ไปยังพื้นที่ที่มีการระบาด:Community',
     48:'Cluster สมุทรสาคร:Work', #Samut Sakhon   
     49:'สัมผัสใกล้ชิดกับผู้ป่วยยืนยันรายก่อนหน้านี้:Contact', 
-    51:'อยู่ระหว่างสอบสวน:Unknown', 
+    51:'อยู่ระหว่างสอบสวน:Unknown',
+    20210510.1:'Cluster คลองเตย:Community',  # Cluster Klongtoey, 77
+    20210510.2:'ไปแหล่งชุมชน/สถานที่คนหนาแน่น:Community', # Go to a community / crowded place, 17
+    20210510.3:'สัมผัสใกล้ชิดผู้ป่วยยืนยันก่อนหน้า:Contact',
+    20210510.4:'Cluster ชลบุรี บริษัทไดกิ้น:Work', # Cluster Chonburi Daikin Company, 3
+    20210510.5:'ร้านอาหาร:Entertainment', #resturant
+    20210510.6:'สัมผัสผู้ติดเชื้อยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
+    20210510.7:'สัมผัสผู้ป่วยยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
+    20210510.8:'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community', # Travelers from high-risk areas Bangkok, 2
+    20210510.9:'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community', # to / from Epidemic area, Bangkok Metropolis, 1
+    20210510.10:'ระหว่างสอบสวน:Investigating',
+    20210510.11:'Cluster ปากช่อง:Entertainment', # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
     }
     for v in r.values():
         key, cat = v.split(":")
         risks[key] = cat
     risks = pd.DataFrame(risks.items(), columns=["risk", "risk_group"]).set_index("risk")
-    cases_risks = fuzzy_join(cases, risks, on="risk")
+    cases_risks, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
     #cases_risks = cases.join(risks, on="risk")
     #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
     # Guess the unmatched
@@ -1462,17 +1477,14 @@ def get_cases_by_demographics_api():
     #cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
     matched = cases_risks[["risk", "risk_group"]]
 
-    unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
+    #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
     #unmatched['risk'].value_counts()
     case_risks = pd.crosstab(cases_risks['Date'],cases_risks["risk_group"])
     case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
     # dump mappings to file so can be inspected
-    matched.value_counts().reset_index().rename(columns={0:"count"}).to_csv(
-        "api/risk_groups.csv",
-        index=False 
-    )
-
+    export(matched.value_counts().reset_index().rename(columns={0:"count"}), "risk_groups", csv_only=True)
+    export(unmatched, "risk_groups_unmatched", csv_only=True)
 
     return case_risks.combine_first(case_ages)
 
@@ -2404,6 +2416,7 @@ def scrape_and_combine():
         # Comment out what you don't need to run
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
+        cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()
