@@ -320,15 +320,14 @@ def is_remote_newer(file, remote_date, check=True):
     return False
 
 def web_links(*index_urls, ext=".pdf", dir="html", match=None):
-    is_ext = lambda url: len(url.rsplit(ext))==2 if ext else True
-    is_match = lambda url: url and is_ext(url) and (match.search(url.get_text(strip=True)) if match else True)
+    is_ext = lambda a: len(a.get("href").rsplit(ext))==2 if ext else True
+    is_match = lambda a: a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
             soup = parse_file(file, html=True, paged=False)
-            links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a'))
+            links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
             for l in links:
-                if is_match(l):
-                    yield l
+                yield l
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
@@ -765,15 +764,13 @@ def situation_pui_th(parsedPDF, date, results):
      
 def get_thai_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for file, parsedPDF in web_files(
-        *web_links(
-            "https://ddc.moph.go.th/viralpneumonia/situation.php",
-            "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
-            ext=".pdf",
-            dir="situation_th"
-        ),
-        dir="situation_th",
-    ):
+    links = web_links(        
+        "https://ddc.moph.go.th/viralpneumonia/situation.php",
+        "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
+        ext=".pdf",
+        dir="situation_th"
+    )
+    for file, _ in web_files(*links, dir="situation_th"):
         parsedPDF = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
             continue
