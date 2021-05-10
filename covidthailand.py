@@ -320,18 +320,15 @@ def is_remote_newer(file, remote_date, check=True):
     return False
 
 def web_links(*index_urls, ext=".pdf", dir="html", match=None):
-    is_ext = lambda a: len(a.get("href").rsplit(ext))==2 if ext else True
-    is_match = lambda a: a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
+    is_ext = lambda url: len(url.rsplit(ext))==2 if ext else True
+    is_match = lambda url: url and is_ext(url) and (match.search(url.get_text(strip=True)) if match else True)
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
             soup = parse_file(file, html=True, paged=False)
-            return (urllib.parse.urljoin(index_url, a.get('href')) 
-                for a in soup.find_all('a') if is_match(a))
-            # if index.status_code > 399: 
-            #     continue
-            #links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
-            #for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
-            #    yield link
+            links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a'))
+            for l in links:
+                if is_match(l):
+                    yield l
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
@@ -2414,7 +2411,8 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
+        situation = get_situation()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
