@@ -1296,8 +1296,8 @@ def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_
 
 
 def get_cases_by_area_type():
-    briefings, cases = get_cases_by_prov_briefings()
     dfprov,twcases = get_cases_by_prov_tweets()
+    briefings, cases = get_cases_by_prov_briefings()
     cases = cases.combine_first(twcases)
     dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
     # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
@@ -1590,8 +1590,10 @@ def get_cases_by_prov_tweets():
     #old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     old = get_tweets_from(72888855, d("2021-02-21"), None, "Official #COVID19 update", "📍")
     
+    unofficial = get_tweets_from(531202184, d("2021-04-03"), None, "🔴 BREAKING: Thai health ministry reporting")
     officials = {}
     provs = {}
+    breaking = {}
     for date,tweets in list(new.items())+list(old.items()):
         for tweet in tweets:
             if "RT @RichardBarrow" in tweet:
@@ -1602,6 +1604,10 @@ def get_cases_by_prov_tweets():
                 if tweet in provs.get(date,""):
                     continue
                 provs[date] = provs.get(date,"") + " " + tweet
+    for date,tweets in unofficial.items():
+        for tweet in tweets:
+            if "🔴 BREAKING: Thai health ministry reporting" in tweet:
+                breaking[date] = tweet 
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
@@ -1623,10 +1629,28 @@ def get_cases_by_prov_tweets():
             local = None
         cases,_ = get_next_numbers(text, "Since January 2020")
         cases = cases[0] if cases else None
+        deaths, _ = get_next_number(text, "dead +")
         
-        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum"]
-        row = [date, imported, local, cases]
-        df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
+        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum", "Deaths"]
+        row = [date, imported, local, cases, deaths]
+        tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+        print(date,"Official:", tdf.to_string(index=False, header=False))
+        df = df.combine_first(tdf)    
+
+    # do unoffical tweets in no official tweet
+    for date, text in breaking.items():
+        if date in officials:
+            continue
+        numbers,_ = get_next_numbers(text, "Thai health ministry reporting")
+        if not numbers:
+            continue
+        deaths, cases, *_ = numbers
+        cols = ["Date", "Deaths", "Cases"]
+        row = [date, deaths, cases]
+        tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+        print(date,"Breaking:", tdf.to_string(index=False, header=False))
+        df = df.combine_first(tdf)    
+
 
     # get walkin vs proactive by area
     walkins = {}
@@ -3355,8 +3379,11 @@ def save_plots(df):
     ############
 
     fig, ax = plt.subplots(figsize=[20, 10])
+    cols_delayed = ["Hospitalized","Recovered","Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]
+    df[cols_delayed] = df[cols_delayed].ffill() # TODO: only do for last day? Should do unknown instead? or just not show until we have all teh data?
     df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
     non_split = df[["Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]].sum(skipna=False, axis=1)
+    # sometimes we deaths and cases but not the reast so fillfoward.
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
     cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field",]
     df["2020-12-12":].plot.area(
@@ -3451,7 +3478,7 @@ def save_plots(df):
     plt.savefig("outputs/deaths_age_3.png")
 
     cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
-    #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: need unknown otherwise shows 0. or could ffill
     fig, ax = plt.subplots(figsize=[20, 10])
     df["2021-04-01":].plot.area(
         ax=ax,
