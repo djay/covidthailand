@@ -2414,9 +2414,9 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
-        cases_demo = get_cases_by_demographics_api()
+        #cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()

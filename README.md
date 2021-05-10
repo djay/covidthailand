@@ -342,7 +342,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
-- 2021-05-07 - add top 5 increasing provinces
+- 2021-05-10 - parse unofficial RB tweet to get cases and deaths earlier
+- 2021-05-07 - add trending up and down provinces for cases
 - 2021-05-06 - add top 5 fully vaccinated provinces
 - 2021-05-05 - added recoverd to active cases
 - 2021-05-04 - plots of deaths and vaccinations
@@ -359,11 +360,11 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
-- plot top 5 provinces for cases - increasing?
-- parse unofficial tweets to get cases/deaths earlier 
-  - e.g https://twitter.com/ThaiNewsReports/status/139010864757377843
+- plot top 3 health district positive rate instead of all
+- plot nationality of cases over time, thai, neighbours, others
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic
+  - these? https://www.facebook.com/informationcovid19/posts/322313232720341
 - think of a metric that shows test capacity bottleneck or reluctance to test
 - Fix unknowns to make more clear
   - active cases looks like severe etc disappear for a day. Maybe need "unknow condition" category? or just don't show the data?

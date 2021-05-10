@@ -4,9 +4,10 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
-    - cron: "40 04 * * *" # 11:40 Tweets
-    - cron: "20 05 * * *" # 12:20 daily briefing
-    - cron: "20 06 * * *" # 13:20 daily briefing (if late)
+    - cron: "40 00 * * *" # 11:40 Unofficial tweet
+    - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
+    - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
+    - cron: "30 07 * * *" # 13:40 in case briefing was uploaded late
     - cron: "20 10 * * *" # 17:20 new PUI number
     - cron: "20 16 * * *" # 23:20 test data/situation report/vaccination report
 jobs:
