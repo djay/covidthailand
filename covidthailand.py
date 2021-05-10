@@ -825,8 +825,8 @@ def get_situation():
     today = today_situation.index.max()
     yesterday = today-datetime.timedelta(days=1)
     stoday = today_situation.loc[today]
-    syesterday = situation.loc[str(yesterday)]
-    if syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']:
+    syesterday = situation.loc[str(yesterday)] if str(yesterday) in situation else None
+    if syesterday is None or (syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']):
         situation = situation.combine_first(today_situation)
 
     export(situation, "situation_reports")
