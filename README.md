@@ -31,6 +31,8 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 
 ![Provinces with Cases Trending Up](https://github.com/djay/covidthailand/wiki/cases_prov_increasing.png)
 
+![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top.png)
+
 - see also [Provinces with Cases Trending Down](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing.png)
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
