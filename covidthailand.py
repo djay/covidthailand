@@ -4038,30 +4038,38 @@ def save_plots(df):
         return 1/increasing(adf)
 
     top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.last("30d").plot.line(
-        ax=ax,
-        # stacked=False,
-        title="Provinces with Cases Trending Up\n"
-        "in last 3 days (using 3 days rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_prov_increasing.png")
+    # fig, ax = plt.subplots(figsize=[20, 10])
+    # top5.last("30d").plot.line(
+    #     ax=ax,
+    #     # stacked=False,
+    #     title="Provinces with Cases Trending Up\n"
+    #     "in last 30 days (using 3 days rolling average)\n"
+    #     f"Updated: {TODAY().date()}\n"
+    #     "djay.github.io/covidthailand",
+    # )
+    # plt.tight_layout()
+    # plt.savefig("outputs/cases_prov_increasing.png")
+    cols = top5.columns.to_list()
+    plot_area(df=top5.last('30d'), png_prefix='cases_prov_increasing', cols_subset=cols,
+              title='Provinces with Cases Trending Up\nin last 30 days (using 3 days rolling average)',
+              kind='line', stacked=False, percent_fig=False, ma=False, cmap='tab10')
 
     top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.last("30d").plot.line(
-        ax=ax,
-        # stacked=False,
-        title="Provinces with Cases Trending Down\n"
-        " in the last 3 days (using 3 days rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_prov_decreasing.png")
+    # fig, ax = plt.subplots(figsize=[20, 10])
+    # top5.last("30d").plot.line(
+    #     ax=ax,
+    #     # stacked=False,
+    #     title="Provinces with Cases Trending Down\n"
+    #     " in the last 30 days (using 3 days rolling average)\n"
+    #     f"Updated: {TODAY().date()}\n"
+    #     "djay.github.io/covidthailand",
+    # )
+    # plt.tight_layout()
+    # plt.savefig("outputs/cases_prov_decreasing.png")
+    cols = top5.columns.to_list()
+    plot_area(df=top5.last('30d'), png_prefix='cases_prov_decreasing', cols_subset=cols,
+              title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
+              kind='line', stacked=False, percent_fig=False, ma=False, cmap='tab10')
 
 
 if __name__ == "__main__":
