@@ -2819,9 +2819,9 @@ def save_plots(df):
             'Tested Quarantine Cum',
             'Tested PUI Walkin Private Cum',
             'Tested PUI Walkin Public Cum']
-    plot_area(df=df, png_prefix='tested_pui', cols_subset=cols, title='PCR Tests and PUI in Thailand',
+    plot_area(df=df, png_prefix='tested_pui', cols_subset=cols,
+              title='PCR Tests and PUI in Thailand (excludes some proactive test)',
               kind='line', stacked=False, percent_fig=False, ma=True, cmap='tab10')
-
 
 
     ###############
