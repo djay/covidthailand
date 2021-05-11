@@ -4,6 +4,7 @@ from json.decoder import JSONDecodeError, JSONDecoder
 from typing import OrderedDict
 from camelot.utils import validate_input
 from numpy import tril_indices_from
+import numpy as np
 import requests
 import tabula
 import os
@@ -327,13 +328,9 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
             soup = parse_file(file, html=True, paged=False)
-            return (urllib.parse.urljoin(index_url, a.get('href')) 
-                for a in soup.find_all('a') if is_match(a))
-            # if index.status_code > 399: 
-            #     continue
-            #links = re.findall("href=[\"'](.*?)[\"']", index.decode("utf-8"))
-            #for link in [urllib.parse.urljoin(index_url, l) for l in links if ext in l]:
-            #    yield link
+            links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
+            for l in links:
+                yield l
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
@@ -770,15 +767,13 @@ def situation_pui_th(parsedPDF, date, results):
      
 def get_thai_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for file, parsedPDF in web_files(
-        *web_links(
-            "https://ddc.moph.go.th/viralpneumonia/situation.php",
-            "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
-            ext=".pdf",
-            dir="situation_th"
-        ),
-        dir="situation_th",
-    ):
+    links = web_links(        
+        "https://ddc.moph.go.th/viralpneumonia/situation.php",
+        "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
+        ext=".pdf",
+        dir="situation_th"
+    )
+    for file, _ in web_files(*links, dir="situation_th"):
         parsedPDF = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
             continue
@@ -827,8 +822,8 @@ def get_situation():
     today = today_situation.index.max()
     yesterday = today-datetime.timedelta(days=1)
     stoday = today_situation.loc[today]
-    syesterday = situation.loc[str(yesterday)]
-    if syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']:
+    syesterday = situation.loc[str(yesterday)] if str(yesterday) in situation else None
+    if syesterday is None or (syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']):
         situation = situation.combine_first(today_situation)
 
     export(situation, "situation_reports")
@@ -1271,7 +1266,7 @@ def join_provinces(df, on):
     trim = lambda x: removeprefix(x,"จ.").strip(' .')
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
-def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None):
+def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None, return_unmatched=False):
     old_index = None
     if on not in a.columns:
         old_index = a.index.names
@@ -1293,13 +1288,17 @@ def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_
         del second[replace_on_with]
     if old_index is not None:
         second = second.set_index(old_index)
-    return second
+    if return_unmatched:
+        unmatched_counts = unmatched[[on]].join(second[[test]]).value_counts().reset_index().rename(columns={0:"count"})
+        return second, unmatched_counts
+    else:
+        return second
 
 
 
 def get_cases_by_area_type():
-    briefings, cases = get_cases_by_prov_briefings()
     dfprov,twcases = get_cases_by_prov_tweets()
+    briefings, cases = get_cases_by_prov_briefings()
     cases = cases.combine_first(twcases)
     dfprov = briefings.combine_first(dfprov) # TODO: check they aggree
     # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
@@ -1450,13 +1449,24 @@ def get_cases_by_demographics_api():
     47:'ไปยังพื้นที่ที่มีการระบาด:Community',
     48:'Cluster สมุทรสาคร:Work', #Samut Sakhon   
     49:'สัมผัสใกล้ชิดกับผู้ป่วยยืนยันรายก่อนหน้านี้:Contact', 
-    51:'อยู่ระหว่างสอบสวน:Unknown', 
+    51:'อยู่ระหว่างสอบสวน:Unknown',
+    20210510.1:'Cluster คลองเตย:Community',  # Cluster Klongtoey, 77
+    20210510.2:'ไปแหล่งชุมชน/สถานที่คนหนาแน่น:Community', # Go to a community / crowded place, 17
+    20210510.3:'สัมผัสใกล้ชิดผู้ป่วยยืนยันก่อนหน้า:Contact',
+    20210510.4:'Cluster ชลบุรี บริษัทไดกิ้น:Work', # Cluster Chonburi Daikin Company, 3
+    20210510.5:'ร้านอาหาร:Entertainment', #resturant
+    20210510.6:'สัมผัสผู้ติดเชื้อยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
+    20210510.7:'สัมผัสผู้ป่วยยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
+    20210510.8:'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community', # Travelers from high-risk areas Bangkok, 2
+    20210510.9:'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community', # to / from Epidemic area, Bangkok Metropolis, 1
+    20210510.10:'ระหว่างสอบสวน:Investigating',
+    20210510.11:'Cluster ปากช่อง:Entertainment', # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
     }
     for v in r.values():
         key, cat = v.split(":")
         risks[key] = cat
     risks = pd.DataFrame(risks.items(), columns=["risk", "risk_group"]).set_index("risk")
-    cases_risks = fuzzy_join(cases, risks, on="risk")
+    cases_risks, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
     #cases_risks = cases.join(risks, on="risk")
     #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
     # Guess the unmatched
@@ -1464,17 +1474,14 @@ def get_cases_by_demographics_api():
     #cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
     matched = cases_risks[["risk", "risk_group"]]
 
-    unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
+    #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
     #unmatched['risk'].value_counts()
     case_risks = pd.crosstab(cases_risks['Date'],cases_risks["risk_group"])
     case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
     # dump mappings to file so can be inspected
-    matched.value_counts().reset_index().rename(columns={0:"count"}).to_csv(
-        "api/risk_groups.csv",
-        index=False 
-    )
-
+    export(matched.value_counts().reset_index().rename(columns={0:"count"}), "risk_groups", csv_only=True)
+    export(unmatched, "risk_groups_unmatched", csv_only=True)
 
     return case_risks.combine_first(case_ages)
 
@@ -1592,8 +1599,10 @@ def get_cases_by_prov_tweets():
     #old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     old = get_tweets_from(72888855, d("2021-02-21"), None, "Official #COVID19 update", "📍")
     
+    unofficial = get_tweets_from(531202184, d("2021-04-03"), None, "🔴 BREAKING: Thai health ministry reporting")
     officials = {}
     provs = {}
+    breaking = {}
     for date,tweets in list(new.items())+list(old.items()):
         for tweet in tweets:
             if "RT @RichardBarrow" in tweet:
@@ -1604,6 +1613,10 @@ def get_cases_by_prov_tweets():
                 if tweet in provs.get(date,""):
                     continue
                 provs[date] = provs.get(date,"") + " " + tweet
+    for date,tweets in unofficial.items():
+        for tweet in tweets:
+            if "🔴 BREAKING: Thai health ministry reporting" in tweet:
+                breaking[date] = tweet 
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
@@ -1625,10 +1638,28 @@ def get_cases_by_prov_tweets():
             local = None
         cases,_ = get_next_numbers(text, "Since January 2020")
         cases = cases[0] if cases else None
+        deaths, _ = get_next_number(text, "dead +")
         
-        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum"]
-        row = [date, imported, local, cases]
-        df = df.combine_first(pd.DataFrame([row], columns=cols).set_index("Date"))    
+        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum", "Deaths"]
+        row = [date, imported, local, cases, deaths]
+        tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+        print(date,"Official:", tdf.to_string(index=False, header=False))
+        df = df.combine_first(tdf)    
+
+    # do unoffical tweets in no official tweet
+    for date, text in breaking.items():
+        if date in officials:
+            continue
+        numbers,_ = get_next_numbers(text, "Thai health ministry reporting")
+        if not numbers:
+            continue
+        deaths, cases, *_ = numbers
+        cols = ["Date", "Deaths", "Cases"]
+        row = [date, deaths, cases]
+        tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+        print(date,"Breaking:", tdf.to_string(index=False, header=False))
+        df = df.combine_first(tdf)    
+
 
     # get walkin vs proactive by area
     walkins = {}
@@ -2379,8 +2410,10 @@ def export(df, name, csv_only=False):
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
+        situation = get_situation()
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
+        #cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()
@@ -2778,16 +2811,16 @@ def save_plots(df):
     # plt.tight_layout()
     # plt.savefig('outputs/tested_pui.png')
 
-    cols = ['Tested Cum', 
-            'Tested PUI Cum', 
-            'Tested Not PUI Cum', 
+    cols = ['Tested Cum',
+            'Tested PUI Cum',
+            'Tested Not PUI Cum',
             'Tested Proactive Cum',
             'Tested Quarantine Cum',
             'Tested PUI Walkin Private Cum',
             'Tested PUI Walkin Public Cum']
     plot_area(df=df, png_prefix='tested_pui', cols_subset=cols, title='PCR Tests and PUI in Thailand',
               kind='line', stacked=False, percent_fig=False, ma=True, cmap='tab10')
-    
+
 
 
     ###############
@@ -2931,8 +2964,8 @@ def save_plots(df):
 
 
 
-    df['PUI per Case'] = df['Tested PUI (MA)'].divide(df['Cases (MA)']) 
-    df['PUI3 per Case'] = df['Tested PUI (MA)']*3 / df['Cases (MA)'] 
+    df['PUI per Case'] = df['Tested PUI (MA)'].divide(df['Cases (MA)'])
+    df['PUI3 per Case'] = df['Tested PUI (MA)']*3 / df['Cases (MA)']
     df['PUI3 per Walkin'] = df['Tested PUI (MA)']*3 / df['Cases Walkin (MA)']
     df['PUI per Walkin'] = df['Tested PUI (MA)'].divide( df['Cases Walkin (MA)'] )
     df['Tests per case'] = df['Tests Corrected+Private (MA)'] / df['Cases (MA)']
@@ -3719,12 +3752,31 @@ def save_plots(df):
     # Hospital plots
     #######################
 
-    # fig, ax = plt.subplots(figsize=[20, 10])
-    df['Hospitalized Severe'] = df['Hospitalized Severe'].sub(df['Hospitalized Respirator'], fill_value=0)
-    non_split = df[['Hospitalized Severe', 'Hospitalized Respirator','Hospitalized Field']].sum(skipna=False, axis=1)
-    df['Hospitalized Hospital'] = df['Hospitalized'].sub(non_split, fill_value=0)
-    cols = ['Hospitalized Respirator', 'Hospitalized Severe', 'Hospitalized Hospital', 'Hospitalized Field',]
-    # df['2020-12-12':].plot.area(
+    fig, ax = plt.subplots(figsize=[20, 10])
+    cols_delayed = ["Hospitalized","Recovered","Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]
+    df[cols_delayed] = df[cols_delayed].ffill() # TODO: only do for last day? Should do unknown instead? or just not show until we have all teh data?
+    df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
+    non_split = df[["Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]].sum(skipna=False, axis=1)
+    # sometimes we deaths and cases but not the reast so fillfoward.
+    df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
+    cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field",]
+    df["2020-12-12":].plot.area(
+        ax=ax,
+        y=cols,
+        colormap="tab20",
+        title='Thailand Active Covid Cases\n'
+        "(Severe, field, respirator only avaiable from 2021-04-24 onwards)"
+        f"Updated: {TODAY().date()}\n"        
+        "djay.github.io/covidthailand"
+    )
+    ax.legend([
+        "On Respirator",
+        "Severe Case",
+        "Hospitalised Other",
+        "Field Hospital",
+    ])
+    # df['Severe Estimate'] = (df['Cases'].shift(+14) - df['Recovered']).clip(0)
+    # df["2020-12-12":].plot.line(
     #     ax=ax,
     #     y=cols,
     #     colormap='tab20',
@@ -3763,12 +3815,12 @@ def save_plots(df):
         df['Cases since 2021-04-01'].sub(non_split, fill_value=0).sub(df['Recovered since 2021-04-01'], fill_value=0)
 
     cols = [
-        'Died since 2021-04-01', 
+        'Died since 2021-04-01',
         'Hospitalized Respirator',
         'Hospitalized Severe',
         'Other Active Cases',
         'Hospitalized Field',
-        'Recovered since 2021-04-01', 
+        'Recovered since 2021-04-01',
     ]
     # df['2021-04-01':].plot.line(
     #     ax=ax,
@@ -3841,11 +3893,11 @@ def save_plots(df):
     # plt.tight_layout()
     # plt.savefig('outputs/deaths_age_3.png')
     cols = ['Deaths Age Max', 'Deaths Age Median (MA)', 'Deaths Age Min']
-    plot_area(df=df, png_prefix='deaths_age_3', cols_subset=cols, title='Thailand Covid Death Age Range', 
+    plot_area(df=df, png_prefix='deaths_age_3', cols_subset=cols, title='Thailand Covid Death Age Range',
               kind='area', stacked=True, percent_fig=False, ma=True, cmap='tab10')
 
     cols = rearrange([f'Deaths Area {area}' for area in range(1, 14)],*FIRST_AREAS)
-    # #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
+    # #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: need unknown otherwise shows 0. or could ffill
     # fig, ax = plt.subplots(figsize=[20, 10])
     # df['2021-04-01':].plot.area(
     #     ax=ax,
@@ -3961,11 +4013,61 @@ def save_plots(df):
               kind='area', stacked=False, percent_fig=False, ma=False, cmap='tab20')
 
 
-if __name__ == '__main__':
+    #######################
+    # Cases by provinces
+    #######################
+    cases = pd.read_csv("api/cases_by_province.csv")
+    cases['Date'] = pd.to_datetime(cases["Date"])
+    cases = cases.set_index(["Date", "Province"])
+
+    def trendline(data: pd.DataFrame, order: int =1) -> float:
+        # simulate dates with monotonic inc numbers
+        dates = range(0, len(data.index.values))
+        coeffs = np.polyfit(dates, list(data), order)
+        slope = coeffs[-2]
+        return float(slope)
+
+    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"].rolling(3).mean().rolling(3).apply(trendline)
+
+    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"].rolling(3).mean()
+
+    def decreasing(adf: pd.DataFrame) -> pd.DataFrame:
+        return 1/increasing(adf)
+
+    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    fig, ax = plt.subplots(figsize=[20, 10])
+    top5.last("30d").plot.line(
+        ax=ax,
+        # stacked=False,
+        title="Provinces with Cases Trending Up\n"
+        "in last 3 days (using 3 days rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand",
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/cases_prov_increasing.png")
+
+    top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    fig, ax = plt.subplots(figsize=[20, 10])
+    top5.last("30d").plot.line(
+        ax=ax,
+        # stacked=False,
+        title="Provinces with Cases Trending Down\n"
+        " in the last 3 days (using 3 days rolling average)\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand",
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/cases_prov_decreasing.png")
+
+
+if __name__ == "__main__":
 
     # USE_CACHE_DATA = True and os.path.exists('api/combined')
     USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists('api/combined.csv')
-    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\n\n')
+    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
     df = scrape_and_combine()
     df = calc_cols(df)
