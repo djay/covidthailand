@@ -27,11 +27,11 @@ Thailand Covid case/test/vaccination data gathered and combined from various gov
 - You can also see [Cases by District broken down by walkin vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
-## Top Provinces increasing/decreasing in cases
+## Provinces with Cases Trending Up (last 3 days)
 
-![Cases by Provinces Increasing](https://github.com/djay/covidthailand/wiki/cases_prov_increasing.png)
+![Provinces with Cases Trending Up](https://github.com/djay/covidthailand/wiki/cases_prov_increasing.png)
 
-![Cases by Provinces Decreasing](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing.png)
+- see also [Provinces with Cases Trending Down](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing.png)
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
 ## Cases by test type
@@ -360,6 +360,10 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- try to predict actual cases from IFR, deaths and demographics
+  - http://statbbi.nso.go.th/staticreport/page/sector/en/01.aspx
+  - http://epimonitor.net/Covid-IFR-Analysis.htm
+  - and average time in hospital?
 - plot top 3 health district positive rate instead of all
 - plot nationality of cases over time, thai, neighbours, others
 - do some graphs showing north, south, east, central, bangkok.
