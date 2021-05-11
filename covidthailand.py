@@ -2509,19 +2509,20 @@ def calc_cols(df):
     walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
     df = df.combine_first(walkins)
 
-    # Work out unknown areas or types
-    cols = [f"Cases Walkin Area {area}" for area in range(1, 14)]
-    df['Cases Walkin Area 14'] = df['Cases Walkin'].sub(df[cols].sum(axis=1), fill_value=0)
-    assert df[cols][(df['Cases Walkin Area 14'] < 0)].empty
-    cols = [f"Cases Proactive Area {area}" for area in range(1, 14)]
-    df['Cases Proactive Area 14'] = df['Cases Proactive'].sub(df[cols].sum(axis=1), fill_value=0)
-    assert df[cols][(df['Cases Proactive Area 14'] < 0)].empty
-    cols = [f"Tests Area {area}" for area in range(1, 14)]
-    df['Tests Area 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 97 lower than 0
-    assert df[cols][(df['Tests Area 14'] < 0)].empty
-    cols = [f"Pos Area {area}" for area in range(1, 14)]
-    df['Pos Area 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 139 rows < 0
-    assert df[cols][(df['Pos Area 14'] < 0)].empty
+    # # Work out unknown areas or types
+    # cols = [f"Cases Walkin Area {area}" for area in range(1, 14)]
+    # df['Cases Walkin Area 14'] = df['Cases Walkin'].sub(df[cols].sum(axis=1), fill_value=0)
+    # assert df[cols][(df['Cases Walkin Area 14'] < 0)].empty
+    # cols = [f"Cases Proactive Area {area}" for area in range(1, 14)]
+    # df['Cases Proactive Area 14'] = df['Cases Proactive'].sub(df[cols].sum(axis=1), fill_value=0)
+    # assert df[cols][(df['Cases Proactive Area 14'] < 0)].empty
+    # cols = [f"Tests Area {area}" for area in range(1, 14)]
+    # df['Tests Area 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 97 lower than 0
+    # assert df[cols][(df['Tests Area 14'] < 0)].empty
+    # cols = [f"Pos Area {area}" for area in range(1, 14)]
+    # df['Pos Area 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 139 rows < 0
+    # assert df[cols][(df['Pos Area 14'] < 0)].empty
+
     # TODO: skip for now until we work out how to not interpolate
     df['Cases Unknown'] = df['Cases'].sub(df[["Cases Walkin","Cases Proactive","Cases Imported"]].sum(axis=1), fill_value=0).clip(lower=0) # 3 dates lower than 0
     assert df[["Cases", "Cases Walkin","Cases Proactive","Cases Imported","Cases Unknown"]][(df['Cases Unknown'] < 0)].empty 
@@ -3180,7 +3181,7 @@ def save_plots(df):
     # )
     # plt.tight_layout()
     # plt.savefig('outputs/cases_types.png')
-    cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive', 'Cases Unknown']
     plot_area(df=df, png_prefix='cases_types', cols_subset=cols, title='Thailand Covid Cases by Test Type',
               kind='area', stacked=True, percent_fig=False, ma=False, cmap='tab10')
 
@@ -3316,7 +3317,7 @@ def save_plots(df):
     plt.rc('legend',**{'fontsize':12})
     AREA_COLOURS='tab20'
 
-    cols = [f'Tests Area {area}' for area in range(1, 15)]
+    cols = [f'Tests Area {area}' for area in range(1, 14)]
     # fig, ax = plt.subplots()
     # df.plot(
     #     ax=ax,
@@ -3339,7 +3340,7 @@ def save_plots(df):
               kind='area', stacked=True, percent_fig=False, ma=False, cmap='tab20')
 
 
-    cols = [f'Pos Area {area}' for area in range(1, 15)]
+    cols = [f'Pos Area {area}' for area in range(1, 14)]
     # fig, ax = plt.subplots()
     # df.plot(
     #     ax=ax,
@@ -3554,9 +3555,9 @@ def save_plots(df):
 
 
 
-    for area in range(1, 15):
+    for area in range(1, 14):
         df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
-    cols = [f'Positivity Daily {area}' for area in range(1, 15)]
+    cols = [f'Positivity Daily {area}' for area in range(1, 14)]
 
     # fig, ax = plt.subplots(figsize=[20, 10])
     # df.loc['2020-12-12':].plot.area(
@@ -3683,7 +3684,7 @@ def save_plots(df):
     # plt.tight_layout()
     # plt.savefig('outputs/cases_areas_all.png')
 
-    cols = rearrange([f'Cases Walkin Area {area}' for area in range(1, 15)],*FIRST_AREAS)
+    cols = rearrange([f'Cases Walkin Area {area}' for area in range(1, 14)],*FIRST_AREAS)
     # fig, ax = plt.subplots()
     # df['2021-02-16':].plot(
     #     ax=ax,
@@ -3703,7 +3704,7 @@ def save_plots(df):
               kind='area', stacked=True, percent_fig=False, ma=False, cmap='tab20')
 
 
-    cols = rearrange([f'Cases Proactive Area {area}' for area in range(1, 15)],*FIRST_AREAS)
+    cols = rearrange([f'Cases Proactive Area {area}' for area in range(1, 14)],*FIRST_AREAS)
     # fig, ax = plt.subplots(figsize=[20, 10],)
     # df['2021-02-16':].plot.area(
     #     ax=ax,
