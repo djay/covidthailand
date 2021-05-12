@@ -3944,8 +3944,8 @@ def save_plots(df):
     # plt.tight_layout()
     # plt.savefig('outputs/vac_groups_3.png')
     legends = [leg(c) for c in cols]
-    df_vac_groups_3 = df['2021-02-16':][cols].interpolate()
-    plot_area(df=df_vac_groups_3, png_prefix='vac_groups_3', cols_subset=cols,
+    df_vac_groups = df['2021-02-16':][cols].interpolate()
+    plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
               title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma=False, cmap='Set3')
 
