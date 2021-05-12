@@ -2715,8 +2715,11 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
     df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
 
-    # TODO for suffix, df_plot in [('1', df_clean[:'2020-12-12']), ('2', df_clean['2020-12-12':]), ('all', df_clean)]:
-    for suffix, df_plot in [('2', df_clean['2020-12-12':])]:
+    for suffix, df_plot in [('all', df_clean), ('1', df_clean[:'2020-12-12']), ('2', df_clean['2020-12-12':]),
+                            ('3', df_clean['2020-12-12':]), ('_30d', df_clean.last('30d'))]:
+        if df_plot.empty:
+            continue
+
         if percent_fig:
             f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
         else:
