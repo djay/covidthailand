@@ -2413,7 +2413,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
@@ -2603,9 +2603,10 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     df = df.join(top5.set_index("Province")[name], on="Province").reset_index()
     if other_name:
         df[name] = df[name].fillna(other_name)
-        df = df.groupby(["Date", name]).sum().reset_index()
+        # TODO: sum() might have to be configurable?
+        df = df.groupby(["Date",name]).sum().reset_index() # condense all the "other" fields
     # apply the value function to get all the values
-    values = df.reset_index().set_index("Date").groupby(name).apply(valuefunc).rename(0).reset_index()
+    values = df.set_index(["Date",name]).groupby(name, group_keys=False).apply(valuefunc).rename(0).reset_index()
     # put the provinces into cols
     series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="sum")
 
@@ -3166,6 +3167,19 @@ def save_plots(df):
     plot_area(df=top5.last('30d'), png_prefix='cases_prov_decreasing', cols_subset=cols,
               title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
               kind='line', stacked=False, percent_fig=False, ma=False, cmap='tab10')
+
+    casesma7 = lambda adf: adf["Cases"]
+    top5 = cases.pipe(topprov, casesma7, casesma7, name="Province Cases", other_name="Other Provinces", num=6)
+    fig, ax = plt.subplots(figsize=[20, 10])
+    top5.last("30d").plot.line(
+        ax=ax,
+        #stacked=False,
+        title="Provinces with Most Cases\n"
+        f"Updated: {TODAY().date()}\n"
+        "djay.github.io/covidthailand",
+    )
+    plt.tight_layout()
+    plt.savefig("outputs/cases_prov_top.png")
 
 
 if __name__ == "__main__":
