@@ -159,8 +159,8 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
    - Tests Private: PCR tests from private labs
    - Pos: Positive result
    - Pos Private: Positive result from private labs
-   - Pos XLS: Tests positive results (includes corrected dataless data)
-   - Tests XLS: Tests conducted (includes corrected dataless data)
+   - Pos XLS: Tests positive results (includes corrected date-less data)
+   - Tests XLS: Tests conducted (includes corrected date-less data)
 - Notes:
   - Uses case history graphs from the latest PPTX
   - data seems to exclude some non-PCR tests (likely used in some proactive testing)
