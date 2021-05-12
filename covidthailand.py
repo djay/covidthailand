@@ -3521,7 +3521,7 @@ def save_plots(df):
     leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Dose 1").replace("2", "Dose 2")
     cols.sort(key=lambda c: leg(c)[-1]+leg(c)) # put 2nd shot at end
     # some missing data. should be able to fill it in
-    df["2021-02-16":][cols].interpolate().plot.area(
+    df["2021-04-01":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
         colormap="Set3",
@@ -3537,7 +3537,7 @@ def save_plots(df):
     cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
     ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
-    df["2021-02-16":][cols].interpolate().plot.area(
+    df["2021-04-01":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
         colormap=AREA_COLOURS,
@@ -3553,7 +3553,7 @@ def save_plots(df):
     cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
     fig, ax = plt.subplots(figsize=[20, 10],)
     ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
-    df["2021-02-16":][cols].interpolate().plot.area(
+    df["2021-04-01":][cols].interpolate().plot.area(
         ax=ax,
         y=cols,
         colormap=AREA_COLOURS,
@@ -3575,7 +3575,7 @@ def save_plots(df):
     valuefunc = lambda df: df["Vac Given 2 Cum"] / df['Population'] * 100
     top5 = vac.pipe(topprov, valuefunc)
     fig, ax = plt.subplots(figsize=[20, 10])
-    top5.loc["2021-02-16":].plot.area(
+    top5.loc["2021-04-01":].plot.area(
         ax=ax,
         stacked=False,
         title="Top 5 Thai Provinces Closest to Fully Vaccinated\n"
