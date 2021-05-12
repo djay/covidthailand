@@ -1201,6 +1201,7 @@ def get_provinces():
     provinces.loc['กทม'] = provinces.loc['Bangkok']
     provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
+    provinces.loc['กัมพูชา'] = provinces.loc['Unknown'] # Cambodia
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1461,6 +1462,10 @@ def get_cases_by_demographics_api():
     20210510.9:'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community', # to / from Epidemic area, Bangkok Metropolis, 1
     20210510.10:'ระหว่างสอบสวน:Investigating',
     20210510.11:'Cluster ปากช่อง:Entertainment', # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
+    20210512.1:'Cluster คลองเตย:Community', # klongtoey cluster
+    20210512.2:'อยู่ระหว่างสอบสวนโรค:Investigating',
+    20210512.3:'อื่น ๆ:Unknown', # Other
+    20210512.4:'Cluster จันทบุรี (ชาวกินี ):Entertainment', # African gem merchants dining after ramandan
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -3110,6 +3115,7 @@ def save_plots(df):
     cols = [c for c in df.columns if str(c).startswith('Vac Group')]
     leg = lambda c: c.replace(' Cum','').replace('Vac Group','').replace('1', 'Dose 1').replace('2', 'Dose 2')
     cols.sort(key=lambda c: leg(c)[-1]+leg(c)) # put 2nd shot at end
+
     legends = [leg(c) for c in cols]
     df_vac_groups = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
@@ -3136,8 +3142,9 @@ def save_plots(df):
     vac = vac.join(PROVINCES['Population'], on='Province')
     valuefunc = lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100
     top5 = vac.pipe(topprov, valuefunc)
+
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='vac_top5', cols_subset=cols,
+    plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
               title='Top 5 Thai Provinces Closest to Fully Vaccinated',
               kind='area', stacked=False, percent_fig=False, ma=False, cmap='tab20')
 

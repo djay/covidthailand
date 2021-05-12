@@ -362,6 +362,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- fix vaccinations by parsing daily numbers table
 - try to predict actual cases from IFR, deaths and demographics
   - http://statbbi.nso.go.th/staticreport/page/sector/en/01.aspx
   - http://epimonitor.net/Covid-IFR-Analysis.htm
