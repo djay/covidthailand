@@ -3136,11 +3136,7 @@ def save_plots(df):
     #######################
     # Cases by provinces
     #######################
-    cases = pd.read_csv("api/cases_by_province.csv")
-    cases['Date'] = pd.to_datetime(cases["Date"])
-    cases = cases.set_index(["Date", "Province"])
-
-    def trendline(data: pd.DataFrame, order: int =1) -> float:
+    def trendline(data: pd.DataFrame, order: int = 1) -> float:
         # simulate dates with monotonic inc numbers
         dates = range(0, len(data.index.values))
         coeffs = np.polyfit(dates, list(data), order)
@@ -3156,6 +3152,13 @@ def save_plots(df):
     def decreasing(adf: pd.DataFrame) -> pd.DataFrame:
         return 1/increasing(adf)
 
+    def cases_ma_7(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"]
+
+    cases = pd.read_csv("api/cases_by_province.csv")
+    cases['Date'] = pd.to_datetime(cases["Date"])
+    cases = cases.set_index(["Date", "Province"])
+
     top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5.last('30d'), png_prefix='cases_prov_increasing', cols_subset=cols,
@@ -3168,23 +3171,15 @@ def save_plots(df):
               title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
               kind='line', stacked=False, percent_fig=False, ma=False, cmap='tab10')
 
-    casesma7 = lambda adf: adf["Cases"]
-    top5 = cases.pipe(topprov, casesma7, casesma7, name="Province Cases", other_name="Other Provinces", num=6)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.last("30d").plot.line(
-        ax=ax,
-        #stacked=False,
-        title="Provinces with Most Cases\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_prov_top.png")
+    top5 = cases.pipe(topprov, cases_ma_7, name="Province Cases", other_name="Other Provinces", num=6)
+    cols = top5.columns.to_list()
+    plot_area(df=top5.last('30d'), png_prefix='cases_prov_top', cols_subset=cols,
+              title='Provinces with Most Cases',
+              kind='line', stacked=False, percent_fig=False, ma=False, cmap='tab10')
 
 
 if __name__ == "__main__":
 
-    # USE_CACHE_DATA = True and os.path.exists('api/combined')
     USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists('api/combined.csv')
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
