@@ -2713,7 +2713,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     last_update = df[cols].index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
 
     if ma_days:
-        title += '(7 day rolling average)\n'
+        title += f'({ma_days} day rolling average)\n'
     title += f'Updated: {last_update}\n'
     title += 'https://github.com/djay/covidthailand'
 
