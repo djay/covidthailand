@@ -2355,10 +2355,18 @@ def get_vaccinations():
     counts = all_vac.groupby("Date").count()
     missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group Risk: Location 2 Cum']]
     # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
-    missing_data = missing_data["2021-04-09":]
+    missing_data = missing_data["2021-04-09":"2021-05-03"]
     # 2021-05-02 2021-05-01 - use images for just one table??
-
+    # We will just remove this days
     all_vac = all_vac.drop(index=missing_data.index)
+    # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
+    # TODO: only have 76 prov? something going on
+    missing_data = counts[counts['Vac Group Risk: Location 2 Cum'] < 76]["2021-05-04":]
+    all_vac = all_vac.drop(index=missing_data.index)
+    # TODO: parse the daily vaccinations to make up for missing data in cum tables
+
+
+
     export(all_vac, "vaccinations", csv_only=True)
 
     thaivac = all_vac.groupby("Date").sum()
@@ -2412,7 +2420,7 @@ def scrape_and_combine():
         # Comment out what you don't need to run
         #situation = get_situation()
         #cases_by_area = get_cases_by_area()
-        #vac = get_vaccinations()
+        vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
     else:
