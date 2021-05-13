@@ -1873,6 +1873,8 @@ def briefing_case_types(date, pages):
         else:
             ports = 0
         imported = ports + quarantine
+        prison, _ = get_next_number(text, "ที่ต้องขัง",default=0)
+        proactive += prison # not sure if they are going to add this category going forward?
 
         assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
 
@@ -2454,8 +2456,8 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        #cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
+        #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
     else:
