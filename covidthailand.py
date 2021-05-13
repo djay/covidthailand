@@ -1934,7 +1934,7 @@ def briefing_case_types(date, pages):
     print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
-NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
+NUM_OR_DASH = re.compile("([0-9\,\.]+|-)-?")
 parse_numbers = lambda lst: [float(i.replace(",","")) if i!="-" else 0 for i in lst]
 
 def briefing_province_cases(file, date, pages):
@@ -2272,13 +2272,14 @@ def get_vaccinations():
     pages = ((page, file2date(f), f) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f) if file2date(f))
     vaccinations = {}
     allocations = {}
+    vacnew = {}
+    shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+    oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     for page, date , file in pages: # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"): #TODO: make go back later
             continue
         date = date-datetime.timedelta(days=1) # TODO: get actual date from titles. maybe not always be 1 day delay
         lines = [l.strip() for l in page.split('\n') if l.strip()]
-        shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
         #if date > d("2021-03-22"):
         preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
             #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
@@ -2288,7 +2289,7 @@ def get_vaccinations():
         for headings, lines in pairwise(rest):
             shot_count = max(len(shots.findall(h)) for h in headings)
             oh_count = max(len(oldhead.findall(h)) for h in headings)
-            table = {10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
+            table = {12:"new_given", 10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
             if not table:
                 continue
             added = 0
@@ -2318,6 +2319,10 @@ def get_vaccinations():
                     assert len(numbers)==14
                     assert vaccinations.get((date,prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
                     vaccinations[(date,prov)] = numbers
+                elif table=="new_given":
+                    assert len(numbers)==12 # some extra "-" throwing it out. have to use camelot
+                    assert vacnew.get((date,prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
+                    vacnew[(date,prov)] = numbers
                 elif table=="old_given":
                     alloc, target_num, given, perc, *rest = numbers
                     medical, frontline, disease, elders, riskarea, *rest = rest
@@ -2346,6 +2351,22 @@ def get_vaccinations():
         "Vac Group Risk: Location 1 Cum",
         "Vac Group Risk: Location 2 Cum",
     ]).set_index(["Date", "Province"])
+    df_new = pd.DataFrame((list(key)+value for key,value in vacnew.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Given 1",
+        "Vac Given 2",
+        "Vac Group Medical Staff 1",
+        "Vac Group Medical Staff 2",
+        "Vac Group Other Frontline Staff 1",
+        "Vac Group Other Frontline Staff 2",
+        "Vac Group Over 60 1",
+        "Vac Group Over 60 2",
+        "Vac Group Risk: Disease 1",
+        "Vac Group Risk: Disease 2",
+        "Vac Group Risk: Location 1",
+        "Vac Group Risk: Location 2",
+    ]).set_index(["Date", "Province"])
     alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
         "Date",
         "Province",
@@ -2355,6 +2376,7 @@ def get_vaccinations():
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
     all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
+    
 
     # Do cross check we got the same number of allocations to vaccination
     counts = all_vac.groupby("Date").count()
@@ -2370,7 +2392,13 @@ def get_vaccinations():
     all_vac = all_vac.drop(index=missing_data.index)
     # TODO: parse the daily vaccinations to make up for missing data in cum tables
 
-
+    # Fix holes in cumulative using any dailys
+    # TODO: below is wrong approach. should add daily to cum -1
+    # df_daily = df.reset_index().set_index("Date").groupby("Province").apply(cum2daily)
+    # df_daily.combine_first(df_new)
+    # df_cum = df_daily.groupby("Province").cumsum()
+    # df_cum.columns = [f"{c} Cum" for c in df_cum.columns]
+    # all_vac = all_vac.combine_first(df_cum)
 
     export(all_vac, "vaccinations", csv_only=True)
 
@@ -2382,6 +2410,8 @@ def get_vaccinations():
     given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+
+    #TODO: can get todays from - https://ddc.moph.go.th/vaccine-covid19/ or briefings
 
     # Need to drop any dates that are incomplete.
     # TODO: could keep allocations?
