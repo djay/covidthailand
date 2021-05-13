@@ -1200,6 +1200,7 @@ def get_provinces():
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown'] # Cambodia
     provinces.loc['มาเลเซีย'] = provinces.loc['Unknown'] # Malaysia
+    provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Bangkok'] # Prison. Currently cluster just there. might have to change later
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1951,9 +1952,11 @@ def briefing_province_cases(file, date, pages):
         parts = [l.get_text() for l in soup.find_all("p")]
         parts = [l for l in parts if l]
         #parts = list(split(parts, lambda x: "รวม" in x))[-1]
-        title, *parts = parts
-        if not re.search("รวม\s*\(ราย\)",title):
+        preamble, *tables = split(parts, re.compile("รวม\s*\(ราย\)").search)
+        if len(tables) <= 1:
             continue  #Additional top 10 report. #TODO: better detection of right report
+        else:
+            title, parts = tables
         while parts and "รวม" in parts[0]:
             totals, *parts = parts
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
@@ -1980,7 +1983,7 @@ def briefing_province_cases(file, date, pages):
                 if i > 4: # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date-datetime.timedelta(days=i)
-                rows[(olddate,prov)] = cases
+                rows[(olddate,prov)] = cases + rows.get((olddate,prov),0) # rare case where we need to merge
                 if False and olddate == date:
                     if cases > 0:
                         print(date,linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
@@ -2189,8 +2192,10 @@ def get_cases_by_prov_briefings():
         # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
+        warning = f"briefing provs={prov_total}, cases={today_total}"
+        assert prov_total/today_total > 0.77, warning # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            print(f"{date.date()} WARNING: briefing provs={prov_total}, cases={today_total}")
+            print(f"{date.date()} WARNING:", warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
