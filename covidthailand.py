@@ -1185,7 +1185,7 @@ def get_provinces():
     provinces.loc['พทัลงุ*'] = provinces.loc['Phatthalung']
     provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
     provinces.loc['เชีียงราย'] = provinces.loc['Chiang Rai']
-    provinces.loc['เวียงจันทร์'] = provinces.loc['Nong Khai']# TODO: it's really vientiane
+    provinces.loc['เวียงจันทร์'] = provinces.loc['Unknown']# TODO: it's really vientiane
     provinces.loc['อุทัยธาน'] = provinces.loc['Uthai Thani']
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
@@ -1199,6 +1199,7 @@ def get_provinces():
     provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown'] # Cambodia
+    provinces.loc['มาเลเซีย'] = provinces.loc['Unknown'] # Malaysia
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
