@@ -1641,12 +1641,23 @@ def get_cases_by_prov_tweets():
             local = toint(local.group(1))
         else:
             local = None
-        cases,_ = get_next_numbers(text, "Since January 2020")
-        cases = cases[0] if cases else None
+        cases,_ = get_next_number(text, "Since Jan(?:uary)? 2020")
         deaths, _ = get_next_number(text, "dead +")
+        serious, _ = get_next_number(text, "in serious condition", before=True)
+        recovered, _ = get_next_number(text, "discharged", before=True)
+        hospitalised, _ = get_next_number(text, "in care", before=True)
         
-        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum", "Deaths"]
-        row = [date, imported, local, cases, deaths]
+        cols = [
+            "Date", 
+            "Cases Imported", 
+            "Cases Local Transmission", 
+            "Cases Cum", 
+            "Deaths",
+            "Hospitalized Severe",
+            "Hospitalized",
+            "Recovered",
+        ]
+        row = [date, imported, local, cases, deaths, serious, hospitalised, recovered]
         tdf = pd.DataFrame([row], columns=cols).set_index("Date")
         print(date,"Official:", tdf.to_string(index=False, header=False))
         df = df.combine_first(tdf)    
