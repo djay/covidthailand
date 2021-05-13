@@ -239,8 +239,9 @@ def parse_file(filename, html=False, paged=True):
     else:
         return '\n\n\n'.join(pages_txt)
 
-
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
+NUM_RE = re.compile("\d+(?:\,\d+)?(?:\.\d+)?")
+INT_RE = re.compile("\d+(?:\,\d+)?")
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -252,12 +253,12 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
         matched, *behind = behind
         behind = "".join(behind)
         found = ahead if before else behind
-        numbers = re.findall(r"[,0-9]+", found)
+        numbers = (INT_RE if ints else NUM_RE).findall(found)
         numbers = [n.replace(",", "") for n in numbers]
-        numbers = [int(n) for n in numbers if n]
+        numbers = [int(n) if ints else float(n) for n in numbers if n]
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
-            behind = re.sub(r"[,0-9]+", "", found, remove)
+            behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
         return numbers, matched + " " + behind 
     if debug and matches:
         print("Couldn't find '{}'".format(match))
@@ -2024,7 +2025,7 @@ def briefing_deaths(file, date, pages):
             congenital_disease = df[2][0]  # TODO: parse?
             # Risk factors for COVID-19 infection
             risk_factors = df[3][0]
-            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ")
+            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ", ints=False)
             med_age, min_age, max_age, *_ = numbers
             numbers, *_ = get_next_numbers(text, "ชาย")
             male, female, *_ = numbers
