@@ -239,8 +239,8 @@ def parse_file(filename, html=False, paged=True):
     else:
         return '\n\n\n'.join(pages_txt)
 
-NUM_RE = re.compile("\d+(?:\,\d+)?(?:\.\d+)?")
-INT_RE = re.compile("\d+(?:\,\d+)?")
+NUM_RE = re.compile("\d+(?:\,\d+)*(?:\.\d+)?")
+INT_RE = re.compile("\d+(?:\,\d+)*")
 def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True):
     if len(matches) == 0:
         matches = [""]
@@ -2204,6 +2204,7 @@ def get_cases_by_prov_briefings():
         # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
+        assert prov_total and today_total
         warning = f"briefing provs={prov_total}, cases={today_total}"
         assert prov_total/today_total > 0.77, warning # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
@@ -2473,8 +2474,8 @@ USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.e
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        #situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        situation = get_situation()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
