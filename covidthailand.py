@@ -34,6 +34,7 @@ import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
 from typing import Union, List
+from collections.abc import Callable
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -2648,7 +2649,7 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, ma_days: int = None, cmap: str = 'tab20',
-              reverse_cmap: bool = False) -> None:
+              reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[int,int] = human_format) -> None:
     """Creates one .png file and plots 2 charts, showing data in absolute numbers and percentage terms.
 
     :param df: data frame containing all available data
@@ -2665,6 +2666,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     :param ma_days: number of days used when computing the moving average
     :param cmap: the matplotlib colormap to be used
     :param reverse_cmap: whether the colormap should be reversed
+    :param highlight_first: make the first X lines thicker to highlight them
     """
     if type(cols_subset) is str:
         cols = [c for c in df.columns if str(c).startswith(cols_subset)]
@@ -2685,9 +2687,12 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     if unknown_total:
         if ma_days:
             df[f'{unknown_total} (MA)'] = df[c].rolling(f'{ma_days}d').mean()
-        df[f'{unknown_name}{ma_suffix}'] = \
-            df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-        cols = cols + [f'{unknown_name}{ma_suffix}']
+        total_col = f'{unknown_total}{ma_suffix}'
+        unknown_col = f'{unknown_name}{ma_suffix}'
+        other_cols = set(cols)-set([unknown_col])
+        df[unknown_col] = df[total_col].sub(df[other_cols].sum(axis=1), fill_value=0).clip(lower=0)
+        if unknown_col not in cols:
+            cols = cols + [unknown_col]
 
     if percent_fig:
         for c in cols:
@@ -2698,13 +2703,13 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
     if ma_days:
         title = title + f'({ma_days} day rolling average)\n'
-    title += f'Updated: {last_update}\n'
+    title += f'Last Data: {last_update}\n'
     title += 'https://github.com/djay/covidthailand'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
         legends = cols
-    elif unknown_total:
+    elif unknown_total and unknown_name not in legends:
         legends = legends + [unknown_name]
 
     if unknown_total:
@@ -2733,9 +2738,15 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
             f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
+        
+        if y_formatter is not None:
+            a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
         # kind = 'area' if stacked else 'line'
-        df_plot.plot(ax=a0, y=cols, kind=kind, stacked=stacked, colormap=colormap)
+        if highlight_first > 0:
+            #TODO: how to make colourmap retained between them?
+            df_plot.plot(ax=a0, y=cols[:highlight_first], kind=kind, linewidth=5, stacked=stacked, colormap=colormap)
+        df_plot.plot(ax=a0, y=cols[highlight_first:], kind=kind, stacked=stacked, colormap=colormap)
 
         a0.set_title(label=title)
         a0.legend(labels=legends)
@@ -2817,7 +2828,8 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     plot_area(df=df, png_prefix='positivity', cols_subset=cols,
               title='Positive Rate: Is enough testing happening?', legends=legends,
-              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10',
+              highlight_first=1)
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI']*3 / df['Cases']
@@ -2911,9 +2923,11 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='summer', reverse_cmap=True)
 
     # Thailand Covid Cases by Risk
-    plot_area(df=df, png_prefix='cases_causes', cols_subset='Risk', title='Thailand Covid Cases by Risk',
-              unknown_name='Unknown', unknown_total='Cases',
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+    cols = [c for c in df.columns if str(c).startswith("Risk: ")]
+    cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )   
+    plot_area(df=df, png_prefix='cases_causes', cols_subset=cols, title='Thailand Covid Cases by Risk',
+              unknown_name='Risk: Investigating', unknown_total='Cases',
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     ##########################
     # Tests by area
@@ -3101,20 +3115,23 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
               title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3')
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3',
+              y_formatter=thaipop2)
 
     cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in range(1, 14)],*FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s1, png_prefix='vac_areas_s1', cols_subset=cols,
               title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
+              y_formatter=thaipop)
 
     cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in range(1, 14)],*FIRST_AREAS)
     df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
               title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
               legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
+              y_formatter=thaipop)
 
     # Top 5 vaccine rollouts
     vac = pd.read_csv('api/vaccinations.csv')
