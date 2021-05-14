@@ -2477,7 +2477,7 @@ def export(df, name, csv_only=False):
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        situation = get_situation()
+        #situation = get_situation()
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
@@ -2523,78 +2523,6 @@ def scrape_and_combine():
         export(df, "combined", csv_only=True)
         return df
 
-
-def calc_cols(df):
-    print("========Caclulated Values==========")
-    # adding in rolling average to see the trends better
-    df["Tested (MA)"] = df["Tested"].rolling("7d").mean()
-    df["Tested PUI (MA)"] = df["Tested PUI"].rolling("7d").mean()
-    df["Tested PUI Walkin Public (MA)"] = df["Tested PUI Walkin Public"].rolling("7d").mean()
-    df["Tested PUI Walkin Private (MA)"] = df["Tested PUI Walkin Private"].rolling("7d").mean()
-    df["Tested PUI Walkin (MA)"] = df["Tested PUI Walkin"].rolling("7d").mean()
-    df["Cases (MA)"] = df["Cases"].rolling("7d").mean()
-    df["Cases Walkin (MA)"] = df["Cases Walkin"].rolling("7d").mean()
-    df["Cases Proactive (MA)"] = df["Cases Proactive"].rolling("7d").mean()
-    df["Tests Area (MA)"] = df["Tests Area"].rolling("7d").mean()
-    df["Pos Area (MA)"] = df["Pos Area"].rolling("7d").mean()
-    df["Tests XLS (MA)"] = df["Tests XLS"].rolling("7d").mean()
-    df["Pos XLS (MA)"] = df["Pos XLS"].rolling("7d").mean()
-    df["Pos (MA)"] = df["Pos"].rolling("7d").mean()
-    df["Pos Public (MA)"] = df["Pos Public"].rolling("7d").mean()
-    df["Pos Private (MA)"] = df["Pos Private"].rolling("7d").mean()
-    df["Tests Public (MA)"] = df["Tests Public"].rolling("7d").mean()
-    df["Tests Private (MA)"] = df["Tests Private"].rolling("7d").mean()
-    df["Tests (MA)"] = df["Tests"].rolling("7d").mean()
-
-    # Calculate positive rate
-    df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
-    df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["Tested PUI (MA)"] * 100
-    df["Positivity PUI"] = df["Cases"] / df["Tested PUI"] * 100
-    df["Positivity Cases/Tested"] = df["Cases"] / df["Tested"] * 100
-    df["Positivity Area (MA)"] = df["Pos Area (MA)"] / df["Tests Area (MA)"] * 100
-    df["Positivity Area"] = df["Pos Area"] / df["Tests Area"] * 100
-    df["Positivity XLS (MA)"] = df["Pos XLS (MA)"] / df["Tests XLS (MA)"] * 100
-    df["Positivity XLS"] = df["Pos XLS"] / df["Tests XLS"] * 100
-    df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
-    df["Positivity Public (MA)"] = df["Pos Public (MA)"] / df["Tests Public (MA)"] * 100
-    df["Positivity Cases/Tests (MA)"] = df["Cases (MA)"] / df["Tests XLS (MA)"] * 100
-
-    # Combined data
-    df["Pos Corrected+Private (MA)"] =  df["Pos XLS (MA)"]
-    df["Tests Private+Public (MA)"] = df["Tests (MA)"]
-    df["Tests Corrected+Private (MA)"] = df["Tests XLS (MA)"]
-
-    df["Positivity Private (MA)"] = (
-        df["Pos Private (MA)"] / df["Tests Private (MA)"] * 100
-    )
-    df["Positivity Public+Private (MA)"] = (
-        df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
-    )
-
-    # Computed data
-    # TODO: has a problem if we have local transmission but no proactive
-    walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
-    df = df.combine_first(walkins)
-
-    # # Work out unknown areas or types
-    # cols = [f"Cases Walkin Area {area}" for area in range(1, 14)]
-    # df['Cases Walkin Area 14'] = df['Cases Walkin'].sub(df[cols].sum(axis=1), fill_value=0)
-    # assert df[cols][(df['Cases Walkin Area 14'] < 0)].empty
-    # cols = [f"Cases Proactive Area {area}" for area in range(1, 14)]
-    # df['Cases Proactive Area 14'] = df['Cases Proactive'].sub(df[cols].sum(axis=1), fill_value=0)
-    # assert df[cols][(df['Cases Proactive Area 14'] < 0)].empty
-    # cols = [f"Tests Area {area}" for area in range(1, 14)]
-    # df['Tests Area 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 97 lower than 0
-    # assert df[cols][(df['Tests Area 14'] < 0)].empty
-    # cols = [f"Pos Area {area}" for area in range(1, 14)]
-    # df['Pos Area 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 139 rows < 0
-    # assert df[cols][(df['Pos Area 14'] < 0)].empty
-
-    # TODO: skip for now until we work out how to not interpolate
-    df['Cases Unknown'] = df['Cases'].sub(df[["Cases Walkin","Cases Proactive","Cases Imported"]].sum(axis=1), fill_value=0).clip(lower=0) # 3 dates lower than 0
-    assert df[["Cases", "Cases Walkin","Cases Proactive","Cases Imported","Cases Unknown"]][(df['Cases Unknown'] < 0)].empty 
-
-    return df
 
 # df = df.cumsum()
 AREA_LEGEND = [
@@ -2645,9 +2573,9 @@ def rearrange(l, *first):
 
 FIRST_AREAS = [13, 4, 5, 6, 1] # based on size-ish
 AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
-AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
-TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
-POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
+#AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
+#TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
+#POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
@@ -2751,10 +2679,15 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     else:
         ma_suffix = ''
 
+    # try to hone in on last day of "important" data. Assume first col
+    last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
+
     if unknown_total:
-        df[f'{cols_subset} {unknown_name}{ma_suffix}'] = \
+        if ma_days:
+            df[f'{unknown_total} (MA)'] = df[c].rolling(f'{ma_days}d').mean()
+        df[f'{unknown_name}{ma_suffix}'] = \
             df[f'{unknown_total}{ma_suffix}'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-        cols += [f'{cols_subset} {unknown_name}{ma_suffix}']
+        cols = cols + [f'{unknown_name}{ma_suffix}']
 
     if percent_fig:
         for c in cols:
@@ -2762,16 +2695,17 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
         perccols = [f'{c} (%)' for c in cols]
         
     title = f'{title}\n'
-    last_update = df[cols].index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
 
     if ma_days:
-        title += f'({ma_days} day rolling average)\n'
+        title = title + f'({ma_days} day rolling average)\n'
     title += f'Updated: {last_update}\n'
     title += 'https://github.com/djay/covidthailand'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
         legends = cols
+    elif unknown_total:
+        legends = legends + [unknown_name]
 
     if unknown_total:
         colormap = custom_cm(cmap, len(cols) + 1, 'lightgrey', flip=reverse_cmap)
@@ -2780,9 +2714,18 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
     # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
     df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
+    periods = {
+        'all': df_clean, 
+        '1': df_clean[:'2020-06-01'],
+        '2': df_clean['2020-12-12':],
+        '3': df_clean['2021-04-01':],
+        '30d': df_clean.last('30d')
+    }
 
-    for suffix, df_plot in [('all', df_clean), ('1', df_clean[:'2020-12-12']), ('2', df_clean['2020-12-12':]),
-                            ('3', df_clean['2020-12-12':]), ('_30d', df_clean.last('30d'))]:
+    if USE_CACHE_DATA: #TODO: have its own switch
+        periods = {key: periods[key] for key in ['3']}
+
+    for suffix, df_plot in periods.items():
         if df_plot.empty:
             continue
 
@@ -2825,8 +2768,15 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    cols = ['Tested PUI (MA)', 'Tested PUI Walkin Public (MA)', 'Tests Public (MA)', 'Tests Corrected+Private (MA)']
-    legends = ['PUI', 'PUI (Public)', 'Tests Performed (Public)', 'Tests Performed (All)']
+    # Computed data
+    # TODO: has a problem if we have local transmission but no proactive
+    # TODO: put somewhere else
+    walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
+    df = df.combine_first(walkins)
+
+
+    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
+    legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)',]
     plot_area(df=df, png_prefix='tests', cols_subset=cols,
               title='Thailand PCR Tests and PUI (totals exclude some proactive testing)', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
@@ -2845,16 +2795,20 @@ def save_plots(df: pd.DataFrame) -> None:
     ###############
     # Positive Rate
     ###############
-    df['Positivity Walkins/PUI (MA)'] = df['Cases Walkin (MA)'] / df['Tested PUI (MA)'] * 100
-    df['Positive Rate Private (MA)'] = (df['Pos Private'] / df['Tests Private']).rolling(7).mean() * 100
-    df['Cases per PUI3'] = df['Cases (MA)'] / df['Tested PUI (MA)'] / 3.0  * 100
-    df['Cases per Tests (MA)'] = df['Cases (MA)'] / df['Tests Corrected+Private (MA)'] * 100
+    df["Positivity PUI"] = df["Cases"] / df["Tested PUI"] * 100
+    df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
+    df["Positivity Cases/Tests"] = df["Cases"] / df["Tests XLS"] * 100
+    df["Positivity Public+Private"] = (df["Pos XLS"] / df["Tests XLS"] * 100)
+    df['Positivity Walkins/PUI'] = df['Cases Walkin'] / df['Tested PUI'] * 100
+    df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
+    df['Cases per PUI3'] = df['Cases'] / df['Tested PUI'] / 3.0  * 100
+    df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
 
     cols = [
-            'Positivity Public+Private (MA)',
-            'Cases per Tests (MA)',
+            'Positivity Public+Private',
+            'Cases per Tests',
             'Cases per PUI3',
-            'Positive Rate Private (MA)'
+            'Positive Rate Private'
     ]
     legends = ['Positive Rate: Share of PCR tests that are positive ',
                'Share of PCR tests that have Covid',
@@ -2865,12 +2819,12 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Rate: Is enough testing happening?', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    df['PUI per Case'] = df['Tested PUI (MA)'].divide(df['Cases (MA)'])
-    df['PUI3 per Case'] = df['Tested PUI (MA)']*3 / df['Cases (MA)']
-    df['PUI3 per Walkin'] = df['Tested PUI (MA)']*3 / df['Cases Walkin (MA)']
-    df['PUI per Walkin'] = df['Tested PUI (MA)'].divide( df['Cases Walkin (MA)'] )
-    df['Tests per case'] = df['Tests Corrected+Private (MA)'] / df['Cases (MA)']
-    df['Tests per positive'] = df['Tests Corrected+Private (MA)'] / df['Pos Corrected+Private (MA)']
+    df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
+    df['PUI3 per Case'] = df['Tested PUI']*3 / df['Cases']
+    df['PUI3 per Walkin'] = df['Tested PUI']*3 / df['Cases Walkin']
+    df['PUI per Walkin'] = df['Tested PUI'].divide( df['Cases Walkin'] )
+    df['Tests per case'] = df['Tests XLS'] / df['Cases']
+    df['Tests per positive'] = df['Tests XLS'] / df['Pos XLS']
 
     cols = ['Tests per positive', 'Tests per case', 'PUI per Case', 'PUI3 per Case', 'PUI per Walkin']
     legends = [
@@ -2884,11 +2838,11 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Thailand Tests per Confirmed Case', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    cols = ['Positivity Cases/Tests (MA)',
-            'Positivity Public (MA)',
-            'Positivity PUI (MA)',
-            'Positivity Private (MA)',
-            'Positivity Public+Private (MA)']
+    cols = ['Positivity Cases/Tests',
+            'Positivity Public',
+            'Positivity PUI',
+            'Positive Rate Private',
+            'Positivity Public+Private']
     legends = [
             'Confirmed Cases / Tests Performed (Public)',
             'Positive Results / Tests Performed (Public)',
@@ -2917,9 +2871,9 @@ def save_plots(df: pd.DataFrame) -> None:
     ##################
     # Test Plots
     ##################
-    cols = ['Cases (MA)',
-            'Pos Public (MA)',
-            'Pos Corrected+Private (MA)']
+    cols = ['Cases',
+            'Pos Public',
+            'Pos XLS']
     legends = ['Confirmed Cases',
                'Positive Test Results (Public)',
                'Positive Test Results (All)']
@@ -2927,29 +2881,29 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test results compared to Confirmed Cases', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    cols = ['Cases (MA)',
-            'Pos Area (MA)',
-            'Pos XLS (MA)',
-            'Pos Public (MA)',
-            'Pos Private (MA)',
-            'Pos Corrected+Private (MA)']
+    cols = ['Cases',
+            'Pos Area',
+            'Pos XLS',
+            'Pos Public',
+            'Pos Private',
+            'Pos']
     plot_area(df=df, png_prefix='cases_all', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive', 'Cases Unknown']
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive']
     plot_area(df=df, png_prefix='cases_types', cols_subset=cols, title='Thailand Covid Cases by Test Type',
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+              unknown_name='Cases Unknown', unknown_total='Cases',
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab10')
 
     cols = ['Cases Symptomatic','Cases Asymptomatic']
-    df['Cases Symptomatic Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    cols = cols + ['Cases Symptomatic Unknown']
     plot_area(df=df, png_prefix='cases_sym', cols_subset=cols, title='Thailand Covid Cases by Symptoms',
+              unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
-    plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+    # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
+    # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
+    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # Thailand Covid Cases by Age
     plot_area(df=df, png_prefix='cases_ages', cols_subset='Age', title='Thailand Covid Cases by Age',
@@ -2969,14 +2923,14 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = [f'Tests Area {area}' for area in range(1, 14)]
     cols = rearrange(cols, *FIRST_AREAS),
     plot_area(df=df, png_prefix='tests_area', cols_subset=cols[0],
-              title='PCR Tests by Health District (excludes proactive & private tests)', legends=AREA_LEGEND_UNKNOWN,
+              title='PCR Tests by Health District (excludes proactive & private tests)', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     cols = [f'Pos Area {area}' for area in range(1, 14)]
     cols = rearrange(cols, *FIRST_AREAS)
     plot_area(df=df, png_prefix='pos_area', cols_subset=cols,
               title='PCR Positive Test Results by Health District (excludes proactive & private tests)',
-              legends=AREA_LEGEND_UNKNOWN,
+              legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     cols = [f'Tests Daily {area}' for area in range(1, 14)]
@@ -2985,12 +2939,12 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Tests Daily {area}'] = (
             df[f'Tests Area {area}']
             / df[test_cols].sum(axis=1)
-            * df['Tests (MA)']
+            * df['Tests']
         )
-    df['Tests Daily 14'] = df['Tests (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    cols = rearrange(cols+['Tests Daily 14'], *FIRST_AREAS)
-    plot_area(df=df, png_prefix='tests_area_daily_2', cols_subset=cols,
-              title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND_UNKNOWN,
+    cols = rearrange(cols, *FIRST_AREAS)
+    plot_area(df=df, png_prefix='tests_area_daily', cols_subset=cols,
+              title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND,
+              unknown_name='Unknown District', unknown_total='Tests',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     cols = [f'Pos Daily {area}' for area in range(1, 14)]
@@ -2999,19 +2953,12 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Pos Daily {area}'] = (
             df[f'Pos Area {area}']
             / df[pos_cols].sum(axis=1)
-            * df['Pos (MA)']
+            * df['Pos']
         )
-    df['Pos Daily 14'] = df['Pos (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    cols = rearrange(cols + ['Pos Daily 14'], *FIRST_AREAS)
-    legends = AREA_LEGEND_UNKNOWN
-    plot_area(df=df, png_prefix='pos_area_daily_2', cols_subset=cols,
-              title='Positive PCR Tests by Thailand Health District (excludes some proactive tests)', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
-
-    cols = rearrange(cols + ['Pos Daily 14'], *FIRST_AREAS)
-    legends = AREA_LEGEND_UNKNOWN
-    plot_area(df=df, png_prefix='pos_area_daily', cols_subset=cols,
-              title='Positive PCR Tests by Thailand Health District (excludes some proactive tests)', legends=legends,
+    plot_area(df=df, png_prefix='pos_area_daily', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              title='Positive PCR Tests by Thailand Health District (excludes some proactive tests)', 
+              unknown_name='Unknown District', unknown_total='Pos',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -3025,32 +2972,21 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Positivity {area}'] = (
             df[f'Positivity {area}']
             / df['Total Positivity Area']
-            * df['Positivity Public+Private (MA)']
+            * df['Positivity Public+Private']
         )
-    df['Positivity 14'] = df['Positivity Public+Private (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    cols = rearrange(cols+['Positivity 14'], *FIRST_AREAS)
-    legends = AREA_LEGEND_UNKNOWN
-    plot_area(df=df, png_prefix='positivity_area', cols_subset=cols,
+    plot_area(df=df, png_prefix='positivity_area', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
               title='Positive Rate by Health Area in proportion to Thailand positive rate '
                     '(excludes some proactive tests)',
-              legends=legends,
+              unknown_name='Unknown District', unknown_total='Positivity Public+Private',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
-
-    cols = rearrange(cols + ['Positivity 14'], *FIRST_AREAS)
-    legends = AREA_LEGEND_UNKNOWN
-    plot_area(df=df, png_prefix='positivity_area_2', cols_subset=cols,
-              title='Positive Rate by Health Area in proportion to Thailand Positive Rate '
-                    '(excludes some proactive tests)',
-              legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     for area in range(1, 14):
         df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
     cols = [f'Positivity Daily {area}' for area in range(1, 14)]
-    cols = rearrange(cols, *FIRST_AREAS)
-    legends = AREA_LEGEND_UNKNOWN
-    plot_area(df=df, png_prefix='positivity_area_unstacked', cols_subset=cols,
-              title='Health Districts with the highest Positive Rate (excludes some proactive tests)', legends=legends,
+    plot_area(df=df, png_prefix='positivity_area_unstacked', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              title='Health Districts with the highest Positive Rate (excludes some proactive tests)', 
               kind='area', stacked=False, percent_fig=False, ma_days=7, cmap='tab20')
 
     for area in range(1, 14):
@@ -3058,36 +2994,29 @@ def save_plots(df: pd.DataFrame) -> None:
             df[f'Cases Area {area}'] / df[f'Tests Area {area}'] * 100
         )
     cols = [f'Cases/Tests {area}' for area in range(1, 14)]
-    cols = rearrange(cols, *FIRST_AREAS)
-    legends = AREA_LEGEND_UNKNOWN
-    plot_area(df=df, png_prefix='casestests_area_unstacked_2', cols_subset=cols,
+    plot_area(df=df, png_prefix='casestests_area_unstacked', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
               title='Health Districts with the highest Cases/Tests (excludes some proactive tests)',
-              legends=legends[:-1],
               kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
     #########################
     # Case by area plots
     #########################
-    for area in range(1,14):
-        df[f'Cases Area {area} (MA)'] = df[f'Cases Area {area}'].rolling('7d').mean()
-    cols = [f'Cases Area {area} (MA)' for area in range(1, 14)]+['Cases Imported']
-    df['Cases Area Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
-    cols = cols+['Cases Area Unknown']
-    assert df[cols][(df['Cases Area Unknown'] < 0)].empty
-    legends = AREA_LEGEND + ['Imported Cases', 'Unknown District']
-    cols = rearrange(cols, *FIRST_AREAS)
-    plot_area(df=df, png_prefix='cases_areas', cols_subset=cols,
-              title='Thailand Covid Cases by Health District', legends=legends,
+    cols = rearrange([f'Cases Area {area}' for area in range(1, 14)]+['Cases Imported'], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='cases_areas', 
+              cols_subset=cols, legends = AREA_LEGEND + ['Imported Cases'],
+              title='Thailand Covid Cases by Health District',
+              unknown_name="Unknown District", unknown_total="Cases",
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     cols = rearrange([f'Cases Walkin Area {area}' for area in range(1, 14)],*FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
-              title='Thailand "Walkin" Covid Cases by Health District', legends=AREA_LEGEND_UNKNOWN,
+              title='Thailand "Walkin" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     cols = rearrange([f'Cases Proactive Area {area}' for area in range(1, 14)],*FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_proactive', cols_subset=cols,
-              title='Thailand "Proactive" Covid Cases by Health District', legends=AREA_LEGEND_UNKNOWN,
+              title='Thailand "Proactive" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     for area in range(1, 14):
@@ -3095,10 +3024,9 @@ def save_plots(df: pd.DataFrame) -> None:
             df[f'Cases Area {area}'] - df[f'Pos Area {area}']
         )
     cols = [f'Case-Pos {area}' for area in range(1, 14)]
-    cols = rearrange(cols, *FIRST_AREAS)
-
-    plot_area(df=df, png_prefix='cases_from_positives_area', cols_subset=cols,
-              title='Which Health Districts have more cases than positive results?', legends=AREA_LEGEND_UNKNOWN,
+    plot_area(df=df, png_prefix='cases_from_positives_area', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              title='Which Health Districts have more cases than positive results?', 
               kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
     #######################
@@ -3116,7 +3044,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
     cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field"]
     legends = ['On Respirator', 'Severe Case', 'Hospitalised Other', 'Field Hospital']
-    plot_area(df=df, png_prefix='cases_active_2', cols_subset=cols,
+    plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
               title='Thailand Active Covid Cases\n(Severe, Field, and Respirator only available from '
                     '2021-04-24 onwards)',
               legends=legends,
@@ -3153,16 +3081,14 @@ def save_plots(df: pd.DataFrame) -> None:
     # Deaths
     ####################
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
-    df['Deaths Age Min (MA)'] = df['Deaths Age Min'].rolling('7d').mean()
-    df['Deaths Age Max (MA)'] = df['Deaths Age Max'].rolling('7d').mean()
     cols = ['Deaths Age Max', 'Deaths Age Median (MA)', 'Deaths Age Min']
     plot_area(df=df, png_prefix='deaths_age', cols_subset=cols, title='Thailand Covid Death Age Range',
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab10')
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     cols = rearrange([f'Deaths Area {area}' for area in range(1, 14)],*FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     ####################
     # Vaccines
@@ -3231,19 +3157,19 @@ def save_plots(df: pd.DataFrame) -> None:
 
     top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5.last('30d'), png_prefix='cases_prov_increasing', cols_subset=cols,
+    plot_area(df=top5, png_prefix='cases_prov_increasing', cols_subset=cols,
               title='Provinces with Cases Trending Up\nin last 30 days (using 3 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=3, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
     top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5.last('30d'), png_prefix='cases_prov_decreasing', cols_subset=cols,
+    plot_area(df=top5, png_prefix='cases_prov_decreasing', cols_subset=cols,
               title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=3, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
     top5 = cases.pipe(topprov, cases_ma_7, name="Province Cases", other_name="Other Provinces", num=6)
     cols = top5.columns.to_list()
-    plot_area(df=top5.last('30d'), png_prefix='cases_prov_top', cols_subset=cols,
+    plot_area(df=top5, png_prefix='cases_prov_top', cols_subset=cols,
               title='Provinces with Most Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
@@ -3254,5 +3180,4 @@ if __name__ == "__main__":
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
     df = scrape_and_combine()
-    df = calc_cols(df)
     save_plots(df)
