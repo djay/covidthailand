@@ -242,8 +242,9 @@ def parse_file(filename, html=False, paged=True):
     else:
         return '\n\n\n'.join(pages_txt)
 
-
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
+NUM_RE = re.compile("\d+(?:\,\d+)*(?:\.\d+)?")
+INT_RE = re.compile("\d+(?:\,\d+)*")
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -255,12 +256,12 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0):
         matched, *behind = behind
         behind = "".join(behind)
         found = ahead if before else behind
-        numbers = re.findall(r"[,0-9]+", found)
+        numbers = (INT_RE if ints else NUM_RE).findall(found)
         numbers = [n.replace(",", "") for n in numbers]
-        numbers = [int(n) for n in numbers if n]
+        numbers = [int(n) if ints else float(n) for n in numbers if n]
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
-            behind = re.sub(r"[,0-9]+", "", found, remove)
+            behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
         return numbers, matched + " " + behind 
     if debug and matches:
         print("Couldn't find '{}'".format(match))
@@ -1188,7 +1189,7 @@ def get_provinces():
     provinces.loc['พทัลงุ*'] = provinces.loc['Phatthalung']
     provinces.loc['พระนครศรอียุธยำ'] = provinces.loc['Ayutthaya']
     provinces.loc['เชีียงราย'] = provinces.loc['Chiang Rai']
-    provinces.loc['เวียงจันทร์'] = provinces.loc['Nong Khai']# TODO: it's really vientiane
+    provinces.loc['เวียงจันทร์'] = provinces.loc['Unknown']# TODO: it's really vientiane
     provinces.loc['อุทัยธาน'] = provinces.loc['Uthai Thani']
     provinces.loc['ไม่ระบุ'] = provinces.loc['Unknown']
     provinces.loc['สะแก้ว'] = provinces.loc['Sa Kaeo']
@@ -1202,6 +1203,8 @@ def get_provinces():
     provinces.loc['สระบุรี'] = provinces.loc['Saraburi']
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown'] # Cambodia
+    provinces.loc['มาเลเซีย'] = provinces.loc['Unknown'] # Malaysia
+    provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Bangkok'] # Prison. Currently cluster just there. might have to change later
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1641,12 +1644,23 @@ def get_cases_by_prov_tweets():
             local = toint(local.group(1))
         else:
             local = None
-        cases,_ = get_next_numbers(text, "Since January 2020")
-        cases = cases[0] if cases else None
+        cases,_ = get_next_number(text, "Since Jan(?:uary)? 2020")
         deaths, _ = get_next_number(text, "dead +")
+        serious, _ = get_next_number(text, "in serious condition", before=True)
+        recovered, _ = get_next_number(text, "discharged", before=True)
+        hospitalised, _ = get_next_number(text, "in care", before=True)
         
-        cols = ["Date", "Cases Imported", "Cases Local Transmission", "Cases Cum", "Deaths"]
-        row = [date, imported, local, cases, deaths]
+        cols = [
+            "Date", 
+            "Cases Imported", 
+            "Cases Local Transmission", 
+            "Cases Cum", 
+            "Deaths",
+            "Hospitalized Severe",
+            "Hospitalized",
+            "Recovered",
+        ]
+        row = [date, imported, local, cases, deaths, serious, hospitalised, recovered]
         tdf = pd.DataFrame([row], columns=cols).set_index("Date")
         print(date,"Official:", tdf.to_string(index=False, header=False))
         df = df.combine_first(tdf)    
@@ -1876,6 +1890,8 @@ def briefing_case_types(date, pages):
         else:
             ports = 0
         imported = ports + quarantine
+        prison, _ = get_next_number(text, "ที่ต้องขัง",default=0)
+        proactive += prison # not sure if they are going to add this category going forward?
 
         assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
 
@@ -1937,7 +1953,7 @@ def briefing_case_types(date, pages):
     print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
-NUM_OR_DASH = re.compile("([0-9\,\.]+|-)")
+NUM_OR_DASH = re.compile("([0-9\,\.]+|-)-?")
 parse_numbers = lambda lst: [float(i.replace(",","")) if i!="-" else 0 for i in lst]
 
 def briefing_province_cases(file, date, pages):
@@ -1951,9 +1967,11 @@ def briefing_province_cases(file, date, pages):
         parts = [l.get_text() for l in soup.find_all("p")]
         parts = [l for l in parts if l]
         #parts = list(split(parts, lambda x: "รวม" in x))[-1]
-        title, *parts = parts
-        if not re.search("รวม\s*\(ราย\)",title):
+        preamble, *tables = split(parts, re.compile("รวม\s*\(ราย\)").search)
+        if len(tables) <= 1:
             continue  #Additional top 10 report. #TODO: better detection of right report
+        else:
+            title, parts = tables
         while parts and "รวม" in parts[0]:
             totals, *parts = parts
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
@@ -1980,7 +1998,7 @@ def briefing_province_cases(file, date, pages):
                 if i > 4: # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date-datetime.timedelta(days=i)
-                rows[(olddate,prov)] = cases
+                rows[(olddate,prov)] = cases + rows.get((olddate,prov),0) # rare case where we need to merge
                 if False and olddate == date:
                     if cases > 0:
                         print(date,linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
@@ -2021,7 +2039,7 @@ def briefing_deaths(file, date, pages):
             congenital_disease = df[2][0]  # TODO: parse?
             # Risk factors for COVID-19 infection
             risk_factors = df[3][0]
-            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ")
+            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ", ints=False)
             med_age, min_age, max_age, *_ = numbers
             numbers, *_ = get_next_numbers(text, "ชาย")
             male, female, *_ = numbers
@@ -2189,8 +2207,12 @@ def get_cases_by_prov_briefings():
         # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
         prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
+        #assert prov_total and today_total
+        warning = f"briefing provs={prov_total}, cases={today_total}"
+        if today_total and prov_total:
+            assert prov_total/today_total > 0.77, warning # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            print(f"{date.date()} WARNING: briefing provs={prov_total}, cases={today_total}")
+            print(f"{date.date()} WARNING:", warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
@@ -2275,13 +2297,14 @@ def get_vaccinations():
     pages = ((page, file2date(f), f) for f,_ in web_files(*links, dir="vaccinations") for page in parse_file(f) if file2date(f))
     vaccinations = {}
     allocations = {}
+    vacnew = {}
+    shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+    oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     for page, date , file in pages: # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"): #TODO: make go back later
             continue
         date = date-datetime.timedelta(days=1) # TODO: get actual date from titles. maybe not always be 1 day delay
         lines = [l.strip() for l in page.split('\n') if l.strip()]
-        shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-        oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
         #if date > d("2021-03-22"):
         preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
             #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
@@ -2291,7 +2314,7 @@ def get_vaccinations():
         for headings, lines in pairwise(rest):
             shot_count = max(len(shots.findall(h)) for h in headings)
             oh_count = max(len(oldhead.findall(h)) for h in headings)
-            table = {10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
+            table = {12:"new_given", 10:"given", 6:"alloc"}.get(shot_count, "old_given" if oh_count else None)
             if not table:
                 continue
             added = 0
@@ -2321,6 +2344,10 @@ def get_vaccinations():
                     assert len(numbers)==14
                     assert vaccinations.get((date,prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
                     vaccinations[(date,prov)] = numbers
+                elif table=="new_given":
+                    assert len(numbers)==12 # some extra "-" throwing it out. have to use camelot
+                    assert vacnew.get((date,prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
+                    vacnew[(date,prov)] = numbers
                 elif table=="old_given":
                     alloc, target_num, given, perc, *rest = numbers
                     medical, frontline, disease, elders, riskarea, *rest = rest
@@ -2349,6 +2376,22 @@ def get_vaccinations():
         "Vac Group Risk: Location 1 Cum",
         "Vac Group Risk: Location 2 Cum",
     ]).set_index(["Date", "Province"])
+    df_new = pd.DataFrame((list(key)+value for key,value in vacnew.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Given 1",
+        "Vac Given 2",
+        "Vac Group Medical Staff 1",
+        "Vac Group Medical Staff 2",
+        "Vac Group Other Frontline Staff 1",
+        "Vac Group Other Frontline Staff 2",
+        "Vac Group Over 60 1",
+        "Vac Group Over 60 2",
+        "Vac Group Risk: Disease 1",
+        "Vac Group Risk: Disease 2",
+        "Vac Group Risk: Location 1",
+        "Vac Group Risk: Location 2",
+    ]).set_index(["Date", "Province"])
     alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
         "Date",
         "Province",
@@ -2358,6 +2401,7 @@ def get_vaccinations():
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
     all_vac = df.combine_first(alloc) # TODO: pesky 2021-04-26
+    
 
     # Do cross check we got the same number of allocations to vaccination
     counts = all_vac.groupby("Date").count()
@@ -2373,7 +2417,13 @@ def get_vaccinations():
     all_vac = all_vac.drop(index=missing_data.index)
     # TODO: parse the daily vaccinations to make up for missing data in cum tables
 
-
+    # Fix holes in cumulative using any dailys
+    # TODO: below is wrong approach. should add daily to cum -1
+    # df_daily = df.reset_index().set_index("Date").groupby("Province").apply(cum2daily)
+    # df_daily.combine_first(df_new)
+    # df_cum = df_daily.groupby("Province").cumsum()
+    # df_cum.columns = [f"{c} Cum" for c in df_cum.columns]
+    # all_vac = all_vac.combine_first(df_cum)
 
     export(all_vac, "vaccinations", csv_only=True)
 
@@ -2385,6 +2435,8 @@ def get_vaccinations():
     given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+
+    #TODO: can get todays from - https://ddc.moph.go.th/vaccine-covid19/ or briefings
 
     # Need to drop any dates that are incomplete.
     # TODO: could keep allocations?
@@ -2425,9 +2477,9 @@ def export(df, name, csv_only=False):
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        #situation = get_situation()
+        situation = get_situation()
         #cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
+        #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
     else:
