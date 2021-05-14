@@ -2708,7 +2708,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
-        legends = cols
+        legends = [c.strip(" (MA)") for c in cols]
     elif unknown_total and unknown_name not in legends:
         legends = legends + [unknown_name]
 
