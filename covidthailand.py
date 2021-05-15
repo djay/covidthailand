@@ -54,7 +54,7 @@ def removeprefix(text, prefix):
 
 def removesuffix(text, suffix):
     if text.endswith(suffix):
-        return text[:len(suffix)]
+        return text[:-len(suffix)]
     else:
         return text
 
@@ -2927,7 +2927,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive']
     plot_area(df=df, png_prefix='cases_types', cols_subset=cols, title='Thailand Covid Cases by Test Type',
               unknown_name='Cases Unknown', unknown_total='Cases',
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab10')
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap="viridis")
 
     cols = ['Cases Symptomatic','Cases Asymptomatic']
     plot_area(df=df, png_prefix='cases_sym', cols_subset=cols, title='Thailand Covid Cases by Symptoms',
@@ -2955,20 +2955,18 @@ def save_plots(df: pd.DataFrame) -> None:
     ##########################
     plt.rc('legend',**{'fontsize':12})
 
-    cols = [f'Tests Area {area}' for area in range(1, 14)]
-    cols = rearrange(cols, *FIRST_AREAS),
+    cols = rearrange([f'Tests Area {area}' for area in range(1, 14)], *FIRST_AREAS)
     plot_area(df=df, png_prefix='tests_area', cols_subset=cols[0],
               title='PCR Tests by Health District (excludes proactive & private tests)', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = [f'Pos Area {area}' for area in range(1, 14)]
-    cols = rearrange(cols, *FIRST_AREAS)
+    cols = rearrange([f'Pos Area {area}' for area in range(1, 14)], *FIRST_AREAS)
     plot_area(df=df, png_prefix='pos_area', cols_subset=cols,
               title='PCR Positive Test Results by Health District (excludes proactive & private tests)',
               legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = [f'Tests Daily {area}' for area in range(1, 14)]
+    cols = rearrange([f'Tests Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
     test_cols = [f'Tests Area {area}' for area in range(1, 14)]
     for area in range(1, 14):
         df[f'Tests Daily {area}'] = (
@@ -2976,7 +2974,6 @@ def save_plots(df: pd.DataFrame) -> None:
             / df[test_cols].sum(axis=1)
             * df['Tests']
         )
-    cols = rearrange(cols, *FIRST_AREAS)
     plot_area(df=df, png_prefix='tests_area_daily', cols_subset=cols,
               title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND,
               unknown_name='Unknown District', unknown_total='Tests',
