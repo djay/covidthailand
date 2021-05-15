@@ -15,6 +15,8 @@ import urllib.parse
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import numpy as np
 import datetime
 from io import StringIO
 from bs4 import BeautifulSoup
@@ -31,6 +33,7 @@ from itertools import tee, islice, compress, cycle
 import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
+from typing import Union, List, Callable
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -45,6 +48,12 @@ s.mount("https://", HTTPAdapter(max_retries=RETRY))
 def removeprefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
+    else:
+        return text
+
+def removesuffix(text, suffix):
+    if text.endswith(suffix):
+        return text[:-len(suffix)]
     else:
         return text
 
@@ -2002,7 +2011,7 @@ def briefing_province_cases(file, date, pages):
                     else:
                         print("no cases", linenum, thai, *numbers)
     df = pd.DataFrame(((d,p,c) for (d,p), c in rows.items()), columns=["Date", "Province", "Cases"]).set_index(["Date","Province"])
-    assert date >= d("2021-01-13") and not df.empty
+    assert date >= d("2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
     return df
 
 
@@ -2471,11 +2480,10 @@ def export(df, name, csv_only=False):
     )
 
 
-USE_CACHE_DATA = os.environ.get("USE_CACHE_DATA", False) == "True" and os.path.exists("api/combined.csv")
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        situation = get_situation()
+        #situation = get_situation()
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
@@ -2522,79 +2530,8 @@ def scrape_and_combine():
         return df
 
 
-def calc_cols(df):
-    print("========Caclulated Values==========")
-    # adding in rolling average to see the trends better
-    df["Tested (MA)"] = df["Tested"].rolling(7).mean()
-    df["Tested PUI (MA)"] = df["Tested PUI"].rolling(7).mean()
-    df["Tested PUI Walkin Public (MA)"] = df["Tested PUI Walkin Public"].rolling(7).mean()
-    df["Tested PUI Walkin Private (MA)"] = df["Tested PUI Walkin Private"].rolling(7).mean()
-    df["Tested PUI Walkin (MA)"] = df["Tested PUI Walkin"].rolling(7).mean()
-    df["Cases (MA)"] = df["Cases"].rolling(7).mean()
-    df["Cases Walkin (MA)"] = df["Cases Walkin"].rolling(7).mean()
-    df["Cases Proactive (MA)"] = df["Cases Proactive"].rolling(7).mean()
-    df["Tests Area (MA)"] = df["Tests Area"].rolling(7).mean()
-    df["Pos Area (MA)"] = df["Pos Area"].rolling(7).mean()
-    df["Tests XLS (MA)"] = df["Tests XLS"].rolling(7).mean()
-    df["Pos XLS (MA)"] = df["Pos XLS"].rolling(7).mean()
-    df["Pos (MA)"] = df["Pos"].rolling(7).mean()
-    df["Pos Public (MA)"] = df["Pos Public"].rolling(7).mean()
-    df["Pos Private (MA)"] = df["Pos Private"].rolling(7).mean()
-    df["Tests Public (MA)"] = df["Tests Public"].rolling(7).mean()
-    df["Tests Private (MA)"] = df["Tests Private"].rolling(7).mean()
-    df["Tests (MA)"] = df["Tests"].rolling(7).mean()
-
-    # Calculate positive rate
-    df["Positivity Tested (MA)"] = df["Cases (MA)"] / df["Tested (MA)"] * 100
-    df["Positivity PUI (MA)"] = df["Cases (MA)"] / df["Tested PUI (MA)"] * 100
-    df["Positivity PUI"] = df["Cases"] / df["Tested PUI"] * 100
-    df["Positivity Cases/Tested"] = df["Cases"] / df["Tested"] * 100
-    df["Positivity Area (MA)"] = df["Pos Area (MA)"] / df["Tests Area (MA)"] * 100
-    df["Positivity Area"] = df["Pos Area"] / df["Tests Area"] * 100
-    df["Positivity XLS (MA)"] = df["Pos XLS (MA)"] / df["Tests XLS (MA)"] * 100
-    df["Positivity XLS"] = df["Pos XLS"] / df["Tests XLS"] * 100
-    df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
-    df["Positivity Public (MA)"] = df["Pos Public (MA)"] / df["Tests Public (MA)"] * 100
-    df["Positivity Cases/Tests (MA)"] = df["Cases (MA)"] / df["Tests XLS (MA)"] * 100
-
-    # Combined data
-    df["Pos Corrected+Private (MA)"] =  df["Pos XLS (MA)"]
-    df["Tests Private+Public (MA)"] = df["Tests (MA)"]
-    df["Tests Corrected+Private (MA)"] = df["Tests XLS (MA)"]
-
-    df["Positivity Private (MA)"] = (
-        df["Pos Private (MA)"] / df["Tests Private (MA)"] * 100
-    )
-    df["Positivity Public+Private (MA)"] = (
-        df["Pos Corrected+Private (MA)"] / df["Tests Corrected+Private (MA)"] * 100
-    )
-
-    # Computed data
-    # TODO: has a problem if we have local transmission but no proactive
-    walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
-    df = df.combine_first(walkins)
-
-    # Work out unknown areas or types
-    cols = [f"Cases Walkin Area {area}" for area in range(1, 14)]
-    df['Cases Walkin Area 14'] = df['Cases Walkin'].sub(df[cols].sum(axis=1), fill_value=0)
-    assert df[cols][(df['Cases Walkin Area 14'] < 0)].empty
-    cols = [f"Cases Proactive Area {area}" for area in range(1, 14)]
-    df['Cases Proactive Area 14'] = df['Cases Proactive'].sub(df[cols].sum(axis=1), fill_value=0)
-    assert df[cols][(df['Cases Proactive Area 14'] < 0)].empty
-    cols = [f"Tests Area {area}" for area in range(1, 14)]
-    df['Tests Area 14'] = df['Tests Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 97 lower than 0
-    assert df[cols][(df['Tests Area 14'] < 0)].empty
-    cols = [f"Pos Area {area}" for area in range(1, 14)]
-    df['Pos Area 14'] = df['Pos Public (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0) # 139 rows < 0
-    assert df[cols][(df['Pos Area 14'] < 0)].empty
-    # TODO: skip for now until we work out how to not interpolate
-    df['Cases Unknown'] = df['Cases'].sub(df[["Cases Walkin","Cases Proactive","Cases Imported"]].sum(axis=1), fill_value=0).clip(lower=0) # 3 dates lower than 0
-    assert df[["Cases", "Cases Walkin","Cases Proactive","Cases Imported","Cases Unknown"]][(df['Cases Unknown'] < 0)].empty 
-
-    return df
-
 # df = df.cumsum()
-AREA_LEGEND = [
+AREA_LEGEND_ORDERED = [
     "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
     "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
     "3: U-C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
@@ -2641,10 +2578,10 @@ def rearrange(l, *first):
     return result + [i for i in l if i is not None]
 
 FIRST_AREAS = [13, 4, 5, 6, 1] # based on size-ish
-AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
-AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
-TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
-POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
+AREA_LEGEND = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
+#AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
+#TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
+#POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
 
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
@@ -2654,8 +2591,9 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     valuefunc = metricfunc if valuefunc is None else valuefunc
 
     # Apply metric on each province by itself
-    with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(0).reset_index().set_index("Date")
- 
+    with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(
+        0).reset_index().set_index("Date")
+
     # = metricfunc(df)
     last_day = with_metric.loc[with_metric.last_valid_index()]
     top5 = last_day.nlargest(num, 0).reset_index()
@@ -2671,1033 +2609,654 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     # put the provinces into cols
     series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="sum")
 
-    cols =list(top5[name]) # in right order
+    cols = list(top5[name])  # in right order
     if other_name:
-        return series[cols+[other_name]]
+        return series[cols + [other_name]]
     else:
         return series[cols]
+
+
+def custom_cm(cm_name: str, size: int, last_colour: str = None, flip: bool = False) -> ListedColormap:
+    """Returns a ListedColorMap object built with the supplied color scheme and with the last color forced to be equal
+    to the parameter passed. The flip parameter allows to reverse the colour scheme if needed.
+    """
+    summer = matplotlib.cm.get_cmap(cm_name)
+    if flip:
+        newcolors = summer(np.linspace(1, 0, size))
+    else:
+        newcolors = summer(np.linspace(0, 1, size))
+
+    if last_colour:
+        newcolors[size - 1, :] = matplotlib.colors.to_rgba(last_colour)  # used for unknowns (ex: 'lightgrey')
+
+    return ListedColormap(newcolors)
+
+
+def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: int) -> pd.DataFrame:
+    """Removes the last n rows in the event that they contain any NaN
+
+    :param df_all: the pandas DataFrame containing all data
+    :param cols: specify columns from which to assess presence of NaN in the last n rows
+    :param n_rows: the number of rows (counting from the last row, going backwards) to evaluate whether they contain
+                   any NaN and if so then delete them. This deals with (possible) data missing for the most recent data
+                   updates.
+    """
+    # detect the number of NaN in the last n rows of the DataFrame subset (i.e. only using the columns specified)
+    sum_nans = df_all[cols][-n_rows:].isna().sum(axis=1)
+    index_nans = sum_nans[sum_nans > 0].index
+
+    # remove these indices from the pandas DataFrame
+    cleaned_df = df_all.drop(index=index_nans)
+
+    return cleaned_df
+
+from matplotlib.pyplot import cycler
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+import matplotlib.cm
+
+def get_cycle(cmap, N=None, use_index="auto"):
+    if isinstance(cmap, str):
+        if use_index == "auto":
+            if cmap in ['Pastel1', 'Pastel2', 'Paired', 'Accent',
+                        'Dark2', 'Set1', 'Set2', 'Set3',
+                        'tab10', 'tab20', 'tab20b', 'tab20c']:
+                use_index=True
+            else:
+                use_index=False
+        cmap = matplotlib.cm.get_cmap(cmap)
+    if not N:
+        N = cmap.N
+    if use_index=="auto":
+        if cmap.N > 100:
+            use_index=False
+        elif isinstance(cmap, LinearSegmentedColormap):
+            use_index=False
+        elif isinstance(cmap, ListedColormap):
+            use_index=True
+    if use_index:
+        ind = np.arange(int(N)) % cmap.N
+        return cycler("color",cmap(ind))
+    else:
+        colors = cmap(np.linspace(0,1,N))
+        return cycler("color",colors)
+
+def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
+              legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
+              unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent = False,
+              ma_days: int = None, cmap: str = 'tab20',
+              reverse_cmap: bool = False, highlight: List[str] = [], y_formatter: Callable[[int,int], str] = human_format,
+              clean_end = True, between: List[str] = []) -> None:
+    """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
+
+    :param df: data frame containing all available data
+    :param png_prefix: file prefix (file suffix is '.png')
+    :param cols_subset: specify columns from the pandas DataFrame based on either a column name prefix or based on a
+                        list of column names.
+    :param title: plot title
+    :param legends: legends to be used on the plots (line chart and percentage)
+    :param kind: the type of plot (line chart or area chart)
+    :param stacked: whether the line chart should use stacked lines
+    :param percent_fig: whether the percentage chart should be included
+    :param unknown_name: the column name containing data related to unknowns
+    :param unknown_total: the column name (to be created) with unknown totals 
+    :param unknown_percent: to include unknowns in a percentage fig if enabled
+    :param ma_days: number of days used when computing the moving average
+    :param cmap: the matplotlib colormap to be used
+    :param reverse_cmap: whether the colormap should be reversed
+    :param highlight: cols to make thicker to highlight them
+    :param y_formatter: function to format y axis numbers
+    :param clean_end: remove days at end if there is no data (inc unknown)
+    """
+    if type(cols_subset) is str:
+        cols = [c for c in df.columns if str(c).startswith(cols_subset)]
+    else:
+        cols = cols_subset
+    
+    if ma_days:
+        for c in cols:
+            df[f'{c} (MA)'] = df[c].rolling(f'{ma_days}d').mean()
+        cols = [f'{c} (MA)' for c in cols]
+        ma_suffix = ' (MA)'
+    else:
+        ma_suffix = ''
+
+    # try to hone in on last day of "important" data. Assume first col
+    last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
+    last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
+
+    if unknown_total:
+        if ma_days:
+            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(f'{ma_days}d').mean()
+        total_col = f'{unknown_total}{ma_suffix}'
+        unknown_col = f'{unknown_name}{ma_suffix}'
+        other_cols = set(cols)-set([unknown_col])
+        df[unknown_col] = df[total_col].sub(df[other_cols].sum(axis=1), fill_value=None).clip(lower=0) #TODO: should not be 0 when no unknown_total
+        if unknown_col not in cols:
+            cols = cols + [unknown_col]
+
+    if percent_fig:
+        perccols = [c for c in cols if not unknown_total or unknown_percent or c != f'{unknown_name}{ma_suffix}']
+        for c in  perccols:
+            df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
+        if unknown_total and not unknown_percent:
+            df[f'{unknown_name}{ma_suffix} (%)'] = 0
+        perccols = [f'{c} (%)' for c in cols]
         
+    title = f'{title}\n'
+
+    if ma_days:
+        title = title + f'({ma_days} day rolling average)\n'
+    title += f'Last Data: {last_update}\n'
+    title += 'https://djay.github.io/covidthailand'
+
+    # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
+    if legends is None:
+        legends = [removesuffix(c, " (MA)") for c in cols]
+    elif unknown_total and unknown_name not in legends:
+        legends = legends + [unknown_name]
+
+    if unknown_total:
+        colormap = custom_cm(cmap, len(cols) + 1, 'lightgrey', flip=reverse_cmap)
+    else:
+        colormap = custom_cm(cmap, len(cols), flip=reverse_cmap)
+
+    # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
+    #df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
+    last_date_unknown = df[cols].last_valid_index() # last date with some data (inc unknown)
+    if clean_end:
+        df_clean = df.loc[:last_date_unknown]
+    else:
+        df_clean = df
+
+    periods = {
+        'all': df_clean, 
+        '1': df_clean[:'2020-06-01'],
+        '2': df_clean['2020-12-12':],
+        '3': df_clean['2021-04-01':],
+        '30d': df_clean.last('30d')
+    }
+
+    if USE_CACHE_DATA: #TODO: have its own switch
+        periods = {key: periods[key] for key in ['2']}
+
+    for suffix, df_plot in periods.items():
+        if df_plot.empty:
+            continue
+
+        if percent_fig:
+            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+        else:
+            f, a0 = plt.subplots(figsize=[20, 12])
+        #plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
+        a0.set_prop_cycle(get_cycle(colormap))
+        
+        if y_formatter is not None:
+            a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+
+        if kind == "area":
+            df_plot.plot(ax=a0, y=cols, kind=kind, stacked=stacked)
+        else:
+            for c in cols:
+                style = "--" if c in between else None
+                width = 5 if (c in highlight) else None
+                df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind=kind)
+        #     a0.plot(df_plot.index, df_plot.reset_index()[c])
+        # if between:
+        #     a0.fill_between(x=df.index.values, y1=between[0], y2=between[1], data=df)
+
+        a0.set_title(label=title)
+        a0.legend(labels=legends)
+
+        if unknown_total:
+            a0.set_ylabel(unknown_total)
+        a0.xaxis.label.set_visible(False)
+
+        if percent_fig:
+            df_plot.plot(ax=a1, y=perccols, kind='area', colormap=colormap, legend=False)
+            a1.set_ylabel('Percent')
+            a1.xaxis.label.set_visible(False)
+
+        plt.tight_layout()
+        plt.savefig(f'outputs/{png_prefix}_{suffix}.png')
+        plt.close()
+
+    return None
 
 
-def save_plots(df):
-    print("======== Generating Plots ==========")
+def save_plots(df: pd.DataFrame) -> None:
+    print('======== Generating Plots ==========')
 
-    matplotlib.use("AGG")
+    # matplotlib global settings
+    matplotlib.use('AGG')
     plt.style.use('seaborn-whitegrid')
-    plt.rcParams.update({'font.size': 18})
-    #plt.rcParams['legend.title_fontsize'] = 'small'
-    plt.rc('legend',**{'fontsize':16})
+    plt.rcParams.update({'font.size': 16})
+    plt.rc('legend', **{'fontsize': 14})
 
     # create directory if it does not exists
-    pathlib.Path("./outputs").mkdir(parents=True, exist_ok=True)
+    pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        kind="line",
-        figsize=[20, 10],
-        y=[
-            "Tested PUI (MA)",
-            "Tested PUI Walkin Public (MA)",
-            "Tests Public (MA)",
-            "Tests Corrected+Private (MA)",
-        ],
-        title="Thailand PCR Tests and PUI\n"
-        "(7 day rolling mean. Test totals exclude some proactive testing)\n"
-        f"Checked: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(
-        [
-            "PUI",
-            "PUI (Public)",
-            "Tests Performed (Public)",
-            "Tests Performed (All)",
-        ]
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/tests.png")
+    # Computed data
+    # TODO: has a problem if we have local transmission but no proactive
+    # TODO: put somewhere else
+    walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
+    df = df.combine_first(walkins)
 
 
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        kind="line",
-        figsize=[20, 10],
-        title="PCR Tests and PUI in Thailand\n"
-        "(7 day rolling mean. Excludes some proactive test)\n"
-        f"Checked: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-        y=[
-            'Tested Cum', 
-            "Tested PUI Cum", 
-            "Tested Not PUI Cum", 
-            "Tested Proactive Cum",
-            "Tested Quarantine Cum",
-            "Tested PUI Walkin Private Cum",
-            "Tested PUI Walkin Public Cum",
-        ],
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/tested_pui.png")
+    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
+    legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)',]
+    plot_area(df=df, png_prefix='tests', cols_subset=cols,
+              title='Thailand PCR Tests and PUI (totals exclude some proactive testing)', legends=legends,
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
+    cols = ['Tested Cum',
+            'Tested PUI Cum',
+            'Tested Not PUI Cum',
+            'Tested Proactive Cum',
+            'Tested Quarantine Cum',
+            'Tested PUI Walkin Private Cum',
+            'Tested PUI Walkin Public Cum']
+    plot_area(df=df, png_prefix='tested_pui', cols_subset=cols,
+              title='PCR Tests and PUI in Thailand (excludes some proactive test)',
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
     ###############
     # Positive Rate
     ###############
+    df["Positivity PUI"] = df["Cases"] / df["Tested PUI"] * 100
+    df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
+    df["Positivity Cases/Tests"] = df["Cases"] / df["Tests XLS"] * 100
+    df["Positivity Public+Private"] = (df["Pos XLS"] / df["Tests XLS"] * 100)
+    df['Positivity Walkins/PUI'] = df['Cases Walkin'] / df['Tested PUI'] * 100
+    df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
+    df['Cases per PUI3'] = df['Cases'] / df['Tested PUI'] / 3.0  * 100
+    df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
 
-
-    df["Positivity Walkins/PUI (MA)"] = df["Cases Walkin (MA)"] / df["Tested PUI (MA)"] * 100
-    df["Positive Rate Private (MA)"] = (df["Pos Private"] / df["Tests Private"]).rolling(7).mean() * 100
-    df["Cases per PUI3"] = df["Cases (MA)"] / df["Tested PUI (MA)"] / 3.0  * 100
-    df["Cases per Tests (MA)"] = df["Cases (MA)"] / df["Tests Corrected+Private (MA)"] * 100
     cols = [
-            "Positivity Public+Private (MA)",
-            "Cases per Tests (MA)",
-#            "Positivity PUI (MA)",
-            "Cases per PUI3",
-            #"Positivity Walkins/PUI (MA)",
-            "Positive Rate Private (MA)",
+            'Positivity Public+Private',
+            'Cases per Tests',
+            'Cases per PUI3',
+            'Positive Rate Private'
+    ]
+    legends = ['Positive Rate: Share of PCR tests that are positive ',
+               'Share of PCR tests that have Covid',
+               'Share of PUI*3 that have Covid',
+               'Share of Private PCR tests that are positive'
+    ]
+    plot_area(df=df, png_prefix='positivity', cols_subset=cols,
+              title='Positive Rate: Is enough testing happening?', legends=legends,
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10',
+              highlight=['Positivity Public+Private'])
+
+    df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
+    df['PUI3 per Case'] = df['Tested PUI']*3 / df['Cases']
+    df['PUI3 per Walkin'] = df['Tested PUI']*3 / df['Cases Walkin']
+    df['PUI per Walkin'] = df['Tested PUI'].divide( df['Cases Walkin'] )
+    df['Tests per case'] = df['Tests XLS'] / df['Cases']
+    df['Tests per positive'] = df['Tests XLS'] / df['Pos XLS']
+
+    cols = ['Tests per positive', 'Tests per case', 'PUI per Case', 'PUI3 per Case', 'PUI per Walkin']
+    legends = [
+            'PCR Tests per Positive',
+            'PCR Tests per Case',
+            'PUI per Case',
+            'PUI*3 per Case',
+            'PUI per Walkin Case',
         ]
-    un_ma = [
-            "Positivity XLS",
-        ]
-    legend =         [
-            "Positive Rate: Share of PCR tests that are postitive ",
-            "Share of PCR tests that have Covid",
-#            "Share of PUI that have Covid",
-            "Share of PUI*3 that have Covid",
-#            "Share of PUI that are Walkin Covid Cases",
-            "Share of Private PCR tests that are positive",
-            #"Positive Rate: without rolling average"
-        ]
-    title = "Positive Rate: Is enough testing happening?\n" \
-        "(7 day rolling mean)\n" \
-        f"Updated: {TODAY().date()}\n" \
-        "djay.github.io/covidthailand" \
-    
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df.plot(
-        ax=ax,
-        kind="line",
-        y=cols[:1],
-        linewidth=5,
-        title=title,
-    )
-    df.plot(
-        ax=ax,
-        y=cols[1:],
-        colormap=plt.cm.Set1,
-    )
-    ax.legend(legend)
-    plt.tight_layout()
-    plt.savefig("outputs/positivity.png")
+    plot_area(df=df, png_prefix='tests_per_case', cols_subset=cols,
+              title='Thailand Tests per Confirmed Case', legends=legends,
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df["2020-12-12":].plot(
-        ax=ax,
-        y=cols[:1],
-        linewidth=5,
-        title=title
-    )
-    df["2020-12-12":].plot(
-        ax=ax,
-        y=cols[1:],
-        colormap=plt.cm.Set1,
-    )
-    # df["2020-12-12":].plot(
-    #     ax=ax,
-    #     linestyle="--",
-    #     y=un_ma,
-    # )
-    ax.legend(legend)
-    plt.tight_layout()
-    plt.savefig("outputs/positivity_2.png")
+    cols = ['Positivity Cases/Tests',
+            'Positivity Public',
+            'Positivity PUI',
+            'Positive Rate Private',
+            'Positivity Public+Private']
+    legends = [
+            'Confirmed Cases / Tests Performed (Public)',
+            'Positive Results / Tests Performed (Public)',
+            'Confirmed Cases / PUI',
+            'Positive Results / Tests Performed (Private)',
+            'Positive Results / Tests Performed (All)',
+    ]
+    plot_area(df=df, png_prefix='positivity_all', cols_subset=cols,
+              title='Positive Rate', legends=legends,
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    df["PUI per Case"] = df["Tested PUI (MA)"].divide(df["Cases (MA)"]) 
-    df["PUI3 per Case"] = df["Tested PUI (MA)"]*3 / df["Cases (MA)"] 
-    df["PUI3 per Walkin"] = df["Tested PUI (MA)"]*3 / df["Cases Walkin (MA)"]
-    df["PUI per Walkin"] = df["Tested PUI (MA)"].divide( df["Cases Walkin (MA)"] )
-    df["Tests per case"] = df["Tests Corrected+Private (MA)"] / df["Cases (MA)"]
-    df["Tests per positive"] = df["Tests Corrected+Private (MA)"] / df["Pos Corrected+Private (MA)"]
-
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df["2020-12-12":].plot(
-        ax=ax,
-        kind="line",
-        y=[
-            "Tests per positive",
-        ],
-        linewidth = 7,
-    )
-    df["2020-12-12":].plot(
-        ax=ax,
-        use_index=True,
-        kind="line",
-        colormap="Set1",
-        y=[
-            "Tests per case",
-            "PUI per Case",
-            "PUI3 per Case",
-            "PUI per Walkin",
-        ],
-        title="Thailand Tests per Confirmed Case\n" 
-        "(7 day rolling mean)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(
-        [
-            "PCR Tests per Positive",
-            "PCR Tests per Case",
-            "PUI per Case",
-            "PUI*3 per Case",
-            "PUI per Walkin Case",
-        ]
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/tests_per_case.png")
-
-
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        kind="line",
-        figsize=[20, 10],
-        y=[
-            "Positivity Cases/Tests (MA)",
-            "Positivity Public (MA)",
-            "Positivity PUI (MA)",
-            "Positivity Private (MA)",
-            "Positivity Public+Private (MA)",
-        ],
-        title="Positive Rate (7day rolling average) - Thailand Covid",
-    )
-    ax.legend(
-        [
-            "Confirmed Cases / Tests Performed (Public)",
-            "Positive Results / Tests Performed (Public)",
-            "Confirmed Cases / PUI",
-            "Positive Results / Tests Performed (Private)",
-            "Positive Results / Tests Performed (All)",
-        ]
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/positivity_all.png")
-
-
-    #################
+    ########################
     # Public vs Private
-    ################
-
-    fig, ax = plt.subplots(figsize=[20, 10],)
-    df['Tests Private Ratio'] = (df["Tests Private"] / df["Tests Public"] ).rolling("7d").mean()
-    df['Tests Positive Private Ratio'] = (df["Pos Private"] / df["Pos Public"] ).rolling("7d").mean()
-    df['Positive Rate Private Ratio'] = (df["Pos Private"] / (df["Tests Private"] ) / (df["Pos Public"] / df["Tests Public"])).rolling("7d").mean()
-    df['PUI Private Ratio'] = (df["Tested PUI Walkin Private"] / df["Tested PUI Walkin Public"]).rolling("7d").mean()
-    df["2020-12-12":].plot(
-        ax=ax,
-        colormap="Set1",
-        y=[
-            'Tests Private Ratio',
+    ########################
+    df['Tests Private Ratio'] = (df['Tests Private'] / df['Tests Public'] ).rolling('7d').mean()
+    df['Tests Positive Private Ratio'] = (df['Pos Private'] / df['Pos Public'] ).rolling('7d').mean()
+    df['Positive Rate Private Ratio'] = (df['Pos Private'] / (df['Tests Private'] ) / (df['Pos Public'] / df['Tests Public'])).rolling('7d').mean()
+    df['PUI Private Ratio'] = (df['Tested PUI Walkin Private'] / df['Tested PUI Walkin Public']).rolling('7d').mean()
+    cols = ['Tests Private Ratio',
             'Tests Positive Private Ratio',
             'PUI Private Ratio',
-            'Positive Rate Private Ratio',
-        ],
-        title="Testing Private Ratio\n" 
-        "(7 day rolling mean)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/tests_public_ratio.png")
-
+            'Positive Rate Private Ratio']
+    plot_area(df=df, png_prefix='tests_private_ratio', cols_subset=cols, title='Testing Private Ratio',
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
     ##################
     # Test Plots
     ##################
+    cols = ['Cases',
+            'Pos Public',
+            'Pos XLS']
+    legends = ['Confirmed Cases',
+               'Positive Test Results (Public)',
+               'Positive Test Results (All)']
+    plot_area(df=df, png_prefix='cases', cols_subset=cols,
+              title='Positive Test results compared to Confirmed Cases', legends=legends,
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        kind="line",
-        figsize=[20, 10],
-        y=[
-            "Cases (MA)",
-            "Pos Public (MA)",
-            "Pos Corrected+Private (MA)",
-        ],
-        title="Positive Test results compared to Confirmed Cases\n"
-        "(7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(
-        [
-            "Confirmed Cases",
-            "Positive Test Results (Public)",
-            "Positive Test Results (All)",
-        ]
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases.png")
+    cols = ['Cases',
+            'Pos Area',
+            'Pos XLS',
+            'Pos Public',
+            'Pos Private',
+            'Pos']
+    plot_area(df=df, png_prefix='cases_all', cols_subset=cols,
+              title='Positive Test results compared to Confirmed Cases',
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        kind="line",
-        figsize=[20, 10],
-        y=[
-            "Cases (MA)",
-            "Pos Area (MA)",
-            "Pos XLS (MA)",
-            "Pos Public (MA)",
-            "Pos Private (MA)",
-            "Pos Corrected+Private (MA)",
-        ],
-        title="Positive Test results compared to Confirmed Cases\n"
-        "(7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_all.png")
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive']
+    plot_area(df=df, png_prefix='cases_types', cols_subset=cols, title='Thailand Covid Cases by Test Type',
+              unknown_name='Cases Unknown', unknown_total='Cases',
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap="viridis")
 
+    cols = ['Cases Symptomatic','Cases Asymptomatic']
+    plot_area(df=df, png_prefix='cases_sym', cols_subset=cols, title='Thailand Covid Cases by Symptoms',
+              unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
+    # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
+    # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
+    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    fig, ax = plt.subplots()
-    df.loc["2020-12-12":].plot(
-        ax=ax,
-        y=["Cases Imported","Cases Walkin", "Cases Proactive", "Cases Unknown"],
-        use_index=True,
-        kind="area",
-        figsize=[20, 10],
-        title="Thailand Covid Cases by Test Type\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_types.png")
+    # Thailand Covid Cases by Age
+    plot_area(df=df, png_prefix='cases_ages', cols_subset='Age', title='Thailand Covid Cases by Age',
+              unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
+              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer', reverse_cmap=True)
 
-    cols = ["Cases Symptomatic","Cases Asymptomatic"]
-    df['Cases Symptomatic Unknown'] = df['Cases'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    fig, ax = plt.subplots()
-    df.loc["2020-12-12":].plot(
-        ax=ax,
-        y=cols+['Cases Symptomatic Unknown'],
-        use_index=True,
-        kind="area",
-        figsize=[20, 10],
-        title="Thailand Covid Cases by Symptoms\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_sym.png")
-
-
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        y=["Cases Imported","Cases Walkin", "Cases Proactive", "Cases Unknown"],
-        use_index=True,
-        kind="area",
-        figsize=[20, 10],
-        title="Thailand Covid Cases by Test Type\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_types_all.png")
-
-    cols = [c for c in df.columns if str(c).startswith("Age ")]
-    for c in cols:
-        df[f"{c} (MA)"] = df[c].rolling(7).mean()
-    macols = [f"{c} (MA)" for c in cols]
-    df['Age Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    for c in cols:
-        df[f"{c} (%)"] = df[f"{c} (MA)"] / df[macols].sum(axis=1) * 100
-    perccols = [f"{c} (%)" for c in cols]
-    title="Thailand Covid Cases by Age\n"\
-        f"Updated: {TODAY().date()}\n"\
-        "(7 day rolling average)\n" \
-        "djay.github.io/covidthailand"
-
-    f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
-    df["2020-12-12":].plot(
-        ax=a0,
-        y=macols+['Age Unknown'],
-        kind="area",
-        colormap="summer",
-        title=title,
-    )
-    a0.set_ylabel("Cases")
-    a0.xaxis.label.set_visible(False)
-    df["2020-12-12":].plot(
-        ax=a1,
-        y=perccols,
-        kind="area",
-        colormap="summer",
-#        title=title,
-        #figsize=[20, 5]
-        legend=False,
-        #title="Thailand Covid Cases by Age (%)"
-    )
-    a1.set_ylabel("Percent")
-    a1.xaxis.label.set_visible(False)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_ages_2.png")
-
-    df.plot(
-        ax=ax,
-        y=cols+['Age Unknown'],
-        kind="area",
-        colormap="summer",
-        title=title
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_ages_all.png")
-
-
-    title="Thailand Covid Cases by Risk\n"\
-        f"Updated: {TODAY().date()}\n"\
-        "djay.github.io/covidthailand"
+    # Thailand Covid Cases by Risk
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
-    cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )
-    # TODO: take out unknown
-    df['Risk: Investigating'] = df['Cases'].sub(df[cols].sum(axis=1, skipna=False), fill_value=0).add(df['Risk: Investigating'], fill_value=0).clip(lower=0)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df["2020-12-12":].plot(
-        ax=ax,
-        y=cols,
-        kind="area",
-        colormap="tab20",
-        title=title
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_causes_2.png")
-
-    df.plot(
-        ax=ax,
-        y=cols,
-        kind="area",
-        colormap="tab20",
-        title=title,
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_causes_all.png")
-
+    cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )   
+    plot_area(df=df, png_prefix='cases_causes', cols_subset=cols, title='Thailand Covid Cases by Risk',
+              unknown_name='Risk: Investigating', unknown_total='Cases',
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     ##########################
     # Tests by area
     ##########################
-
-
     plt.rc('legend',**{'fontsize':12})
-    AREA_COLOURS="tab20"
 
-    cols = [f"Tests Area {area}" for area in range(1, 15)]
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="PCR Tests by Health District\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/tests_area.png")
+    cols = rearrange([f'Tests Area {area}' for area in range(1, 14)], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='tests_area', cols_subset=cols[0],
+              title='PCR Tests by Health District (excludes proactive & private tests)', legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = [f"Pos Area {area}" for area in range(1, 15)]
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        #use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="PCR Positive Test Results by Health District\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/pos_area.png")
+    cols = rearrange([f'Pos Area {area}' for area in range(1, 14)], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='pos_area', cols_subset=cols,
+              title='PCR Positive Test Results by Health District (excludes proactive & private tests)',
+              legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-
-    cols = [f"Tests Daily {area}" for area in range(1, 14)]
-    test_cols = [f"Tests Area {area}" for area in range(1, 14)]
+    for area in range(1, 14): 
+        df[f'Tests Area {area} (i)'] = df[f'Tests Area {area}'].interpolate(limit_area="inside")
+    test_cols = [f'Tests Area {area} (i)' for area in range(1, 14)]
     for area in range(1, 14):
-        df[f"Tests Daily {area}"] = (
-            df[f"Tests Area {area}"]
+        df[f'Tests Daily {area}'] = (
+            df[f'Tests Area {area} (i)']
             / df[test_cols].sum(axis=1)
-            * df["Tests (MA)"]
+            * df['Tests']
         )
-    df['Tests Daily 14'] = df['Tests (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    fig, ax = plt.subplots()
-    df["2020-12-12":].plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="PCR Tests by Thailand Health District\n"
-        "(excludes some proactive tests, 7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/tests_area_daily_2.png")
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols+['Tests Daily 14'], *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="PCR Tests by Thailand Health District\n"
-        "(excludes some proactive tests, 7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/tests_area_daily.png")
+    cols = rearrange([f'Tests Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='tests_area_daily', cols_subset=cols,
+              title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND,
+              #unknown_name='Unknown District', unknown_total='Tests',
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-    cols = [f"Pos Daily {area}" for area in range(1, 14)]
-    pos_cols = [f"Pos Area {area}" for area in range(1, 14)]
+    for area in range(1, 14): 
+        df[f'Pos Area {area} (i)'] = df[f'Pos Area {area}'].interpolate(limit_area="inside")
+    pos_cols = [f'Pos Area {area} (i)' for area in range(1, 14)]
     for area in range(1, 14):
-        df[f"Pos Daily {area}"] = (
-            df[f"Pos Area {area}"]
+        df[f'Pos Daily {area}'] = (
+            df[f'Pos Area {area} (i)']
             / df[pos_cols].sum(axis=1)
-            * df["Pos (MA)"]
+            * df['Pos']
         )
-    df['Pos Daily 14'] = df['Pos (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-    fig, ax = plt.subplots()
-    df["2020-12-12":].plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="Positive PCR Tests by Thailand Health District\n"
-        "(excludes some proactive tests, 7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/pos_area_daily_2.png")
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols+["Pos Daily 14"], *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="Positive PCR Tests by Thailand Health District\n"
-        "(excludes some proactive tests, 7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/pos_area_daily.png")
-
+    cols = rearrange([f'Pos Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='pos_area_daily', 
+              cols_subset=cols, legends=AREA_LEGEND,
+              title='Positive PCR Tests by Thailand Health District (excludes some proactive tests)', 
+              #unknown_name='Unknown District', unknown_total='Pos',
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     # Workout positivity for each area as proportion of positivity for that period
     for area in range(1, 14):
-        df[f"Positivity {area}"] = (
-            df[f"Pos Area {area}"] / df[f"Tests Area {area}"] * 100
+        df[f'Positivity {area}'] = (
+            df[f'Pos Area {area} (i)'] / df[f'Tests Area {area} (i)'] * 100
         )
-    cols = [f"Positivity {area}" for area in range(1, 14)]
-    df["Total Positivity Area"] = df[cols].sum(axis=1)
+    cols = [f'Positivity {area}' for area in range(1, 14)]
+    df['Total Positivity Area'] = df[cols].sum(axis=1)
     for area in range(1, 14):
-        df[f"Positivity {area}"] = (
-            df[f"Positivity {area}"]
-            / df["Total Positivity Area"]
-            * df["Positivity Public+Private (MA)"]
+        df[f'Positivity {area}'] = (
+            df[f'Positivity {area}']
+            / df['Total Positivity Area']
+            * df['Positivity Public+Private']
         )
-    df['Positivity 14'] = df['Positivity Public+Private (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(lower=0)
-
-    # print(
-    #     df[
-    #         ["Total Positivity Area", "Positivity Area", "Pos Area", "Tests Area"]
-    #         + cols
-    #     ]
-    # )
-
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="Positive Rate by Health Area in proportion to Thailand positive rate\n"
-        "(excludes some proactive tests, 7 day rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    #ax.subtitle("Excludes proactive & private tests")
-    plt.tight_layout()
-    plt.savefig("outputs/positivity_area.png")
-
-    fig, ax = plt.subplots()
-    df.loc["2020-12-12":].plot(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols+['Positivity 14'], *FIRST_AREAS),
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title="Positive Rate by Health Area in proportion to Thailand Positive Rate\n"
-        "(excludes some proactive tests)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    plt.tight_layout()
-    plt.savefig("outputs/positivity_area_2.png")
-
-
-    for area in range(1, 15):
-        df[f"Positivity Daily {area}"] = df[f"Pos Daily {area}"] / df[f"Tests Daily {area}"] * 100
-    cols = [f"Positivity Daily {area}" for area in range(1, 15)]
-
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df.loc["2020-12-12":].plot.area(
-        ax=ax,
-        y=rearrange(cols, *FIRST_AREAS),
-        stacked=False,
-        colormap=AREA_COLOURS,
-        title="Health Districts with the highest Positive Rate\n"
-        "(excludes some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    plt.tight_layout()
-    plt.savefig("outputs/positivity_area_unstacked_2.png")
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df.plot.area(
-        ax=ax,
-        y=rearrange(cols, *FIRST_AREAS),
-        stacked=False,
-        colormap=AREA_COLOURS,
-        title="Health Districts with the highest Positive Rate\n"
-        "(excludes some proactive tests. 7 day MA. extrapolated from weekly district data)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    plt.tight_layout()
-    plt.savefig("outputs/positivity_area_unstacked.png")
-
+    plot_area(df=df, png_prefix='positivity_area', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              title='Positive Rate by Health Area in proportion to Thailand positive rate '
+                    '(excludes some proactive tests)',
+              #unknown_name='Unknown District', unknown_total='Positivity Public+Private',
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     for area in range(1, 14):
-        df[f"Cases/Tests {area}"] = (
-            df[f"Cases Area {area}"] / df[f"Tests Area {area}"] * 100
-        )
-    cols = [f"Cases/Tests {area}" for area in range(1, 14)]
+        df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
+    cols = [f'Positivity Daily {area}' for area in range(1, 14)]
+    topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
+    legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c)+1 for c in topcols])[:5]
+    plot_area(df=df, png_prefix='positivity_area_unstacked', 
+              cols_subset=topcols, legends=legend,
+              title='Health Districts with the highest Positive Rate', 
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df.loc["2020-12-12":].plot.area(
-        ax=ax,
-        use_index=True,
-        y=rearrange(cols, *FIRST_AREAS),
-        stacked=False,
-        colormap=AREA_COLOURS,
-        title="Health Districts with the highest Cases/Tests\n"
-        "(excludes some proactive tests)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    ax.legend(AREA_LEGEND)
-    plt.tight_layout()
-    plt.savefig("outputs/casestests_area_unstacked_2.png")
+    for area in range(1, 14):
+        df[f'Cases/Tests {area}'] = (
+            df[f'Cases Area {area}'] / df[f'Tests Area {area}'] * 100
+        )
+    cols = [f'Cases/Tests {area}' for area in range(1, 14)]
+    plot_area(df=df, png_prefix='casestests_area_unstacked', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              title='Health Districts with the highest Cases/Tests (excludes some proactive tests)',
+              kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
     #########################
     # Case by area plots
     #########################
+    cols = rearrange([f'Cases Area {area}' for area in range(1, 14)]+['Cases Imported'], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='cases_areas', 
+              cols_subset=cols, legends = AREA_LEGEND + ['Imported Cases'],
+              title='Thailand Covid Cases by Health District',
+              unknown_name="Unknown District", unknown_total="Cases",
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-    for area in range(1,14):
-        df[f"Cases Area {area} (MA)"] = df[f"Cases Area {area}"].rolling(7).mean()
-    cols = [f"Cases Area {area} (MA)" for area in range(1, 14)]+["Cases Imported"]
-    df['Cases Area Unknown'] = df['Cases (MA)'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: 2 days values go below due to data from api
-    cols = cols+['Cases Area Unknown']
-    assert df[cols][(df['Cases Area Unknown'] < 0)].empty
-    legend = AREA_LEGEND + ["Imported Cases", "Unknown District"]
-    title="Thailand Covid Cases by Health District\n" \
-        "(7 day rolling average)\n" \
-        f"Updated: {TODAY().date()}\n" \
-        "djay.github.io/covidthailand"
+    cols = rearrange([f'Cases Walkin Area {area}' for area in range(1, 14)],*FIRST_AREAS)
+    plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
+              title='Thailand "Walkin" Covid Cases by Health District', legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = rearrange(cols,*FIRST_AREAS)
-    fig, ax = plt.subplots()
-    df[:"2020-06-14"].plot(
-        ax=ax,
-        y=cols,
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title=title
-    )
-    ax.legend(legend)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_areas_1.png")
-
-    fig, ax = plt.subplots()
-    df["2020-12-12":].plot(
-        ax=ax,
-        y=cols,
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title=title
-    )
-    ax.legend(legend)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_areas_2.png")
-
-    fig, ax = plt.subplots()
-    df.plot(
-        ax=ax,
-        y=cols,
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title=title
-    )
-    ax.legend(legend)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_areas_all.png")
-
-
-    cols = rearrange([f"Cases Walkin Area {area}" for area in range(1, 15)],*FIRST_AREAS)
-    fig, ax = plt.subplots()
-    df["2021-02-16":].plot(
-        ax=ax,
-        y=cols,
-        kind="area",
-        figsize=[20, 10],
-        colormap=AREA_COLOURS,
-        title='Thailand "Walkin" Covid Cases by health District\n'
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_areas_walkins.png")
-
-    cols = rearrange([f"Cases Proactive Area {area}" for area in range(1, 15)],*FIRST_AREAS)
-    fig, ax = plt.subplots(figsize=[20, 10],)
-    df["2021-02-16":].plot.area(
-        ax=ax,
-        y=cols,
-        colormap=AREA_COLOURS,
-        title='Thailand "Proactive" Covid Cases by health District\n'
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_areas_proactive.png")
-
+    cols = rearrange([f'Cases Proactive Area {area}' for area in range(1, 14)],*FIRST_AREAS)
+    plot_area(df=df, png_prefix='cases_areas_proactive', cols_subset=cols,
+              title='Thailand "Proactive" Covid Cases by Health District', legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     for area in range(1, 14):
-        df[f"Case-Pos {area}"] = (
-            df[f"Cases Area {area}"] - df[f"Pos Area {area}"]
+        df[f'Case-Pos {area}'] = (
+            df[f'Cases Area {area}'] - df[f'Pos Area {area}']
         )
-    cols = [f"Case-Pos {area}" for area in range(1, 14)]
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df["2020-12-12":].plot.area(
-        ax=ax,
-        y=rearrange(cols, *FIRST_AREAS),
-        stacked=False,
-        colormap=AREA_COLOURS,
-        title='Which districts have more cases than positive results\n'
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND_UNKNOWN)
-    plt.tight_layout()
-    plt.savefig("outputs/cases_from_positives_area.png")
+    cols = [f'Case-Pos {area}' for area in range(1, 14)]
+    plot_area(df=df, png_prefix='cases_from_positives_area', 
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              title='Which Health Districts have more cases than positive results?', 
+              kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
-
-
-    ############
+    #######################
     # Hospital plots
-    ############
+    #######################
+    cols_delayed = ["Hospitalized", "Recovered","Hospitalized Severe", "Hospitalized Respirator", "Hospitalized Field"]
 
-    fig, ax = plt.subplots(figsize=[20, 10])
-    cols_delayed = ["Hospitalized","Recovered","Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]
-    df[cols_delayed] = df[cols_delayed].ffill() # TODO: only do for last day? Should do unknown instead? or just not show until we have all teh data?
+    # TODO: only do for last day? Should do unknown instead? or just not show until we have all the data?
+    df[cols_delayed] = df[cols_delayed].ffill()
+
     df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
-    non_split = df[["Hospitalized Severe", "Hospitalized Respirator","Hospitalized Field"]].sum(skipna=False, axis=1)
-    # sometimes we deaths and cases but not the reast so fillfoward.
-    df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
-    cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field",]
-    df["2020-12-12":].plot.area(
-        ax=ax,
-        y=cols,
-        colormap="tab20",
-        title='Thailand Active Covid Cases\n'
-        "(Severe, field, respirator only avaiable from 2021-04-24 onwards)"
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend([
-        "On Respirator",
-        "Severe Case",
-        "Hospitalised Other",
-        "Field Hospital",
-    ])
-    # df['Severe Estimate'] = (df['Cases'].shift(+14) - df['Recovered']).clip(0)
-    # df["2020-12-12":].plot.line(
-    #     ax=ax,
-    #     y=['Severe Estimate', 'Cases'],
-    #     colormap="tab20",
-    # )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_active_2.png")
+    non_split = df[["Hospitalized Severe", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=False, axis=1)
 
+    # sometimes we deaths and cases but not the rest so fillfoward.
+    df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
+    cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field"]
+    legends = ['On Respirator', 'Severe Case', 'Hospitalised Other', 'Field Hospital']
+    plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
+              title='Thailand Active Covid Cases\n(Severe, Field, and Respirator only available from '
+                    '2021-04-24 onwards)',
+              legends=legends,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df["Recovered since 2021-04-01"] = df["2021-04-14":]['Recovered'].cumsum()
-    df["Died since 2021-04-01"] = df["2021-04-01":]['Deaths'].cumsum()
-    df["Cases since 2021-04-01"] = df["2021-04-01":]['Cases'].cumsum()
-    df["Other Active Cases"] = df['Cases since 2021-04-01'].sub(non_split, fill_value=0).sub(df["Recovered since 2021-04-01"], fill_value=0)
+    df['Recovered since 2021-04-01'] = df['2021-04-14':]['Recovered'].cumsum()
+    df['Died since 2021-04-01'] = df['2021-04-01':]['Deaths'].cumsum()
+    df['Cases since 2021-04-01'] = df['2021-04-01':]['Cases'].cumsum()
+    df['Other Active Cases'] = \
+        df['Cases since 2021-04-01'].sub(non_split, fill_value=0).sub(df['Recovered since 2021-04-01'], fill_value=0)
 
     cols = [
-        "Died since 2021-04-01", 
-        "Hospitalized Respirator",
-        "Hospitalized Severe",
-        "Other Active Cases",
-        "Hospitalized Field",
-        "Recovered since 2021-04-01", 
+        'Died since 2021-04-01',
+        'Hospitalized Respirator',
+        'Hospitalized Severe',
+        'Other Active Cases',
+        'Hospitalized Field',
+        'Recovered since 2021-04-01',
     ]
-    # df["2021-04-01":].plot.line(
-    #     ax=ax,
-    #     y="Cases since 2021-04-01",
-    #     #colormap="tab20",
-    # )
-    df["2021-04-01":].plot.area(
-        ax=ax,
-        y=cols,
-        colormap="tab20",
-        title='Current outcome of Covid Cases since 1st April 2021\n'
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend([
-#        "Cases since 1st April" 
-        "Deaths from cases since 1st April", 
-        "On Ventilator",
-        "In severe condition",
-        "In Hospital",
-        "In Field Hospital",
-        "Recovered from cases since 1st April",
-    ])
-
-    plt.tight_layout()
-    plt.savefig("outputs/cases_cumulative_3.png")
-
-
+    legends = [
+            'Deaths from cases since 1st April',
+            'On Ventilator',
+            'In severe condition',
+            'In Hospital',
+            'In Field Hospital',
+            'Recovered from cases since 1st April'
+    ]
+    plot_area(df=df, png_prefix='cases_cumulative', cols_subset=cols,
+              title='Current outcome of Covid Cases since 1st April 2021', legends=legends,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     ####################
     # Deaths
     ####################
 
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling("7d").mean()
-    df['Deaths Age Min (MA)'] = df['Deaths Age Min'].rolling("7d").mean()
-    df['Deaths Age Max (MA)'] = df['Deaths Age Max'].rolling("7d").mean()
-    ax.set_ylim(bottom=0,top=100)
-    df["2021-04-01":].plot.line(
-        ax=ax,
-        y=["Deaths Age Max", "Deaths Age Median (MA)", "Deaths Age Min"],
-        colormap="tab10",
-        linewidth=5,
-        title='Thailand Covid Death Age Range\n'
-        "(7d rolling averge)\n"
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    plt.fill_between(x=df.index.values, y1="Deaths Age Min", y2="Deaths Age Max", data=df)
-    plt.tight_layout()
-    plt.savefig("outputs/deaths_age_3.png")
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
+    cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
+    plot_area(df=df, png_prefix='deaths_age', cols_subset=cols, title='Thailand Covid Death Age Range',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
 
-    cols = rearrange([f"Deaths Area {area}" for area in range(1, 14)],*FIRST_AREAS)
-    #df['Deaths Area Unknown'] = df['Deaths'].sub(df[cols].sum(axis=1), fill_value=0).clip(0) # TODO: need unknown otherwise shows 0. or could ffill
-    fig, ax = plt.subplots(figsize=[20, 10])
-    df["2021-04-01":].plot.area(
-        ax=ax,
-        y=cols,
-        colormap=AREA_COLOURS,
-        title='Thailand Covid Deaths by health District\n'
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND)
-    plt.tight_layout()
-    plt.savefig("outputs/deaths_by_area_3.png")
+    cols = rearrange([f'Deaths Area {area}' for area in range(1, 14)],*FIRST_AREAS)
+    plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
+              title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-
-    fig, ax = plt.subplots(figsize=[20, 10])
-    ax.yaxis.set_major_formatter(FuncFormatter(thaipop2))
-    #ax.get_yaxis().get_major_formatter().set_useOffset(False)
-    #ax.get_yaxis().get_major_formatter().set_scientific(False)
-    #cols = ["Vaccinations Given 1 Cum", "Vaccinations Given 2 Cum"]
-    cols = [c for c in df.columns if str(c).startswith("Vac Group")]
-    leg = lambda c: c.replace(" Cum","").replace("Vac Group","").replace("1", "Dose 1").replace("2", "Dose 2")
+    ####################
+    # Vaccines
+    ####################
+    cols = [c for c in df.columns if str(c).startswith('Vac Group')]
+    leg = lambda c: c.replace(' Cum','').replace('Vac Group','').replace('1', 'Dose 1').replace('2', 'Dose 2')
     cols.sort(key=lambda c: leg(c)[-1]+leg(c)) # put 2nd shot at end
-    # some missing data. should be able to fill it in
-    df["2021-04-01":][cols].interpolate().plot.area(
-        ax=ax,
-        y=cols,
-        colormap="Set3",
-        title='Thailand Vaccinations by Groups\n'
-        "(% of 2 doses per Thai population)\n"
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend([leg(c) for c in cols])
-    plt.tight_layout()
-    plt.savefig("outputs/vac_groups_3.png")
 
-    cols = rearrange([f"Vac Given 1 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
-    fig, ax = plt.subplots(figsize=[20, 10],)
-    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
-    df["2021-04-01":][cols].interpolate().plot.area(
-        ax=ax,
-        y=cols,
-        colormap=AREA_COLOURS,
-        title='Thailand Vaccinations (1st Shot) by Health District\n'
-        "(% per population)\n"
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND)
-    plt.tight_layout()
-    plt.savefig("outputs/vac_areas_s1_3.png")
+    legends = [leg(c) for c in cols]
+    df_vac_groups = df['2021-02-16':][cols].interpolate()
+    plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
+              title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3',
+              y_formatter=thaipop2)
 
-    cols = rearrange([f"Vac Given 2 Area {area} Cum" for area in range(1, 14)],*FIRST_AREAS)
-    fig, ax = plt.subplots(figsize=[20, 10],)
-    ax.yaxis.set_major_formatter(FuncFormatter(thaipop))
-    df["2021-04-01":][cols].interpolate().plot.area(
-        ax=ax,
-        y=cols,
-        colormap=AREA_COLOURS,
-        title='Thailand Fully Vaccinatated (2nd Shot) by Health District\n'
-        "(% population full vaccinated)\n"
-        f"Updated: {TODAY().date()}\n"        
-        "djay.github.io/covidthailand"
-    )
-    ax.legend(AREA_LEGEND)
-    plt.tight_layout()
-    plt.savefig("outputs/vac_areas_s2_3.png")
+    cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in range(1, 14)],*FIRST_AREAS)
+    df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
+    plot_area(df=df_vac_areas_s1, png_prefix='vac_areas_s1', cols_subset=cols,
+              title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)', legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
+              y_formatter=thaipop)
 
+    cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in range(1, 14)],*FIRST_AREAS)
+    df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
+    plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
+              title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
+              legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
+              y_formatter=thaipop)
 
     # Top 5 vaccine rollouts
-    vac = pd.read_csv("api/vaccinations.csv")
-    vac['Date'] = pd.to_datetime(vac["Date"])
+    vac = pd.read_csv('api/vaccinations.csv')
+    vac['Date'] = pd.to_datetime(vac['Date'])
     vac = vac.set_index('Date')
-    vac = vac.join(PROVINCES["Population"], on="Province")
-    valuefunc = lambda df: df["Vac Given 2 Cum"] / df['Population'] * 100
+    vac = vac.join(PROVINCES['Population'], on='Province')
+    valuefunc = lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100
     top5 = vac.pipe(topprov, valuefunc)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.loc["2021-04-01":].plot.area(
-        ax=ax,
-        stacked=False,
-        title="Top 5 Thai Provinces Closest to Fully Vaccinated\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/vac_top5_full_3.png")
 
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
+              title='Top 5 Thai Provinces Closest to Fully Vaccinated',
+              kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cases = pd.read_csv("api/cases_by_province.csv")
-    cases['Date'] = pd.to_datetime(cases["Date"])
-    cases = cases.set_index(["Date","Province"])
-
-    def trendline(data, order=1):
-        # simulate dates with monotpnic inc numbers
-        dates = range(0,len(data.index.values))
+    #######################
+    # Cases by provinces
+    #######################
+    def trendline(data: pd.DataFrame, order: int = 1) -> float:
+        # simulate dates with monotonic inc numbers
+        dates = range(0, len(data.index.values))
         coeffs = np.polyfit(dates, list(data), order)
         slope = coeffs[-2]
         return float(slope)
 
-    increasing = lambda adf: adf["Cases"].rolling(3).mean().rolling(3).apply(trendline)
-    casesma = lambda adf: adf["Cases"].rolling(3).mean()
-    top5 = cases.pipe(topprov, increasing, casesma, name="Province Cases (3d MA)", other_name=None, num=5)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.last("30d").plot.line(
-        ax=ax,
-        #stacked=False,
-        title="Provinces with Cases Trending Up\n"
-        "in last 3 days (using 3 days rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_prov_increasing.png")
+    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"].rolling(3).mean().rolling(3).apply(trendline)
 
-    decreasing = lambda adf: 1/increasing(adf)
-    top5 = cases.pipe(topprov, decreasing, casesma, name="Province Cases (3d MA)", other_name=None, num=5)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.last("30d").plot.line(
-        ax=ax,
-        #stacked=False,
-        title="Provinces with Cases Trending Down\n"
-        " in the last 3 days (using 3 days rolling average)\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_prov_decreasing.png")
+    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"].rolling(3).mean()
 
-    casesma7 = lambda adf: adf["Cases"]
-    top5 = cases.pipe(topprov, casesma7, casesma7, name="Province Cases", other_name="Other Provinces", num=6)
-    fig, ax = plt.subplots(figsize=[20, 10])
-    top5.last("30d").plot.line(
-        ax=ax,
-        #stacked=False,
-        title="Provinces with Most Cases\n"
-        f"Updated: {TODAY().date()}\n"
-        "djay.github.io/covidthailand",
-    )
-    plt.tight_layout()
-    plt.savefig("outputs/cases_prov_top.png")
+    def decreasing(adf: pd.DataFrame) -> pd.DataFrame:
+        return 1/increasing(adf)
+
+    def cases_ma_7(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"]
+
+    cases = pd.read_csv("api/cases_by_province.csv")
+    cases['Date'] = pd.to_datetime(cases["Date"])
+    cases = cases.set_index(["Date", "Province"])
+
+    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='cases_prov_increasing', cols_subset=cols,
+              title='Provinces with Cases Trending Up\nin last 30 days (using 3 days rolling average)',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
+    top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='cases_prov_decreasing', cols_subset=cols,
+              title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
+    top5 = cases.pipe(topprov, cases_ma_7, name="Province Cases", other_name="Other Provinces", num=6)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='cases_prov_top', cols_subset=cols,
+              title='Provinces with Most Cases',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
 
 if __name__ == "__main__":
+
+    USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists('api/combined.csv')
+    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
+
     df = scrape_and_combine()
-    df = calc_cols(df)
-    df = save_plots(df)
+    save_plots(df)
