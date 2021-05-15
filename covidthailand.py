@@ -2532,7 +2532,7 @@ def scrape_and_combine():
 
 
 # df = df.cumsum()
-AREA_LEGEND = [
+AREA_LEGEND_ORDERED = [
     "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
     "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
     "3: U-C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
@@ -2579,7 +2579,7 @@ def rearrange(l, *first):
     return result + [i for i in l if i is not None]
 
 FIRST_AREAS = [13, 4, 5, 6, 1] # based on size-ish
-AREA_LEGEND = rearrange(AREA_LEGEND, *FIRST_AREAS)
+AREA_LEGEND = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
 #AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
 #TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
 #POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
@@ -3020,10 +3020,12 @@ def save_plots(df: pd.DataFrame) -> None:
     for area in range(1, 14):
         df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
     cols = [f'Positivity Daily {area}' for area in range(1, 14)]
+    topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
+    legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c)+1 for c in topcols])[:5]
     plot_area(df=df, png_prefix='positivity_area_unstacked', 
-              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
-              title='Health Districts with the highest Positive Rate (excludes some proactive tests)', 
-              kind='area', stacked=False, percent_fig=False, ma_days=7, cmap='tab20')
+              cols_subset=topcols, legends=legend,
+              title='Health Districts with the highest Positive Rate', 
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
     for area in range(1, 14):
         df[f'Cases/Tests {area}'] = (
