@@ -2798,8 +2798,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
             df_plot.plot(ax=a0, y=cols, kind=kind, stacked=stacked)
         else:
             for c in cols:
-                style = "--" if c in between else None
-                width = 5 if (c in highlight) else None
+                style = "--" if c in [f"{b}{ma_suffix}" for b in between] else None
+                width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
                 df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind=kind)
         #     a0.plot(df_plot.index, df_plot.reset_index()[c])
         # if between:
