@@ -33,8 +33,7 @@ from itertools import tee, islice, compress, cycle
 import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
-from typing import Union, List
-from collections.abc import Callable
+from typing import Union, List, Callable
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
