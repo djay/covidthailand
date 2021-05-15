@@ -2651,13 +2651,43 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 
     return cleaned_df
 
+from matplotlib.pyplot import cycler
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+import matplotlib.cm
+
+def get_cycle(cmap, N=None, use_index="auto"):
+    if isinstance(cmap, str):
+        if use_index == "auto":
+            if cmap in ['Pastel1', 'Pastel2', 'Paired', 'Accent',
+                        'Dark2', 'Set1', 'Set2', 'Set3',
+                        'tab10', 'tab20', 'tab20b', 'tab20c']:
+                use_index=True
+            else:
+                use_index=False
+        cmap = matplotlib.cm.get_cmap(cmap)
+    if not N:
+        N = cmap.N
+    if use_index=="auto":
+        if cmap.N > 100:
+            use_index=False
+        elif isinstance(cmap, LinearSegmentedColormap):
+            use_index=False
+        elif isinstance(cmap, ListedColormap):
+            use_index=True
+    if use_index:
+        ind = np.arange(int(N)) % cmap.N
+        return cycler("color",cmap(ind))
+    else:
+        colors = cmap(np.linspace(0,1,N))
+        return cycler("color",colors)
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent = False,
               ma_days: int = None, cmap: str = 'tab20',
-              reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[[int,int], str] = human_format,
-              clean_end = True) -> None:
+              reverse_cmap: bool = False, highlight: List[str] = [], y_formatter: Callable[[int,int], str] = human_format,
+              clean_end = True, between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
     :param df: data frame containing all available data
@@ -2675,7 +2705,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     :param ma_days: number of days used when computing the moving average
     :param cmap: the matplotlib colormap to be used
     :param reverse_cmap: whether the colormap should be reversed
-    :param highlight_first: make the first X lines thicker to highlight them
+    :param highlight: cols to make thicker to highlight them
     :param y_formatter: function to format y axis numbers
     :param clean_end: remove days at end if there is no data (inc unknown)
     """
@@ -2759,15 +2789,22 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
             f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
+        #plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
+        a0.set_prop_cycle(get_cycle(colormap))
         
         if y_formatter is not None:
             a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
-        # kind = 'area' if stacked else 'line'
-        if highlight_first > 0:
-            #TODO: how to make colourmap retained between them?
-            df_plot.plot(ax=a0, y=cols[:highlight_first], kind=kind, linewidth=5, stacked=stacked, colormap=colormap)
-        df_plot.plot(ax=a0, y=cols[highlight_first:], kind=kind, stacked=stacked, colormap=colormap)
+        if kind == "area":
+            df_plot.plot(ax=a0, y=cols, kind=kind, stacked=stacked)
+        else:
+            for c in cols:
+                style = "--" if c in between else None
+                width = 5 if (c in highlight) else None
+                df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind=kind)
+        #     a0.plot(df_plot.index, df_plot.reset_index()[c])
+        # if between:
+        #     a0.fill_between(x=df.index.values, y1=between[0], y2=between[1], data=df)
 
         a0.set_title(label=title)
         a0.legend(labels=legends)
@@ -2850,7 +2887,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df, png_prefix='positivity', cols_subset=cols,
               title='Positive Rate: Is enough testing happening?', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10',
-              highlight_first=1)
+              highlight=['Positivity Public+Private'])
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI']*3 / df['Cases']
@@ -3118,10 +3155,12 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Deaths
     ####################
+
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
-    cols = ['Deaths Age Max', 'Deaths Age Median (MA)', 'Deaths Age Min']
+    cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
     plot_area(df=df, png_prefix='deaths_age', cols_subset=cols, title='Thailand Covid Death Age Range',
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
 
     cols = rearrange([f'Deaths Area {area}' for area in range(1, 14)],*FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
