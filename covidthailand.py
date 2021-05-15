@@ -52,6 +52,12 @@ def removeprefix(text, prefix):
     else:
         return text
 
+def removesuffix(text, suffix):
+    if text.endswith(suffix):
+        return text[:len(suffix)]
+    else:
+        return text
+
 ###############
 # Date helpers
 ###############
@@ -2708,11 +2714,11 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     if ma_days:
         title = title + f'({ma_days} day rolling average)\n'
     title += f'Last Data: {last_update}\n'
-    title += 'https://github.com/djay/covidthailand'
+    title += 'https://djay.github.io/covidthailand'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
-        legends = [c.strip(" (MA)") for c in cols]
+        legends = [removesuffix(c, " (MA)") for c in cols]
     elif unknown_total and unknown_name not in legends:
         legends = legends + [unknown_name]
 
@@ -2763,9 +2769,9 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
         if unknown_total:
             a0.set_ylabel(unknown_total)
+        a0.xaxis.label.set_visible(False)
 
         if percent_fig:
-            a0.xaxis.label.set_visible(False)
             df_plot.plot(ax=a1, y=perccols, kind='area', colormap=colormap, legend=False)
             a1.set_ylabel('Percent')
             a1.xaxis.label.set_visible(False)
