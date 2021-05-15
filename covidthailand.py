@@ -2698,7 +2698,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total} (MA)'] = df[c].rolling(f'{ma_days}d').mean()
+            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(f'{ma_days}d').mean()
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols)-set([unknown_col])
@@ -2749,7 +2749,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     }
 
     if USE_CACHE_DATA: #TODO: have its own switch
-        periods = {key: periods[key] for key in ['3']}
+        periods = {key: periods[key] for key in ['2']}
 
     for suffix, df_plot in periods.items():
         if df_plot.empty:
@@ -2966,37 +2966,41 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = rearrange([f'Tests Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
-    test_cols = [f'Tests Area {area}' for area in range(1, 14)]
+    for area in range(1, 14): 
+        df[f'Tests Area {area} (i)'] = df[f'Tests Area {area}'].interpolate(limit_area="inside")
+    test_cols = [f'Tests Area {area} (i)' for area in range(1, 14)]
     for area in range(1, 14):
         df[f'Tests Daily {area}'] = (
-            df[f'Tests Area {area}']
+            df[f'Tests Area {area} (i)']
             / df[test_cols].sum(axis=1)
             * df['Tests']
         )
+    cols = rearrange([f'Tests Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
     plot_area(df=df, png_prefix='tests_area_daily', cols_subset=cols,
               title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND,
-              unknown_name='Unknown District', unknown_total='Tests',
+              #unknown_name='Unknown District', unknown_total='Tests',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-    cols = [f'Pos Daily {area}' for area in range(1, 14)]
-    pos_cols = [f'Pos Area {area}' for area in range(1, 14)]
+    for area in range(1, 14): 
+        df[f'Pos Area {area} (i)'] = df[f'Pos Area {area}'].interpolate(limit_area="inside")
+    pos_cols = [f'Pos Area {area} (i)' for area in range(1, 14)]
     for area in range(1, 14):
         df[f'Pos Daily {area}'] = (
-            df[f'Pos Area {area}']
+            df[f'Pos Area {area} (i)']
             / df[pos_cols].sum(axis=1)
             * df['Pos']
         )
+    cols = rearrange([f'Pos Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
     plot_area(df=df, png_prefix='pos_area_daily', 
-              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              cols_subset=cols, legends=AREA_LEGEND,
               title='Positive PCR Tests by Thailand Health District (excludes some proactive tests)', 
-              unknown_name='Unknown District', unknown_total='Pos',
+              #unknown_name='Unknown District', unknown_total='Pos',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     # Workout positivity for each area as proportion of positivity for that period
     for area in range(1, 14):
         df[f'Positivity {area}'] = (
-            df[f'Pos Area {area}'] / df[f'Tests Area {area}'] * 100
+            df[f'Pos Area {area} (i)'] / df[f'Tests Area {area} (i)'] * 100
         )
     cols = [f'Positivity {area}' for area in range(1, 14)]
     df['Total Positivity Area'] = df[cols].sum(axis=1)
@@ -3010,8 +3014,8 @@ def save_plots(df: pd.DataFrame) -> None:
               cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
               title='Positive Rate by Health Area in proportion to Thailand positive rate '
                     '(excludes some proactive tests)',
-              unknown_name='Unknown District', unknown_total='Positivity Public+Private',
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+              #unknown_name='Unknown District', unknown_total='Positivity Public+Private',
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     for area in range(1, 14):
         df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
