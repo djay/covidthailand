@@ -2654,7 +2654,8 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
-              unknown_name: str = 'Unknown', unknown_total: str = None, ma_days: int = None, cmap: str = 'tab20',
+              unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent = False,
+              ma_days: int = None, cmap: str = 'tab20',
               reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[[int,int], str] = human_format,
               clean_end = True) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
@@ -2670,6 +2671,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     :param percent_fig: whether the percentage chart should be included
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals 
+    :param unknown_percent: to include unknowns in a percentage fig if enabled
     :param ma_days: number of days used when computing the moving average
     :param cmap: the matplotlib colormap to be used
     :param reverse_cmap: whether the colormap should be reversed
@@ -2705,8 +2707,11 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
             cols = cols + [unknown_col]
 
     if percent_fig:
-        for c in cols:
-            df[f'{c} (%)'] = df[f'{c}'] / df[cols].sum(axis=1) * 100
+        perccols = [c for c in cols if not unknown_total or unknown_percent or c != f'{unknown_name}{ma_suffix}']
+        for c in  perccols:
+            df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
+        if unknown_total and not unknown_percent:
+            df[f'{unknown_name}{ma_suffix} (%)'] = 0
         perccols = [f'{c} (%)' for c in cols]
         
     title = f'{title}\n'
@@ -2935,8 +2940,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # Thailand Covid Cases by Age
     plot_area(df=df, png_prefix='cases_ages', cols_subset='Age', title='Thailand Covid Cases by Age',
-              unknown_name='Unknown', unknown_total='Cases',
-              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='summer', reverse_cmap=True)
+              unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
+              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer', reverse_cmap=True)
 
     # Thailand Covid Cases by Risk
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
