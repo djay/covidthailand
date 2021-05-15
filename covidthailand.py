@@ -2649,8 +2649,9 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, ma_days: int = None, cmap: str = 'tab20',
-              reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[int,int] = human_format) -> None:
-    """Creates one .png file and plots 2 charts, showing data in absolute numbers and percentage terms.
+              reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[int,int] = human_format,
+              clean_end = True) -> None:
+    """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
     :param df: data frame containing all available data
     :param png_prefix: file prefix (file suffix is '.png')
@@ -2667,6 +2668,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
     :param cmap: the matplotlib colormap to be used
     :param reverse_cmap: whether the colormap should be reversed
     :param highlight_first: make the first X lines thicker to highlight them
+    :param y_formatter: function to format y axis numbers
+    :param clean_end: remove days at end if there is no data (inc unknown)
     """
     if type(cols_subset) is str:
         cols = [c for c in df.columns if str(c).startswith(cols_subset)]
@@ -2683,6 +2686,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
     # try to hone in on last day of "important" data. Assume first col
     last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
+    last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
 
     if unknown_total:
         if ma_days:
@@ -2690,7 +2694,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols)-set([unknown_col])
-        df[unknown_col] = df[total_col].sub(df[other_cols].sum(axis=1), fill_value=0).clip(lower=0)
+        df[unknown_col] = df[total_col].sub(df[other_cols].sum(axis=1), fill_value=None).clip(lower=0) #TODO: should not be 0 when no unknown_total
         if unknown_col not in cols:
             cols = cols + [unknown_col]
 
@@ -2718,7 +2722,13 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
         colormap = custom_cm(cmap, len(cols), flip=reverse_cmap)
 
     # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
-    df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
+    #df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
+    last_date_unknown = df[cols].last_valid_index() # last date with some data (inc unknown)
+    if clean_end:
+        df_clean = df.loc[:last_date_unknown]
+    else:
+        df_clean = df
+
     periods = {
         'all': df_clean, 
         '1': df_clean[:'2020-06-01'],
