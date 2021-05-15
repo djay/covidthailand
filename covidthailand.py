@@ -2649,7 +2649,7 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, ma_days: int = None, cmap: str = 'tab20',
-              reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[int,int] = human_format,
+              reverse_cmap: bool = False, highlight_first: int = 0, y_formatter: Callable[[int,int], str] = human_format,
               clean_end = True) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
