@@ -1277,6 +1277,7 @@ def join_provinces(df, on):
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
 def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None, return_unmatched=False):
+    "does a pandas join but matching very similar entries"
     old_index = None
     if on not in a.columns:
         old_index = a.index.names
@@ -1753,6 +1754,7 @@ def seperate(seq, condition):
     return a, b
 
 def split(seq, condition, maxsplit=0):
+    "Similar to str.split except works on lists of lines"
     run = []
     last = False
     splits = 0
@@ -1773,6 +1775,7 @@ def split(seq, condition, maxsplit=0):
 #     return zip(*iters)   
 
 def pairwise(lst):
+    "Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"
     lst = list(lst)
     return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))    
 
@@ -2242,6 +2245,7 @@ def get_cases_by_prov_briefings():
     return date_prov, types
 
 def add_data(data, df):
+    "Appends while dropping any duplicate rows"
     try:
         data = data.append(df, verify_integrity=True)
     except ValueError:
@@ -2564,6 +2568,7 @@ def thaipop2(num, pos):
 
 
 def rearrange(l, *first):
+    "reorder a list by moving first items to the front. Can be index or value"
     l = list(l)
     result = []
     for f in first:
@@ -2814,7 +2819,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
             a1.xaxis.label.set_visible(False)
 
         plt.tight_layout()
-        plt.savefig(f'outputs/{png_prefix}_{suffix}.png')
+        plt.savefig(os.path.join("outputs", f'{png_prefix}_{suffix}.png'))
         plt.close()
 
     return None
@@ -3249,7 +3254,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
 if __name__ == "__main__":
 
-    USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists('api/combined.csv')
+    USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists(os.path.join('api','combined.csv'))
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
     df = scrape_and_combine()
