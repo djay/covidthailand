@@ -2478,9 +2478,9 @@ def import_csv(name):
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        situation = get_situation()
+        #situation = get_situation()
         #cases_by_area = get_cases_by_area()
-        #vac = get_vaccinations()
+        vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         pass
     else:
@@ -3164,7 +3164,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols.sort(key=lambda c: leg(c)[-1]+leg(c)) # put 2nd shot at end
 
     legends = [leg(c) for c in cols]
-    df_vac_groups = df['2021-02-16':][cols].interpolate()
+    df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
               title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3',
@@ -3196,7 +3196,8 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
               title='Top 5 Thai Provinces Closest to Fully Vaccinated',
-              kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
+              kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
+              )
 
     #######################
     # Cases by provinces
