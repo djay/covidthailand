@@ -34,6 +34,7 @@ import camelot
 import difflib
 from matplotlib.ticker import FuncFormatter
 from typing import Union, List, Callable
+import pickle
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -93,6 +94,7 @@ THAI_FULL_MONTHS = [
 
 
 def file2date(file):
+    "return date of either for '10-02-21' or '100264'"
     file = os.path.basename(file)
     file,*_ = file.rsplit(".",1)
     if m := re.search("\d{4}-\d{2}-\d{2}", file):
@@ -134,12 +136,14 @@ def to_switching_date(dstr):
 
 
 def previous_date(end, day):
+    "return a date before {end} by {day} days"
     start = end
     while start.day != int(day):
         start = start - datetime.timedelta(days=1)
     return start
 
 def find_thai_date(content):
+    "find thai date like '17 เม.ย. 2563' "
     m3 = re.search(r"([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
     d2, month, year = m3.groups()
     month = (
@@ -153,7 +157,7 @@ def find_thai_date(content):
     return date
 
 def find_date_range(content):
-    # 11-17 เม.ย. 2563 or 04/04/2563 12/06/2563
+    "Parse thai date ranges line '11-17 เม.ย. 2563' or '04/04/2563 12/06/2563'"
     m1 = re.search(
         r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content
     )
@@ -186,11 +190,13 @@ def find_date_range(content):
 
 
 def daterange(start_date, end_date, offset=0):
+    "return a range of dates from start_date until before end_date. Offset extends range by offset days"
     for n in range(int((end_date - start_date).days) + offset):
         yield start_date + datetime.timedelta(n)
 
 
 def spread_date_range(start, end, row, columns):
+    "take some values and spread it over a period of dates in proportion to data already there"
     r = list(daterange(start, end, offset=1))
     stats = [float(p) / len(r) for p in row]
     results = pd.DataFrame(
@@ -1532,7 +1538,7 @@ def parse_tweet(tw, tweet, found, *matches):
     return text
 
 def get_tweets_from(userid, datefrom, dateto, *matches):
-    import pickle
+     "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
     tw = TwitterScraper()
     filename = f"tweets/tweets2_{userid}.pickle"
     os.makedirs("tweets", exist_ok=True)
