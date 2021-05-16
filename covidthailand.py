@@ -1488,20 +1488,12 @@ def get_cases_by_demographics_api():
         risks[key] = cat
     risks = pd.DataFrame(risks.items(), columns=["risk", "risk_group"]).set_index("risk")
     cases_risks, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
-    #cases_risks = cases.join(risks, on="risk")
-    #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
-    # Guess the unmatched
-    #cases["risk_match"] = unmatched['risk'].map(lambda x: next(iter(difflib.get_close_matches(x, risks.index)),None), na_action="ignore")
-    #cases_risks = cases_risks.combine_first(cases.join(risks, on="risk_match"))
     matched = cases_risks[["risk", "risk_group"]]
-
-    #unmatched = cases_risks[cases_risks['risk_group'].isnull() & cases_risks['risk'].notna()]
-    #unmatched['risk'].value_counts()
-    case_risks = pd.crosstab(cases_risks['Date'],cases_risks["risk_group"])
+    case_risks = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
     case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
     # dump mappings to file so can be inspected
-    export(matched.value_counts().reset_index().rename(columns={0:"count"}), "risk_groups", csv_only=True)
+    export(matched.value_counts().to_frame("count"), "risk_groups", csv_only=True)
     export(unmatched, "risk_groups_unmatched", csv_only=True)
 
     return case_risks.combine_first(case_ages)
@@ -1522,6 +1514,7 @@ def get_cases_by_area():
 
 
 def parse_tweet(tw, tweet, found, *matches):
+    "if tweet contains any of matches return its text joined with comments by the same person that also match (and contain [1/2] etc)"
     is_match = lambda tweet, *matches: any(m in tweet for m in matches)
     if not is_match(tweet.get('text',tweet.get("comment","")), *matches):
         return ""
@@ -1558,20 +1551,6 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
             text = parse_tweet(tw, tweet, tweets.get(date,[]), *matches)
             if text:
                 tweets[date] = tweets.get(date,[]) + [text]
-            # if not is_match(tweet['text'], *matches):
-            #     continue
-            # text = tw.get_tweetinfo(tweet['id']).contents['text']
-            # if text not in tweets.get(date,[]):
-            #     tweets[date] = tweets.get(date,[]) + [text]
-            # # TODO: ensure tweets are [1/2] etc not just "[" and by same person
-            # if "[" not in text:
-            #     continue
-            # rest = [t for t in tw.get_tweetcomments(tweet['id']).contents if is_match(t['comment'],"[", *matches)]
-            # for t in rest:
-            #     text = tw.get_tweetinfo(t['id']).contents['text'] 
-            #     if text not in tweets.get(date,[]):
-            #         tweets[date] = tweets.get(date,[]) + [text]
-
 
         earliest = min(tweets.keys())
         latest = max(tweets.keys())
@@ -1582,29 +1561,6 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
             print(f"Retrying: Earliest {earliest}")
     with open(filename,"wb") as fp:
         pickle.dump(tweets, fp)
-
-    # # join tweets
-    # for date,lines in tweets.items():
-    #     newlines = []
-    #     tomerge = []
-    #     i=1
-    #     for line in lines:
-    #         m = re.search(r"\[([0-9]+)\/([0-9]+)\]", line)
-    #         if m:
-    #             i = int(m.group(1))
-    #             of = int(m.group(2))
-    #             tomerge.append( (i,of, line))
-    #         elif "[" in line:
-    #             tomerge.append((i,0,line))
-    #             i+=1
-    #         else:
-    #             newlines.append(line)
-    #     # TODO: somethings he forgets to put in [2/2]. need to use threads
-    #     if tomerge:        
-    #         tomerge.sort()
-    #         text = ' '.join(text for i,of,text in tomerge)
-    #         newlines.append(text)
-    #     tweets[date] = newlines
     return tweets
 
 
