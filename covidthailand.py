@@ -1538,11 +1538,11 @@ def parse_tweet(tw, tweet, found, *matches):
     return text
 
 def get_tweets_from(userid, datefrom, dateto, *matches):
-     "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
+    "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
+
     tw = TwitterScraper()
-    filename = f"tweets/tweets2_{userid}.pickle"
+    filename = os.path.join("tweets", f"tweets2_{userid}.pickle")
     os.makedirs("tweets", exist_ok=True)
-    #is_match = lambda tweet, *matches: any(m in tweet for m in matches)
     try:
         with open(filename,"rb") as fp:
             tweets = pickle.load(fp)
@@ -1572,7 +1572,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
             #     if text not in tweets.get(date,[]):
             #         tweets[date] = tweets.get(date,[]) + [text]
 
-                
+
         earliest = min(tweets.keys())
         latest = max(tweets.keys())
         print(f"got tweets {earliest} to {latest} {len(tweets)}")
@@ -1760,7 +1760,7 @@ def seperate(seq, condition):
     return a, b
 
 def split(seq, condition, maxsplit=0):
-    "Similar to str.split except works on lists of lines"
+    "Similar to str.split except works on lists of lines. e.g. split([1,2,3,4], lambda x: x==2) -> [[1],[2],[3,4]]"
     run = []
     last = False
     splits = 0
