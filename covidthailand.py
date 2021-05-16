@@ -256,7 +256,7 @@ def parse_file(filename, html=False, paged=True):
 
 NUM_RE = re.compile("\d+(?:\,\d+)*(?:\.\d+)?")
 INT_RE = re.compile("\d+(?:\,\d+)*")
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -268,20 +268,25 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         matched, *behind = behind
         behind = "".join(behind)
         found = ahead if before else behind
+        if until is not None and until in found:
+            found, rest = found.split(until, 1) # TODO: how to put it back togeather if behind=True?
+            rest = until+rest
+        else:
+            rest = ""
         numbers = (INT_RE if ints else NUM_RE).findall(found)
         numbers = [n.replace(",", "") for n in numbers]
         numbers = [int(n) if ints else float(n) for n in numbers if n]
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
             behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
-        return numbers, matched + " " + behind 
+        return numbers, matched + " " + rest + behind 
     if debug and matches:
         print("Couldn't find '{}'".format(match))
         print(content)
     return [], content
 
-def get_next_number(content, *matches, default=None, remove=False, before=False):
-    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before)
+def get_next_number(content, *matches, default=None, remove=False, before=False, until=None):
+    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until)
     return num[0] if num else default, rest
 
 def slide2text(slide):
@@ -562,10 +567,19 @@ def situation_cases_new(parsedPDF, date):
 re_walkin_priv = re.compile("(?i)cases (in|at) private hospitals")
 def situation_pui(parsedPDF, date):
     numbers, _ = get_next_numbers(
-        parsedPDF, "Total +number of laboratory tests", debug=False
+        parsedPDF, "Total +number of laboratory tests", 
+        until="Sought medical services on their own at hospitals", 
+        debug=False
     )
     if numbers:
-        tests_total, pui, active_finding, asq, not_pui, pui2, pui_port, *rest = numbers
+        if len(numbers)==7:
+            tests_total, pui, active_finding, asq, not_pui, pui2, pui_port, *rest = numbers
+        elif len(numbers) == 6:
+            tests_total, pui, asq, not_pui, pui2, pui_port, *rest = numbers
+            active_finding = None
+        else:
+            raise Exception(numbers)
+
         pui = {309371:313813}.get(pui, pui) # 2020-07-01
         #TODO: find 1529045 below and see which is correct 20201-04-26
         pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045] else pui2
@@ -585,7 +599,7 @@ def situation_pui(parsedPDF, date):
         pui = None
     elif tests_total in [783679, 849874, 936458]:
         tests_total = None
-    elif None in (tests_total, pui, active_finding, asq, not_pui) and date > d("2020-06-30"):
+    elif None in (tests_total, pui, asq, not_pui) and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
 
     # walkin public vs private
@@ -1852,7 +1866,7 @@ def briefing_case_types(date, pages):
         text = soup.get_text()
         if not "รายงานสถานการณ์" in text:
             continue
-        numbers, rest = get_next_numbers(text.split("รายผู้ที่เดิน")[0], "รวม")
+        numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
         cases, walkins, proactive, *quarantine = numbers
         quarantine = quarantine[0] if quarantine else 0
         numbers, rest = get_next_numbers(text, "ช่องเส้นทางธรรมชาติ","รายผู้ที่เดินทางมาจากต่างประเทศ", before=True)
@@ -1861,7 +1875,7 @@ def briefing_case_types(date, pages):
         else:
             ports = 0
         imported = ports + quarantine
-        prison, _ = get_next_number(text, "ที่ต้องขัง",default=0)
+        prison, _ = get_next_number(text, "ที่ต้องขัง",default=0, until="ราย")
         proactive += prison # not sure if they are going to add this category going forward?
 
         assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
@@ -2010,7 +2024,7 @@ def briefing_deaths(file, date, pages):
             congenital_disease = df[2][0]  # TODO: parse?
             # Risk factors for COVID-19 infection
             risk_factors = df[3][0]
-            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ", ints=False)
+            numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ","ค่ากลางอายุ", ints=False)
             med_age, min_age, max_age, *_ = numbers
             numbers, *_ = get_next_numbers(text, "ชาย")
             male, female, *_ = numbers
@@ -2451,7 +2465,7 @@ def import_csv(name):
 def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        #situation = get_situation()
+        situation = get_situation()
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
