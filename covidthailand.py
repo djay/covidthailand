@@ -2272,16 +2272,11 @@ def get_hospital_resources():
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index(["Date","province"])
     #print("Active Cases:",data.sum().to_string(index=False, header=False))
-    if os.path.exists("api/hospital_resources"):
-        old = pd.read_csv(
-            "api/hospital_resources.csv",
-            #orient="records",
-        )
-        old['Date'] = pd.to_datetime(old['Date'])
+    old = import_csv("hospital_resources")
+    if old is not None:
         old = old.set_index(["Date", "province"])
         # TODO: seems to be dropping old data. Need to test
         data = add_data(old, data)
-        #data = data.combine_first(old) # Overwrite todays data if called twice.
     export(data, "hospital_resources", csv_only=True)
     return data
 
@@ -2479,6 +2474,13 @@ def export(df, name, csv_only=False):
         index=False 
     )
 
+def import_csv(name):
+    path = os.path.join("api", f"{name}.csv")
+    if not os.path.exists(path):
+        return None
+    old = pd.read_csv(path)
+    old['Date'] = pd.to_datetime(old['Date'])
+    return old
 
 def scrape_and_combine():
     if USE_CACHE_DATA:
@@ -2514,13 +2516,7 @@ def scrape_and_combine():
     print(df)
 
     if USE_CACHE_DATA:
-        old = pd.read_csv(
-            "api/combined.csv",
-            #date_format="iso",
-            #indent=3,
-            #orient="records",
-        )
-        old['Date'] = pd.to_datetime(old['Date'])
+        old = import_csv("combined")
         old = old.set_index("Date")
         df = df.combine_first(old)
 
@@ -3196,7 +3192,7 @@ def save_plots(df: pd.DataFrame) -> None:
               y_formatter=thaipop)
 
     # Top 5 vaccine rollouts
-    vac = pd.read_csv('api/vaccinations.csv')
+    vac = import_csv("vaccinations")
     vac['Date'] = pd.to_datetime(vac['Date'])
     vac = vac.set_index('Date')
     vac = vac.join(PROVINCES['Population'], on='Province')
@@ -3230,9 +3226,7 @@ def save_plots(df: pd.DataFrame) -> None:
     def cases_ma_7(adf: pd.DataFrame) -> pd.DataFrame:
         return adf["Cases"]
 
-    cases = pd.read_csv("api/cases_by_province.csv")
-    cases['Date'] = pd.to_datetime(cases["Date"])
-    cases = cases.set_index(["Date", "Province"])
+    cases = import_csv("cases_by_province").set_index(["Date", "Province"])
 
     top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
     cols = top5.columns.to_list()
