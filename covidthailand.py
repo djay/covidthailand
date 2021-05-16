@@ -1442,7 +1442,7 @@ def get_cases_by_demographics_api():
     risks['Cluster ตลาดพรพัฒน์'] = "Community" #market
     risks['Cluster ระยอง'] = "Entertainment" # Rayong
     risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work" # work with forigners
-    risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Work" # detention
+    risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Prison" # detention
     risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
     risks['สนามมวย'] = "Entertainment" # Boxing
     risks['ไปสถานที่แออัด เช่น งานแฟร์ คอนเสิร์ต'] = "Community" # fair/market
@@ -1496,6 +1496,19 @@ def get_cases_by_demographics_api():
     20210512.2:'อยู่ระหว่างสอบสวนโรค:Investigating',
     20210512.3:'อื่น ๆ:Unknown', # Other
     20210512.4:'Cluster จันทบุรี (ชาวกินี ):Entertainment', # African gem merchants dining after ramandan
+    20210516.0:'Cluster เรือนจำกลางคลองเปรม:Prison', # 894
+    20210516.1:'Cluster ตลาดสี่มุมเมือง:Community', # 344 Four Corners Market
+    20210516.2:'Cluster สมุทรปราการ GRP Hightech:Work', #130
+    20210516.3:'Cluster ตลาดนนทบุรี:Community', # Cluster Talat Nonthaburi, , 85
+    20210516.4:'Cluster โรงงาน QPP ประจวบฯ:Work', #69
+    20210516.5:'Cluster เรือนจำพิเศษธนบุรี:Prison', #41 Cluster Special Prison Thonburi,
+    20210516.6:'Cluster จันทบุรี (ชาวกินี):Entertainment', #26 Cluster Chanthaburi (Guinea),
+    #20210516.7:'Cluster บริษัทศรีสวัสดิ์,Work', #16
+    20210516.8:'อื่น:Unknown', # 10
+    20210516.9:'Cluster เรือนจำพิเศษมีนบุรี:Prison', #5
+    20210516.10:'Cluster จนท. สนามบินสุวรรณภูมิ:Work', #4
+    20210516.11:'สัมผัสผู้ป่วยที่ติดโควิด:Contact', #4
+
     }
     for v in r.values():
         key, cat = v.split(":")
