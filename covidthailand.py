@@ -2963,7 +2963,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
     cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive']
-    plot_area(df=df, png_prefix='cases_types', cols_subset=cols, title='Thailand Covid Cases by Test Type',
+    plot_area(df=df, png_prefix='cases_types', cols_subset=cols, 
+              title='Thailand Covid Cases by Where Tested',
+              legends=["Quarantine (imported)", "Hospital (Walk-ins/Traced)", "Mobile Community Testing (proactive)"],
               unknown_name='Cases Unknown', unknown_total='Cases',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap="viridis")
 
@@ -2979,14 +2981,14 @@ def save_plots(df: pd.DataFrame) -> None:
     # Thailand Covid Cases by Age
     plot_area(df=df, png_prefix='cases_ages', cols_subset='Age', title='Thailand Covid Cases by Age',
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
-              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer', reverse_cmap=True)
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='summer', reverse_cmap=True)
 
     # Thailand Covid Cases by Risk
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
     cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia", "Risk: Community", "Risk: Contact", "Risk: Work", "Risk: Entertainment", "Risk: Proactive Search", "Risk: Unknown" )   
     plot_area(df=df, png_prefix='cases_causes', cols_subset=cols, title='Thailand Covid Cases by Risk',
               unknown_name='Risk: Investigating', unknown_total='Cases',
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     ##########################
     # Tests by area
