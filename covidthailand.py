@@ -901,14 +901,16 @@ def get_tests_by_day():
 
     return tests
 
-
-POS_AREA_COLS = ["Pos Area {}".format(i + 1) for i in range(13)]
-TESTS_AREA_COLS = ["Tests Area {}".format(i + 1) for i in range(13)]
+DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
+DISTRICT_RANGE = DISTRICT_RANGE_SIMPLE + ["Prison"]
+DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
 
 
 def get_tests_by_area():
-    columns = ["Date"] + POS_AREA_COLS + TESTS_AREA_COLS + ["Pos Area", "Tests Area"]
-    raw_cols = ["Start", "End",] + POS_AREA_COLS + TESTS_AREA_COLS
+    pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+    test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+    columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
+    raw_cols = ["Start", "End",] + pos_cols + test_cols
     data = pd.DataFrame()
     raw = pd.DataFrame()
 
@@ -1039,7 +1041,9 @@ def get_provinces():
     provinces['ProvinceAlt'] = provinces['ProvinceEn']
     provinces = provinces.set_index("ProvinceAlt")
     provinces.loc["Bangkok"] = [13, "Central", "Bangkok"]
-    provinces.loc["Unknown"] = [14, "", "Unknown"]
+    provinces.loc["Unknown"] = ["Unknown", "", "Unknown"]
+    provinces.loc["Prison"] = ["Prison", "", "Prison"]
+    provinces['Health District Number'] = provinces['Health District Number'].astype(str)
 
     # extra spellings for matching
     provinces.loc['Korat'] = provinces.loc['Nakhon Ratchasima']
@@ -1230,7 +1234,7 @@ def get_provinces():
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown'] # Cambodia
     provinces.loc['มาเลเซีย'] = provinces.loc['Unknown'] # Malaysia
-    provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Bangkok'] # Prison. Currently cluster just there. might have to change later
+    provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison'] # Prison. Currently cluster just there. might have to change later
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -1341,10 +1345,10 @@ def get_cases_by_area_type():
     # Reduce down to health areas
     dfprov_grouped = dfprov.groupby(["Date","Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date",columns=['Health District Number'])
-    dfprov_grouped = dfprov_grouped.rename(columns=dict((i,f"Area {i}") for i in range(1,14)))
-    #cols = dict((f"Area {i}", f"Cases Area {i}") for i in range(1,14))
+    dfprov_grouped = dfprov_grouped.rename(columns=dict((i,f"Area {i}") for i in DISTRICT_RANGE))
+    #cols = dict((f"Area {i}", f"Cases Area {i}") for i in DISTRICT_RANGE)
     #by_area = dfprov_grouped["Cases"].groupby(['Health District Number'],axis=1).sum(min_count=1).rename(columns=cols)
-    #cols = dict((f"Area {i}", f"Cases Proactive Area {i}") for i in range(1,14))
+    #cols = dict((f"Area {i}", f"Cases Proactive Area {i}") for i in DISTRICT_RANGE)
     by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
@@ -1352,7 +1356,7 @@ def get_cases_by_area_type():
     by_area = by_area.combine_first(cases) # imported, proactive total etc
 
     # Ensure we have all areas
-    for i in range(1,14):
+    for i in DISTRICT_RANGE:
         col = f"Cases Walkin Area {i}"
         if col not in by_area:
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
@@ -1411,7 +1415,7 @@ def get_cases_by_area_api():
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = join_provinces(cases, "province_of_onset")
     case_areas = pd.crosstab(cases['Date'],cases['Health District Number'])
-    case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
+    case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in DISTRICT_RANGE))
     return case_areas
 
 def get_cases_by_demographics_api():
@@ -1427,7 +1431,7 @@ def get_cases_by_demographics_api():
     labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
     age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], labels=labels)
     case_ages = pd.crosstab(cases['Date'],age_groups)
-    #case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in range(1,14)))
+    #case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in DISTRICT_RANGE))
 
     cases['risk'].value_counts()
     risks = {}
@@ -2279,7 +2283,7 @@ def any_in(target, *matches):
 def area_crosstab(df, col, suffix):
     given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
     given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
-    given_by_area_2.columns = [f"{col} Area {c:.0f}{suffix}" for c in given_by_area_2.columns]
+    given_by_area_2.columns = [f"{col} Area {c}{suffix}" for c in given_by_area_2.columns]
     return given_by_area_2
 
 
@@ -2480,8 +2484,11 @@ def scrape_and_combine():
         # Comment out what you don't need to run
         #situation = get_situation()
         #cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
+        #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
+        tests = get_tests_by_day()
+        tests_by_area = get_tests_by_area()
+        privpublic = get_tests_private_public()
         pass
     else:
         cases_by_area = get_cases_by_area()
@@ -2536,6 +2543,7 @@ AREA_LEGEND_ORDERED = [
     "13: C: Bangkok",
 ]
 
+
 def human_format(num, pos):
     magnitude = 0
     while abs(num) >= 1000:
@@ -2568,10 +2576,8 @@ def rearrange(l, *first):
     return result + [i for i in l if i is not None]
 
 FIRST_AREAS = [13, 4, 5, 6, 1] # based on size-ish
-AREA_LEGEND = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
-#AREA_LEGEND_UNKNOWN = AREA_LEGEND + ["Unknown District"]
-#TESTS_AREA_SERIES = rearrange(TESTS_AREA_COLS, *FIRST_AREAS)
-#POS_AREA_SERIES = rearrange(POS_AREA_COLS, *FIRST_AREAS)
+AREA_LEGEND = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS) + ["Prison"]
+AREA_LEGEND_SIMPLE = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
 
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
@@ -2981,71 +2987,71 @@ def save_plots(df: pd.DataFrame) -> None:
     ##########################
     plt.rc('legend',**{'fontsize':12})
 
-    cols = rearrange([f'Tests Area {area}' for area in range(1, 14)], *FIRST_AREAS)
+    cols = rearrange([f'Tests Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='tests_area', cols_subset=cols[0],
-              title='PCR Tests by Health District (excludes proactive & private tests)', legends=AREA_LEGEND,
+              title='PCR Tests by Health District (excludes proactive & private tests)', legends=AREA_LEGEND_SIMPLE,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = rearrange([f'Pos Area {area}' for area in range(1, 14)], *FIRST_AREAS)
+    cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='pos_area', cols_subset=cols,
               title='PCR Positive Test Results by Health District (excludes proactive & private tests)',
-              legends=AREA_LEGEND,
+              legends=AREA_LEGEND_SIMPLE,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    for area in range(1, 14): 
+    for area in DISTRICT_RANGE_SIMPLE: 
         df[f'Tests Area {area} (i)'] = df[f'Tests Area {area}'].interpolate(limit_area="inside")
-    test_cols = [f'Tests Area {area} (i)' for area in range(1, 14)]
-    for area in range(1, 14):
+    test_cols = [f'Tests Area {area} (i)' for area in DISTRICT_RANGE_SIMPLE]
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Tests Daily {area}'] = (
             df[f'Tests Area {area} (i)']
             / df[test_cols].sum(axis=1)
             * df['Tests']
         )
-    cols = rearrange([f'Tests Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
+    cols = rearrange([f'Tests Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='tests_area_daily', cols_subset=cols,
-              title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND,
+              title='PCR Tests by Thailand Health District (excludes some proactive tests)', legends=AREA_LEGEND_SIMPLE,
               #unknown_name='Unknown District', unknown_total='Tests',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-    for area in range(1, 14): 
+    for area in DISTRICT_RANGE_SIMPLE: 
         df[f'Pos Area {area} (i)'] = df[f'Pos Area {area}'].interpolate(limit_area="inside")
-    pos_cols = [f'Pos Area {area} (i)' for area in range(1, 14)]
-    for area in range(1, 14):
+    pos_cols = [f'Pos Area {area} (i)' for area in DISTRICT_RANGE_SIMPLE]
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Pos Daily {area}'] = (
             df[f'Pos Area {area} (i)']
             / df[pos_cols].sum(axis=1)
             * df['Pos']
         )
-    cols = rearrange([f'Pos Daily {area}' for area in range(1, 14)], *FIRST_AREAS)
+    cols = rearrange([f'Pos Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='pos_area_daily', 
-              cols_subset=cols, legends=AREA_LEGEND,
+              cols_subset=cols, legends=AREA_LEGEND_SIMPLE,
               title='Positive PCR Tests by Thailand Health District (excludes some proactive tests)', 
               #unknown_name='Unknown District', unknown_total='Pos',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
     # Workout positivity for each area as proportion of positivity for that period
-    for area in range(1, 14):
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Positivity {area}'] = (
             df[f'Pos Area {area} (i)'] / df[f'Tests Area {area} (i)'] * 100
         )
-    cols = [f'Positivity {area}' for area in range(1, 14)]
+    cols = [f'Positivity {area}' for area in DISTRICT_RANGE_SIMPLE]
     df['Total Positivity Area'] = df[cols].sum(axis=1)
-    for area in range(1, 14):
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Positivity {area}'] = (
             df[f'Positivity {area}']
             / df['Total Positivity Area']
             * df['Positivity Public+Private']
         )
     plot_area(df=df, png_prefix='positivity_area', 
-              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND_SIMPLE,
               title='Positive Rate by Health Area in proportion to Thailand positive rate '
                     '(excludes some proactive tests)',
               #unknown_name='Unknown District', unknown_total='Positivity Public+Private',
               kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
-    for area in range(1, 14):
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
-    cols = [f'Positivity Daily {area}' for area in range(1, 14)]
+    cols = [f'Positivity Daily {area}' for area in DISTRICT_RANGE_SIMPLE]
     topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
     legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c)+1 for c in topcols])[:5]
     plot_area(df=df, png_prefix='positivity_area_unstacked', 
@@ -3053,41 +3059,41 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Health Districts with the highest Positive Rate', 
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    for area in range(1, 14):
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Cases/Tests {area}'] = (
             df[f'Cases Area {area}'] / df[f'Tests Area {area}'] * 100
         )
-    cols = [f'Cases/Tests {area}' for area in range(1, 14)]
+    cols = [f'Cases/Tests {area}' for area in DISTRICT_RANGE_SIMPLE]
     plot_area(df=df, png_prefix='casestests_area_unstacked', 
-              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND_SIMPLE,
               title='Health Districts with the highest Cases/Tests (excludes some proactive tests)',
               kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
     #########################
     # Case by area plots
     #########################
-    cols = rearrange([f'Cases Area {area}' for area in range(1, 14)]+['Cases Imported'], *FIRST_AREAS)
+    cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE]+['Cases Imported'], *FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas', 
               cols_subset=cols, legends = AREA_LEGEND + ['Imported Cases'],
               title='Thailand Covid Cases by Health District',
               unknown_name="Unknown District", unknown_total="Cases",
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-    cols = rearrange([f'Cases Walkin Area {area}' for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE],*FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
               title='Thailand "Walkin" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    cols = rearrange([f'Cases Proactive Area {area}' for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE],*FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_proactive', cols_subset=cols,
               title='Thailand "Proactive" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    for area in range(1, 14):
+    for area in DISTRICT_RANGE:
         df[f'Case-Pos {area}'] = (
             df[f'Cases Area {area}'] - df[f'Pos Area {area}']
         )
-    cols = [f'Case-Pos {area}' for area in range(1, 14)]
+    cols = [f'Case-Pos {area}' for area in DISTRICT_RANGE]
     plot_area(df=df, png_prefix='cases_from_positives_area', 
               cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
               title='Which Health Districts have more cases than positive results?', 
@@ -3151,7 +3157,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
 
-    cols = rearrange([f'Deaths Area {area}' for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE],*FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
@@ -3170,14 +3176,14 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3',
               y_formatter=thaipop2)
 
-    cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE],*FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s1, png_prefix='vac_areas_s1', cols_subset=cols,
               title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
               y_formatter=thaipop)
 
-    cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in range(1, 14)],*FIRST_AREAS)
+    cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE],*FIRST_AREAS)
     df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
               title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
