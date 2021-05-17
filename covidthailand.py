@@ -2492,9 +2492,9 @@ def scrape_and_combine():
         #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
-        tests = get_tests_by_day()
-        tests_by_area = get_tests_by_area()
-        privpublic = get_tests_private_public()
+        #tests = get_tests_by_day()
+        #tests_by_area = get_tests_by_area()
+        #privpublic = get_tests_private_public()
         pass
     else:
         cases_by_area = get_cases_by_area()
@@ -3095,13 +3095,13 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Thailand "Proactive" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
-    for area in DISTRICT_RANGE:
+    for area in DISTRICT_RANGE_SIMPLE:
         df[f'Case-Pos {area}'] = (
             df[f'Cases Area {area}'] - df[f'Pos Area {area}']
         )
-    cols = [f'Case-Pos {area}' for area in DISTRICT_RANGE]
+    cols = [f'Case-Pos {area}' for area in DISTRICT_RANGE_SIMPLE]
     plot_area(df=df, png_prefix='cases_from_positives_area', 
-              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND,
+              cols_subset=rearrange(cols, *FIRST_AREAS), legends=AREA_LEGEND_SIMPLE,
               title='Which Health Districts have more cases than positive results?', 
               kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20')
 
@@ -3182,18 +3182,18 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3',
               y_formatter=thaipop2)
 
-    cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE],*FIRST_AREAS)
+    cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE],*FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s1, png_prefix='vac_areas_s1', cols_subset=cols,
-              title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)', legends=AREA_LEGEND,
+              title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)', legends=AREA_LEGEND_SIMPLE,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
               y_formatter=thaipop)
 
-    cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE],*FIRST_AREAS)
+    cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE],*FIRST_AREAS)
     df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
               title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
-              legends=AREA_LEGEND,
+              legends=AREA_LEGEND_SIMPLE,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
               y_formatter=thaipop)
 
