@@ -1785,8 +1785,7 @@ def briefing_case_detail_lines(soup):
         table, titles = table
         table = [titles, table]
     else:
-        # extras = table.pop(0)
-        pass
+        table.pop(0)
 
     # if only one table we can use camelot to get the table. will be slow but less problems
     #ctable = camelot.read_pdf(file, pages="6", process_background=True)[0].df
