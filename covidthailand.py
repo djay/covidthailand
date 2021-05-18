@@ -55,6 +55,9 @@ def removesuffix(text, suffix):
 ###############
 # Date helpers
 ###############
+def today() -> datetime.datetime:
+    """Return today's date and time"""
+    return datetime.datetime.today()
 
 
 THAI_ABBR_MONTHS = [
@@ -2168,7 +2171,7 @@ def get_cases_by_prov_briefings():
     deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13") #12th gets a bit messy but could be fixed
-    end = TODAY()
+    end = today()
     links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end,1))
     for file, text in web_files(*reversed(list(links)), dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
@@ -2263,7 +2266,7 @@ def get_hospital_resources():
         rows.extend([x['attributes'] for x in jcontent['features']])
 
     data = pd.DataFrame(rows).groupby("province").sum()
-    data['Date'] = TODAY().date()
+    data['Date'] = today().date()
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.reset_index().set_index(["Date","province"])
     #print("Active Cases:",data.sum().to_string(index=False, header=False))
