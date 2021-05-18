@@ -40,13 +40,20 @@ RETRY = Retry(
 s.mount("http://", HTTPAdapter(max_retries=RETRY))
 s.mount("https://", HTTPAdapter(max_retries=RETRY))
 
-def removeprefix(text, prefix):
+
+#################
+# String helpers
+#################
+def remove_prefix(text: str, prefix: str) -> str:
+    """Removes the prefix of a string"""
     if text.startswith(prefix):
         return text[len(prefix):]
     else:
         return text
 
-def removesuffix(text, suffix):
+
+def remove_suffix(text: str, suffix: str) -> str:
+    """Removes the suffix of a string"""
     if text.endswith(suffix):
         return text[:-len(suffix)]
     else:
@@ -1276,7 +1283,7 @@ def get_provinces():
 PROVINCES = get_provinces()
 
 def get_province(prov, ignore_error=False):
-    prov = removeprefix(prov.strip().strip(".").replace(" ", ""), "จ.")
+    prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     try:
         prov = PROVINCES.loc[prov]['ProvinceEn']
     except KeyError:
@@ -1294,7 +1301,7 @@ def get_province(prov, ignore_error=False):
     return prov
 
 def join_provinces(df, on):
-    trim = lambda x: removeprefix(x,"จ.").strip(' .')
+    trim = lambda x: remove_prefix(x, "จ.").strip(' .')
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
 
 def fuzzy_join(a,b, on, assert_perfect_match=False, trim=lambda x:x, replace_on_with=None, return_unmatched=False):
@@ -2745,7 +2752,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
-        legends = [removesuffix(c, " (MA)") for c in cols]
+        legends = [remove_suffix(c, " (MA)") for c in cols]
     elif unknown_total and unknown_name not in legends:
         legends = legends + [unknown_name]
 
