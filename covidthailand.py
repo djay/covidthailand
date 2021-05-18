@@ -1717,9 +1717,11 @@ def get_cases_by_prov_tweets():
                 raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
             if "proactive" in label:
                 proactive.update(dict(((date,k),v) for k,v in prov.items()))
+                print(date, "Proactive:", len(prov))
                 #proactive[(date,"All")] = total                                  
             elif "walk-in" in label:
                 walkins.update(dict(((date,k),v) for k,v in prov.items()))
+                print(date, "Walkins:", len(prov))
                 #walkins[(date,"All")] = total
             else:
                 raise Exception()
