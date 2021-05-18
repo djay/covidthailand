@@ -437,15 +437,17 @@ def situation_cases_cum(parsed_pdf, date):
         #    # thai graphic says imported is 2396 instead of en 4195 on 2021-01-26
         #    outside_quarantine = outside_quarantine -  (4195 - 2396) 
 
-        quarantine, _ = get_next_numbers(
+        quarantine, _ = get_next_number(
             rest, 
             "Cases found in (?:the )?(?:state )?quarantine (?:facilities|centers)",
             "Staying in [^ ]* quarantine",
-            debug=True)
-        quarantine, *_ = quarantine
+            default = 0, until="●")
         quarantine = 1903 if quarantine == 19003 else quarantine  # "2021-02-05"
         # TODO: work out date when it flips back again.
-        if date < d("2020-12-28") or (date > d("2021-01-25") and outside_quarantine > quarantine):
+        if date == d("2021-05-17"):
+            imported = quarantine = outside_quarantine
+            outside_quarantine = 0
+        elif date < d("2020-12-28") or (date > d("2021-01-25") and outside_quarantine > quarantine):
             imported = outside_quarantine  # It's mislabeled (new daily is correct however)
             imported = 2647 if imported == 609 else imported  # "2021-02-17")
             imported = None if imported == 610 else imported  # 2021-02-20 - 2021-03-01
@@ -462,28 +464,26 @@ def situation_cases_cum(parsed_pdf, date):
             debug=False)
         quarantine, *_ = quarantine if quarantine else [None]
         quarantine = 562 if quarantine == 5562 else quarantine  # "2021-09-19"
-        imported, _ = get_next_numbers(
+        imported, _ = get_next_number(
             rest, 
             "(?i)Imported Case(?:s)?",
-            "(?i)Cases were imported from overseas",
-            debug=False)
-        imported, *_ = imported if imported else [None]
+            "(?i)Cases were imported from overseas")
         if imported and quarantine:
             outside_quarantine = imported - quarantine
         else:
             outside_quarantine = None  #TODO: can we get imported from total - quarantine - local?
     if quarantine:
-        active, _ = get_next_numbers(
+        active, _ = get_next_number(
             rest,
             "(?i)Cases found from active case finding",
             "(?i)Cases were (?:infected )?migrant workers",
-            debug=False
         )
-        active, *_ = active if active else [None]
+        prison, _ = get_next_number(rest, "Cases found in Prisons", default=0)
+        if active is not None:
+            active += prison
 
         # TODO: cum local really means all local ie walkins+active testing 
-        local, _ = get_next_numbers(rest, "(?i)(?:Local )?Transmission", debug=False)
-        local, *_ = local if local else [None]
+        local, _ = get_next_number(rest, "(?i)(?:Local )?Transmission")
         # TODO: 2021-01-25. Local 6629.0 -> 12250.0, quarantine 597.0 -> 2396.0 active 4684.0->5532.0
         if imported is None:
             pass
@@ -838,8 +838,8 @@ def get_situation():
     print("========Situation Reports==========")
 
     today_situation = get_situation_today()
-    th_situation = get_thai_situation()
     en_situation = get_en_situation()
+    th_situation = get_thai_situation()
     situation = th_situation.combine_first(en_situation)
     cum = cum2daily(situation)
     situation = situation.combine_first(cum)  # any direct non-cum are trusted more
@@ -1916,7 +1916,13 @@ def briefing_case_types(date, pages):
         else:
             hospital, field, severe, respirator, hospitalised = [None]*5
 
-        recovered, _ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)")
+        if date < d("2021-05-18"):
+            recovered, _ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)", until="ราย")
+        else:
+            # 2021-05-18 Using single infographic with 3rd wave numbers?
+            numbers, _ = get_next_numbers(text, "หายป่วยแล้ว")
+            cum_recovered_3rd, recovered, *_ = numbers
+        
         assert recovered is not None
 
         deaths, _ = get_next_number(text, "เสียชีวิตสะสม", before=True)
