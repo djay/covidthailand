@@ -278,7 +278,7 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         else:
             rest = ""
         numbers = (INT_RE if ints else NUM_RE).findall(found)
-        numbers = [n.replace(", ", "") for n in numbers]
+        numbers = [n.replace(",", "") for n in numbers]
         numbers = [int(n) if ints else float(n) for n in numbers if n]
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
@@ -1962,7 +1962,7 @@ def briefing_case_types(date, pages):
     return df
 
 NUM_OR_DASH = re.compile("([0-9\,\.]+|-)-?")
-parse_numbers = lambda lst: [float(i.replace(", ", "")) if i != "-" else 0 for i in lst]
+parse_numbers = lambda lst: [float(i.replace(",", "")) if i != "-" else 0 for i in lst]
 
 def briefing_province_cases(date, pages):
     if date < d("2021-01-13"):
