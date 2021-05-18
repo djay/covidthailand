@@ -416,8 +416,8 @@ def dav_files(
 ##########################################
 d = dateutil.parser.parse
 
-def situation_cases_cum(parsedPDF, date):
-    _,rest = get_next_numbers(parsedPDF, "The Disease Situation in Thailand", debug=True)
+def situation_cases_cum(parsed_pdf, date):
+    _,rest = get_next_numbers(parsed_pdf, "The Disease Situation in Thailand", debug=True)
     cases, rest = get_next_numbers(
         rest, 
         "Total number of confirmed cases",
@@ -514,11 +514,11 @@ def situation_cases_cum(parsedPDF, date):
         columns=["Date", "Cases Cum", "Cases Local Transmission Cum", "Cases Imported Cum", "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum"]
         ).set_index("Date")
 
-def situation_cases_new(parsedPDF, date):
+def situation_cases_new(parsed_pdf, date):
     if date < d("2020-11-02"):
         return pd.DataFrame()
     _,rest = get_next_numbers(
-        parsedPDF, 
+        parsed_pdf,
         "The Disease Situation in Thailand", 
         "(?i)Type of case Total number Rate of Increase",
         debug=False)
@@ -569,9 +569,9 @@ def situation_cases_new(parsedPDF, date):
         ).set_index("Date")
 
 re_walkin_priv = re.compile("(?i)cases (in|at) private hospitals")
-def situation_pui(parsedPDF, date):
+def situation_pui(parsed_pdf, date):
     numbers, _ = get_next_numbers(
-        parsedPDF, "Total +number of laboratory tests", 
+        parsed_pdf, "Total +number of laboratory tests",
         until="Sought medical services on their own at hospitals", 
         debug=False
     )
@@ -590,7 +590,7 @@ def situation_pui(parsedPDF, date):
         assert pui == pui2
     else:
         numbers, _ = get_next_numbers(
-            parsedPDF, "Total number of people who met the criteria of patients", debug=False,
+            parsed_pdf, "Total number of people who met the criteria of patients", debug=False,
         )
         if date > dateutil.parser.parse("2020-01-30") and not numbers:
             raise Exception(f"Problem parsing {date}")
@@ -607,7 +607,7 @@ def situation_pui(parsedPDF, date):
         raise Exception(f"Missing data at {date}")
 
     # walkin public vs private
-    numbers, rest = get_next_numbers(parsedPDF, "Sought medical services on their own at hospitals")
+    numbers, rest = get_next_numbers(parsed_pdf, "Sought medical services on their own at hospitals")
     if not numbers:
         pui_walkin_private, pui_walkin_public, pui_walkin = [None]*3
     elif re_walkin_priv.search(rest):
@@ -713,10 +713,10 @@ def check_cum(df, results, date):
         raise Exception(str(next_day - last))
 
 
-def situation_pui_th(parsedPDF, date, results):
+def situation_pui_th(parsed_pdf, date, results):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
-        parsedPDF,
+        parsed_pdf,
         "ด่านโรคติดต่อระหว่างประเทศ",
         "ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
         "นวนการตรวจทาง\S+องปฏิบัติการ",
@@ -740,7 +740,7 @@ def situation_pui_th(parsedPDF, date, results):
                 pui = 453413  # situation-no273-021063n.pdf
     else:
         numbers, content = get_next_numbers(
-            parsedPDF,
+            parsed_pdf,
 #            "ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม",
             "ตาราง 2 ผลดำ",
             "ตาราง 1",  # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
@@ -764,7 +764,7 @@ def situation_pui_th(parsedPDF, date, results):
     pui = {d("2020-02-12"):799, d("2020-02-13"):804}.get(date, pui) # Guess
 
     walkinsre = "(?:ษาที่โรงพยาบาลด้วยตนเอง|โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลดวยตนเอง)"
-    _,line = get_next_numbers(parsedPDF,walkinsre)
+    _,line = get_next_numbers(parsed_pdf, walkinsre)
     pui_walkin_private,rest = get_next_number(line, f"(?s){walkinsre}.*?โรงพยาบาลเอกชน", remove=True)
     pui_walkin_public, rest = get_next_number(rest, f"(?s){walkinsre}.*?โรงพยาบาลรัฐ", remove=True)
     unknown, rest = get_next_number(rest, f"(?s){walkinsre}.*?(?:งการสอบสวน|ารสอบสวน)", remove=True)
@@ -2655,7 +2655,7 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
     return cleaned_df
 
 
-def get_cycle(cmap, N=None, use_index="auto"):
+def get_cycle(cmap, n=None, use_index="auto"):
     if isinstance(cmap, str):
         if use_index == "auto":
             if cmap in ['Pastel1', 'Pastel2', 'Paired', 'Accent',
@@ -2665,8 +2665,8 @@ def get_cycle(cmap, N=None, use_index="auto"):
             else:
                 use_index=False
         cmap = matplotlib.cm.get_cmap(cmap)
-    if not N:
-        N = cmap.N
+    if not n:
+        n = cmap.N
     if use_index=="auto":
         if cmap.N > 100:
             use_index=False
@@ -2675,10 +2675,10 @@ def get_cycle(cmap, N=None, use_index="auto"):
         elif isinstance(cmap, ListedColormap):
             use_index=True
     if use_index:
-        ind = np.arange(int(N)) % cmap.N
+        ind = np.arange(int(n)) % cmap.N
         return cycler("color",cmap(ind))
     else:
-        colors = cmap(np.linspace(0,1,N))
+        colors = cmap(np.linspace(0, 1, n))
         return cycler("color",colors)
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
