@@ -1,40 +1,34 @@
 # coding=utf8
-import pathlib
-from json.decoder import JSONDecodeError, JSONDecoder
-from typing import OrderedDict
-from camelot.utils import validate_input
-from numpy import tril_indices_from
-import numpy as np
-import requests
-import tabula
+import datetime
+import dateutil
+import difflib
+from io import StringIO
+from itertools import islice, compress, cycle
+import json
 import os
-import shutil
-from tika import parser
+import pathlib
+import pickle
 import re
+from typing import Union, List, Callable
 import urllib.parse
-import pandas as pd
+
+from bs4 import BeautifulSoup
+import camelot
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-import numpy as np
-import datetime
-from io import StringIO
-from bs4 import BeautifulSoup
-from pptx import Presentation
-from tika.tika import parse
-from urllib3.util.retry import Retry
-import dateutil
-from requests.adapters import HTTPAdapter, Retry
-from webdav3.client import Client
-import json
-from pytwitterscraper import TwitterScraper
-def TODAY(): return datetime.datetime.today()
-from itertools import tee, islice, compress, cycle
-import camelot
-import difflib
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.ticker import FuncFormatter
-from typing import Union, List, Callable
-import pickle
+from matplotlib.pyplot import cycler
+import matplotlib.cm
+import numpy as np
+import pandas as pd
+from pptx import Presentation
+from pytwitterscraper import TwitterScraper
+import requests
+from requests.adapters import HTTPAdapter, Retry
+from tika import parser
+from webdav3.client import Client
+
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 
@@ -1419,14 +1413,12 @@ def get_cases_by_area_api():
     return case_areas
 
 def get_cases_by_demographics_api():
-    import numpy as np
     print("========Covid19Daily Demographics==========")
 
     cases = get_case_details_csv().reset_index()
     #cases = cases.rename(columns=dict(announce_date="Date"))
 
     #age_groups = pd.cut(cases['age'], bins=np.arange(0, 100, 10))
-  # import numpy as np
     # cases = get_case_details_csv().reset_index()
     labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
     age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], labels=labels)
@@ -2652,10 +2644,6 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 
     return cleaned_df
 
-from matplotlib.pyplot import cycler
-import numpy as np
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
-import matplotlib.cm
 
 def get_cycle(cmap, N=None, use_index="auto"):
     if isinstance(cmap, str):
