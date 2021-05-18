@@ -1887,19 +1887,19 @@ def briefing_case_types(date, pages):
         #cases = get_next_number(text, "ติดเชื้อจาก", before=True)
         #walkins = get_next_number(text.split("รายผู้ที่เดิน")[0], "ในประเทศ", until="ราย")
         #quarantine = get_next_number(text, "ต่างประเทศ", until="ราย", default=0)
-        if date < d("2021-05-17"):
-            numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
-            cases, walkins, proactive, *quarantine = numbers
-            quarantine = quarantine[0] if quarantine else 0
-            ports, rest = get_next_number(text, "ช่องเส้นทางธรรมชาติ", "รายผู้ที่เดินทางมาจากต่างประเทศ", before=True, default=0)
-            imported = ports + quarantine
-            prison, _ = get_next_number(text, "ที่ต้องขัง", default=0, until="ราย")
-        else:
+        if date == d("2021-05-17"):
             numbers, rest = get_next_numbers(text.split("อาการหนัก")[1], "ในประเทศ")
             local, cases, imported, prison, walkins, proactive, imported2, prison2, *_ = numbers
             assert local == walkins + proactive
             assert imported == imported2
             assert prison == prison2
+        else:
+            numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
+            cases, walkins, proactive, *quarantine = numbers
+            quarantine = quarantine[0] if quarantine else 0
+            ports, rest = get_next_number(text, "ช่องเส้นทางธรรมชาติ", "รายผู้ที่เดินทางมาจากต่างประเทศ", before=True, default=0)
+            imported = ports + quarantine
+            prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
         proactive += prison  # not sure if they are going to add this category going forward?
 
         assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
