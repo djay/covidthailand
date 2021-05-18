@@ -3155,6 +3155,14 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Current outcome of Covid Cases since 1st April 2021', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
+    # TODO: work out based on districts of deaths / IFR for that district
+    df["Infections Estimate"] = df['Deaths'].shift(-12) / 0.0046
+    cols = ["Infections Estimate", "Cases"]
+    plot_area(df=df, png_prefix='cases_infections_estimate', cols_subset=cols,
+              title='Estimate of Infections from Deaths/IFR back dated 2 weeks', 
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
+
     ####################
     # Deaths
     ####################
