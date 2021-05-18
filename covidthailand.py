@@ -378,13 +378,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         yield file, content
 
 
-def dav_files(
-    url="http://nextcloud.dmsc.moph.go.th/public.php/webdav", 
-    username="wbioWZAQfManokc",
-    password="null", 
-    ext=".pdf .pptx", 
-    dir="testing_moph",
-    ):
+def dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav", username="wbioWZAQfManokc", password="null",
+              ext=".pdf .pptx", dir="testing_moph"):
 
     options = {
         "webdav_hostname": url,
@@ -658,8 +653,8 @@ def get_en_situation():
         # if len(results) > 1 and (results.iloc[0][cums] > results.iloc[1][cums]).any():
         #     print((results.iloc[0][cums] > results.iloc[1][cums]))
         #     print(results.iloc[0:2])
-            #raise Exception("Cumulative data didn't increase")
-        #row = results.iloc[0].to_dict()
+        # raise Exception("Cumulative data didn't increase")
+        # row = results.iloc[0].to_dict()
         print(date.date(), file, row.to_string(header=False, index=False))
         #     "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
         #     "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
@@ -741,7 +736,7 @@ def situation_pui_th(parsed_pdf, date, results):
     else:
         numbers, content = get_next_numbers(
             parsed_pdf,
-#            "ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม",
+            # "ผู้ป่วยที่มีอาการเข้าได้ตามนิยาม",
             "ตาราง 2 ผลดำ",
             "ตาราง 1",  # situation-no172-230663.pdf #'situation-no83-260363_1.pdf'
         )
@@ -816,13 +811,13 @@ def get_thai_situation():
         if df is not None:
             results = results.combine_first(df)
             print(date.date(), file, df.to_string(header=False, index=False))
-                # file, 
-                # "p{Tested PUI Cum:.0f}\t"
-                # "t{Tested Cum:.0f}\t"
-                # "{Tested Proactive Cum:.0f}\t"
-                # "{Tested Quarantine Cum:.0f}\t" 
-                # "{Tested Not PUI Cum:.0f}\t"
-                # "".format(**results.iloc[0].to_dict()))
+            # file,
+            # "p{Tested PUI Cum:.0f}\t"
+            # "t{Tested Cum:.0f}\t"
+            # "{Tested Proactive Cum:.0f}\t"
+            # "{Tested Quarantine Cum:.0f}\t"
+            # "{Tested Not PUI Cum:.0f}\t"
+            # "".format(**results.iloc[0].to_dict()))
 
     #print(results)
     return results
@@ -1391,7 +1386,7 @@ def get_case_details_csv():
     return cases
 
 def get_case_details_api():
-#    _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
+    # _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
     url = "https://data.go.th/api/3/action/datastore_search?resource_id=329f684b-994d-476b-91a4-62b2ea00f29f&limit=1000&offset="
     records = []
     def get_page(i, check=False):
@@ -1463,58 +1458,57 @@ def get_cases_by_demographics_api():
     risks['Cluster จันทบุรี'] = "Entertainment" # Chanthaburi - gambing?
     risks['Cluster โรงงาน Big Star'] = "Work" # Factory
     r = {
-    27:'Cluster ชลบุรี:Entertainment', # Chonburi - gambling
-    28:'Cluster เครือคัสเซ่อร์พีคโฮลดิ้ง (CPG,CPH):Work',
-    29:'ตรวจก่อนทำหัตถการ:Unknown', #'Check before the procedure'
-    30:'สัมผัสผู้เดินทางจากต่างประเทศ:Contact', # 'touch foreign travelers'
-    31:"Cluster Memory 90's กรุงเทพมหานคร:Entertainment",
-    32:'สัมผัสผู้ป่วยยืนยัน:Contact',
-    33:'ปอดอักเสบ (Pneumonia):Pneumonia',
-    34:'Cluster New Jazz กรุงเทพมหานคร:Entertainment',
-    35:'Cluster มหาสารคาม:Entertainment', # Cluster Mahasarakham
-    36:'ผู้ที่เดินทางมาจากต่างประเทศ และเข้า OQ:Imported',
-    37:'Cluster สมุทรปราการ (โรงงาน บริษัทเมทัล โปรดักส์):Work',
-    38:'สัมผัสใกล้ชิดผู้ป่วยยันยันก่อนหน้า:Contact',
-    39:'Cluster ตลาดบางพลี:Work',
-    40:'Cluster บ่อนเทพารักษ์:Community', # Bangplee Market'
-    41:'Cluster Icon siam:Community',
-    42:'Cluster The Lounge Salaya:Entertainment',
-    43:'Cluster ชลบุรี โรงเบียร์ 90:Entertainment',
-    44:'Cluster โรงงาน standard can:Work',
-    45:'Cluster ตราด:Community', # Trat?
-    46:'Cluster สถานบันเทิงย่านทองหล่อ:Entertainment',
-    47:'ไปยังพื้นที่ที่มีการระบาด:Community',
-    48:'Cluster สมุทรสาคร:Work', #Samut Sakhon   
-    49:'สัมผัสใกล้ชิดกับผู้ป่วยยืนยันรายก่อนหน้านี้:Contact', 
-    51:'อยู่ระหว่างสอบสวน:Unknown',
-    20210510.1:'Cluster คลองเตย:Community',  # Cluster Klongtoey, 77
-    20210510.2:'ไปแหล่งชุมชน/สถานที่คนหนาแน่น:Community', # Go to a community / crowded place, 17
-    20210510.3:'สัมผัสใกล้ชิดผู้ป่วยยืนยันก่อนหน้า:Contact',
-    20210510.4:'Cluster ชลบุรี บริษัทไดกิ้น:Work', # Cluster Chonburi Daikin Company, 3
-    20210510.5:'ร้านอาหาร:Entertainment', #resturant
-    20210510.6:'สัมผัสผู้ติดเชื้อยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
-    20210510.7:'สัมผัสผู้ป่วยยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
-    20210510.8:'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community', # Travelers from high-risk areas Bangkok, 2
-    20210510.9:'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community', # to / from Epidemic area, Bangkok Metropolis, 1
-    20210510.10:'ระหว่างสอบสวน:Investigating',
-    20210510.11:'Cluster ปากช่อง:Entertainment', # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
-    20210512.1:'Cluster คลองเตย:Community', # klongtoey cluster
-    20210512.2:'อยู่ระหว่างสอบสวนโรค:Investigating',
-    20210512.3:'อื่น ๆ:Unknown', # Other
-    20210512.4:'Cluster จันทบุรี (ชาวกินี ):Entertainment', # African gem merchants dining after ramandan
-    20210516.0:'Cluster เรือนจำกลางคลองเปรม:Prison', # 894
-    20210516.1:'Cluster ตลาดสี่มุมเมือง:Community', # 344 Four Corners Market
-    20210516.2:'Cluster สมุทรปราการ GRP Hightech:Work', #130
-    20210516.3:'Cluster ตลาดนนทบุรี:Community', # Cluster Talat Nonthaburi, , 85
-    20210516.4:'Cluster โรงงาน QPP ประจวบฯ:Work', #69
-    20210516.5:'Cluster เรือนจำพิเศษธนบุรี:Prison', #41 Cluster Special Prison Thonburi,
-    20210516.6:'Cluster จันทบุรี (ชาวกินี):Entertainment', #26 Cluster Chanthaburi (Guinea),
-    #20210516.7:'Cluster บริษัทศรีสวัสดิ์,Work', #16
-    20210516.8:'อื่น:Unknown', # 10
-    20210516.9:'Cluster เรือนจำพิเศษมีนบุรี:Prison', #5
-    20210516.10:'Cluster จนท. สนามบินสุวรรณภูมิ:Work', #4
-    20210516.11:'สัมผัสผู้ป่วยที่ติดโควิด:Contact', #4
-
+        27:'Cluster ชลบุรี:Entertainment', # Chonburi - gambling
+        28:'Cluster เครือคัสเซ่อร์พีคโฮลดิ้ง (CPG,CPH):Work',
+        29:'ตรวจก่อนทำหัตถการ:Unknown', #'Check before the procedure'
+        30:'สัมผัสผู้เดินทางจากต่างประเทศ:Contact', # 'touch foreign travelers'
+        31:"Cluster Memory 90's กรุงเทพมหานคร:Entertainment",
+        32:'สัมผัสผู้ป่วยยืนยัน:Contact',
+        33:'ปอดอักเสบ (Pneumonia):Pneumonia',
+        34:'Cluster New Jazz กรุงเทพมหานคร:Entertainment',
+        35:'Cluster มหาสารคาม:Entertainment', # Cluster Mahasarakham
+        36:'ผู้ที่เดินทางมาจากต่างประเทศ และเข้า OQ:Imported',
+        37:'Cluster สมุทรปราการ (โรงงาน บริษัทเมทัล โปรดักส์):Work',
+        38:'สัมผัสใกล้ชิดผู้ป่วยยันยันก่อนหน้า:Contact',
+        39:'Cluster ตลาดบางพลี:Work',
+        40:'Cluster บ่อนเทพารักษ์:Community', # Bangplee Market'
+        41:'Cluster Icon siam:Community',
+        42:'Cluster The Lounge Salaya:Entertainment',
+        43:'Cluster ชลบุรี โรงเบียร์ 90:Entertainment',
+        44:'Cluster โรงงาน standard can:Work',
+        45:'Cluster ตราด:Community', # Trat?
+        46:'Cluster สถานบันเทิงย่านทองหล่อ:Entertainment',
+        47:'ไปยังพื้นที่ที่มีการระบาด:Community',
+        48:'Cluster สมุทรสาคร:Work', #Samut Sakhon
+        49:'สัมผัสใกล้ชิดกับผู้ป่วยยืนยันรายก่อนหน้านี้:Contact',
+        51:'อยู่ระหว่างสอบสวน:Unknown',
+        20210510.1:'Cluster คลองเตย:Community',  # Cluster Klongtoey, 77
+        20210510.2:'ไปแหล่งชุมชน/สถานที่คนหนาแน่น:Community', # Go to a community / crowded place, 17
+        20210510.3:'สัมผัสใกล้ชิดผู้ป่วยยืนยันก่อนหน้า:Contact',
+        20210510.4:'Cluster ชลบุรี บริษัทไดกิ้น:Work', # Cluster Chonburi Daikin Company, 3
+        20210510.5:'ร้านอาหาร:Entertainment', #resturant
+        20210510.6:'สัมผัสผู้ติดเชื้อยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
+        20210510.7:'สัมผัสผู้ป่วยยืนยัน อยู่ระหว่างสอบสวน:Contact', # touch the infected person confirm Under investigation, 5
+        20210510.8:'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community', # Travelers from high-risk areas Bangkok, 2
+        20210510.9:'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community', # to / from Epidemic area, Bangkok Metropolis, 1
+        20210510.10:'ระหว่างสอบสวน:Investigating',
+        20210510.11:'Cluster ปากช่อง:Entertainment', # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
+        20210512.1:'Cluster คลองเตย:Community', # klongtoey cluster
+        20210512.2:'อยู่ระหว่างสอบสวนโรค:Investigating',
+        20210512.3:'อื่น ๆ:Unknown', # Other
+        20210512.4:'Cluster จันทบุรี (ชาวกินี ):Entertainment', # African gem merchants dining after ramandan
+        20210516.0:'Cluster เรือนจำกลางคลองเปรม:Prison', # 894
+        20210516.1:'Cluster ตลาดสี่มุมเมือง:Community', # 344 Four Corners Market
+        20210516.2:'Cluster สมุทรปราการ GRP Hightech:Work', #130
+        20210516.3:'Cluster ตลาดนนทบุรี:Community', # Cluster Talat Nonthaburi, , 85
+        20210516.4:'Cluster โรงงาน QPP ประจวบฯ:Work', #69
+        20210516.5:'Cluster เรือนจำพิเศษธนบุรี:Prison', #41 Cluster Special Prison Thonburi,
+        20210516.6:'Cluster จันทบุรี (ชาวกินี):Entertainment', #26 Cluster Chanthaburi (Guinea),
+        #20210516.7:'Cluster บริษัทศรีสวัสดิ์,Work', #16
+        20210516.8:'อื่น:Unknown', # 10
+        20210516.9:'Cluster เรือนจำพิเศษมีนบุรี:Prison', #5
+        20210516.10:'Cluster จนท. สนามบินสุวรรณภูมิ:Work', #4
+        20210516.11:'สัมผัสผู้ป่วยที่ติดโควิด:Contact', #4
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -1834,39 +1828,40 @@ def briefing_case_detail(date, pages):
             #print(title,case_type)
 
             for prov_num, line in lines:
-                #for prov in provs: # TODO: should really be 1. make split only split 1.
-                    # TODO: sometimes cells/data seperated by "-" 2021-01-03
-                    prov,num = prov_num.strip().split("(",1)
-                    prov = get_province(prov)
-                    num = int(num_people.search(num).group(1))
-                    totals[title] = totals.get(title,0) + num
+                # for prov in provs: # TODO: should really be 1. make split only split 1.
+                # TODO: sometimes cells/data seperated by "-" 2021-01-03
 
-                    _, rest = get_next_numbers(line, "(?:nผล|ผลพบ)") # "result"
-                    asym,rest = get_next_number(rest, "(?s)^.*(?:ไม่มีอาการ|ไมมี่อาการ|ไม่มีอาการ)", default=0, remove=True)
-                    sym,rest = get_next_number(rest, "(?s)^.*(?<!(?:ไม่มี|ไมมี่|ไม่มี))(?:อาการ|อาการ)", default=0, remove=True)
-                    unknown,_ = get_next_number(
-                        rest,
-                        "อยู่ระหว่างสอบสวนโรค", 
-#                        "อยู่ระหว่างสอบสวน",
-                        "อยู่ระหว่างสอบสวน", 
-                        "อยู่ระหว่างสอบสวน",
-                        "ไม่ระบุ", 
-                        default=0)
-                    # unknown2 = get_next_number(
-                    #     rest, 
-                    #     "อยู่ระหว่างสอบสวน", 
-                    #     "อยู่ระหว่างสอบสวน", 
-                    #     default=0)
-                    # if unknown2:
-                    #     unknown = unknown2
-                    
-                    # TODO: if 1, can be by itself
-                    if asym == 0 and sym == 0 and unknown == 0:
-                        sym, asym, unknown = None, None, None
-                    else:
-                        assert asym + sym + unknown == num
-                    #print(num,prov)
-                    rows.append((date, prov,case_type, num, asym, sym))
+                prov,num = prov_num.strip().split("(",1)
+                prov = get_province(prov)
+                num = int(num_people.search(num).group(1))
+                totals[title] = totals.get(title,0) + num
+
+                _, rest = get_next_numbers(line, "(?:nผล|ผลพบ)") # "result"
+                asym,rest = get_next_number(rest, "(?s)^.*(?:ไม่มีอาการ|ไมมี่อาการ|ไม่มีอาการ)", default=0, remove=True)
+                sym,rest = get_next_number(rest, "(?s)^.*(?<!(?:ไม่มี|ไมมี่|ไม่มี))(?:อาการ|อาการ)", default=0, remove=True)
+                unknown,_ = get_next_number(
+                    rest,
+                    "อยู่ระหว่างสอบสวนโรค",
+                    # "อยู่ระหว่างสอบสวน",
+                    "อยู่ระหว่างสอบสวน",
+                    "อยู่ระหว่างสอบสวน",
+                    "ไม่ระบุ",
+                    default=0)
+                # unknown2 = get_next_number(
+                #     rest,
+                #     "อยู่ระหว่างสอบสวน",
+                #     "อยู่ระหว่างสอบสวน",
+                #     default=0)
+                # if unknown2:
+                #     unknown = unknown2
+
+                # TODO: if 1, can be by itself
+                if asym == 0 and sym == 0 and unknown == 0:
+                    sym, asym, unknown = None, None, None
+                else:
+                    assert asym + sym + unknown == num
+                #print(num,prov)
+                rows.append((date, prov,case_type, num, asym, sym))
     # checksum on title totals
     for title, total in totals.items():
         m = num_people.search(title)
@@ -2063,12 +2058,13 @@ def briefing_deaths(file, date, pages):
             # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
 
             # TODO: what if they have more than one page?
-            sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female]],
-                columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
-            ).set_index("Date")
-            dfprov = pd.DataFrame(((date,p,c) for p,c in province_count.items()),
-                columns=["Date", "Province", "Deaths"]
-            ).set_index(["Date", "Province"])
+            sum = \
+                pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female]],
+                             columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max",
+                                      "Deaths Male", "Deaths Female"]).set_index("Date")
+            dfprov = \
+                pd.DataFrame(((date,p,c) for p,c in province_count.items()),
+                             columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
             assert male+female == dfprov['Deaths'].sum()
             print(f"{date.date()} Deaths:", sum.to_string(header=False, index=False))
             return all, sum, dfprov
@@ -2124,9 +2120,10 @@ def briefing_deaths(file, date, pages):
                     else:
                         raise Exception(f"no province found for death in: {cell}")
                 rows.append([float(death_num), date, gender, age, province, None, None, None, None, None])
-            df= pd.DataFrame(rows,
-                columns = ['death_num', "Date", "gender", "age", "Province", "nationality", "congenital_disease", "case_history", "risk_factor_sickness", "risk_factor_death" ]
-            ).set_index("death_num")
+            df= \
+                pd.DataFrame(rows, columns = ['death_num', "Date", "gender", "age", "Province", "nationality",
+                                              "congenital_disease", "case_history", "risk_factor_sickness",
+                                              "risk_factor_death" ]).set_index("death_num")
             all = all.append(df, verify_integrity=True)
             continue
         elif orig is not None: # <= 2021-04-27
@@ -2151,19 +2148,22 @@ def briefing_deaths(file, date, pages):
             #         print(row)
     if all.empty:
         print(f"{date.date()}: Deaths:  0")
-        sum = pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
-            columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
-        ).set_index("Date")
-        dfprov = pd.DataFrame(columns=["Date","Province","Deaths"]).set_index(["Date","Province"])        
+        sum = \
+            pd.DataFrame([[date, 0 , None, None, None, 0, 0]],
+                         columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max",
+                                  "Deaths Male", "Deaths Female"]).set_index("Date")
+        dfprov = pd.DataFrame(columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
+
     else:
         #print("{date.date()} Deaths: ",all.to_string(header=False, index=False))
         # calculate daily summary stats
         med_age, min_age, max_age = all['age'].median(), all['age'].min(), all['age'].max()
         g = all['gender'].value_counts()
         male,female = g.get('Male',0), g.get('Female',0)
-        sum = pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
-            columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"] 
-        ).set_index("Date")
+        sum = \
+            pd.DataFrame([[date, male+female , med_age, min_age, max_age, male, female]],
+                         columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max",
+                                  "Deaths Male", "Deaths Female"]).set_index("Date")
         print(f"{date.date()} Deaths: ",sum.to_string(header=False, index=False))
         dfprov = all[["Date",'Province']].value_counts().to_frame("Deaths")
     
@@ -2315,8 +2315,8 @@ def get_vaccinations():
         lines = [l.strip() for l in page.split('\n') if l.strip()]
         #if date > d("2021-03-22"):
         preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
-            #if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
-            #    continue
+        # if preamble and "19 รำยจังหวัดสะสม ตั้งแต่วันที่" in preamble[0]: # 2021-04-26
+        #     continue
         # else:
         #     preamble, *rest = split(lines, oldhead.search)
         for headings, lines in pairwise(rest):
@@ -2880,10 +2880,11 @@ def save_plots(df: pd.DataFrame) -> None:
             'Cases per PUI3',
             'Positive Rate Private'
     ]
-    legends = ['Positive Rate: Share of PCR tests that are positive ',
-               'Share of PCR tests that have Covid',
-               'Share of PUI*3 that have Covid',
-               'Share of Private PCR tests that are positive'
+    legends = [
+        'Positive Rate: Share of PCR tests that are positive ',
+        'Share of PCR tests that have Covid',
+        'Share of PUI*3 that have Covid',
+        'Share of Private PCR tests that are positive'
     ]
     plot_area(df=df, png_prefix='positivity', cols_subset=cols,
               title='Positive Rate: Is enough testing happening?', legends=legends,
