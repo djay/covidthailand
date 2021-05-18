@@ -1683,7 +1683,7 @@ def get_cases_by_prov_tweets():
     for date, text in provs.items():
         if "📍" not in text:
             continue
-        if "ventilators":  # after 2021-05-11 start using "👉" for hospitalisation
+        if "ventilators" in text: # after 2021-05-11 start using "👉" for hospitalisation
             continue
         start, *lines = text.split("👉", 2)
         if len(lines) < 2:
@@ -1714,10 +1714,12 @@ def get_cases_by_prov_tweets():
                 raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
             if "proactive" in label:
                 proactive.update(dict(((date, k), v) for k, v in prov.items()))
-                #proactive[(date, "All")] = total                                  
+                print(date, "Proactive:", len(prov))
+                #proactive[(date,"All")] = total                                  
             elif "walk-in" in label:
                 walkins.update(dict(((date, k), v) for k, v in prov.items()))
-                #walkins[(date, "All")] = total
+                print(date, "Walkins:", len(prov))
+                #walkins[(date,"All")] = total
             else:
                 raise Exception()
     # Add in missing data
@@ -2493,7 +2495,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
@@ -3158,6 +3160,14 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df, png_prefix='cases_cumulative', cols_subset=cols,
               title='Current outcome of Covid Cases since 1st April 2021', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+
+    # TODO: work out based on districts of deaths / IFR for that district
+    df["Infections Estimate"] = df['Deaths'].shift(-12) / 0.0046
+    cols = ["Infections Estimate", "Cases"]
+    plot_area(df=df, png_prefix='cases_infections_estimate', cols_subset=cols,
+              title='Estimate of Infections from Deaths/IFR back dated 2 weeks', 
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
 
     ####################
     # Deaths
