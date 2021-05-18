@@ -1686,9 +1686,8 @@ def get_cases_by_prov_tweets():
     for date, text in provs.items():
         if "📍" not in text:
             continue
-        # TODO: must have been solved in other ways
-        # if "ventilators": # after 2021-05-11 start using "👉" for hospitalisation
-        #     continue
+        if "ventilators" in text: # after 2021-05-11 start using "👉" for hospitalisation
+            continue
         start,*lines = text.split("👉",2)
         if len(lines) < 2:
             raise Exception()
@@ -2490,7 +2489,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
