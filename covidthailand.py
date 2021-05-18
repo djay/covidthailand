@@ -1686,8 +1686,9 @@ def get_cases_by_prov_tweets():
     for date, text in provs.items():
         if "📍" not in text:
             continue
-        if "ventilators": # after 2021-05-11 start using "👉" for hospitalisation
-            continue
+        # TODO: must have been solved in other ways
+        # if "ventilators": # after 2021-05-11 start using "👉" for hospitalisation
+        #     continue
         start,*lines = text.split("👉",2)
         if len(lines) < 2:
             raise Exception()
