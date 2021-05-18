@@ -702,7 +702,7 @@ def get_situation_today():
         columns=["Date", "Cases Cum", "Cases", "Tested PUI Cum", "Tested PUI", "Cases Imported Cum", "Cases Imported"]
     ).set_index("Date")
     
-def check_cum(df, results, date):
+def check_cum(df, results):
     if results.empty:
         return True
     next_day = results.loc[results.index[0]][[c for c in results.columns if " Cum" in c]]
@@ -793,7 +793,7 @@ def situation_pui_th(parsed_pdf, date, results):
             "Tested PUI Walkin Public Cum", 
             "Tested PUI Walkin Cum"]
     ).set_index("Date")
-    assert check_cum(df, results, date)
+    assert check_cum(df, results)
     return df
      
 def get_thai_situation():
@@ -1966,7 +1966,7 @@ def briefing_case_types(date, pages):
 NUM_OR_DASH = re.compile("([0-9\,\.]+|-)-?")
 parse_numbers = lambda lst: [float(i.replace(",","")) if i!="-" else 0 for i in lst]
 
-def briefing_province_cases(file, date, pages):
+def briefing_province_cases(date, pages):
     if date < d("2021-01-13"):
         pages = []
     rows = {}
@@ -2191,7 +2191,7 @@ def get_cases_by_prov_briefings():
         case_detail = briefing_case_detail(date, pages)
         date_prov_types = date_prov_types.combine_first(case_detail)
 
-        prov = briefing_province_cases(file, date, pages)
+        prov = briefing_province_cases(date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
         
@@ -2552,7 +2552,7 @@ AREA_LEGEND_ORDERED = [
 ]
 
 
-def human_format(num, pos):
+def human_format(num):
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
@@ -2561,12 +2561,12 @@ def human_format(num, pos):
     suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
     return f'{num:.1f}{suffix}'
 
-def thaipop(num, pos):
+def thaipop(num):
     pp = num/69630000*100
     num = num/1000000
     return f'{num:.1f}M / {pp:.1f}%'
 
-def thaipop2(num, pos):
+def thaipop2(num):
     pp = num/69630000/2*100
     num = num/1000000
     return f'{num:.1f}M / {pp:.1f}%'
