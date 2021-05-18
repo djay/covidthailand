@@ -598,7 +598,7 @@ def situation_pui(parsed_pdf, date):
             return pd.DataFrame()
         tests_total, active_finding, asq, not_pui = [None] * 4
         pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
-        pui_port = pui_airport + pui_seaport
+        # pui_port = pui_airport + pui_seaport
     if pui in [1103858, 3891136]:  # mistypes? # 433807?
         pui = None
     elif tests_total in [783679, 849874, 936458]:
@@ -654,7 +654,7 @@ def get_en_situation():
         new_cases = situation_cases_new(parsedPDF, date)
         row = pui.combine_first(cases).combine_first(new_cases)
         results = results.combine_first(row)
-        cums = [c for c in results.columns if ' Cum' in c]
+        # cums = [c for c in results.columns if ' Cum' in c]
         # if len(results) > 1 and (results.iloc[0][cums] > results.iloc[1][cums]).any():
         #     print((results.iloc[0][cums] > results.iloc[1][cums]))
         #     print(results.iloc[0:2])
@@ -1790,7 +1790,9 @@ def briefing_case_detail_lines(soup):
         table, titles = table
         table = [titles, table]
     else:
-        extras = table.pop(0)
+        # extras = table.pop(0)
+        pass
+
     # if only one table we can use camelot to get the table. will be slow but less problems
     #ctable = camelot.read_pdf(file, pages="6", process_background=True)[0].df
         
@@ -1823,7 +1825,7 @@ def briefing_case_detail(date, pages):
             elif "การคัดกรองเชิงรุก" in title:
                 case_type = "Proactive"
             elif "เดินทางมาจากต่างประเทศ" in title:
-                case_type = "Quarantine"
+                # case_type = "Quarantine"
                 continue # just care about province cases for now
             #if re.search("(จากระบบเฝ้าระวัง|ติดเชื้อในประเทศ)", title):
             else:
@@ -2046,9 +2048,9 @@ def briefing_deaths(file, date, pages):
                     raise Exception(f"No number of deaths found {date}: {text}")
                 province_count.update(dict((get_province(p),num) for p in provs))
             # Congenital disease / risk factor The severity of the disease
-            congenital_disease = df[2][0]  # TODO: parse?
+            # congenital_disease = df[2][0]  # TODO: parse?
             # Risk factors for COVID-19 infection
-            risk_factors = df[3][0]
+            # risk_factors = df[3][0]
             numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ","ค่ากลางอายุ", ints=False)
             med_age, min_age, max_age, *_ = numbers
             numbers, *_ = get_next_numbers(text, "ชาย")
@@ -2357,7 +2359,7 @@ def get_vaccinations():
                 elif table=="old_given":
                     alloc, target_num, given, perc, *rest = numbers
                     medical, frontline, disease, elders, riskarea, *rest = rest
-                    unknown = sum(rest) # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
+                    # unknown = sum(rest) # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
                     vaccinations[(date,prov)] = [given, perc, 0, 0] + \
                         [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                     allocations[(date,prov)] = [alloc,0,0,0]
@@ -2382,22 +2384,22 @@ def get_vaccinations():
         "Vac Group Risk: Location 1 Cum",
         "Vac Group Risk: Location 2 Cum",
     ]).set_index(["Date", "Province"])
-    df_new = pd.DataFrame((list(key)+value for key,value in vacnew.items()), columns=[
-        "Date",
-        "Province",
-        "Vac Given 1",
-        "Vac Given 2",
-        "Vac Group Medical Staff 1",
-        "Vac Group Medical Staff 2",
-        "Vac Group Other Frontline Staff 1",
-        "Vac Group Other Frontline Staff 2",
-        "Vac Group Over 60 1",
-        "Vac Group Over 60 2",
-        "Vac Group Risk: Disease 1",
-        "Vac Group Risk: Disease 2",
-        "Vac Group Risk: Location 1",
-        "Vac Group Risk: Location 2",
-    ]).set_index(["Date", "Province"])
+    # df_new = pd.DataFrame((list(key)+value for key,value in vacnew.items()), columns=[
+    #     "Date",
+    #     "Province",
+    #     "Vac Given 1",
+    #     "Vac Given 2",
+    #     "Vac Group Medical Staff 1",
+    #     "Vac Group Medical Staff 2",
+    #     "Vac Group Other Frontline Staff 1",
+    #     "Vac Group Other Frontline Staff 2",
+    #     "Vac Group Over 60 1",
+    #     "Vac Group Over 60 2",
+    #     "Vac Group Risk: Disease 1",
+    #     "Vac Group Risk: Disease 2",
+    #     "Vac Group Risk: Location 1",
+    #     "Vac Group Risk: Location 2",
+    # ]).set_index(["Date", "Province"])
     alloc = pd.DataFrame((list(key)+value for key,value in allocations.items()), columns=[
         "Date",
         "Province",
@@ -2591,7 +2593,7 @@ AREA_LEGEND_SIMPLE = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
     "return df with columns of valuefunc for the top x provinces by metricfunc"
     # Top 5 dfcine rollouts
-    old_index = df.index.names
+    # old_index = df.index.names
     valuefunc = metricfunc if valuefunc is None else valuefunc
 
     # Apply metric on each province by itself
@@ -2722,8 +2724,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
         ma_suffix = ''
 
     # try to hone in on last day of "important" data. Assume first col
-    last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
-    last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
+    # last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
+    # last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
 
     if unknown_total:
         if ma_days:
