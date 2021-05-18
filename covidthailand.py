@@ -1566,7 +1566,8 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     try:
         with open(filename,"rb") as fp:
             tweets = pickle.load(fp)
-    except:
+    except (IOError, OSError, pickle.PickleError, pickle.UnpicklingError) as e:
+        print(f'Error detected when attempting to load the pickle file: {e}, setting an empty \'tweets\' dictionary')
         tweets = {}
     latest = max(tweets.keys()) if tweets else None
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
