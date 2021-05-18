@@ -2555,7 +2555,7 @@ AREA_LEGEND_ORDERED = [
 ]
 
 
-def human_format(num):
+def human_format(num: int, pos: int) -> str:
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
@@ -2564,12 +2564,14 @@ def human_format(num):
     suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
     return f'{num:.1f}{suffix}'
 
-def thaipop(num):
+
+def thaipop(num: int, pos: int) -> str:
     pp = num/69630000*100
     num = num/1000000
     return f'{num:.1f}M / {pp:.1f}%'
 
-def thaipop2(num):
+
+def thaipop2(num: int, pos: int) -> str:
     pp = num/69630000/2*100
     num = num/1000000
     return f'{num:.1f}M / {pp:.1f}%'
@@ -2684,12 +2686,13 @@ def get_cycle(cmap, n=None, use_index="auto"):
         colors = cmap(np.linspace(0, 1, n))
         return cycler("color", colors)
 
+
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
               ma_days: int = None, cmap: str = 'tab20',
               reverse_cmap: bool = False, highlight: List[str] = [], 
-              y_formatter: Callable[[int, int], str] = human_format, clean_end=True, between: List[str] = []) -> None:
+              y_formatter: Callable[[int], str] = human_format, clean_end=True, between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
     :param df: data frame containing all available data
@@ -2725,7 +2728,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, List[st
         ma_suffix = ''
 
     # try to hone in on last day of "important" data. Assume first col
-    # last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
+    last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
     # last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
 
     if unknown_total:
