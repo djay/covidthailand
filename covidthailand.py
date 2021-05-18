@@ -2967,7 +2967,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive']
     plot_area(df=df, png_prefix='cases_types', cols_subset=cols, 
               title='Thailand Covid Cases by Where Tested',
-              legends=["Quarantine (imported)", "Hospital (Walk-ins/Traced)", "Mobile Community Testing (proactive)"],
+              legends=["Quarantine (Imported)", "Hospital (Walk-ins/Traced)", "Mobile Community Testing/Prisons (Proactive)"],
               unknown_name='Cases Unknown', unknown_total='Cases',
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap="viridis")
 
