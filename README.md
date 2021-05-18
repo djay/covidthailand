@@ -36,11 +36,11 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 - see also [Provinces with Cases Trending Down](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png)
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
-## Cases by test type
+## Cases by Where Tested
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
  - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 - Contact tracing normally counts as a "Walkin"
-- Proactive tests are normally done on specific high risk locations
+- Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
 - Sources: [CCSA Daily Briefing](#dl-briefings),
   [MOPH daily situation report](#dl-situation-reports)
 
