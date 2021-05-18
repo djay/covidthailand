@@ -1,26 +1,14 @@
 requests
 tabula-py
-requests_cache # didn't use
 tika
-pandas
-matplotlib
 webdavclient3
 xlrd
-openpyxl
 BeautifulSoup4
 python-pptx
 python-dateutil
 jupyter
 pytwitterscraper
 camelot-py[cv,plot]
-#sktime
-#seaborn
-#prompt-toolkit<2.0.0
-#facebook-page-scraper # does work but requires selenium
-#facebook-scraper  #works but not for RB
-#scrape-facebook
-#sriram-twitter-scraper
-#Twper
-#twint
-#git+https://github.com/kigawas/pycares.git@fix-build-error#egg=pycares
-#nasty
+pandas
+numpy
+matplotlib
