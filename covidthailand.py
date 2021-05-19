@@ -638,15 +638,15 @@ def get_en_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
     for file, _ in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en"):
-        parsedPDF = parse_file(file, html=False, paged=False).replace("\u200b", "")
+        parsed_pdf = parse_file(file, html=False, paged=False).replace("\u200b", "")
         if "situation" not in os.path.basename(file):
             continue
         date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
             continue  # TODO: can manually put in numbers before this
-        pui = situation_pui(parsedPDF, date)
-        cases = situation_cases_cum(parsedPDF, date)
-        new_cases = situation_cases_new(parsedPDF, date)
+        pui = situation_pui(parsed_pdf, date)
+        cases = situation_cases_cum(parsed_pdf, date)
+        new_cases = situation_cases_new(parsed_pdf, date)
         row = pui.combine_first(cases).combine_first(new_cases)
         results = results.combine_first(row)
         # cums = [c for c in results.columns if ' Cum' in c]
@@ -800,14 +800,14 @@ def get_thai_situation():
         dir="situation_th"
     )
     for file, _ in web_files(*links, dir="situation_th"):
-        parsedPDF = parse_file(file, html=False, paged=False)
+        parsed_pdf = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
             continue
-        if "Situation Total number of PUI" in parsedPDF:
+        if "Situation Total number of PUI" in parsed_pdf:
             # english report mixed up? - situation-no171-220663.pdf
             continue
         date = file2date(file)
-        df = situation_pui_th(parsedPDF, date, results)
+        df = situation_pui_th(parsed_pdf, date, results)
         if df is not None:
             results = results.combine_first(df)
             print(date.date(), file, df.to_string(header=False, index=False))
@@ -2356,7 +2356,7 @@ def get_vaccinations():
                     allocations[(date, prov)] = numbers[3:7]
                 elif table == "given":
                     if len(numbers) == 16:
-                        allocSino, allocAZ, *numbers = numbers
+                        alloc_sino, alloc_az, *numbers = numbers
                     assert len(numbers) == 14
                     assert vaccinations.get((date, prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
                     vaccinations[(date, prov)] = numbers
