@@ -1951,6 +1951,8 @@ def briefing_case_types(date, pages):
             # 2021-05-18 Using single infographic with 3rd wave numbers?
             numbers, _ = get_next_numbers(text, "หายป่วยแล้ว")
             cum_recovered_3rd, recovered, *_ = numbers
+            if cum_recovered_3rd < recovered:
+                recovered = cum_recovered_3rd
         
         assert recovered is not None
 
