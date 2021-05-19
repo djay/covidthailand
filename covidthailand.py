@@ -452,7 +452,7 @@ def situation_cases_cum(parsed_pdf, date):
             rest, 
             "Cases found in (?:the )?(?:state )?quarantine (?:facilities|centers)",
             "Staying in [^ ]* quarantine",
-            default = 0, until="●")
+            default=0, until="●")
         quarantine = 1903 if quarantine == 19003 else quarantine  # "2021-02-05"
         # TODO: work out date when it flips back again.
         if date == d("2021-05-17"):
@@ -1708,7 +1708,7 @@ def get_cases_by_prov_tweets():
     for date, text in provs.items():
         if "📍" not in text:
             continue
-        if "ventilators" in text: # after 2021-05-11 start using "👉" for hospitalisation
+        if "ventilators" in text:  # after 2021-05-11 start using "👉" for hospitalisation
             continue
         start, *lines = text.split("👉", 2)
         if len(lines) < 2:
