@@ -345,8 +345,10 @@ def is_remote_newer(file, remote_date, check=True):
     return False
 
 def web_links(*index_urls, ext=".pdf", dir="html", match=None):
-    is_ext = lambda a: len(a.get("href").rsplit(ext)) == 2 if ext else True
-    is_match = lambda a: a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
+    def is_ext(a):
+        return len(a.get("href").rsplit(ext)) == 2 if ext else True
+    def is_match(a):
+        return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
             soup = parse_file(file, html=True, paged=False)
@@ -1295,9 +1297,11 @@ def get_province(prov, ignore_error=False):
 
     return prov
 
+def prov_trim(p):
+    return remove_prefix(p, "จ.").strip(' .')
+
 def join_provinces(df, on):
-    trim = lambda x: remove_prefix(x, "จ.").strip(' .')
-    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, trim, "ProvinceEn")
+    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn")
 
 def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_on_with=None, return_unmatched=False):
     "does a pandas join but matching very similar entries"
@@ -1542,8 +1546,7 @@ def get_cases_by_area():
 
 def parse_tweet(tw, tweet, found, *matches):
     "if tweet contains any of matches return its text joined with comments by the same person that also match (and contain [1/2] etc)"
-    is_match = lambda tweet, *matches: any(m in tweet for m in matches)
-    if not is_match(tweet.get('text', tweet.get("comment", "")), *matches):
+    if not any_in(tweet.get('text', tweet.get("comment", "")), *matches):
         return ""
     text = tw.get_tweetinfo(tweet['id']).contents['text']
     if any(text in t for t in found):
@@ -1771,7 +1774,6 @@ def pairwise(lst):
     lst = list(lst)
     return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))    
 
-is_header = lambda x: "ลักษณะผู้ติดเชื้อ" in x
 title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
 
 def briefing_case_detail_lines(soup):
@@ -1781,7 +1783,7 @@ def briefing_case_detail_lines(soup):
     if not maintitle or "ผู้ป่วยรายใหม่ประเทศไทย" not in maintitle[0]:
         return
     #footer, parts = seperate(parts, lambda x: "กรมควบคุมโรค กระทรวงสาธารณสุข" in x)
-    table = list(split(parts, lambda x: re.match("^\w*[0-9]+\.", x)))
+    table = list(split(parts, re.compile("^\w*[0-9]+\.").match))
     if len(table) == 2:
         # titles at the end
         table, titles = table
@@ -1794,7 +1796,7 @@ def briefing_case_detail_lines(soup):
         
     for titles, cells in pairwise(table):
         title = titles[0].strip("(ต่อ)").strip()
-        header, cells = seperate(cells, is_header)
+        header, cells = seperate(cells, re.compile("ลักษณะผู้ติดเชื้อ").search)
         # "อยู่ระหว่างสอบสวน (93 ราย)" on 2021-04-05 screws things up as its not a province
         # have to use look behind
         thai = "[\u0E00-\u0E7Fa-zA-Z'. ]+[\u0E00-\u0E7Fa-zA-Z'.](?<!อยู่ระหว่างสอบสวน)(?<!ยู่ระหว่างสอบสวน)(?<!ระหว่างสอบสวน)"
@@ -1969,7 +1971,9 @@ def briefing_case_types(date, pages):
     return df
 
 NUM_OR_DASH = re.compile("([0-9\,\.]+|-)-?")
-parse_numbers = lambda lst: [float(i.replace(",", "")) if i != "-" else 0 for i in lst]
+
+def parse_numbers(lst):
+    return [float(i.replace(",", "")) if i != "-" else 0 for i in lst]
 
 def briefing_province_cases(date, pages):
     if date < d("2021-01-13"):
@@ -2025,7 +2029,9 @@ def briefing_province_cases(date, pages):
 
 
 
-parse_gender = lambda x: "Male" if "ชาย" in x else "Female"
+def parse_gender(x):
+    return "Male" if "ชาย" in x else "Female"
+
 def briefing_deaths(file, date, pages):
     # Only before the 2021-04-29
     all = pd.DataFrame()
@@ -2501,7 +2507,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
@@ -3194,10 +3200,13 @@ def save_plots(df: pd.DataFrame) -> None:
     # Vaccines
     ####################
     cols = [c for c in df.columns if str(c).startswith('Vac Group')]
-    leg = lambda c: c.replace(' Cum', '').replace('Vac Group', '').replace('1', 'Dose 1').replace('2', 'Dose 2')
-    cols.sort(key=lambda c: leg(c)[-1]+leg(c))  # put 2nd shot at end
 
-    legends = [leg(c) for c in cols]
+    def clean_vac_leg(c):
+        return c.replace(' Cum', '').replace('Vac Group', '').replace('1', 'Dose 1').replace('2', 'Dose 2')
+
+    cols.sort(key=lambda c: clean_vac_leg(c)[-1] + clean_vac_leg(c))  # put 2nd shot at end
+
+    legends = [clean_vac_leg(c) for c in cols]
     df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
               title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
@@ -3224,8 +3233,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac['Date'] = pd.to_datetime(vac['Date'])
     vac = vac.set_index('Date')
     vac = vac.join(PROVINCES['Population'], on='Province')
-    valuefunc = lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100
-    top5 = vac.pipe(topprov, valuefunc)
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100)
 
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
