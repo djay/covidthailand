@@ -102,14 +102,14 @@ def file2date(file):
     "return date of either for '10-02-21' or '100264'"
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
-    if m := re.search("\d{4}-\d{2}-\d{2}", file):
+    if m := re.search(r"\d{4}-\d{2}-\d{2}", file):
         return d(m.group(0))
     # date = file.rsplit(".pdf", 1)[0]
     # if "-" in file:
     #     date = file.rsplit("-", 1).pop()
     # else:
     #     date = file.rsplit("_", 1).pop()
-    if m := re.search("\d{6}", file):
+    if m := re.search(r"\d{6}", file):
         # thai date in briefing filenames
         date = m.group(0)
         return datetime.datetime(
@@ -262,8 +262,8 @@ def parse_file(filename, html=False, paged=True):
         return '\n\n\n'.join(pages_txt)
 
 
-NUM_RE = re.compile("\d+(?:\,\d+)*(?:\.\d+)?")
-INT_RE = re.compile("\d+(?:\,\d+)*")
+NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
+INT_RE = re.compile(r"\d+(?:\,\d+)*")
 
 
 def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None):
@@ -730,9 +730,9 @@ def situation_pui_th(parsed_pdf, date, results):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
         parsed_pdf,
-        "ด่านโรคติดต่อระหว่างประเทศ",
-        "ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
-        "นวนการตรวจทาง\S+องปฏิบัติการ",
+        r"ด่านโรคติดต่อระหว่างประเทศ",
+        r"ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
+        r"นวนการตรวจทาง\S+องปฏิบัติการ",
         "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
     )
     # cases = None
@@ -1395,7 +1395,7 @@ def get_cases_by_area_type():
 def get_case_details_csv():
     url = "https://data.go.th/dataset/covid-19-daily"
     file, text = next(web_files(url, dir="json", check=True))
-    data = re.search("packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
+    data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     #links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
@@ -1521,8 +1521,8 @@ def get_cases_by_demographics_api():
         20210510.7: 'สัมผัสผู้ป่วยยืนยัน อยู่ระหว่างสอบสวน:Contact',  # touch the infected person confirm Under investigation, 5
         20210510.8: 'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community',  # Travelers from high-risk areas Bangkok, 2
         20210510.9: 'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community',  # to / from Epidemic area, Bangkok Metropolis, 1
-        20210510.10: 'ระหว่างสอบสวน:Investigating',
-        20210510.11: 'Cluster ปากช่อง:Entertainment',  # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
+        20210510.11: 'ระหว่างสอบสวน:Investigating',
+        20210510.12: 'Cluster ปากช่อง:Entertainment',  # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
         20210512.1: 'Cluster คลองเตย:Community',  # klongtoey cluster
         20210512.2: 'อยู่ระหว่างสอบสวนโรค:Investigating',
         20210512.3: 'อื่น ๆ:Unknown',  # Other
@@ -1537,8 +1537,8 @@ def get_cases_by_demographics_api():
         #20210516.7: 'Cluster บริษัทศรีสวัสดิ์,Work',  #16
         20210516.8: 'อื่น:Unknown',  # 10
         20210516.9: 'Cluster เรือนจำพิเศษมีนบุรี:Prison',  #5
-        20210516.10: 'Cluster จนท. สนามบินสุวรรณภูมิ:Work',  #4
-        20210516.11: 'สัมผัสผู้ป่วยที่ติดโควิด:Contact',  #4
+        20210516.11: 'Cluster จนท. สนามบินสุวรรณภูมิ:Work',  #4
+        20210516.12: 'สัมผัสผู้ป่วยที่ติดโควิด:Contact',  #4
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -1657,13 +1657,13 @@ def get_cases_by_prov_tweets():
         return int(s.replace(',', '')) if s else None
 
     for date, text in officials.items():
-        imported = re.search("\+([0-9,]+) imported", text)
+        imported = re.search(r"\+([0-9,]+) imported", text)
         if imported:
             assert imported, f"Failed to find imported in tweet {date}: {text}"
             imported = toint(imported.group(1))
         else:
             imported = None
-        local = re.search("\+([0-9,]+) local", text)
+        local = re.search(r"\+([0-9,]+) local", text)
         if local:
             assert local, f"Failed to find local in tweet {date}: {text}"
             local = toint(local.group(1))
@@ -1716,7 +1716,7 @@ def get_cases_by_prov_tweets():
         if len(lines) < 2:
             raise Exception()
         for line in lines:
-            prov_matches = re.findall("📍([\s\w,&;]+) ([0-9]+)", line)
+            prov_matches = re.findall(r"📍([\s\w,&;]+) ([0-9]+)", line)
             prov = dict((p.strip(), toint(v)) for ps, v in prov_matches for p in re.split("(?:,|&amp;)", ps))
             if d("2021-04-08").date() == date:
                 if prov["Bangkok"] == 147:  #proactive
@@ -1728,7 +1728,7 @@ def get_cases_by_prov_tweets():
                     prov["Nakhon Pathom"] = 6
                     prov["Phitsanulok"] = 4
 
-            label = re.findall('^ *([0-9]+)([^📍👉👇\[]*)', line)
+            label = re.findall(r'^ *([0-9]+)([^📍👉👇\[]*)', line)
             if label:
                 total, label = label[0]
                 #label = label.split("👉").pop() # Just in case tweets get muddled 2020-04-07
@@ -1810,7 +1810,7 @@ def briefing_case_detail_lines(soup):
     if not maintitle or "ผู้ป่วยรายใหม่ประเทศไทย" not in maintitle[0]:
         return
     #footer, parts = seperate(parts, lambda x: "กรมควบคุมโรค กระทรวงสาธารณสุข" in x)
-    table = list(split(parts, re.compile("^\w*[0-9]+\.").match))
+    table = list(split(parts, re.compile(r"^\w*[0-9]+\.").match))
     if len(table) == 2:
         # titles at the end
         table, titles = table
@@ -1830,7 +1830,7 @@ def briefing_case_detail_lines(soup):
         nl = " *\n* *"
         #nl = " *"
         nu = "(?:[0-9]+)"
-        is_pcell = re.compile(f"({thai}(?:{nl}\({thai}\))?{nl}\( *{nu} *ราย *\))")
+        is_pcell = re.compile(rf"({thai}(?:{nl}\({thai}\))?{nl}\( *{nu} *ราย *\))")
         lines = pairwise(islice(is_pcell.split("\n".join(cells)), 1, None))  # beacause can be split over <p>
         yield title, lines
 
@@ -2000,7 +2000,7 @@ def briefing_case_types(date, pages):
     return df
 
 
-NUM_OR_DASH = re.compile("([0-9\,\.]+|-)-?")
+NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
 
 def parse_numbers(lst):
     return [float(i.replace(",", "")) if i != "-" else 0 for i in lst]
@@ -2017,7 +2017,7 @@ def briefing_province_cases(date, pages):
         parts = [l.get_text() for l in soup.find_all("p")]
         parts = [l for l in parts if l]
         #parts = list(split(parts, lambda x: "รวม" in x))[-1]
-        preamble, *tables = split(parts, re.compile("รวม\s*\(ราย\)").search)
+        preamble, *tables = split(parts, re.compile(r"รวม\s*\(ราย\)").search)
         if len(tables) <= 1:
             continue  #Additional top 10 report. #TODO: better detection of right report
         else:
@@ -2150,7 +2150,7 @@ def briefing_deaths(file, date, pages):
                 assert 55 < death_num < 1500
                 #assert age > 20
                 gender = parse_gender(cell)
-                match = re.search("ขณะป่วย (\S*)", cell)  # TODO: work out how to grab just province
+                match = re.search(r"ขณะป่วย (\S*)", cell)  # TODO: work out how to grab just province
                 if match:
                     prov = match.group(1).replace("จังหวัด", "")
                     province = get_province(prov)
@@ -2351,7 +2351,7 @@ def get_vaccinations():
     vaccinations = {}
     allocations = {}
     vacnew = {}
-    shots = re.compile("(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+    shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  #TODO: make go back later
@@ -2373,7 +2373,7 @@ def get_vaccinations():
             added = 0
             for line in lines:
                 # fix some number broken in the middle
-                line = re.sub("(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
+                line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
                 area, *rest = line.split(' ', 1)
                 if area == "รวม" or not rest:
                     break
