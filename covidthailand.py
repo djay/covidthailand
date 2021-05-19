@@ -938,7 +938,7 @@ def get_tests_by_area():
             chart for slide in prs.slides for chart in slide2chartdata(slide)
         ):
             chart, title, start, end, series = chart
-            if not "เริ่มเปิดบริการ" in title and any(
+            if "เริ่มเปิดบริการ" not in title and any(
                 t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
             ):
                 # the graph for X period split by health area.
@@ -1014,7 +1014,7 @@ def get_tests_private_public():
             chart for slide in prs.slides for chart in slide2chartdata(slide)
         ):
             chart, title, start, end, series = chart
-            if not "เริ่มเปิดบริการ" in title and any(
+            if "เริ่มเปิดบริการ" not in title and any(
                 t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
             ):
                 # area graph
@@ -1914,7 +1914,7 @@ def briefing_case_types(date, pages):
         pages = []
     for i, soup in enumerate(pages):
         text = soup.get_text()
-        if not "รายงานสถานการณ์" in text:
+        if "รายงานสถานการณ์" not in text:
             continue
         #cases = get_next_number(text, "ติดเชื้อจาก", before=True)
         #walkins = get_next_number(text.split("รายผู้ที่เดิน")[0], "ในประเทศ", until="ราย")
