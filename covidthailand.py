@@ -2067,13 +2067,22 @@ def briefing_deaths(file, date, pages):
         title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19)")
         if title_re.search(text):
             # Summary of locations, reasons, medium age, etc
-            tables = camelot.read_pdf(file, pages=str(i+2), process_background=True)
-            if len(tables) < 2:
-                continue
+            #tables = camelot.read_pdf(file, pages=str(i+2), process_background=True)
+            #if len(tables) < 2:
+            #    continue
+            #df = tables[1].df
+            #pcells = df[[0, 1]].itertuples()
 
-            df = tables[1].df
+            # all bullets with no spaces == one cell
+            pre, comorbid, _, *rest = re.split(r"(•[\d\D]*?)\n\n", text)
+            _, age_text, ptext, *risks = reversed(rest)
+            if "วันที่ทราบผลติดเชื้อ" in ptext:
+                age_text, ptext, *risks = risks
+            ptext = (pre.split("\n\n")[-1] + ptext)
+            ptext = re.sub("(ละ|/จังหวัด|จังหวัด|ราย)","", ptext)
+            pcells = pairwise(re.split(r"(\(?\d+\)?)", ptext))
             province_count = {}
-            for _, provinces, num in df[[0, 1]].itertuples():
+            for provinces, num in pcells:
                 # len() < 2 because some stray modifier?
                 text_num, rest = get_next_number(provinces, remove=True)
                 provs = [p.strip("() ") for p in rest.split() if len(p) > 1 and p.strip("() ")]
@@ -2107,7 +2116,7 @@ def briefing_deaths(file, date, pages):
                 pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                              columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
             assert male+female == dfprov['Deaths'].sum()
-            print(f"{date.date()} Deaths:", sum.to_string(header=False, index=False))
+            print(f"{date.date()} Deaths:", len(dfprov), "|", sum.to_string(header=False, index=False))
             return all, sum, dfprov
 
         elif "วิตของประเทศไทย" not in text:
