@@ -1656,37 +1656,35 @@ def get_cases_by_prov_tweets():
     def toint(s):
         return int(s.replace(',', '')) if s else None
 
-    for date, text in officials.items():
-        imported = re.search(r"\+([0-9,]+) imported", text)
-        if imported:
-            assert imported, f"Failed to find imported in tweet {date}: {text}"
-            imported = toint(imported.group(1))
-        else:
-            imported = None
-        local = re.search(r"\+([0-9,]+) local", text)
-        if local:
-            assert local, f"Failed to find local in tweet {date}: {text}"
-            local = toint(local.group(1))
-        else:
-            local = None
-        cases, _ = get_next_number(text, "Since Jan(?:uary)? 2020")
-        deaths, _ = get_next_number(text, "dead +")
+    for date, text in sorted(officials.items(), reverse=True):
+        imported, _ = get_next_number(text, "imported", before=True, default=0)
+        local, _ = get_next_number(text, "local", before=True, default=0)
+        cases = imported+local
+        #cases_cum, _ = get_next_number(text, "Since Jan(?:uary)? 2020")
+        deaths, _ = get_next_number(text, "dead +", "deaths +")
         serious, _ = get_next_number(text, "in serious condition", before=True)
-        recovered, _ = get_next_number(text, "discharged", before=True)
+        recovered, _ = get_next_number(text, "discharged", "left care", before=True)
         hospitalised, _ = get_next_number(text, "in care", before=True)
-        
+        vent, _ = get_next_number(text, "on ventilators", before=True)
         cols = [
             "Date", 
             "Cases Imported", 
             "Cases Local Transmission", 
-            "Cases Cum", 
+            "Cases", 
             "Deaths",
-            "Hospitalized Severe",
             "Hospitalized",
             "Recovered",
+            "Hospitalized Severe",
+            "Hospitalized Respirator",
         ]
-        row = [date, imported, local, cases, deaths, serious, hospitalised, recovered]
-        tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+        row = [date, imported, local, cases, deaths,]
+        row2 = row + [hospitalised, recovered]
+        if date <= d("2021-05-01").date():
+            assert not any_in(row, None), f"{date} Missing data in Official Tweet {row}"
+        else:
+            assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
+        row_opt = row2 + [serious, vent]
+        tdf = pd.DataFrame([row_opt], columns=cols).set_index("Date")
         print(date, "Official:", tdf.to_string(index=False, header=False))
         df = df.combine_first(tdf)    
 
@@ -2537,7 +2535,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
