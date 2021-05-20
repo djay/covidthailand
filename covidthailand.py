@@ -2767,7 +2767,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
               ma_days: int = None, cmap: str = 'tab20',
               reverse_cmap: bool = False, highlight: List[str] = [], 
-              y_formatter: Callable[[float, int], str] = human_format, clean_end=True, between: List[str] = []) -> None:
+              y_formatter: Callable[[float, int], str] = human_format, clean_end=True, 
+              between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
     :param df: data frame containing all available data
@@ -3341,17 +3342,29 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: work out based on districts of deaths / IFR for that district
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
+    cases['Deaths'] = cases['Deaths'].fillna(0)
+    cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df["Deaths"].rolling(7, min_periods=1).mean() ))
+    
     cases["Infections Estimate"] = cases['Deaths'] / (cases['ifr']/100)
+    cases["Infections Estimate (MA)"] = cases['deaths_ma'] / (cases['ifr']/100)
     cases_est = cases.groupby(["Date"]).sum()
 
+    # TODO: work out unknown deaths and use whole thailand IFR for them
+    # cases_est['Deaths Unknown'] = (df['Deaths'] - cases_est['Deaths']) / ifr['ifr']['Whole Kingdom'] * 100
+
     cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-14)
+    cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
     cases_est = cases_est.rename(columns=dict(Deaths="Deaths prov sum"))
     cases_est = cases_est.join(df['Deaths'], on="Date")
+    cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-14) / 0.0054
-    cols = ["Infections Estimate", "Infections Estimate Simple", "Cases"]
+    cols = ["Cases (MA)", "Infections Estimate (MA)", "Infections Estimate", "Cases",]
+    legend = ["Cases", "Infections (Est.)", "Daily Infections (Est.)", "Daily Cases"]
     plot_area(df=cases_est, png_prefix='cases_infections_estimate', cols_subset=cols,
-              title='Estimate of Infections from Deaths/IFR back dated 2 weeks', 
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+              title='Cases vs Infections (estimated)\n Infections = Deaths(-14days)/IFR', 
+              legends=legend,
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              between=["Infections Estimate", "Cases", ])
 
 
 if __name__ == "__main__":

@@ -18,6 +18,23 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 # Cases
 
+## Cases vs Estimated Infections
+
+![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_estimated_infections_2.png)
+
+- Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
+  and applies it do Thailand province demographics to get an IFR per province and then applies this
+  to each death (-14 days) / IFR to appoximate the number of infections that would lead to the recorded deaths
+- There are lots of assumptions that if wrong could alter this estimate. Some include
+   - All covid deaths are accounted for
+   - Elderly in thailand are as protected/cautious as global average
+   - Diseases that increase the chance of death from covid have the same prevelence in thailand as globally
+   - Age demographics of a province match those exposed to covid (clusters in factories, prisons etc have different age demographics from the province for example)
+   - Everyone sick has equal access to good healthcare (e.g. health system is not overloaded) 
+- Like positive rate, the difference between estimated infections and cases indicates if enough testing is being done. It's expected that infections is always higher than cases, but if testing is insufficient then infections have been estimated to be 5-10x cases in some countries.
+- If the curves match then it's an indication that testing is not a constraint on cases (assuming covid deaths are accounted for). If they diverge then it should align with a changing positive rate.
+- Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm) 
+
 ## Cases by Health District
 
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
