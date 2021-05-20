@@ -41,7 +41,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 - [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-- You can also see [Cases by District broken down by walkin vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
+- You can also see [Cases by District broken down by walk-in vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
 - Sources: [CCSA Daily Briefing](#dl-briefings)
 
 ## Provinces with Cases Trending Up (last 3 days)
@@ -56,7 +56,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ## Cases by Where Tested
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
  - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
-- Contact tracing normally counts as a "Walkin"
+- Contact tracing normally counts as a "Walk-in"
 - Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
 - Sources: [CCSA Daily Briefing](#dl-briefings),
   [MOPH daily situation report](#dl-situation-reports)
@@ -214,7 +214,7 @@ Case Types and PUI counts
   - Cases: Total cases that day. Cases Imported + Cases Local Transmission
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
   - Cases Imported: Cases In Quarantine + Cases outside quarantine
-  - Cases Proactive: Local transmissions that aren't walkins
+  - Cases Proactive: Local transmissions that aren't walk-ins
   - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
   - Tested PUI: People Classified as Person Under Investigation.
   - Tested PUI Walkin Public: "Sought medical services on their own at hospitals"/Public
@@ -249,7 +249,7 @@ Bureau, Chaeng Watthana"
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
 <img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
-<img alt="Walkin Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
+<img alt="Walk-in Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
 <img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
 <img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
 
