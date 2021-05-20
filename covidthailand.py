@@ -3169,7 +3169,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
-              title='Thailand "Walkin" Covid Cases by Health District', legends=AREA_LEGEND,
+              title='Thailand "Walk-in" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
@@ -3359,9 +3359,13 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-14) / 0.0054
     cols = ["Cases (MA)", "Infections Estimate (MA)", "Infections Estimate", "Cases",]
-    legend = ["Cases", "Infections (Est.)", "Daily Infections (Est.)", "Daily Cases"]
+    legend = ["Cases (7d moving avg.)", "Lower Estimate of Infections (7d moving avg.)", "Lower Estimate of Infections", "Cases"]
+    title = \
+"""Thailand Confirmed Covid Cases vs Lower Estimate of Infections
+Infections = (Deaths - 14days)/Province Infection Fatality Rate
+(see site below for more detail on this model and assumptions)"""
     plot_area(df=cases_est, png_prefix='cases_infections_estimate', cols_subset=cols,
-              title='Cases vs Infections (estimated)\n Infections = Deaths(-14days)/IFR', 
+              title=title, 
               legends=legend,
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               between=["Infections Estimate", "Cases", ])

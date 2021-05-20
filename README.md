@@ -23,17 +23,19 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_estimated_infections_2.png)
 
 - Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
-  and applies it do Thailand province demographics to get an IFR per province and then applies this
-  to each death (-14 days) / IFR to appoximate the number of infections that would lead to the recorded deaths
-- There are lots of assumptions that if wrong could alter this estimate. Some include
-   - All covid deaths are accounted for
+  and applies it do Thailand province demographics to get an Infection Fatality Rate (IFR) per province and then applies this
+  to each deaths (-14 days) / IFR to appoximate the number of infections that would lead to the recorded deaths.
+- Some assumptions this model is based on include:
+   - All covid deaths are accounted for. Since reported deaths will be lower than actual deaths
+     the estimate is likely a lower bound on the real infections.
    - Elderly in thailand are as protected/cautious as global average
    - Diseases that increase the chance of death from covid have the same prevelence in thailand as globally
    - Age demographics of a province match those exposed to covid (clusters in factories, prisons etc have different age demographics from the province for example)
    - Everyone sick has equal access to good healthcare (e.g. health system is not overloaded) 
-- Like positive rate, the difference between estimated infections and cases indicates if enough testing is being done. It's expected that infections is always higher than cases, but if testing is insufficient then infections have been estimated to be 5-10x cases in some countries.
-- If the curves match then it's an indication that testing is not a constraint on cases (assuming covid deaths are accounted for). If they diverge then it should align with a changing positive rate.
-- Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm) 
+- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) does an even more detailed
+  estimate using more data including future case/death/hospitalisation predictions. This estimate
+  is generally on the lower bound of the ICL model.
+- Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 ## Cases by Health District
 
@@ -380,11 +382,6 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 
 ## TODO (looking for contributors!)
 - fix vaccinations by parsing daily numbers table
-- try to predict actual cases from IFR, deaths and demographics
-  - http://statbbi.nso.go.th/staticreport/page/sector/en/01.aspx
-  - http://epimonitor.net/Covid-IFR-Analysis.htm
-  - and average time in hospital?
-- plot top 3 health district positive rate instead of all
 - plot nationality of cases over time, thai, neighbours, others
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic
