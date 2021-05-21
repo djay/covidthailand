@@ -20,7 +20,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ## Cases vs Estimated Infections based on Deaths
 
-![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_estimated_infections_2.png)
+![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
 - Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
   and applies it do Thailand province demographics to get an Infection Fatality Rate (IFR) per province and then applies this
