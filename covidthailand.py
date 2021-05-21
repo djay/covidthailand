@@ -1260,7 +1260,7 @@ def get_provinces():
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown']  # Cambodia
     provinces.loc['มาเลเซีย'] = provinces.loc['Unknown']  # Malaysia
     provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison']  # Prison. Currently cluster just there. might have to change later
-    provinces.loc['เรอืนจาฯ'] = provinces.loc("Unknown") # Rohinja
+    provinces.loc['เรอืนจาฯ'] = provinces.loc["Unknown"] # Rohinja
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
