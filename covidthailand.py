@@ -3361,9 +3361,9 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ["Cases (MA)", "Infections Estimate (MA)", "Infections Estimate", "Cases",]
     legend = ["Cases (7d moving avg.)", "Lower Estimate of Infections (7d moving avg.)", "Lower Estimate of Infections", "Cases"]
     title = \
-"""Thailand Confirmed Covid Cases vs Lower Estimate of Infections
-Infections = (Deaths - 14days)/Province Infection Fatality Rate
-(see site below for more detail on this model and assumptions)"""
+"""Thailand Confirmed Covid Cases vs Estimate of Infections based on Deaths
+Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
+(DISCLAIMER: estimate is simple and probably lower than reality. see site below for more details on this model)"""
     plot_area(df=cases_est, png_prefix='cases_infections_estimate', cols_subset=cols,
               title=title, 
               legends=legend,

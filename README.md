@@ -18,23 +18,22 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 # Cases
 
-## Cases vs Estimated Infections
+## Cases vs Estimated Infections based on Deaths
 
 ![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_estimated_infections_2.png)
 
 - Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
   and applies it do Thailand province demographics to get an Infection Fatality Rate (IFR) per province and then applies this
-  to each deaths (-14 days) / IFR to appoximate the number of infections that would lead to the recorded deaths.
-- Some assumptions this model is based on include:
+  to each death (-14 days) / Province IFR to appoximate the number of infections that would lead to the recorded deaths.
+- Some assumptions in this model include:
    - All covid deaths are accounted for. Since reported deaths will be lower than actual deaths
-     the estimate is likely a lower bound on the real infections.
-   - Elderly in thailand are as protected/cautious as global average
-   - Diseases that increase the chance of death from covid have the same prevelence in thailand as globally
+     this estimate is likely a lower bound on the real infections.
+   - Elderly in thailand are as protected/cautious as global average, i.e. everyone has an equal chance to catch it.
+   - Diseases that increase the chance of death from covid (co-morbidities) have the same prevelence in thailand as globally.
    - Age demographics of a province match those exposed to covid (clusters in factories, prisons etc have different age demographics from the province for example)
    - Everyone sick has equal access to good healthcare (e.g. health system is not overloaded) 
-- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) does an even more detailed
-  estimate using more data including future case/death/hospitalisation predictions. This estimate
-  is generally on the lower bound of the ICL model.
+- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) does a more detailed
+  estimate with upper and lower bounds and includes future case/death/hospitalisation predictions. [OWID Covid Models](https://ourworldindata.org/covid-models) has more models for thailand to compare.
 - Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 ## Cases by Health District
@@ -363,6 +362,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-05-18 - Include prisons as seperate province/health district (because briefings do)
+- 2021-05-15 - improve highest positive rate plot to show top 5 only.
 - 2021-05-10 - parse unofficial RB tweet to get cases and deaths earlier
 - 2021-05-07 - add trending up and down provinces for cases
 - 2021-05-06 - add top 5 fully vaccinated provinces
@@ -381,8 +382,13 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- trending province vaccinations
+- estimate median age of death from population. 
+  - could help show if cases or deaths are underreported or if elderly are more protected in thailand
+  - potentially could adjust the IFR to get a better infeciton estimtate.
+- put non MA lines on some area graphs e.g. deaths, cases 
 - fix vaccinations by parsing daily numbers table
-- plot nationality of cases over time, thai, neighbours, others
+- plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic
   - these? https://www.facebook.com/informationcovid19/posts/322313232720341
