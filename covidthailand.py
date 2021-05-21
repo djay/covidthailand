@@ -1298,6 +1298,33 @@ def get_provinces():
     return provinces
 
 
+def get_ifr():
+    file, _ = next(web_files("http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx", dir="json"))
+    pop = pd.read_excel(file, header=3, index_col=1)
+    pop['At 0'] = pop[[f"{i} year" for i in range(1,10)]+["under 1"]].sum(axis=1)
+    pop["At 10"] = pop[[f"{i} year" for i in range(10,25)]].sum(axis=1)
+    pop["At 25"] =  pop[[f"{i} year" for i in range(25,46)]+["47 year"]+[f"{i} year" for i in range(47,54)]].sum(axis=1)
+    pop["At 55"] =  pop[[f"{i} year" for i in range(55,65)]].sum(axis=1)
+    pop["At 65"] =  pop[[f"{i} year" for i in range(65,73)]+["74 year", "74 year"]].sum(axis=1)
+    pop["At 75"] = pop[[f"{i} year" for i in range(75,85)]].sum(axis=1)
+    pop["At 85"] =pop[[f"{i} year" for i in range(85,101)]+["101 and over"]].sum(axis=1)   
+    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
+    ifr = pd.DataFrame([[.002,.002,.01,.04,1.4,4.6,15]],
+       columns=["At 0","At 10","At 25","At 55","At 65","At 75", "At 85"],
+    ).transpose().rename(columns={0:"risk"})
+    pop = pop[ifr.index]
+    pop = pop.reset_index().dropna().set_index("Province").transpose()
+    unpop = pop.reset_index().melt(id_vars=['index'], var_name='Province', value_name='Population').rename(columns=dict(index="Age"))
+    total_pop = unpop.groupby("Province").sum().rename(columns=dict(Population="total_pop"))
+    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
+    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
+    provifr = unpop.groupby("Province").sum()
+    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
+
+    # now normalise the province names
+    provifr = join_provinces(provifr, on="Province")
+    return provifr
+
 PROVINCES = get_provinces()
 
 
@@ -1320,11 +1347,10 @@ def get_province(prov, ignore_error=False):
     return prov
 
 def prov_trim(p):
-    return remove_prefix(p, "จ.").strip(' .')
+    return remove_suffix(remove_prefix(p, "จ.").strip(' .'), " Province")
 
 def join_provinces(df, on):
     return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn")
-
 
 def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_on_with=None, return_unmatched=False):
     "does a pandas join but matching very similar entries"
@@ -2546,7 +2572,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
@@ -2741,7 +2767,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
               ma_days: int = None, cmap: str = 'tab20',
               reverse_cmap: bool = False, highlight: List[str] = [], 
-              y_formatter: Callable[[float, int], str] = human_format, clean_end=True, between: List[str] = []) -> None:
+              y_formatter: Callable[[float, int], str] = human_format, clean_end=True, 
+              between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
     :param df: data frame containing all available data
@@ -3142,7 +3169,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
-              title='Thailand "Walkin" Covid Cases by Health District', legends=AREA_LEGEND,
+              title='Thailand "Walk-in" Covid Cases by Health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20')
 
     cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
@@ -3208,12 +3235,6 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Current outcome of Covid Cases since 1st April 2021', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    # TODO: work out based on districts of deaths / IFR for that district
-    df["Infections Estimate"] = df['Deaths'].shift(-12) / 0.0046
-    cols = ["Infections Estimate", "Cases"]
-    plot_area(df=df, png_prefix='cases_infections_estimate', cols_subset=cols,
-              title='Estimate of Infections from Deaths/IFR back dated 2 weeks', 
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
     ####################
     # Deaths
@@ -3228,6 +3249,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+
 
     ####################
     # Vaccines
@@ -3315,6 +3337,38 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='cases_prov_top', cols_subset=cols,
               title='Provinces with Most Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
+
+    # TODO: work out based on districts of deaths / IFR for that district
+    ifr = get_ifr()
+    cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
+    cases['Deaths'] = cases['Deaths'].fillna(0)
+    cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df["Deaths"].rolling(7, min_periods=1).mean() ))
+    
+    cases["Infections Estimate"] = cases['Deaths'] / (cases['ifr']/100)
+    cases["Infections Estimate (MA)"] = cases['deaths_ma'] / (cases['ifr']/100)
+    cases_est = cases.groupby(["Date"]).sum()
+
+    # TODO: work out unknown deaths and use whole thailand IFR for them
+    # cases_est['Deaths Unknown'] = (df['Deaths'] - cases_est['Deaths']) / ifr['ifr']['Whole Kingdom'] * 100
+
+    cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-14)
+    cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
+    cases_est = cases_est.rename(columns=dict(Deaths="Deaths prov sum"))
+    cases_est = cases_est.join(df['Deaths'], on="Date")
+    cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
+    cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-14) / 0.0054
+    cols = ["Cases (MA)", "Infections Estimate (MA)", "Infections Estimate", "Cases",]
+    legend = ["Cases (7d moving avg.)", "Lower Estimate of Infections (7d moving avg.)", "Lower Estimate of Infections", "Cases"]
+    title = \
+"""Thailand Confirmed Covid Cases vs Estimate of Infections based on Deaths
+Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
+(DISCLAIMER: estimate is simple and probably lower than reality. see site below for more details on this model)"""
+    plot_area(df=cases_est, png_prefix='cases_infections_estimate', cols_subset=cols,
+              title=title, 
+              legends=legend,
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              between=["Infections Estimate", "Cases", ])
 
 
 if __name__ == "__main__":
