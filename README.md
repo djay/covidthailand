@@ -362,6 +362,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-05-21 - Estimate of Infections from Deaths
 - 2021-05-18 - Include prisons as seperate province/health district (because briefings do)
 - 2021-05-15 - improve highest positive rate plot to show top 5 only.
 - 2021-05-10 - parse unofficial RB tweet to get cases and deaths earlier

@@ -375,16 +375,20 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         os.makedirs(os.path.dirname(file), exist_ok=True)
         if is_remote_newer(file, modified, check):
             r = s.get(url)
-            if r.status_code != 200:
+            if r.status_code == 200:
+                print(f"Download: {file}", end="")
+                os.makedirs(os.path.dirname(file), exist_ok=True)
+                with open(file, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=512 * 1024):
+                        if chunk:  # filter out keep-alive new chunks
+                            f.write(chunk)
+                            print(".", end="")
+                print("")
+            elif os.path.exists(file):
+                print(f"Error downloading: {file}: using cache")
+            else:
+                print(f"Error downloading: {file}: skipping")
                 continue
-            print(f"Download: {file}", end="")
-            os.makedirs(os.path.dirname(file), exist_ok=True)
-            with open(file, "wb") as f:
-                for chunk in r.iter_content(chunk_size=512 * 1024):
-                    if chunk:  # filter out keep-alive new chunks
-                        f.write(chunk)
-                        print(".", end="")
-            print("")
         with open(file, "rb") as f:
             content = f.read()
         yield file, content
@@ -2578,6 +2582,7 @@ def scrape_and_combine():
         #tests = get_tests_by_day()
         #tests_by_area = get_tests_by_area()
         #privpublic = get_tests_private_public()
+        cases = get_cases()
         pass
     else:
         cases_by_area = get_cases_by_area()
