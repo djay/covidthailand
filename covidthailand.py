@@ -1260,7 +1260,8 @@ def get_provinces():
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown']  # Cambodia
     provinces.loc['มาเลเซีย'] = provinces.loc['Unknown']  # Malaysia
     provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison']  # Prison. Currently cluster just there. might have to change later
-    provinces.loc['เรอืนจาฯ'] = provinces.loc["Unknown"] # Rohinja
+    provinces.loc['เรอืนจาฯ'] = provinces.loc["Prison"] # Rohinja?
+    #provinces.loc['เรอื นจาฯ'] = provinces.loc['Prison']
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -2577,7 +2578,7 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        #cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
@@ -2601,7 +2602,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'cases',  'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
+    for f in ['cases',  'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
