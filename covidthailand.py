@@ -1260,6 +1260,7 @@ def get_provinces():
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown']  # Cambodia
     provinces.loc['มาเลเซีย'] = provinces.loc['Unknown']  # Malaysia
     provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison']  # Prison. Currently cluster just there. might have to change later
+    provinces.loc['เรอืนจาฯ'] = provinces.loc("Unknown") # Rohinja
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
@@ -3253,7 +3254,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
 
     ####################

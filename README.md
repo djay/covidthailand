@@ -23,8 +23,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
 - Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
-  and applies it do Thailand province demographics to get an Infection Fatality Rate (IFR) per province and then applies this
-  to each death (-14 days) / Province IFR to appoximate the number of infections that would lead to the recorded deaths.
+  and applies it to Thailand province demographics to get an Infection Fatality Rate (IFR) per province. Each death (-14 days) / Province IFR is an estimateof infections that would lead to the recorded deaths.
 - Some assumptions in this model include:
    - All covid deaths are accounted for. Since reported deaths will be lower than actual deaths
      this estimate is likely a lower bound on the real infections.
@@ -387,6 +386,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand
   - potentially could adjust the IFR to get a better infeciton estimtate.
+- fix vaccination numbers dropping based on the idea that later reports are corrections
+   - so fill forward with current max? or fill back with current min?
 - put non MA lines on some area graphs e.g. deaths, cases 
 - fix vaccinations by parsing daily numbers table
 - plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
