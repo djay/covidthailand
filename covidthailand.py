@@ -2618,7 +2618,7 @@ def scrape_and_combine():
             df = df.combine_first(locals()[f])
     print(df)
 
-    export(prov_guesses.groupby(["Province", "ProvinceEn"]).sum(), "prov_guesses", csv_only=True)
+    export(prov_guesses.groupby(["Province", "ProvinceEn"]).sum().sort_values("count", ascending=False), "prov_guesses", csv_only=True)
 
     if USE_CACHE_DATA:
         old = import_csv("combined")
