@@ -1262,6 +1262,18 @@ def get_provinces():
     provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison']  # Prison. Currently cluster just there. might have to change later
     provinces.loc['เรอืนจาฯ'] = provinces.loc["Prison"] # Rohinja?
     #provinces.loc['เรอื นจาฯ'] = provinces.loc['Prison']
+    provinces.loc['อานาจเจรญ'] = provinces.loc["Amnat Charoen"]
+    provinces.loc['ลาพนู'] = provinces.loc["Lamphun"]
+    provinces.loc['กาแพงเพชร'] = provinces.loc["Kamphaeng Phet"]
+    provinces.loc['หนองบวัลาภู'] = provinces.loc["Nong Bua Lamphu"]
+    provinces.loc['จนัทบุร'] = provinces.loc["Chanthaburi"]
+    provinces.loc['กทม'] = provinces.loc["Bangkok"]
+    provinces.loc['สพุรรณบุร'] = provinces.loc["Suphan Buri"]
+    provinces.loc['สงิหบ์ุร'] = provinces.loc["Sing Buri"]
+    provinces.loc['บุรรีมัย'] = provinces.loc["Buriram"]
+    provinces.loc['ปราจนีบุร'] = provinces.loc["Prachinburi"]
+    provinces.loc['พระนครศรอียุธยา'] = provinces.loc["Phra Nakhon Si Ayutthaya"]
+    provinces.loc['เรอืนจาและทีต่อ้งขงั'] = provinces.loc["Prison"]
 
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
