@@ -1333,11 +1333,13 @@ def get_ifr():
 
 PROVINCES = get_provinces()
 
+prov_guesses = pd.DataFrame([],columns=["Province","ProvinceEn", "count"])
 
 def get_province(prov, ignore_error=False):
+    global prov_guesses
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     try:
-        prov = PROVINCES.loc[prov]['ProvinceEn']
+        return PROVINCES.loc[prov]['ProvinceEn']
     except KeyError:
         try:
             close = difflib.get_close_matches(prov, PROVINCES.index)[0]
@@ -1348,15 +1350,19 @@ def get_province(prov, ignore_error=False):
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 #continue
-        prov = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
-
-    return prov
+        proven = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
+        prov_guesses = prov_guesses.append([dict(Province=prov, ProvinceEn=proven, count=1)])
+        return proven
 
 def prov_trim(p):
     return remove_suffix(remove_prefix(p, "จ.").strip(' .'), " Province")
 
 def join_provinces(df, on):
-    return fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn")
+    global prov_guesses
+    joined, guesses = fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn", return_unmatched=True)
+    if not guesses.empty:
+        prov_guesses = prov_guesses.append(guesses[['Province','ProvinceEn','count']]) # TODO: put in what the guess was
+    return joined 
 
 def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_on_with=None, return_unmatched=False):
     "does a pandas join but matching very similar entries"
@@ -1377,13 +1383,18 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_o
         unmatched2 = second[second[test].isnull() & second[on].notna()]
         if assert_perfect_match:
             assert unmatched2.empty, f"Still some values left unmatched {list(unmatched2[on])}"
+
+    unmatched_counts = pd.DataFrame()
+    if return_unmatched and not unmatched.empty:
+        to_keep = [test, replace_on_with] if replace_on_with is not None else [test]
+        unmatched_counts = unmatched[[on]].join(second[to_keep]).value_counts().reset_index().rename(columns={0: "count"})
+
     if replace_on_with is not None:
         second[on] = second[replace_on_with]
         del second[replace_on_with]
     if old_index is not None:
         second = second.set_index(old_index)
     if return_unmatched:
-        unmatched_counts = unmatched[[on]].join(second[[test]]).value_counts().reset_index().rename(columns={0: "count"})
         return second, unmatched_counts
     else:
         return second
@@ -2607,6 +2618,8 @@ def scrape_and_combine():
             df = df.combine_first(locals()[f])
     print(df)
 
+    export(prov_guesses.groupby(["Province", "ProvinceEn"]).sum(), "prov_guesses", csv_only=True)
+
     if USE_CACHE_DATA:
         old = import_csv("combined")
         old = old.set_index("Date")
@@ -3244,21 +3257,6 @@ def save_plots(df: pd.DataFrame) -> None:
 
 
     ####################
-    # Deaths
-    ####################
-    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
-    cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
-    plot_area(df=df, png_prefix='deaths_age', cols_subset=cols, title='Thailand Covid Death Age Range',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
-              highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
-
-    cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
-              title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
-
-
-    ####################
     # Vaccines
     ####################
     cols = [c for c in df.columns if str(c).startswith('Vac Group')]
@@ -3376,6 +3374,27 @@ Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
               legends=legend,
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               between=["Infections Estimate", "Cases", ])
+
+
+    ####################
+    # Deaths
+    ####################
+
+    # predict median age of death based on population demographics
+    
+
+
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
+    cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
+    plot_area(df=df, png_prefix='deaths_age', cols_subset=cols, title='Thailand Covid Death Age Range',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
+
+    cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
+    plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
+              title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
+
 
 
 if __name__ == "__main__":

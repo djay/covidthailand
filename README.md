@@ -386,6 +386,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand
   - potentially could adjust the IFR to get a better infeciton estimtate.
+- excess deaths adjusted for road accidents and suicides
+  - https://github.com/TheEconomist/covid-19-excess-deaths-tracker/blob/master/output-data/excess-deaths/thailand_excess_deaths.csv
 - fix vaccination numbers dropping based on the idea that later reports are corrections
    - so fill forward with current max? or fill back with current min?
 - put non MA lines on some area graphs e.g. deaths, cases 
