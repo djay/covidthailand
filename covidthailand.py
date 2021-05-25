@@ -1361,7 +1361,7 @@ def join_provinces(df, on):
     global prov_guesses
     joined, guesses = fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn", return_unmatched=True)
     if not guesses.empty:
-        prov_guesses = prov_guesses.append(guesses[['Province','ProvinceEn','count']]) # TODO: put in what the guess was
+        prov_guesses = prov_guesses.append(guesses.reset_index().rename(columns={on:"Province"})[['Province','ProvinceEn','count']]) # TODO: put in what the guess was
     return joined 
 
 def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_on_with=None, return_unmatched=False):
