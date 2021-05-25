@@ -23,9 +23,8 @@ USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 
 ##########################################
-# download and parse thailand covid data
+# Situation reports/PUI
 ##########################################
-
 
 def situation_cases_cum(parsed_pdf, date):
     _, rest = get_next_numbers(parsed_pdf, "The Disease Situation in Thailand", debug=True)
@@ -181,9 +180,6 @@ def situation_cases_new(parsed_pdf, date):
         ).set_index("Date")
 
 
-re_walkin_priv = re.compile("(?i)cases (in|at) private hospitals")
-
-
 def situation_pui(parsed_pdf, date):
     numbers, _ = get_next_numbers(
         parsed_pdf, "Total +number of laboratory tests",
@@ -225,7 +221,7 @@ def situation_pui(parsed_pdf, date):
     numbers, rest = get_next_numbers(parsed_pdf, "Sought medical services on their own at hospitals")
     if not numbers:
         pui_walkin_private, pui_walkin_public, pui_walkin = [None]*3
-    elif re_walkin_priv.search(rest):
+    elif re.search("(?i)cases (in|at) private hospitals", rest):
         pui_walkin_private, pui_walkin_public, pui_walkin, *_ = numbers
         pui_walkin_public = {8628765: 862876}.get(pui_walkin_public, pui_walkin_public)
         #assert pui_walkin == pui_walkin_private + pui_walkin_public
@@ -298,26 +294,7 @@ def get_en_situation():
     ).set_index("Date")
     results = missing[["Cases Local Transmission Cum", "Cases Proactive Cum", ]].combine_first(results)
     return results
-
-
-def get_situation_today():
-    _, page = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="situation_th", check=True))
-    text = BeautifulSoup(page, 'html.parser').get_text()
-    numbers, rest = get_next_numbers(text, "ผู้ป่วยเข้าเกณฑ์เฝ้าระวัง")
-    pui_cum, pui = numbers[:2]
-    numbers, rest = get_next_numbers(text, "กักกันในพื้นที่ที่รัฐกำหนด")
-    imported_cum, imported = numbers[:2]
-    numbers, rest = get_next_numbers(text, "ผู้ป่วยยืนยัน")
-    cases_cum, cases = numbers[:2]
-    numbers, rest = get_next_numbers(text, "สถานการณ์ในประเทศไทย")
-    date = find_thai_date(rest).date()
-    row = [cases_cum, cases, pui_cum, pui, imported_cum, imported]
-    return pd.DataFrame(
-        [[date, ]+row],
-        columns=["Date", "Cases Cum", "Cases", "Tested PUI Cum", "Tested PUI", "Cases Imported Cum", "Cases Imported"]
-    ).set_index("Date")
     
-
 
 def situation_pui_th(parsed_pdf, date, results):
     tests_total, active_finding, asq, not_pui = [None] * 4
@@ -434,6 +411,25 @@ def get_thai_situation():
     #print(results)
     return results
 
+
+def get_situation_today():
+    _, page = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="situation_th", check=True))
+    text = BeautifulSoup(page, 'html.parser').get_text()
+    numbers, rest = get_next_numbers(text, "ผู้ป่วยเข้าเกณฑ์เฝ้าระวัง")
+    pui_cum, pui = numbers[:2]
+    numbers, rest = get_next_numbers(text, "กักกันในพื้นที่ที่รัฐกำหนด")
+    imported_cum, imported = numbers[:2]
+    numbers, rest = get_next_numbers(text, "ผู้ป่วยยืนยัน")
+    cases_cum, cases = numbers[:2]
+    numbers, rest = get_next_numbers(text, "สถานการณ์ในประเทศไทย")
+    date = find_thai_date(rest).date()
+    row = [cases_cum, cases, pui_cum, pui, imported_cum, imported]
+    return pd.DataFrame(
+        [[date, ]+row],
+        columns=["Date", "Cases Cum", "Cases", "Tested PUI Cum", "Tested PUI", "Cases Imported Cum", "Cases Imported"]
+    ).set_index("Date")
+
+
 def get_situation():
     print("========Situation Reports==========")
 
@@ -456,6 +452,10 @@ def get_situation():
     return situation
 
 
+#################################
+# Cases Apis
+#################################
+
 def get_cases():
     print("========Covid19 Timeline==========")
 
@@ -466,194 +466,6 @@ def get_cases():
     cases = data[["NewConfirmed", "NewDeaths", "NewRecovered", "Hospitalized"]]
     cases = cases.rename(columns=dict(NewConfirmed="Cases", NewDeaths="Deaths", NewRecovered="Recovered"))
     return cases
-
-
-def get_tests_by_day():
-    print("========Tests by Day==========")
-
-    file = next(dav_files(ext="xlsx"))
-    tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
-    tests.dropna(how="any", inplace=True)  # get rid of totals row
-    tests = tests.set_index("Date")
-    pos = tests.loc["Cannot specify date"].Pos
-    total = tests.loc["Cannot specify date"].Total
-    tests.drop("Cannot specify date", inplace=True)
-    # Need to redistribute the unknown values across known values
-    # Documentation tells us it was 11 labs and only before 3 April
-    unknown_end_date = datetime.datetime(day=3, month=4, year=2020)
-    all_pos = tests["Pos"][:unknown_end_date].sum()
-    all_total = tests["Total"][:unknown_end_date].sum()
-    for index, row in tests.iterrows():
-        if index > unknown_end_date:
-            continue
-        row.Pos = float(row.Pos) + row.Pos / all_pos * pos
-        row.Total = float(row.Total) + row.Total / all_total * total
-    # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
-    #print(tests["Pos"].sum(), pos + all_pos)
-    #print(tests["Total"].sum(), total + all_total)
-    # fix datetime
-    tests.reset_index(drop=False, inplace=True)
-    tests["Date"] = pd.to_datetime(tests["Date"])
-    tests.set_index("Date", inplace=True)
-
-    tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
-    print(file, len(tests))
-
-    return tests
-
-def get_tests_by_area():
-    pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-    test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-    columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-    raw_cols = ["Start", "End", ] + pos_cols + test_cols
-    data = pd.DataFrame()
-    raw = pd.DataFrame()
-
-    for file in dav_files(ext=".pptx"):
-        for chart, title, series, pagenum in pptx2chartdata(file):
-            start, end = find_date_range(title)
-            if start is None:
-                continue
-
-            if "เริ่มเปิดบริการ" not in title and any(
-                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
-            ):
-                # the graph for X period split by health area.
-                # Need both pptx and pdf as one pdf is missing
-                pos = list(series["จำนวนผลบวก"])
-                tests = list(series["จำนวนตรวจ"])
-                row = pos + tests + [sum(pos), sum(tests)]
-                results = spread_date_range(start, end, row, columns)
-                # print(results)
-                data = data.combine_first(results)
-                raw = raw.combine_first(pd.DataFrame(
-                    [[start, end, ]+pos + tests],
-                    columns=raw_cols
-                ).set_index("Start"))
-        print(file)
-    # Also need pdf copies becaus of missing pptx
-    for file in dav_files(ext=".pdf"):
-        pages = parse_file(file, html=False, paged=True)
-        not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
-        by_area = [
-            page
-            for page in not_whole_year
-            if "เขตสุขภาพ" in page or "เขตสุขภำพ" in page
-        ]
-        # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
-        # no pdf available so data missing
-        # Also missing 14-20 Nov 2020 (no pptx or pdf)
-
-        for page in by_area:
-            start, end = find_date_range(page)
-            if start is None:
-                continue
-            if "349585" in page:
-                page = page.replace("349585", "349 585")
-            # if '16/10/2563' in page:
-            #     print(page)
-            # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
-            first, rest = page.split("\n", 1)
-            page = (
-                rest if "เพญ็พชิชำ" in first or "/" in first else page
-            )  # get rid of first line that sometimes as date and time in it
-            numbers, content = get_next_numbers(page, "", debug=True)  # "ภาคเอกชน",
-            # ภาครัฐ
-            # ภาคเอกชน
-            # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์
-            # print(numbers)
-            # TODO: should really find and parse X axis labels which contains 'เขต' and count
-            tests_start = 13 if "total" not in page else 14
-            pos = numbers[0:13]
-            tests = numbers[tests_start:tests_start + 13]
-            row = pos + tests + [sum(pos), sum(tests)]
-            results = spread_date_range(start, end, row, columns)
-            #print(results)
-            data = data.combine_first(results)
-            raw = raw.combine_first(pd.DataFrame(
-                [[start, end, ]+pos + tests],
-                columns=raw_cols
-            ).set_index("Start"))
-        print(file)
-    export(raw, "tests_by_area")
-    return data
-
-
-def get_tests_private_public():
-    print("========Tests public+private==========")
-
-    data = pd.DataFrame()
-
-    # some additional data from pptx files
-    for file in dav_files(ext=".pptx"):
-        for chart, title, series, pagenum in pptx2chartdata(file):
-            start, end = find_date_range(title)
-            if start is None:
-                continue
-            if "เริ่มเปิดบริการ" not in title and any(
-                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
-            ):
-                # area graph
-                continue
-            elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
-                # The graphs at the end with all testing numbers private vs public
-                private = " Private" if "ภาคเอกชน" in title else ""
-
-                # pos = series["Pos"]
-                if "จำนวนตรวจ" not in series:
-                    continue
-                tests = series["จำนวนตรวจ"]
-                positivity = series["% Detection"]
-                dates = list(daterange(start, end, 1))
-                df = pd.DataFrame(
-                    {
-                        "Date": dates,
-                        f"Tests{private}": tests,
-                        f"% Detection{private}": positivity,
-                    }
-                ).set_index("Date")
-                df[f"Pos{private}"] = (
-                    df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
-                )
-                #print(df)
-                data = data.combine_first(df)
-            # TODO: There is also graphs splt by hospital
-        print(file, len(data))
-        if not data.empty:
-            break  # we only need the latest
-    data['Pos Public'] = data['Pos'] - data['Pos Private']
-    data['Tests Public'] = data['Tests'] - data['Tests Private']
-    export(data, "tests_pubpriv")
-    return data
-
-
-def get_ifr():
-    file, _ = next(web_files("http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx", dir="json"))
-    pop = pd.read_excel(file, header=3, index_col=1)
-    pop['At 0'] = pop[[f"{i} year" for i in range(1,10)]+["under 1"]].sum(axis=1)
-    pop["At 10"] = pop[[f"{i} year" for i in range(10,25)]].sum(axis=1)
-    pop["At 25"] =  pop[[f"{i} year" for i in range(25,46)]+["47 year"]+[f"{i} year" for i in range(47,54)]].sum(axis=1)
-    pop["At 55"] =  pop[[f"{i} year" for i in range(55,65)]].sum(axis=1)
-    pop["At 65"] =  pop[[f"{i} year" for i in range(65,73)]+["74 year", "74 year"]].sum(axis=1)
-    pop["At 75"] = pop[[f"{i} year" for i in range(75,85)]].sum(axis=1)
-    pop["At 85"] =pop[[f"{i} year" for i in range(85,101)]+["101 and over"]].sum(axis=1)   
-    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
-    ifr = pd.DataFrame([[.002,.002,.01,.04,1.4,4.6,15]],
-       columns=["At 0","At 10","At 25","At 55","At 65","At 75", "At 85"],
-    ).transpose().rename(columns={0:"risk"})
-    pop = pop[ifr.index]
-    pop = pop.reset_index().dropna().set_index("Province").transpose()
-    unpop = pop.reset_index().melt(id_vars=['index'], var_name='Province', value_name='Population').rename(columns=dict(index="Age"))
-    total_pop = unpop.groupby("Province").sum().rename(columns=dict(Population="total_pop"))
-    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
-    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
-    provifr = unpop.groupby("Province").sum()
-    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
-
-    # now normalise the province names
-    provifr = join_provinces(provifr, "Province", prov_guesses)
-    return provifr
-
 
 
 def get_case_details_csv():
@@ -700,7 +512,6 @@ def get_case_details_api():
         record['Notified date'] = to_switching_date(record['Notified date'])
     cases = pd.DataFrame(records)
     return cases
-
 
 
 def get_cases_by_demographics_api():
@@ -812,6 +623,9 @@ def get_cases_by_demographics_api():
     return case_risks.combine_first(case_ages)
 
 
+##################################
+# RB Tweet Parsing
+##################################
 
 def get_cases_by_prov_tweets():
     print("========RB Tweets==========")
@@ -957,8 +771,6 @@ def get_cases_by_prov_tweets():
     df = df.combine_first(cum2daily(df))
     return dfprov, df
 
-
-title_num = re.compile(r"([0-9]+\.(?:[0-9]+))")
 
 def briefing_case_detail_lines(soup):
     parts = soup.find_all('p')
@@ -1508,36 +1320,174 @@ def get_cases_by_area():
     return case_areas
 
 
-def get_hospital_resources():
-    print("========ArcGIS==========")
 
-    # PUI + confirmed, recovered etc stats
-#    fields = ['OBJECTID', 'ID', 'agency_code', 'label', 'agency_status', 'status', 'address', 'province', 'amphoe', 'tambol', 'latitude', 'longitude', 'level_performance', 'ministryname', 'depart', 'ShareRoom_Total', 'ShareRoom_Available', 'ShareRoom_Used', 'Private_AIIR_Total', 'Private_AIIR_Available', 'Private_AIIR_Used', 'Private_Modified_AIIR_Total', 'Private_Modified_AIIR_Available', 'Private_Modified_AIIR_Used', 'Private_Isolation_room_Total', 'Private_Isolation_room_Availabl', 'Private_Isolation_room_Used', 'Private_Cohort_ward_Total', 'Private_Cohort_ward_Available', 'Private_Cohort_ward_Used', 'Private_High_Flow_Total', 'Private_High_Flow_Available', 'Private_High_Flow_Used', 'Private_OR_negative_pressure_To', 'Private_OR_negative_pressure_Av', 'Private_OR_negative_pressure_Us', 'Private_ICU_Total', 'Private_ICU_Available', 'Private_ICU_Used', 'Private_ARI_clinic_Total', 'Private_ARI_clinic_Available', 'Private_ARI_clinic_Used', 'Volume_control_Total', 'Volume_control_Available', 'Volume_control_Used', 'Pressure_control_Total', 'Pressure_control_Available', 'Pressure_control_Used', 'Volumecontrol_Child_Total', 'Volumecontrol_Child_Available', 'Volumecontrol_Child_Used', 'Ambulance_Total', 'Ambulance_Availble', 'Ambulance_Used', 'Pills_Favipiravir_Total', 'Pills_Favipiravir_Available', 'Pills_Favipiravir_Used', 'Pills_Oseltamivir_Total', 'Pills_Oseltamivir_Available', 'Pills_Oseltamivir_Used', 'Pills_ChloroquinePhosphate_Tota', 'Pills_ChloroquinePhosphate_Avai', 'Pills_ChloroquinePhosphate_Used', 'Pills_LopinavirRitonavir_Total', 'Pills_LopinavirRitonavir_Availa', 'Pills_LopinavirRitonavir_Used', 'Pills_Darunavir_Total', 'Pills_Darunavir_Available', 'Pills_Darunavir_Used', 'Lab_PCRTest_Total', 'Lab_PCRTest_Available', 'Lab_PCRTest_Used', 'Lab_RapidTest_Total', 'Lab_RapidTest_Available', 'Lab_RapidTest_Used', 'Face_shield_Total', 'Face_shield_Available', 'Face_shield_Used', 'Cover_all_Total', 'Cover_all_Available', 'Cover_all_Used', 'ถุงมือไนไตรล์ชนิดใช้', 'ถุงมือไนไตรล์ชนิดใช้_1', 'ถุงมือไนไตรล์ชนิดใช้_2', 'ถุงมือไนไตรล์ชนิดใช้_3', 'ถุงมือไนไตรล์ชนิดใช้_4', 'ถุงมือไนไตรล์ชนิดใช้_5', 'ถุงมือยางชนิดใช้แล้ว', 'ถุงมือยางชนิดใช้แล้ว_1', 'ถุงมือยางชนิดใช้แล้ว_2', 'ถุงสวมขา_Leg_cover_Total', 'ถุงสวมขา_Leg_cover_Available', 'ถุงสวมขา_Leg_cover_Used', 'พลาสติกหุ้มคอ_HOOD_Total', 'พลาสติกหุ้มคอ_HOOD_Available', 'พลาสติกหุ้มคอ_HOOD_Used', 'พลาสติกหุ้มรองเท้า_Total', 'พลาสติกหุ้มรองเท้า_Availab', 'พลาสติกหุ้มรองเท้า_Used', 'แว่นครอบตาแบบใส_Goggles_Total', 'แว่นครอบตาแบบใส_Goggles_Availab', 'แว่นครอบตาแบบใส_Goggles_Used', 'เสื้อกาวน์ชนิดกันน้ำ_T', 'เสื้อกาวน์ชนิดกันน้ำ_A', 'เสื้อกาวน์ชนิดกันน้ำ_U', 'หมวกคลุมผมชนิดใช้แล้', 'หมวกคลุมผมชนิดใช้แล้_1', 'หมวกคลุมผมชนิดใช้แล้_2', 'เอี๊ยมพลาสติกใส_Apron_Total', 'เอี๊ยมพลาสติกใส_Apron_Available', 'เอี๊ยมพลาสติกใส_Apron_Used', 'UTM_Total', 'UTM_Available', 'UTM_Used', 'VTM_Total', 'VTM_Available', 'VTM_Used', 'Throat_Swab_Total', 'Throat_Swab_Available', 'Throat_Swab_Used', 'NS_Swab_Total', 'NS_Swab_Available', 'NS_Swab_Used', 'Surgicalmask_Total', 'Surgicalmask_Available', 'Surgicalmask_Used', 'N95_Total', 'N95_Available', 'N95_Used', 'Dr_ChestMedicine_Total', 'Dr_ChestMedicine_Available', 'Dr_ChestMedicine_Used', 'Dr_ID_Medicine_Total', 'Dr_ID_Medicine_Availble', 'Dr_ID_Medicine_Used', 'Dr_Medical_Total', 'Dr_Medical_Available', 'Dr_Medical_Used', 'Nurse_ICN_Total', 'Nurse_ICN_Available', 'Nurse_ICN_Used', 'Nurse_RN_Total', 'Nurse_RN_Available', 'Nurse_RN_Used', 'Pharmacist_Total', 'Pharmacist_Available', 'Pharmacist_Used', 'MedTechnologist_Total', 'MedTechnologist_Available', 'MedTechnologist_Used', 'Screen_POE', 'Screen_Walk_in', 'PUI', 'Confirm_mild', 'Confirm_moderate', 'Confirm_severe', 'Confirm_Recovered', 'Confirm_Death', 'GlobalID', 'region_health', 'CoverAll_capacity', 'ICU_Covid_capacity', 'N95_capacity', 'AIIR_room_capacity', 'CoverAll_status', 'Asymptomatic', 'ICUforCovidTotal', 'ICUforCovidAvailable', 'ICUforCovidUsed']
-#    pui =  "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Corona_Date/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true"
+##########################################
+# Testing data
+##########################################
 
-#    icu = "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Private_ICU_Total%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&resultType=standard&cacheHint=true"
 
-    rows = []
-    for page in range(0, 2000, 1000):
-        every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"
-        file, content = next(web_files(every_district, dir="json", check=True))
-        jcontent = json.loads(content)
-        rows.extend([x['attributes'] for x in jcontent['features']])
+def get_tests_by_day():
+    print("========Tests by Day==========")
 
-    data = pd.DataFrame(rows).groupby("province").sum()
-    data['Date'] = today().date()
-    data['Date'] = pd.to_datetime(data['Date'])
-    data = data.reset_index().set_index(["Date", "province"])
-    #print("Active Cases:",data.sum().to_string(index=False, header=False))
-    old = import_csv("hospital_resources")
-    if old is not None:
-        old = old.set_index(["Date", "province"])
-        # TODO: seems to be dropping old data. Need to test
-        data = add_data(old, data)
-    export(data, "hospital_resources", csv_only=True)
+    file = next(dav_files(ext="xlsx"))
+    tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+    tests.dropna(how="any", inplace=True)  # get rid of totals row
+    tests = tests.set_index("Date")
+    pos = tests.loc["Cannot specify date"].Pos
+    total = tests.loc["Cannot specify date"].Total
+    tests.drop("Cannot specify date", inplace=True)
+    # Need to redistribute the unknown values across known values
+    # Documentation tells us it was 11 labs and only before 3 April
+    unknown_end_date = datetime.datetime(day=3, month=4, year=2020)
+    all_pos = tests["Pos"][:unknown_end_date].sum()
+    all_total = tests["Total"][:unknown_end_date].sum()
+    for index, row in tests.iterrows():
+        if index > unknown_end_date:
+            continue
+        row.Pos = float(row.Pos) + row.Pos / all_pos * pos
+        row.Total = float(row.Total) + row.Total / all_total * total
+    # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
+    #print(tests["Pos"].sum(), pos + all_pos)
+    #print(tests["Total"].sum(), total + all_total)
+    # fix datetime
+    tests.reset_index(drop=False, inplace=True)
+    tests["Date"] = pd.to_datetime(tests["Date"])
+    tests.set_index("Date", inplace=True)
+
+    tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
+    print(file, len(tests))
+
+    return tests
+
+def get_tests_by_area():
+    pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+    test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+    columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
+    raw_cols = ["Start", "End", ] + pos_cols + test_cols
+    data = pd.DataFrame()
+    raw = pd.DataFrame()
+
+    for file in dav_files(ext=".pptx"):
+        for chart, title, series, pagenum in pptx2chartdata(file):
+            start, end = find_date_range(title)
+            if start is None:
+                continue
+
+            if "เริ่มเปิดบริการ" not in title and any(
+                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
+            ):
+                # the graph for X period split by health area.
+                # Need both pptx and pdf as one pdf is missing
+                pos = list(series["จำนวนผลบวก"])
+                tests = list(series["จำนวนตรวจ"])
+                row = pos + tests + [sum(pos), sum(tests)]
+                results = spread_date_range(start, end, row, columns)
+                # print(results)
+                data = data.combine_first(results)
+                raw = raw.combine_first(pd.DataFrame(
+                    [[start, end, ]+pos + tests],
+                    columns=raw_cols
+                ).set_index("Start"))
+        print(file)
+    # Also need pdf copies becaus of missing pptx
+    for file in dav_files(ext=".pdf"):
+        pages = parse_file(file, html=False, paged=True)
+        not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
+        by_area = [
+            page
+            for page in not_whole_year
+            if "เขตสุขภาพ" in page or "เขตสุขภำพ" in page
+        ]
+        # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
+        # no pdf available so data missing
+        # Also missing 14-20 Nov 2020 (no pptx or pdf)
+
+        for page in by_area:
+            start, end = find_date_range(page)
+            if start is None:
+                continue
+            if "349585" in page:
+                page = page.replace("349585", "349 585")
+            # if '16/10/2563' in page:
+            #     print(page)
+            # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
+            first, rest = page.split("\n", 1)
+            page = (
+                rest if "เพญ็พชิชำ" in first or "/" in first else page
+            )  # get rid of first line that sometimes as date and time in it
+            numbers, content = get_next_numbers(page, "", debug=True)  # "ภาคเอกชน",
+            # ภาครัฐ
+            # ภาคเอกชน
+            # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์
+            # print(numbers)
+            # TODO: should really find and parse X axis labels which contains 'เขต' and count
+            tests_start = 13 if "total" not in page else 14
+            pos = numbers[0:13]
+            tests = numbers[tests_start:tests_start + 13]
+            row = pos + tests + [sum(pos), sum(tests)]
+            results = spread_date_range(start, end, row, columns)
+            #print(results)
+            data = data.combine_first(results)
+            raw = raw.combine_first(pd.DataFrame(
+                [[start, end, ]+pos + tests],
+                columns=raw_cols
+            ).set_index("Start"))
+        print(file)
+    export(raw, "tests_by_area")
     return data
 
 
+def get_tests_private_public():
+    print("========Tests public+private==========")
+
+    data = pd.DataFrame()
+
+    # some additional data from pptx files
+    for file in dav_files(ext=".pptx"):
+        for chart, title, series, pagenum in pptx2chartdata(file):
+            start, end = find_date_range(title)
+            if start is None:
+                continue
+            if "เริ่มเปิดบริการ" not in title and any(
+                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
+            ):
+                # area graph
+                continue
+            elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
+                # The graphs at the end with all testing numbers private vs public
+                private = " Private" if "ภาคเอกชน" in title else ""
+
+                # pos = series["Pos"]
+                if "จำนวนตรวจ" not in series:
+                    continue
+                tests = series["จำนวนตรวจ"]
+                positivity = series["% Detection"]
+                dates = list(daterange(start, end, 1))
+                df = pd.DataFrame(
+                    {
+                        "Date": dates,
+                        f"Tests{private}": tests,
+                        f"% Detection{private}": positivity,
+                    }
+                ).set_index("Date")
+                df[f"Pos{private}"] = (
+                    df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
+                )
+                #print(df)
+                data = data.combine_first(df)
+            # TODO: There is also graphs splt by hospital
+        print(file, len(data))
+        if not data.empty:
+            break  # we only need the latest
+    data['Pos Public'] = data['Pos'] - data['Pos Private']
+    data['Tests Public'] = data['Tests'] - data['Tests Private']
+    export(data, "tests_pubpriv")
+    return data
+
+
+################################
+# Vaccination reports
+################################
 
 def get_vaccinations():
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd", ext=None, match=re.compile("2564"))
@@ -1698,6 +1648,66 @@ def get_vaccinations():
     # TODO: only return some daily summary stats
     return thaivac
 
+################################
+# Misc
+################################
+
+def get_ifr():
+    file, _ = next(web_files("http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx", dir="json"))
+    pop = pd.read_excel(file, header=3, index_col=1)
+    pop['At 0'] = pop[[f"{i} year" for i in range(1,10)]+["under 1"]].sum(axis=1)
+    pop["At 10"] = pop[[f"{i} year" for i in range(10,25)]].sum(axis=1)
+    pop["At 25"] =  pop[[f"{i} year" for i in range(25,46)]+["47 year"]+[f"{i} year" for i in range(47,54)]].sum(axis=1)
+    pop["At 55"] =  pop[[f"{i} year" for i in range(55,65)]].sum(axis=1)
+    pop["At 65"] =  pop[[f"{i} year" for i in range(65,73)]+["74 year", "74 year"]].sum(axis=1)
+    pop["At 75"] = pop[[f"{i} year" for i in range(75,85)]].sum(axis=1)
+    pop["At 85"] =pop[[f"{i} year" for i in range(85,101)]+["101 and over"]].sum(axis=1)   
+    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
+    ifr = pd.DataFrame([[.002,.002,.01,.04,1.4,4.6,15]],
+       columns=["At 0","At 10","At 25","At 55","At 65","At 75", "At 85"],
+    ).transpose().rename(columns={0:"risk"})
+    pop = pop[ifr.index]
+    pop = pop.reset_index().dropna().set_index("Province").transpose()
+    unpop = pop.reset_index().melt(id_vars=['index'], var_name='Province', value_name='Population').rename(columns=dict(index="Age"))
+    total_pop = unpop.groupby("Province").sum().rename(columns=dict(Population="total_pop"))
+    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
+    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
+    provifr = unpop.groupby("Province").sum()
+    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
+
+    # now normalise the province names
+    provifr = join_provinces(provifr, "Province", prov_guesses)
+    return provifr
+
+
+def get_hospital_resources():
+    print("========ArcGIS==========")
+
+    # PUI + confirmed, recovered etc stats
+#    fields = ['OBJECTID', 'ID', 'agency_code', 'label', 'agency_status', 'status', 'address', 'province', 'amphoe', 'tambol', 'latitude', 'longitude', 'level_performance', 'ministryname', 'depart', 'ShareRoom_Total', 'ShareRoom_Available', 'ShareRoom_Used', 'Private_AIIR_Total', 'Private_AIIR_Available', 'Private_AIIR_Used', 'Private_Modified_AIIR_Total', 'Private_Modified_AIIR_Available', 'Private_Modified_AIIR_Used', 'Private_Isolation_room_Total', 'Private_Isolation_room_Availabl', 'Private_Isolation_room_Used', 'Private_Cohort_ward_Total', 'Private_Cohort_ward_Available', 'Private_Cohort_ward_Used', 'Private_High_Flow_Total', 'Private_High_Flow_Available', 'Private_High_Flow_Used', 'Private_OR_negative_pressure_To', 'Private_OR_negative_pressure_Av', 'Private_OR_negative_pressure_Us', 'Private_ICU_Total', 'Private_ICU_Available', 'Private_ICU_Used', 'Private_ARI_clinic_Total', 'Private_ARI_clinic_Available', 'Private_ARI_clinic_Used', 'Volume_control_Total', 'Volume_control_Available', 'Volume_control_Used', 'Pressure_control_Total', 'Pressure_control_Available', 'Pressure_control_Used', 'Volumecontrol_Child_Total', 'Volumecontrol_Child_Available', 'Volumecontrol_Child_Used', 'Ambulance_Total', 'Ambulance_Availble', 'Ambulance_Used', 'Pills_Favipiravir_Total', 'Pills_Favipiravir_Available', 'Pills_Favipiravir_Used', 'Pills_Oseltamivir_Total', 'Pills_Oseltamivir_Available', 'Pills_Oseltamivir_Used', 'Pills_ChloroquinePhosphate_Tota', 'Pills_ChloroquinePhosphate_Avai', 'Pills_ChloroquinePhosphate_Used', 'Pills_LopinavirRitonavir_Total', 'Pills_LopinavirRitonavir_Availa', 'Pills_LopinavirRitonavir_Used', 'Pills_Darunavir_Total', 'Pills_Darunavir_Available', 'Pills_Darunavir_Used', 'Lab_PCRTest_Total', 'Lab_PCRTest_Available', 'Lab_PCRTest_Used', 'Lab_RapidTest_Total', 'Lab_RapidTest_Available', 'Lab_RapidTest_Used', 'Face_shield_Total', 'Face_shield_Available', 'Face_shield_Used', 'Cover_all_Total', 'Cover_all_Available', 'Cover_all_Used', 'ถุงมือไนไตรล์ชนิดใช้', 'ถุงมือไนไตรล์ชนิดใช้_1', 'ถุงมือไนไตรล์ชนิดใช้_2', 'ถุงมือไนไตรล์ชนิดใช้_3', 'ถุงมือไนไตรล์ชนิดใช้_4', 'ถุงมือไนไตรล์ชนิดใช้_5', 'ถุงมือยางชนิดใช้แล้ว', 'ถุงมือยางชนิดใช้แล้ว_1', 'ถุงมือยางชนิดใช้แล้ว_2', 'ถุงสวมขา_Leg_cover_Total', 'ถุงสวมขา_Leg_cover_Available', 'ถุงสวมขา_Leg_cover_Used', 'พลาสติกหุ้มคอ_HOOD_Total', 'พลาสติกหุ้มคอ_HOOD_Available', 'พลาสติกหุ้มคอ_HOOD_Used', 'พลาสติกหุ้มรองเท้า_Total', 'พลาสติกหุ้มรองเท้า_Availab', 'พลาสติกหุ้มรองเท้า_Used', 'แว่นครอบตาแบบใส_Goggles_Total', 'แว่นครอบตาแบบใส_Goggles_Availab', 'แว่นครอบตาแบบใส_Goggles_Used', 'เสื้อกาวน์ชนิดกันน้ำ_T', 'เสื้อกาวน์ชนิดกันน้ำ_A', 'เสื้อกาวน์ชนิดกันน้ำ_U', 'หมวกคลุมผมชนิดใช้แล้', 'หมวกคลุมผมชนิดใช้แล้_1', 'หมวกคลุมผมชนิดใช้แล้_2', 'เอี๊ยมพลาสติกใส_Apron_Total', 'เอี๊ยมพลาสติกใส_Apron_Available', 'เอี๊ยมพลาสติกใส_Apron_Used', 'UTM_Total', 'UTM_Available', 'UTM_Used', 'VTM_Total', 'VTM_Available', 'VTM_Used', 'Throat_Swab_Total', 'Throat_Swab_Available', 'Throat_Swab_Used', 'NS_Swab_Total', 'NS_Swab_Available', 'NS_Swab_Used', 'Surgicalmask_Total', 'Surgicalmask_Available', 'Surgicalmask_Used', 'N95_Total', 'N95_Available', 'N95_Used', 'Dr_ChestMedicine_Total', 'Dr_ChestMedicine_Available', 'Dr_ChestMedicine_Used', 'Dr_ID_Medicine_Total', 'Dr_ID_Medicine_Availble', 'Dr_ID_Medicine_Used', 'Dr_Medical_Total', 'Dr_Medical_Available', 'Dr_Medical_Used', 'Nurse_ICN_Total', 'Nurse_ICN_Available', 'Nurse_ICN_Used', 'Nurse_RN_Total', 'Nurse_RN_Available', 'Nurse_RN_Used', 'Pharmacist_Total', 'Pharmacist_Available', 'Pharmacist_Used', 'MedTechnologist_Total', 'MedTechnologist_Available', 'MedTechnologist_Used', 'Screen_POE', 'Screen_Walk_in', 'PUI', 'Confirm_mild', 'Confirm_moderate', 'Confirm_severe', 'Confirm_Recovered', 'Confirm_Death', 'GlobalID', 'region_health', 'CoverAll_capacity', 'ICU_Covid_capacity', 'N95_capacity', 'AIIR_room_capacity', 'CoverAll_status', 'Asymptomatic', 'ICUforCovidTotal', 'ICUforCovidAvailable', 'ICUforCovidUsed']
+#    pui =  "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Corona_Date/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true"
+
+#    icu = "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Private_ICU_Total%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&resultType=standard&cacheHint=true"
+
+    rows = []
+    for page in range(0, 2000, 1000):
+        every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"
+        file, content = next(web_files(every_district, dir="json", check=True))
+        jcontent = json.loads(content)
+        rows.extend([x['attributes'] for x in jcontent['features']])
+
+    data = pd.DataFrame(rows).groupby("province").sum()
+    data['Date'] = today().date()
+    data['Date'] = pd.to_datetime(data['Date'])
+    data = data.reset_index().set_index(["Date", "province"])
+    #print("Active Cases:",data.sum().to_string(index=False, header=False))
+    old = import_csv("hospital_resources")
+    if old is not None:
+        old = old.set_index(["Date", "province"])
+        # TODO: seems to be dropping old data. Need to test
+        data = add_data(old, data)
+    export(data, "hospital_resources", csv_only=True)
+    return data
 
 
 def scrape_and_combine():
