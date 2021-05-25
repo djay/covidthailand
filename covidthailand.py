@@ -1130,7 +1130,7 @@ def get_provinces():
     provinces.loc['อดุรธานี'] = provinces.loc['Udon Thani']
     provinces.loc['พระนครศรอียธุยา'] = provinces.loc['Ayutthaya']
     provinces.loc['สระบรุ'] = provinces.loc['Saraburi']
-    provinces.loc['เพชรบรุ'] = provinces.loc['Phetchabun']
+    provinces.loc['เพชรบรุ'] = provinces.loc['Phetchaburi']
     provinces.loc['ราชบรุ'] = provinces.loc['Ratchaburi']
     provinces.loc['เชยีงราย'] = provinces.loc['Chiang Rai']
     provinces.loc['อบุลราชธานี'] = provinces.loc['Ubon Ratchathani']
