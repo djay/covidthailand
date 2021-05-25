@@ -4,6 +4,7 @@ from scraping import remove_prefix, remove_suffix, web_files
 import pandas as pd
 import re
 import datetime
+from dateutil.parser import parse as d
 import os
 import difflib
 
@@ -424,10 +425,8 @@ def get_provinces():
 
 PROVINCES = get_provinces()
 
-prov_guesses = pd.DataFrame([],columns=["Province","ProvinceEn", "count"])
 
-def get_province(prov, ignore_error=False):
-    global prov_guesses
+def get_province(prov, guesses, ignore_error=False):
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     try:
         return PROVINCES.loc[prov]['ProvinceEn']
@@ -442,18 +441,20 @@ def get_province(prov, ignore_error=False):
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 #continue
         proven = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
-        prov_guesses = prov_guesses.append([dict(Province=prov, ProvinceEn=proven, count=1)])
-        return proven
+        guesses.loc[(guesses.last_valid_index() or 0) +1] = dict(Province=prov, ProvinceEn=proven, count=1)  
+        return proven 
 
 def prov_trim(p):
     return remove_suffix(remove_prefix(p, "จ.").strip(' .'), " Province")
 
-def join_provinces(df, on):
-    global prov_guesses
-    joined, guesses = fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn", return_unmatched=True)
-    if not guesses.empty:
-        prov_guesses = prov_guesses.append(guesses.reset_index().rename(columns={on:"Province"})[['Province','ProvinceEn','count']]) # TODO: put in what the guess was
-    return joined 
+def join_provinces(df, on, guesses):
+    joined, guess = fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn", return_unmatched=True)
+    if not guess.empty:
+        prov_guesses = guess.reset_index().rename(columns={on:"Province"})[['Province','ProvinceEn','count']]
+        for i, row in prov_guesses.iterrows():
+            guesses.loc[(guesses.last_valid_index() or 0) + 1] = row
+    
+    return joined
 
 
 def area_crosstab(df, col, suffix):
