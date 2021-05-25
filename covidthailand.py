@@ -882,7 +882,7 @@ def get_situation():
 def get_cases():
     print("========Covid19 Timeline==========")
 
-    file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline", dir="json", check=True))
+    file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline?123", dir="json", check=True))
     data = pd.DataFrame(json.loads(text)['Data'])
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.set_index("Date")
