@@ -1706,10 +1706,10 @@ def get_hospital_resources():
     export(data, "hospital_resources", csv_only=True)
     return data
 
+USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
+                os.path.exists(os.path.join('api', 'combined.csv'))
 
 def scrape_and_combine():
-    USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
-                    os.path.exists(os.path.join('api', 'combined.csv'))
 
 
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
