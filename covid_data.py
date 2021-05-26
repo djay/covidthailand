@@ -16,7 +16,7 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_cr
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, \
-    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links, all_in
+    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, web_links, all_in
 
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
@@ -626,6 +626,95 @@ def get_cases_by_demographics_api():
 # RB Tweet Parsing
 ##################################
 
+
+def parse_official_tweet(df, date, text):
+    imported, _ = get_next_number(text, "imported", before=True, default=0)
+    local, _ = get_next_number(text, "local", before=True, default=0)
+    cases = imported+local
+    #cases_cum, _ = get_next_number(text, "Since Jan(?:uary)? 2020")
+    deaths, _ = get_next_number(text, "dead +", "deaths +")
+    serious, _ = get_next_number(text, "in serious condition", before=True)
+    recovered, _ = get_next_number(text, "discharged", "left care", before=True)
+    hospitalised, _ = get_next_number(text, "in care", before=True)
+    vent, _ = get_next_number(text, "on ventilators", before=True)
+    cols = [
+        "Date", 
+        "Cases Imported", 
+        "Cases Local Transmission", 
+        "Cases", 
+        "Deaths",
+        "Hospitalized",
+        "Recovered",
+        "Hospitalized Severe",
+        "Hospitalized Respirator",
+    ]
+    row = [date, imported, local, cases, deaths,]
+    row2 = row + [hospitalised, recovered]
+    if date <= d("2021-05-01").date():
+        assert not any_in(row, None), f"{date} Missing data in Official Tweet {row}"
+    else:
+        assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
+    row_opt = row2 + [serious, vent]
+    tdf = pd.DataFrame([row_opt], columns=cols).set_index("Date")
+    print(date, "Official:", tdf.to_string(index=False, header=False))
+    return df.combine_first(tdf)    
+
+def parse_unofficial_tweet(df, date, text):
+    numbers, _ = get_next_numbers(text, "Thai health ministry reporting")
+    if not numbers:
+        return df
+    deaths, cases, *_ = numbers
+    cols = ["Date", "Deaths", "Cases"]
+    row = [date, deaths, cases]
+    tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+    print(date, "Breaking:", tdf.to_string(index=False, header=False))
+    return df.combine_first(tdf)    
+
+def parse_case_prov_tweet(walkins, proactive, date, text):
+    if "📍" not in text:
+        return walkins, proactive
+    if "ventilators" in text:  # after 2021-05-11 start using "👉" for hospitalisation
+        return walkins, proactive
+    start, *lines = text.split("👉", 2)
+    if len(lines) < 2:
+        raise Exception()
+    for line in lines:
+        prov_matches = re.findall(r"📍([\s\w,&;]+) ([0-9]+)", line)
+        prov = dict((p.strip(), toint(v)) for ps, v in prov_matches for p in re.split("(?:,|&amp;)", ps))
+        if d("2021-04-08").date() == date:
+            if prov["Bangkok"] == 147:  #proactive
+                prov["Bangkok"] = 47
+            elif prov["Phuket"] == 3:  #Walkins
+                prov["Chumphon"] = 3
+                prov['Khon Kaen'] = 3
+                prov["Ubon Thani"] = 7
+                prov["Nakhon Pathom"] = 6
+                prov["Phitsanulok"] = 4
+
+        label = re.findall(r'^ *([0-9]+)([^📍👉👇\[]*)', line)
+        if label:
+            total, label = label[0]
+            #label = label.split("👉").pop() # Just in case tweets get muddled 2020-04-07
+            total = toint(total)
+        else:
+            raise Exception(f"Couldn't find case type in: {date} {line}")
+        if total is None:
+            raise Exception(f"Couldn't parse number of cases in: {date} {line}")
+        elif total != sum(prov.values()):
+            raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
+        if "proactive" in label:
+            proactive.update(dict(((date, k), v) for k, v in prov.items()))
+            print(date, "Proactive:", len(prov))
+            #proactive[(date,"All")] = total                                  
+        elif "walk-in" in label:
+            walkins.update(dict(((date, k), v) for k, v in prov.items()))
+            print(date, "Walkins:", len(prov))
+            #walkins[(date,"All")] = total
+        else:
+            raise Exception()
+    return walkins, proactive
+
+
 def get_cases_by_prov_tweets():
     print("========RB Tweets==========")
     # These are published early so quickest way to get data
@@ -659,100 +748,21 @@ def get_cases_by_prov_tweets():
     # Get imported vs walkin totals
     df = pd.DataFrame()
 
-    def toint(s):
-        return int(s.replace(',', '')) if s else None
-
     for date, text in sorted(officials.items(), reverse=True):
-        imported, _ = get_next_number(text, "imported", before=True, default=0)
-        local, _ = get_next_number(text, "local", before=True, default=0)
-        cases = imported+local
-        #cases_cum, _ = get_next_number(text, "Since Jan(?:uary)? 2020")
-        deaths, _ = get_next_number(text, "dead +", "deaths +")
-        serious, _ = get_next_number(text, "in serious condition", before=True)
-        recovered, _ = get_next_number(text, "discharged", "left care", before=True)
-        hospitalised, _ = get_next_number(text, "in care", before=True)
-        vent, _ = get_next_number(text, "on ventilators", before=True)
-        cols = [
-            "Date", 
-            "Cases Imported", 
-            "Cases Local Transmission", 
-            "Cases", 
-            "Deaths",
-            "Hospitalized",
-            "Recovered",
-            "Hospitalized Severe",
-            "Hospitalized Respirator",
-        ]
-        row = [date, imported, local, cases, deaths,]
-        row2 = row + [hospitalised, recovered]
-        if date <= d("2021-05-01").date():
-            assert not any_in(row, None), f"{date} Missing data in Official Tweet {row}"
-        else:
-            assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
-        row_opt = row2 + [serious, vent]
-        tdf = pd.DataFrame([row_opt], columns=cols).set_index("Date")
-        print(date, "Official:", tdf.to_string(index=False, header=False))
-        df = df.combine_first(tdf)    
+        df = df.pipe(parse_official_tweet, date, text)
 
-    # do unoffical tweets in no official tweet
     for date, text in breaking.items():
         if date in officials:
+            # do unoffical tweets in no official tweet
             continue
-        numbers, _ = get_next_numbers(text, "Thai health ministry reporting")
-        if not numbers:
-            continue
-        deaths, cases, *_ = numbers
-        cols = ["Date", "Deaths", "Cases"]
-        row = [date, deaths, cases]
-        tdf = pd.DataFrame([row], columns=cols).set_index("Date")
-        print(date, "Breaking:", tdf.to_string(index=False, header=False))
-        df = df.combine_first(tdf)    
+        df = df.pipe(parse_unofficial_tweet, date, text)
 
     # get walkin vs proactive by area
     walkins = {}
     proactive = {}
     for date, text in provs.items():
-        if "📍" not in text:
-            continue
-        if "ventilators" in text:  # after 2021-05-11 start using "👉" for hospitalisation
-            continue
-        start, *lines = text.split("👉", 2)
-        if len(lines) < 2:
-            raise Exception()
-        for line in lines:
-            prov_matches = re.findall(r"📍([\s\w,&;]+) ([0-9]+)", line)
-            prov = dict((p.strip(), toint(v)) for ps, v in prov_matches for p in re.split("(?:,|&amp;)", ps))
-            if d("2021-04-08").date() == date:
-                if prov["Bangkok"] == 147:  #proactive
-                    prov["Bangkok"] = 47
-                elif prov["Phuket"] == 3:  #Walkins
-                    prov["Chumphon"] = 3
-                    prov['Khon Kaen'] = 3
-                    prov["Ubon Thani"] = 7
-                    prov["Nakhon Pathom"] = 6
-                    prov["Phitsanulok"] = 4
+        walkins, proactive = parse_case_prov_tweet(walkins, proactive, date, text)
 
-            label = re.findall(r'^ *([0-9]+)([^📍👉👇\[]*)', line)
-            if label:
-                total, label = label[0]
-                #label = label.split("👉").pop() # Just in case tweets get muddled 2020-04-07
-                total = toint(total)
-            else:
-                raise Exception(f"Couldn't find case type in: {date} {line}")
-            if total is None:
-                raise Exception(f"Couldn't parse number of cases in: {date} {line}")
-            elif total != sum(prov.values()):
-                raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
-            if "proactive" in label:
-                proactive.update(dict(((date, k), v) for k, v in prov.items()))
-                print(date, "Proactive:", len(prov))
-                #proactive[(date,"All")] = total                                  
-            elif "walk-in" in label:
-                walkins.update(dict(((date, k), v) for k, v in prov.items()))
-                print(date, "Walkins:", len(prov))
-                #walkins[(date,"All")] = total
-            else:
-                raise Exception()
     # Add in missing data
     date = d("2021-03-01")
     p = {"Pathum Thani": 35, "Nonthaburi": 1}  # "All":36,
