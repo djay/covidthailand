@@ -1734,12 +1734,12 @@ def scrape_and_combine():
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
-        #tests_reports = get_test_reports()
-        cases = get_cases()
+        tests_reports = get_test_reports()
+        #cases = get_cases()
         pass
     else:
         cases_by_area = get_cases_by_area()
@@ -1756,7 +1756,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases',  'cases_by_area', 'situation', 'test_reports', 'tests', 'cases_demo', 'vac']:            
+    for f in ['cases',  'cases_by_area', 'situation', 'tests_reports', 'tests', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
