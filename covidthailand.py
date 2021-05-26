@@ -2,7 +2,7 @@
 import datetime
 from thaiutils import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
 from pandasutils import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range, topprov
-from scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links
+from scraping import CHECK_NEWER, all_in, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links
 import dateutil
 from itertools import islice
 import json
@@ -1356,129 +1356,121 @@ def get_tests_by_day():
 
     return tests
 
-def get_tests_by_area():
-    pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-    test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-    columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-    raw_cols = ["Start", "End", ] + pos_cols + test_cols
+
+pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
+raw_cols = ["Start", "End", ] + pos_cols + test_cols
+
+def get_tests_by_area_chart_pptx(file, title, series, data, raw):
+    start, end = find_date_range(title)
+    if start is None or "เริ่มเปิดบริการ" in title or not any_in(title, "เขตสุขภาพ", "เขตสุขภำพ"):
+        return data, raw
+        
+    # the graph for X period split by health area.
+    # Need both pptx and pdf as one pdf is missing
+    pos = list(series["จำนวนผลบวก"])
+    tests = list(series["จำนวนตรวจ"])
+    row = pos + tests + [sum(pos), sum(tests)]
+    results = spread_date_range(start, end, row, columns)
+    # print(results)
+    data = data.combine_first(results)
+    raw = raw.combine_first(pd.DataFrame(
+        [[start, end, ]+pos + tests],
+        columns=raw_cols
+    ).set_index("Start"))
+    print("Tests by Area", start.date(), "-", end.date(), file)
+    return data, raw
+
+def get_tests_by_area_pdf(file, page, data, raw):
+    start, end = find_date_range(page)
+    if start is None or "เริ่มเปิดบริการ" in page or not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
+        return data, raw
+    # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
+    # no pdf available so data missing
+    # Also missing 14-20 Nov 2020 (no pptx or pdf)
+
+    if "349585" in page:
+        page = page.replace("349585", "349 585")
+    # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
+    first, rest = page.split("\n", 1)
+    page = (
+        rest if "เพญ็พชิชำ" in first or "/" in first else page
+    )  # get rid of first line that sometimes as date and time in it
+    numbers, _ = get_next_numbers(page, "", debug=True)  # "ภาคเอกชน",
+    # ภาครัฐ
+    # ภาคเอกชน
+    # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์
+    # print(numbers)
+    # TODO: should really find and parse X axis labels which contains 'เขต' and count
+    tests_start = 13 if "total" not in page else 14
+    pos = numbers[0:13]
+    tests = numbers[tests_start:tests_start + 13]
+    row = pos + tests + [sum(pos), sum(tests)]
+    results = spread_date_range(start, end, row, columns)
+    data = data.combine_first(results)
+    raw = raw.combine_first(pd.DataFrame(
+        [[start, end, ]+pos + tests],
+        columns=raw_cols
+    ).set_index("Start"))
+    print("Tests by Area", start.date(), "-", end.date(), file)
+    return data, raw
+
+
+def get_tests_private_public_pptx(file, title, series, data):
+    start, end = find_date_range(title)
+    if start is None:
+        return data
+    elif "เริ่มเปิดบริการ" not in title and any_in(title, "เขตสุขภาพ", "เขตสุขภำพ"):
+        # It's a by area chart
+        return data
+    elif not ("และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title and "จำนวนตรวจ" in series):
+        return data
+    
+    # The graphs at the end with all testing numbers private vs public
+    private = " Private" if "ภาคเอกชน" in title else ""
+
+    # pos = series["Pos"]
+    tests = series["จำนวนตรวจ"]
+    positivity = series["% Detection"]
+    dates = list(daterange(start, end, 1))
+    df = pd.DataFrame(
+        {
+            "Date": dates,
+            f"Tests{private}": tests,
+            f"% Detection{private}": positivity,
+        }
+    ).set_index("Date")
+    df[f"Pos{private}"] = (
+        df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
+    )
+    print(f"Tests {private}", start.date(),"-", end.date(), file)
+    return data.combine_first(df)
+
+
+def get_test_reports():
     data = pd.DataFrame()
     raw = pd.DataFrame()
+    pubpriv = pd.DataFrame()
 
     for file in dav_files(ext=".pptx"):
         for chart, title, series, pagenum in pptx2chartdata(file):
-            start, end = find_date_range(title)
-            if start is None:
-                continue
-
-            if "เริ่มเปิดบริการ" not in title and any(
-                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
-            ):
-                # the graph for X period split by health area.
-                # Need both pptx and pdf as one pdf is missing
-                pos = list(series["จำนวนผลบวก"])
-                tests = list(series["จำนวนตรวจ"])
-                row = pos + tests + [sum(pos), sum(tests)]
-                results = spread_date_range(start, end, row, columns)
-                # print(results)
-                data = data.combine_first(results)
-                raw = raw.combine_first(pd.DataFrame(
-                    [[start, end, ]+pos + tests],
-                    columns=raw_cols
-                ).set_index("Start"))
-        print(file)
-    # Also need pdf copies becaus of missing pptx
+            data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
+            if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
+                # Latest file as all the data we need
+                pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
+    # Also need pdf copies because of missing pptx
     for file in dav_files(ext=".pdf"):
         pages = parse_file(file, html=False, paged=True)
-        not_whole_year = [page for page in pages if "เริ่มเปิดบริการ" not in page]
-        by_area = [
-            page
-            for page in not_whole_year
-            if "เขตสุขภาพ" in page or "เขตสุขภำพ" in page
-        ]
-        # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
-        # no pdf available so data missing
-        # Also missing 14-20 Nov 2020 (no pptx or pdf)
-
-        for page in by_area:
-            start, end = find_date_range(page)
-            if start is None:
-                continue
-            if "349585" in page:
-                page = page.replace("349585", "349 585")
-            # if '16/10/2563' in page:
-            #     print(page)
-            # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
-            first, rest = page.split("\n", 1)
-            page = (
-                rest if "เพญ็พชิชำ" in first or "/" in first else page
-            )  # get rid of first line that sometimes as date and time in it
-            numbers, content = get_next_numbers(page, "", debug=True)  # "ภาคเอกชน",
-            # ภาครัฐ
-            # ภาคเอกชน
-            # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์
-            # print(numbers)
-            # TODO: should really find and parse X axis labels which contains 'เขต' and count
-            tests_start = 13 if "total" not in page else 14
-            pos = numbers[0:13]
-            tests = numbers[tests_start:tests_start + 13]
-            row = pos + tests + [sum(pos), sum(tests)]
-            results = spread_date_range(start, end, row, columns)
-            #print(results)
-            data = data.combine_first(results)
-            raw = raw.combine_first(pd.DataFrame(
-                [[start, end, ]+pos + tests],
-                columns=raw_cols
-            ).set_index("Start"))
-        print(file)
+        for page in pages:
+            data, raw = get_tests_by_area_pdf(file, page, data, raw)
     export(raw, "tests_by_area")
-    return data
 
+    pubpriv['Pos Public'] = pubpriv['Pos'] - pubpriv['Pos Private']
+    pubpriv['Tests Public'] = pubpriv['Tests'] - pubpriv['Tests Private']
+    export(pubpriv, "tests_pubpriv")
+    data = data.combine_first(pubpriv)
 
-def get_tests_private_public():
-    print("========Tests public+private==========")
-
-    data = pd.DataFrame()
-
-    # some additional data from pptx files
-    for file in dav_files(ext=".pptx"):
-        for chart, title, series, pagenum in pptx2chartdata(file):
-            start, end = find_date_range(title)
-            if start is None:
-                continue
-            if "เริ่มเปิดบริการ" not in title and any(
-                t in title for t in ["เขตสุขภาพ", "เขตสุขภำพ"]
-            ):
-                # area graph
-                continue
-            elif "และอัตราการตรวจพบ" in title and "รายสัปดาห์" not in title:
-                # The graphs at the end with all testing numbers private vs public
-                private = " Private" if "ภาคเอกชน" in title else ""
-
-                # pos = series["Pos"]
-                if "จำนวนตรวจ" not in series:
-                    continue
-                tests = series["จำนวนตรวจ"]
-                positivity = series["% Detection"]
-                dates = list(daterange(start, end, 1))
-                df = pd.DataFrame(
-                    {
-                        "Date": dates,
-                        f"Tests{private}": tests,
-                        f"% Detection{private}": positivity,
-                    }
-                ).set_index("Date")
-                df[f"Pos{private}"] = (
-                    df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
-                )
-                #print(df)
-                data = data.combine_first(df)
-            # TODO: There is also graphs splt by hospital
-        print(file, len(data))
-        if not data.empty:
-            break  # we only need the latest
-    data['Pos Public'] = data['Pos'] - data['Pos Private']
-    data['Tests Public'] = data['Tests'] - data['Tests Private']
-    export(data, "tests_pubpriv")
     return data
 
 
@@ -1711,18 +1703,16 @@ USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
 
 def scrape_and_combine():
 
-
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        #cases_by_area = get_cases_by_area()
         #vac = get_vaccinations()
         #cases_demo = get_cases_by_demographics_api()
         #tests = get_tests_by_day()
-        #tests_by_area = get_tests_by_area()
-        #privpublic = get_tests_private_public()
+        tests_reports = get_test_reports()
         cases = get_cases()
         pass
     else:
@@ -1735,19 +1725,19 @@ def scrape_and_combine():
         vac = get_vaccinations()
 
         tests = get_tests_by_day()
-        tests_by_area = get_tests_by_area()
-        privpublic = get_tests_private_public()
+        tests_reports = get_test_reports()
         cases = get_cases()
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases',  'cases_by_area', 'situation', 'tests_by_area', 'tests', 'privpublic', 'cases_demo', 'vac']:            
+    for f in ['cases',  'cases_by_area', 'situation', 'test_reports', 'tests', 'cases_demo', 'vac']:            
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
 
-    guess_counts = prov_guesses.groupby(["Province", "ProvinceEn"]).sum().sort_values("count", ascending=False)
-    export(guess_counts, "prov_guesses", csv_only=True)
+    if not prov_guesses.empty:
+        guess_counts = prov_guesses.groupby(["Province", "ProvinceEn"]).sum().sort_values("count", ascending=False)
+        export(guess_counts, "prov_guesses", csv_only=True)
 
     if USE_CACHE_DATA:
         old = import_csv("combined")

@@ -14,8 +14,8 @@ import pickle
 import os
 from itertools import compress, cycle
 
-
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
+
 
 requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
 s = requests.Session()
@@ -345,3 +345,6 @@ def parse_numbers(lst):
 
 def any_in(target, *matches):
     return any(m in target for m in matches)
+
+def all_in(target, *matches):
+    return all(m in target for m in matches)
