@@ -339,12 +339,13 @@ Bureau, Chaeng Watthana"
 Made with python/pandas/matplotlib. Dylan Jay gave a talk on how easy it is to extract data from PDFs
 and powerpoints and plot data at [Bangkok's Monthly ThaiPy Event](https://www.meetup.com/en-AU/ThaiPy-Bangkok-Python-Meetup) [Video: "How I scraped Thailand's covid data" (1h mark)](https://www.facebook.com/watch/live/?v=2890282134582879)
 
-Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and others.
+Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and others. Shorter answer: to slow down jumping to conclusions.
 
 ## Contributors
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
-- [Submit or contribute: Github](https://github.com/djay/covidthailand/issues)
+- [Peter Scully](https://github.com/pmdscully)
+- Help us? - [Submit issue or contribute a fix: Github](https://github.com/djay/covidthailand/issues)
 
 ## Other sources of visualisations/Data for Thailand
 
@@ -399,6 +400,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - think of a metric that shows test capacity bottleneck or reluctance to test
 - Fix unknowns to make more clear
   - active cases looks like severe etc disappear for a day. Maybe need "unknown condition" category? or just don't show the data?
+- export csv of dated sources
 - find historical source for mild vs severe hospitalisations
 - get source for sym/asym for latest cases
   - stopped being put in briefings
