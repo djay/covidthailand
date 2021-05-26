@@ -1749,14 +1749,81 @@ def get_hospital_resources():
     print("========ArcGIS==========")
 
     # PUI + confirmed, recovered etc stats
-#    fields = ['OBJECTID', 'ID', 'agency_code', 'label', 'agency_status', 'status', 'address', 'province', 'amphoe', 'tambol', 'latitude', 'longitude', 'level_performance', 'ministryname', 'depart', 'ShareRoom_Total', 'ShareRoom_Available', 'ShareRoom_Used', 'Private_AIIR_Total', 'Private_AIIR_Available', 'Private_AIIR_Used', 'Private_Modified_AIIR_Total', 'Private_Modified_AIIR_Available', 'Private_Modified_AIIR_Used', 'Private_Isolation_room_Total', 'Private_Isolation_room_Availabl', 'Private_Isolation_room_Used', 'Private_Cohort_ward_Total', 'Private_Cohort_ward_Available', 'Private_Cohort_ward_Used', 'Private_High_Flow_Total', 'Private_High_Flow_Available', 'Private_High_Flow_Used', 'Private_OR_negative_pressure_To', 'Private_OR_negative_pressure_Av', 'Private_OR_negative_pressure_Us', 'Private_ICU_Total', 'Private_ICU_Available', 'Private_ICU_Used', 'Private_ARI_clinic_Total', 'Private_ARI_clinic_Available', 'Private_ARI_clinic_Used', 'Volume_control_Total', 'Volume_control_Available', 'Volume_control_Used', 'Pressure_control_Total', 'Pressure_control_Available', 'Pressure_control_Used', 'Volumecontrol_Child_Total', 'Volumecontrol_Child_Available', 'Volumecontrol_Child_Used', 'Ambulance_Total', 'Ambulance_Availble', 'Ambulance_Used', 'Pills_Favipiravir_Total', 'Pills_Favipiravir_Available', 'Pills_Favipiravir_Used', 'Pills_Oseltamivir_Total', 'Pills_Oseltamivir_Available', 'Pills_Oseltamivir_Used', 'Pills_ChloroquinePhosphate_Tota', 'Pills_ChloroquinePhosphate_Avai', 'Pills_ChloroquinePhosphate_Used', 'Pills_LopinavirRitonavir_Total', 'Pills_LopinavirRitonavir_Availa', 'Pills_LopinavirRitonavir_Used', 'Pills_Darunavir_Total', 'Pills_Darunavir_Available', 'Pills_Darunavir_Used', 'Lab_PCRTest_Total', 'Lab_PCRTest_Available', 'Lab_PCRTest_Used', 'Lab_RapidTest_Total', 'Lab_RapidTest_Available', 'Lab_RapidTest_Used', 'Face_shield_Total', 'Face_shield_Available', 'Face_shield_Used', 'Cover_all_Total', 'Cover_all_Available', 'Cover_all_Used', 'ถุงมือไนไตรล์ชนิดใช้', 'ถุงมือไนไตรล์ชนิดใช้_1', 'ถุงมือไนไตรล์ชนิดใช้_2', 'ถุงมือไนไตรล์ชนิดใช้_3', 'ถุงมือไนไตรล์ชนิดใช้_4', 'ถุงมือไนไตรล์ชนิดใช้_5', 'ถุงมือยางชนิดใช้แล้ว', 'ถุงมือยางชนิดใช้แล้ว_1', 'ถุงมือยางชนิดใช้แล้ว_2', 'ถุงสวมขา_Leg_cover_Total', 'ถุงสวมขา_Leg_cover_Available', 'ถุงสวมขา_Leg_cover_Used', 'พลาสติกหุ้มคอ_HOOD_Total', 'พลาสติกหุ้มคอ_HOOD_Available', 'พลาสติกหุ้มคอ_HOOD_Used', 'พลาสติกหุ้มรองเท้า_Total', 'พลาสติกหุ้มรองเท้า_Availab', 'พลาสติกหุ้มรองเท้า_Used', 'แว่นครอบตาแบบใส_Goggles_Total', 'แว่นครอบตาแบบใส_Goggles_Availab', 'แว่นครอบตาแบบใส_Goggles_Used', 'เสื้อกาวน์ชนิดกันน้ำ_T', 'เสื้อกาวน์ชนิดกันน้ำ_A', 'เสื้อกาวน์ชนิดกันน้ำ_U', 'หมวกคลุมผมชนิดใช้แล้', 'หมวกคลุมผมชนิดใช้แล้_1', 'หมวกคลุมผมชนิดใช้แล้_2', 'เอี๊ยมพลาสติกใส_Apron_Total', 'เอี๊ยมพลาสติกใส_Apron_Available', 'เอี๊ยมพลาสติกใส_Apron_Used', 'UTM_Total', 'UTM_Available', 'UTM_Used', 'VTM_Total', 'VTM_Available', 'VTM_Used', 'Throat_Swab_Total', 'Throat_Swab_Available', 'Throat_Swab_Used', 'NS_Swab_Total', 'NS_Swab_Available', 'NS_Swab_Used', 'Surgicalmask_Total', 'Surgicalmask_Available', 'Surgicalmask_Used', 'N95_Total', 'N95_Available', 'N95_Used', 'Dr_ChestMedicine_Total', 'Dr_ChestMedicine_Available', 'Dr_ChestMedicine_Used', 'Dr_ID_Medicine_Total', 'Dr_ID_Medicine_Availble', 'Dr_ID_Medicine_Used', 'Dr_Medical_Total', 'Dr_Medical_Available', 'Dr_Medical_Used', 'Nurse_ICN_Total', 'Nurse_ICN_Available', 'Nurse_ICN_Used', 'Nurse_RN_Total', 'Nurse_RN_Available', 'Nurse_RN_Used', 'Pharmacist_Total', 'Pharmacist_Available', 'Pharmacist_Used', 'MedTechnologist_Total', 'MedTechnologist_Available', 'MedTechnologist_Used', 'Screen_POE', 'Screen_Walk_in', 'PUI', 'Confirm_mild', 'Confirm_moderate', 'Confirm_severe', 'Confirm_Recovered', 'Confirm_Death', 'GlobalID', 'region_health', 'CoverAll_capacity', 'ICU_Covid_capacity', 'N95_capacity', 'AIIR_room_capacity', 'CoverAll_status', 'Asymptomatic', 'ICUforCovidTotal', 'ICUforCovidAvailable', 'ICUforCovidUsed']
-#    pui =  "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Corona_Date/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true"
+    fields = [
+        'OBJECTID', 'ID', 'agency_code', 'label', 'agency_status', 'status',
+        'address', 'province', 'amphoe', 'tambol', 'latitude', 'longitude',
+        'level_performance', 'ministryname', 'depart', 'ShareRoom_Total',
+        'ShareRoom_Available', 'ShareRoom_Used', 'Private_AIIR_Total',
+        'Private_AIIR_Available', 'Private_AIIR_Used',
+        'Private_Modified_AIIR_Total', 'Private_Modified_AIIR_Available',
+        'Private_Modified_AIIR_Used', 'Private_Isolation_room_Total',
+        'Private_Isolation_room_Availabl', 'Private_Isolation_room_Used',
+        'Private_Cohort_ward_Total', 'Private_Cohort_ward_Available',
+        'Private_Cohort_ward_Used', 'Private_High_Flow_Total',
+        'Private_High_Flow_Available', 'Private_High_Flow_Used',
+        'Private_OR_negative_pressure_To', 'Private_OR_negative_pressure_Av',
+        'Private_OR_negative_pressure_Us', 'Private_ICU_Total',
+        'Private_ICU_Available', 'Private_ICU_Used',
+        'Private_ARI_clinic_Total', 'Private_ARI_clinic_Available',
+        'Private_ARI_clinic_Used', 'Volume_control_Total',
+        'Volume_control_Available', 'Volume_control_Used',
+        'Pressure_control_Total', 'Pressure_control_Available',
+        'Pressure_control_Used', 'Volumecontrol_Child_Total',
+        'Volumecontrol_Child_Available', 'Volumecontrol_Child_Used',
+        'Ambulance_Total', 'Ambulance_Availble', 'Ambulance_Used',
+        'Pills_Favipiravir_Total', 'Pills_Favipiravir_Available',
+        'Pills_Favipiravir_Used', 'Pills_Oseltamivir_Total',
+        'Pills_Oseltamivir_Available', 'Pills_Oseltamivir_Used',
+        'Pills_ChloroquinePhosphate_Tota', 'Pills_ChloroquinePhosphate_Avai',
+        'Pills_ChloroquinePhosphate_Used', 'Pills_LopinavirRitonavir_Total',
+        'Pills_LopinavirRitonavir_Availa', 'Pills_LopinavirRitonavir_Used',
+        'Pills_Darunavir_Total', 'Pills_Darunavir_Available',
+        'Pills_Darunavir_Used', 'Lab_PCRTest_Total', 'Lab_PCRTest_Available',
+        'Lab_PCRTest_Used', 'Lab_RapidTest_Total', 'Lab_RapidTest_Available',
+        'Lab_RapidTest_Used', 'Face_shield_Total', 'Face_shield_Available',
+        'Face_shield_Used', 'Cover_all_Total', 'Cover_all_Available',
+        'Cover_all_Used', 'ถุงมือไนไตรล์ชนิดใช้', 'ถุงมือไนไตรล์ชนิดใช้_1',
+        'ถุงมือไนไตรล์ชนิดใช้_2', 'ถุงมือไนไตรล์ชนิดใช้_3',
+        'ถุงมือไนไตรล์ชนิดใช้_4', 'ถุงมือไนไตรล์ชนิดใช้_5',
+        'ถุงมือยางชนิดใช้แล้ว', 'ถุงมือยางชนิดใช้แล้ว_1',
+        'ถุงมือยางชนิดใช้แล้ว_2', 'ถุงสวมขา_Leg_cover_Total',
+        'ถุงสวมขา_Leg_cover_Available', 'ถุงสวมขา_Leg_cover_Used',
+        'พลาสติกหุ้มคอ_HOOD_Total', 'พลาสติกหุ้มคอ_HOOD_Available',
+        'พลาสติกหุ้มคอ_HOOD_Used', 'พลาสติกหุ้มรองเท้า_Total',
+        'พลาสติกหุ้มรองเท้า_Availab', 'พลาสติกหุ้มรองเท้า_Used',
+        'แว่นครอบตาแบบใส_Goggles_Total', 'แว่นครอบตาแบบใส_Goggles_Availab',
+        'แว่นครอบตาแบบใส_Goggles_Used', 'เสื้อกาวน์ชนิดกันน้ำ_T',
+        'เสื้อกาวน์ชนิดกันน้ำ_A', 'เสื้อกาวน์ชนิดกันน้ำ_U',
+        'หมวกคลุมผมชนิดใช้แล้', 'หมวกคลุมผมชนิดใช้แล้_1',
+        'หมวกคลุมผมชนิดใช้แล้_2', 'เอี๊ยมพลาสติกใส_Apron_Total',
+        'เอี๊ยมพลาสติกใส_Apron_Available', 'เอี๊ยมพลาสติกใส_Apron_Used',
+        'UTM_Total', 'UTM_Available', 'UTM_Used', 'VTM_Total', 'VTM_Available',
+        'VTM_Used', 'Throat_Swab_Total', 'Throat_Swab_Available',
+        'Throat_Swab_Used', 'NS_Swab_Total', 'NS_Swab_Available',
+        'NS_Swab_Used', 'Surgicalmask_Total', 'Surgicalmask_Available',
+        'Surgicalmask_Used', 'N95_Total', 'N95_Available', 'N95_Used',
+        'Dr_ChestMedicine_Total', 'Dr_ChestMedicine_Available',
+        'Dr_ChestMedicine_Used', 'Dr_ID_Medicine_Total',
+        'Dr_ID_Medicine_Availble', 'Dr_ID_Medicine_Used', 'Dr_Medical_Total',
+        'Dr_Medical_Available', 'Dr_Medical_Used', 'Nurse_ICN_Total',
+        'Nurse_ICN_Available', 'Nurse_ICN_Used', 'Nurse_RN_Total',
+        'Nurse_RN_Available', 'Nurse_RN_Used', 'Pharmacist_Total',
+        'Pharmacist_Available', 'Pharmacist_Used', 'MedTechnologist_Total',
+        'MedTechnologist_Available', 'MedTechnologist_Used', 'Screen_POE',
+        'Screen_Walk_in', 'PUI', 'Confirm_mild', 'Confirm_moderate',
+        'Confirm_severe', 'Confirm_Recovered', 'Confirm_Death', 'GlobalID',
+        'region_health', 'CoverAll_capacity', 'ICU_Covid_capacity',
+        'N95_capacity', 'AIIR_room_capacity', 'CoverAll_status',
+        'Asymptomatic', 'ICUforCovidTotal', 'ICUforCovidAvailable',
+        'ICUforCovidUsed'
+    ]
+    #    pui =  "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Corona_Date/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true" # noqa: E501
 
-#    icu = "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Private_ICU_Total%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&resultType=standard&cacheHint=true"
+    #    icu = "https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Private_ICU_Total%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&resultType=standard&cacheHint=true" # noqa: E501
 
     rows = []
     for page in range(0, 2000, 1000):
-        every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"
+        every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"  # noqa: E501
         file, content = next(web_files(every_district, dir="json", check=True))
         jcontent = json.loads(content)
         rows.extend([x['attributes'] for x in jcontent['features']])
