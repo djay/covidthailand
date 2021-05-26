@@ -439,7 +439,9 @@ def get_situation():
     yesterday = today - datetime.timedelta(days=1)
     stoday = today_situation.loc[today]
     syesterday = situation.loc[str(yesterday)] if str(yesterday) in situation else None
-    if syesterday is None or (syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and syesterday['Tested PUI'] != stoday['Tested PUI']):
+    is_updated = syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and \
+        syesterday['Tested PUI'] != stoday['Tested PUI']
+    if syesterday is None or is_updated:
         situation = situation.combine_first(today_situation)
 
     export(situation, "situation_reports")
@@ -485,7 +487,8 @@ def get_case_details_csv():
 
 def get_case_details_api():
     # _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
-    url = "https://data.go.th/api/3/action/datastore_search?resource_id=329f684b-994d-476b-91a4-62b2ea00f29f&limit=1000&offset="
+    rid = "329f684b-994d-476b-91a4-62b2ea00f29f"
+    url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit=1000&offset="
     records = []
 
     def get_page(i, check=False):
@@ -533,7 +536,8 @@ def get_cases_by_demographics_api():
     risks['Cluster บางแค'] = "Community"  # bangkhee
     risks['Cluster ตลาดพรพัฒน์'] = "Community"  # market
     risks['Cluster ระยอง'] = "Entertainment"  # Rayong
-    risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work"  # work with forigners
+    # work with forigners
+    risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work"
     risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Prison"  # detention
     risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
     risks['สนามมวย'] = "Entertainment"  # Boxing
@@ -589,7 +593,7 @@ def get_cases_by_demographics_api():
         # to / from Epidemic area, Bangkok Metropolis, 1
         20210510.9: 'ไปยัง/มาจาก พื้นที่ระบาดกรุงเทพมหานครมหานคร:Community',
         20210510.11: 'ระหว่างสอบสวน:Investigating',
-        # cluster pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima - birthday party
+        # party pakchong https://www.bangkokpost.com/thailand/general/2103827/5-covid-clusters-in-nakhon-ratchasima
         20210510.12: 'Cluster ปากช่อง:Entertainment',
         20210512.1: 'Cluster คลองเตย:Community',  # klongtoey cluster
         20210512.2: 'อยู่ระหว่างสอบสวนโรค:Investigating',
@@ -808,10 +812,12 @@ def briefing_case_detail_lines(soup):
         header, cells = seperate(cells, re.compile("ลักษณะผู้ติดเชื้อ").search)
         # "อยู่ระหว่างสอบสวน (93 ราย)" on 2021-04-05 screws things up as its not a province
         # have to use look behind
-        thai = "[\u0E00-\u0E7Fa-zA-Z'. ]+[\u0E00-\u0E7Fa-zA-Z'.](?<!อยู่ระหว่างสอบสวน)(?<!ยู่ระหว่างสอบสวน)(?<!ระหว่างสอบสวน)"
+        thai = r"[\u0E00-\u0E7Fa-zA-Z'. ]+[\u0E00-\u0E7Fa-zA-Z'.]"
+        not_prov = r"(?<!อยู่ระหว่างสอบสวน)(?<!ยู่ระหว่างสอบสวน)(?<!ระหว่างสอบสวน)"
+        provish = f"{thai}{not_prov}"
         nl = " *\n* *"
         nu = "(?:[0-9]+)"
-        is_pcell = re.compile(rf"({thai}(?:{nl}\({thai}\))?{nl}\( *{nu} *ราย *\))")
+        is_pcell = re.compile(rf"({provish}(?:{nl}\({provish}\))?{nl}\( *{nu} *ราย *\))")
         lines = pairwise(islice(is_pcell.split("\n".join(cells)), 1, None))  # beacause can be split over <p>
         yield title, lines
 
@@ -921,7 +927,13 @@ def briefing_case_types(date, pages):
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
             cases, walkins, proactive, *quarantine = numbers
             quarantine = quarantine[0] if quarantine else 0
-            ports, rest = get_next_number(text, "ช่องเส้นทางธรรมชาติ", "รายผู้ที่เดินทางมาจากต่างประเทศ", before=True, default=0)
+            ports, rest = get_next_number(
+                text,
+                "ช่องเส้นทางธรรมชาติ",
+                "รายผู้ที่เดินทางมาจากต่างประเทศ",
+                before=True,
+                default=0
+            )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
         proactive += prison  # not sure if they are going to add this category going forward?
@@ -1513,6 +1525,66 @@ def get_test_reports():
 # Vaccination reports
 ################################
 
+def vaccination_page(vaccinations, allocations, vacnew, date, page, file):
+    def assert_no_repeat(d, prov, thaiprov, numbers):
+        prev = d.get((date, prov))
+        msg = f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {prev}"
+        assert prev in [None, numbers], msg
+
+    shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
+    oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+    lines = [line.strip() for line in page.split('\n') if line.strip()]
+    preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
+    for headings, lines in pairwise(rest):
+        shot_count = max(len(shots.findall(h)) for h in headings)
+        oh_count = max(len(oldhead.findall(h)) for h in headings)
+        table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count, "old_given" if oh_count else None)
+        if not table:
+            continue
+        added = 0
+        for line in lines:
+            # fix some number broken in the middle
+            line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
+            area, *rest = line.split(' ', 1)
+            if area == "รวม" or not rest:
+                break
+            if area in ["เข็มที่", "และ"]:  # Extra heading
+                continue
+            cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
+            if len(cols) < 5:
+                break
+            if NUM_OR_DASH.match(area):
+                thaiprov, *cols = cols
+            else:
+                thaiprov = area
+            prov = get_province(thaiprov, prov_guesses)
+            numbers = parse_numbers(cols)
+            added += 1
+            if table == "alloc":
+                allocations[(date, prov)] = numbers[3:7]
+            elif table == "given":
+                if len(numbers) == 16:
+                    alloc_sino, alloc_az, *numbers = numbers
+                assert len(numbers) == 14
+                assert_no_repeat(vaccinations, prov, thaiprov, numbers)
+                vaccinations[(date, prov)] = numbers
+            elif table == "new_given":
+                assert len(numbers) == 12  # some extra "-" throwing it out. have to use camelot
+                assert_no_repeat(vacnew, prov, thaiprov, numbers)
+                vacnew[(date, prov)] = numbers
+            elif table == "old_given":
+                alloc, target_num, given, perc, *rest = numbers
+                medical, frontline, disease, elders, riskarea, *rest = rest
+                # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
+                # unknown = sum(rest)
+                vaccinations[(date, prov)] = [given, perc, 0, 0] + \
+                    [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
+                allocations[(date, prov)] = [alloc, 0, 0, 0]
+        assert added > 7
+        print(f"{date.date()}: {table} Vaccinations: {added}", file)
+    return vaccinations, allocations, vacnew
+
+
 def get_vaccinations():
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
@@ -1523,63 +1595,11 @@ def get_vaccinations():
     vaccinations = {}
     allocations = {}
     vacnew = {}
-    shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-    oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-        lines = [line.strip() for line in page.split('\n') if line.strip()]
-        preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
-        for headings, lines in pairwise(rest):
-            shot_count = max(len(shots.findall(h)) for h in headings)
-            oh_count = max(len(oldhead.findall(h)) for h in headings)
-            table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count, "old_given" if oh_count else None)
-            if not table:
-                continue
-            added = 0
-            for line in lines:
-                # fix some number broken in the middle
-                line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
-                area, *rest = line.split(' ', 1)
-                if area == "รวม" or not rest:
-                    break
-                if area in ["เข็มที่", "และ"]:  # Extra heading
-                    continue
-                cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
-                if len(cols) < 5:
-                    break
-                if NUM_OR_DASH.match(area):
-                    thaiprov, *cols = cols
-                else:
-                    thaiprov = area
-                prov = get_province(thaiprov, prov_guesses)
-                numbers = parse_numbers(cols)
-                added += 1
-                if table == "alloc":
-                    allocations[(date, prov)] = numbers[3:7]
-                elif table == "given":
-                    if len(numbers) == 16:
-                        alloc_sino, alloc_az, *numbers = numbers
-                    assert len(numbers) == 14
-                    assert vaccinations.get((date, prov)) in [
-                        None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
-                    vaccinations[(date, prov)] = numbers
-                elif table == "new_given":
-                    assert len(numbers) == 12  # some extra "-" throwing it out. have to use camelot
-                    assert vacnew.get((date, prov)) in [None, numbers], f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {vaccinations.get((date,prov))}"
-                    vacnew[(date, prov)] = numbers
-                elif table == "old_given":
-                    alloc, target_num, given, perc, *rest = numbers
-                    medical, frontline, disease, elders, riskarea, *rest = rest
-                    # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
-                    # unknown = sum(rest)
-                    vaccinations[(date, prov)] = [given, perc, 0, 0] + \
-                        [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
-                    allocations[(date, prov)] = [alloc, 0, 0, 0]
-            assert added > 7
-            print(f"{date.date()}: {table} Vaccinations: {added}")
-            continue
+        vaccinations, allocations, vacnew = vaccination_page(vaccinations, allocations, vacnew, date, page, file)
     df = pd.DataFrame((list(key) + value for key, value in vaccinations.items()), columns=[
         "Date",
         "Province",
@@ -1753,10 +1773,10 @@ def scrape_and_combine():
         # Comment out what you don't need to run
         # situation = get_situation()
         # cases_by_area = get_cases_by_area()
-        # vac = get_vaccinations()
+        vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
-        tests_reports = get_test_reports()
+        # tests_reports = get_test_reports()
         # cases = get_cases()
         pass
     else:
