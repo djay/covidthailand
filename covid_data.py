@@ -441,9 +441,10 @@ def get_situation():
     yesterday = today - datetime.timedelta(days=1)
     stoday = today_situation.loc[today]
     syesterday = situation.loc[str(yesterday)] if str(yesterday) in situation else None
-    is_updated = syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and \
-        syesterday['Tested PUI'] != stoday['Tested PUI']
-    if syesterday is None or is_updated:
+    if syesterday is None:
+        situation = situation.combine_first(today_situation)
+    elif syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and \
+            syesterday['Tested PUI'] != stoday['Tested PUI']:
         situation = situation.combine_first(today_situation)
 
     export(situation, "situation_reports")
@@ -1783,7 +1784,7 @@ def scrape_and_combine():
 
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        # situation = get_situation()
+        situation = get_situation()
         # cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
