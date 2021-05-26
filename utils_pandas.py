@@ -14,12 +14,14 @@ def daterange(start_date, end_date, offset=0):
     for n in range(int((end_date - start_date).days) + offset):
         yield start_date + datetime.timedelta(n)
 
+
 def spread_date_range(start, end, row, columns):
     "take some values and spread it over a period of dates in proportion to data already there"
     r = list(daterange(start, end, offset=1))
     stats = [float(p) / len(r) for p in row]
     results = pd.DataFrame([[date] + stats for date in r], columns=columns).set_index("Date")
     return results
+
 
 def add_data(data, df):
     "Appends while dropping any duplicate rows"
@@ -32,6 +34,7 @@ def add_data(data, df):
         data = data.set_index(idx_names)
     return data
 
+
 def check_cum(df, results):
     if results.empty:
         return True
@@ -41,6 +44,7 @@ def check_cum(df, results):
         return True
     else:
         raise Exception(str(next_day - last))
+
 
 def cum2daily(results):
     cum = results[(c for c in results.columns if " Cum" in c)]
@@ -73,6 +77,7 @@ def rearrange(lst, *first):
         result.append(lst[f - 1])
         lst[f - 1] = None
     return result + [i for i in lst if i is not None]
+
 
 def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=None, return_unmatched=False):
     "does a pandas join but matching very similar entries"
@@ -112,7 +117,7 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=
     else:
         return second
 
-# Combine and plot
+
 def export(df, name, csv_only=False):
     print(f"Exporting: {name}")
     df = df.reset_index()
@@ -133,6 +138,7 @@ def export(df, name, csv_only=False):
         index=False
     )
 
+
 def import_csv(name):
     path = os.path.join("api", f"{name}.csv")
     if not os.path.exists(path):
@@ -140,6 +146,7 @@ def import_csv(name):
     old = pd.read_csv(path)
     old['Date'] = pd.to_datetime(old['Date'])
     return old
+
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
     "return df with columns of valuefunc for the top x provinces by metricfunc"
@@ -172,6 +179,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     else:
         return series[cols]
 
+
 def trendline(data: pd.DataFrame, order: int = 1) -> float:
     # simulate dates with monotonic inc numbers
     dates = range(0, len(data.index.values))
@@ -179,7 +187,10 @@ def trendline(data: pd.DataFrame, order: int = 1) -> float:
     slope = coeffs[-2]
     return float(slope)
 
+
+#################
 # Plot helpers
+#################
 
 def custom_cm(cm_name: str, size: int, last_colour: str = None, flip: bool = False) -> ListedColormap:
     """Returns a ListedColorMap object built with the supplied color scheme and with the last color forced to be equal
@@ -195,6 +206,7 @@ def custom_cm(cm_name: str, size: int, last_colour: str = None, flip: bool = Fal
         newcolors[size - 1, :] = matplotlib.colors.to_rgba(last_colour)  # used for unknowns (ex: 'lightgrey')
 
     return ListedColormap(newcolors)
+
 
 def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: int) -> pd.DataFrame:
     """Removes the last n rows in the event that they contain any NaN
@@ -213,6 +225,7 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
     cleaned_df = df_all.drop(index=index_nans)
 
     return cleaned_df
+
 
 def get_cycle(cmap, n=None, use_index="auto"):
     if isinstance(cmap, str):

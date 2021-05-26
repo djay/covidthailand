@@ -107,6 +107,7 @@ def get_next_number(content, *matches, default=None, remove=False, before=False,
     num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until)
     return num[0] if num else default, rest
 
+
 def toint(s):
     return int(s.replace(',', '')) if s else None
 

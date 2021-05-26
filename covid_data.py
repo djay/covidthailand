@@ -297,6 +297,7 @@ def get_en_situation():
     results = missing[["Cases Local Transmission Cum", "Cases Proactive Cum", ]].combine_first(results)
     return results
 
+
 def situation_pui_th(parsed_pdf, date, results):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
@@ -375,6 +376,7 @@ def situation_pui_th(parsed_pdf, date, results):
     ).set_index("Date")
     assert check_cum(df, results)
     return df
+
 
 def get_thai_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
@@ -669,6 +671,7 @@ def parse_official_tweet(df, date, text):
     print(date, "Official:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
+
 def parse_unofficial_tweet(df, date, text):
     numbers, _ = get_next_numbers(text, "Thai health ministry reporting")
     if not numbers:
@@ -679,6 +682,7 @@ def parse_unofficial_tweet(df, date, text):
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
     print(date, "Breaking:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
+
 
 def parse_case_prov_tweet(walkins, proactive, date, text):
     if "📍" not in text:
@@ -1062,6 +1066,7 @@ def briefing_province_cases(date, pages):
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
     return df
 
+
 def briefing_deaths_summary(text, date):
     title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19)")
     if not title_re.search(text):
@@ -1115,6 +1120,7 @@ def briefing_deaths_summary(text, date):
           sum.to_string(header=False, index=False))
     return sum, dfprov
 
+
 def briefing_deaths_cells(cells, date, all):
     rows = []
     for cell in cells:
@@ -1156,6 +1162,7 @@ def briefing_deaths_cells(cells, date, all):
                                     "risk_factor_death"]).set_index("death_num")
     return all.append(df, verify_integrity=True)
 
+
 def briefing_deaths_table(orig, date, all):
     """death details per quadrant or page, turned into table by camelot"""
     df = orig.drop(columns=[0, 10])
@@ -1179,6 +1186,7 @@ def briefing_deaths_table(orig, date, all):
     #         case_num, age, *dates = get_next_numbers("")
     #         print(row)
     return all
+
 
 def briefing_deaths(file, date, pages):
     # Only before the 2021-04-29
@@ -1409,6 +1417,7 @@ test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
 columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
 raw_cols = ["Start", "End", ] + pos_cols + test_cols
 
+
 def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     start, end = find_date_range(title)
     if start is None or "เริ่มเปิดบริการ" in title or not any_in(title, "เขตสุขภาพ", "เขตสุขภำพ"):
@@ -1428,6 +1437,7 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
+
 
 def get_tests_by_area_pdf(file, page, data, raw):
     start, end = find_date_range(page)
@@ -1694,6 +1704,7 @@ def get_vaccinations():
 # Misc
 ################################
 
+
 def get_ifr():
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
     file, _ = next(web_files(url, dir="json"))
@@ -1765,6 +1776,7 @@ def get_hospital_resources():
 USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
     os.path.exists(os.path.join('api', 'combined.csv'))
 
+
 def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
@@ -1809,6 +1821,7 @@ def scrape_and_combine():
     else:
         export(df, "combined", csv_only=True)
         return df
+
 
 if __name__ == "__main__":
 
