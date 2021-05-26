@@ -1,9 +1,7 @@
 # coding=utf8
 import datetime
-from thaiutils import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
-from pandasutils import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range, topprov
-from scraping import CHECK_NEWER, all_in, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links
 import dateutil
+from dateutil.parser import parse as d
 from itertools import islice
 import json
 import os
@@ -13,8 +11,12 @@ from bs4 import BeautifulSoup
 import camelot
 import numpy as np
 import pandas as pd
-from dateutil.parser import parse as d
 
+from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, \
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
+from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
+from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, \
+    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links, all_in
 
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])

@@ -346,5 +346,6 @@ def parse_numbers(lst):
 def any_in(target, *matches):
     return any(m in target for m in matches)
 
+
 def all_in(target, *matches):
     return all(m in target for m in matches)

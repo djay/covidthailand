@@ -1,6 +1,6 @@
 import json
-from pandasutils import fuzzy_join
-from scraping import remove_prefix, remove_suffix, web_files
+from utils_pandas import fuzzy_join
+from utils_scraping import remove_prefix, remove_suffix, web_files
 import pandas as pd
 import re
 import datetime
