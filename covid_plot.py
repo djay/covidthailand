@@ -1,9 +1,6 @@
 import os
-from thaiutils import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, thaipop, thaipop2
-from covidthailand import USE_CACHE_DATA, get_ifr, scrape_and_combine
-from scraping import remove_suffix
-from pandasutils import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
 from typing import Sequence, Union, List, Callable
+
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
@@ -11,8 +8,12 @@ import matplotlib.cm
 import pathlib
 import pandas as pd
 
+from covid_data import USE_CACHE_DATA, get_ifr, scrape_and_combine
+from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, thaipop, thaipop2
+from utils_scraping import remove_suffix
+from utils_pandas import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
 
-# df = df.cumsum()
+
 AREA_LEGEND_ORDERED = [
     "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
     "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
