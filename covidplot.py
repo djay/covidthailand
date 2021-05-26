@@ -1,7 +1,7 @@
 import os
 from thaiutils import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, thaipop, thaipop2
 from covidthailand import USE_CACHE_DATA, get_ifr, scrape_and_combine
-from scraping import CHECK_NEWER, remove_suffix
+from scraping import remove_suffix
 from pandasutils import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
 from typing import Sequence, Union, List, Callable
 import matplotlib
@@ -647,7 +647,6 @@ Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
 
 
 if __name__ == "__main__":
-    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
     df = scrape_and_combine()
     save_plots(df)

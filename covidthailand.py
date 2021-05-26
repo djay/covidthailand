@@ -2,7 +2,7 @@
 import datetime
 from thaiutils import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
 from pandasutils import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range, topprov
-from scraping import any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links
+from scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, web_files, web_links
 import dateutil
 from itertools import islice
 import json
@@ -15,9 +15,6 @@ import numpy as np
 import pandas as pd
 from dateutil.parser import parse as d
 
-
-USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
-                    os.path.exists(os.path.join('api', 'combined.csv'))
 
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
@@ -1711,6 +1708,12 @@ def get_hospital_resources():
 
 
 def scrape_and_combine():
+    USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
+                    os.path.exists(os.path.join('api', 'combined.csv'))
+
+
+    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
+
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
         #situation = get_situation()
@@ -1756,3 +1759,7 @@ def scrape_and_combine():
         export(df, "combined", csv_only=True)
         return df
 
+if __name__ == "__main__":
+
+    # does exports
+    scrape_and_combine()
