@@ -18,16 +18,7 @@ def spread_date_range(start, end, row, columns):
     "take some values and spread it over a period of dates in proportion to data already there"
     r = list(daterange(start, end, offset=1))
     stats = [float(p) / len(r) for p in row]
-    results = pd.DataFrame(
-        [
-            [
-                date,
-            ]
-            + stats
-            for date in r
-        ],
-        columns=columns,
-    ).set_index("Date")
+    results = pd.DataFrame([[date] + stats for date in r], columns=columns).set_index("Date")
     return results
 
 def add_data(data, df):
@@ -55,7 +46,7 @@ def cum2daily(results):
     cum = results[(c for c in results.columns if " Cum" in c)]
     all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
     cum = cum.reindex(all_days)  # put in missing days with NaN
-    #cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
+    # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
     cum = cum - cum.shift(+1)  # we got cumilitive data
     renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
     cum = cum.rename(columns=renames)
@@ -71,19 +62,21 @@ def human_format(num: float, pos: int) -> str:
     suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
     return f'{num:.1f}{suffix}'
 
-def rearrange(l, *first):
+
+def rearrange(lst, *first):
     "reorder a list by moving first items to the front. Can be index or value"
-    l = list(l)
+    lst = list(lst)
     result = []
     for f in first:
         if type(f) != int:
-            f = l.index(f)+1
-        result.append(l[f-1])
-        l[f-1] = None
-    return result + [i for i in l if i is not None]
+            f = lst.index(f) + 1
+        result.append(lst[f - 1])
+        lst[f - 1] = None
+    return result + [i for i in lst if i is not None]
 
-def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_on_with=None, return_unmatched=False):
+def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=None, return_unmatched=False):
     "does a pandas join but matching very similar entries"
+    trim = trim if trim is not None else lambda x: x
     old_index = None
     if on not in a.columns:
         old_index = a.index.names
@@ -104,8 +97,10 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=lambda x: x, replace_o
 
     unmatched_counts = pd.DataFrame()
     if return_unmatched and not unmatched.empty:
-        to_keep = [test, replace_on_with] if replace_on_with is not None else [test]
-        unmatched_counts = unmatched[[on]].join(second[to_keep]).value_counts().reset_index().rename(columns={0: "count"})
+        to_keep = [
+            test, replace_on_with] if replace_on_with is not None else [test]
+        unmatched_counts = unmatched[[on]].join(
+            second[to_keep]).value_counts().reset_index().rename(columns={0: "count"})
 
     if replace_on_with is not None:
         second[on] = second[replace_on_with]
@@ -135,7 +130,7 @@ def export(df, name, csv_only=False):
         )
     df.to_csv(
         os.path.join("api", f"{name}.csv"),
-        index=False 
+        index=False
     )
 
 def import_csv(name):

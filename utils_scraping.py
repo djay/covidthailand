@@ -87,7 +87,7 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         found = ahead if before else behind
         if until is not None and until in found:
             found, rest = found.split(until, 1)  # TODO: how to put it back togeather if behind=True?
-            rest = until+rest
+            rest = until + rest
         else:
             rest = ""
         numbers = (INT_RE if ints else NUM_RE).findall(found)
@@ -96,7 +96,7 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
             behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
-        return numbers, matched + " " + rest + behind 
+        return numbers, matched + " " + rest + behind
     if debug and matches:
         print("Couldn't find '{}'".format(match))
         print(content)
@@ -165,14 +165,16 @@ def is_remote_newer(file, remote_date, check=True):
 def web_links(*index_urls, ext=".pdf", dir="html", match=None):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
+
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
+
     for index_url in index_urls:
         for file, index in web_files(index_url, dir=dir, check=True):
             soup = parse_file(file, html=True, paged=False)
             links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
-            for l in links:
-                yield l
+            for link in links:
+                yield link
 
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
@@ -237,7 +239,8 @@ def dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav", username
 
 
 def parse_tweet(tw, tweet, found, *matches):
-    "if tweet contains any of matches return its text joined with comments by the same person that also match (and contain [1/2] etc)"
+    """if tweet contains any of matches return its text joined with comments by the same person
+    that also match (and contain [1/2] etc)"""
     if not any_in(tweet.get('text', tweet.get("comment", "")), *matches):
         return ""
     text = tw.get_tweetinfo(tweet['id']).contents['text']
@@ -247,9 +250,9 @@ def parse_tweet(tw, tweet, found, *matches):
     if "[" not in text:
         return text
     for t in sorted(tw.get_tweetcomments(tweet['id']).contents, key=lambda t: t['id']):
-        rest = parse_tweet(tw, t, found+[text], *matches)
+        rest = parse_tweet(tw, t, found + [text], *matches)
         if rest and rest not in text:
-            text += " " + rest 
+            text += " " + rest
     return text
 
 
@@ -269,7 +272,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in ([50, 2000, 5000] if tweets else [5000]):
-        print(f"Getting {limit} tweets")       
+        print(f"Getting {limit} tweets")
         for tweet in sorted(tw.get_tweets(userid, count=limit).contents, key=lambda t: t['id']):
             date = tweet['created_at'].date()
             text = parse_tweet(tw, tweet, tweets.get(date, []), *matches)
@@ -326,20 +329,20 @@ def split(seq, condition, maxsplit=0):
             splits += 1
             yield run
             run = [i]
-            last = not last            
+            last = not last
     yield run
 
-# def nwise(iterable, n=2):                                                      
-#     iters = tee(iterable, n)                                                     
-#     for i, it in enumerate(iters):                                               
-#         next(islice(it, i, i), None)                                               
-#     return zip(*iters)   
+# def nwise(iterable, n=2):
+#     iters = tee(iterable, n)
+#     for i, it in enumerate(iters):
+#         next(islice(it, i, i), None)
+#     return zip(*iters)
 
 
 def pairwise(lst):
     "Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"
     lst = list(lst)
-    return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))    
+    return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))
 
 
 def parse_numbers(lst):
