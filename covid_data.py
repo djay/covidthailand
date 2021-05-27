@@ -1866,7 +1866,6 @@ def scrape_and_combine():
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
-    export(get_fuzzy_provinces(), "fuzz_provinces", csv_only=True)
 
     if quick:
         old = import_csv("combined")
@@ -1876,6 +1875,7 @@ def scrape_and_combine():
         return df
     else:
         export(df, "combined", csv_only=True)
+        export(get_fuzzy_provinces(), "fuzzy_provinces", csv_only=True)
         return df
 
 
