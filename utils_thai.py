@@ -181,20 +181,21 @@ def parse_gender(x):
 
 
 def thaipop(num: float, pos: int) -> str:
-    pp = num/69630000*100
-    num = num/1000000
+    pp = num / 69630000 * 100
+    num = num / 1000000
     return f'{num:.1f}M / {pp:.1f}%'
 
 
 def thaipop2(num: float, pos: int) -> str:
-    pp = num/69630000/2*100
-    num = num/1000000
+    pp = num / 69630000 / 2 * 100
+    num = num / 1000000
     return f'{num:.1f}M / {pp:.1f}%'
 
 
 def get_provinces():
-    #_, districts = next(web_files("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts", dir="html"))
-    areas = pd.read_html("https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts")[0]
+    url = "https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts"
+    # _, districts = next(web_files(url, dir="html"))
+    areas = pd.read_html(url)[0]
     provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces")
     provinces['Provinces'] = provinces['Provinces'].str.strip()
     provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
@@ -394,9 +395,8 @@ def get_provinces():
     provinces.loc['ชัยภูมิ'] = provinces.loc['Chaiyaphum']
     provinces.loc['กัมพูชา'] = provinces.loc['Unknown']  # Cambodia
     provinces.loc['มาเลเซีย'] = provinces.loc['Unknown']  # Malaysia
-    provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison']  # Prison. Currently cluster just there. might have to change later
-    provinces.loc['เรอืนจาฯ'] = provinces.loc["Prison"] # Rohinja?
-    #provinces.loc['เรอื นจาฯ'] = provinces.loc['Prison']
+    provinces.loc['เรอืนจา/ทีต่อ้งขงั'] = provinces.loc['Prison']
+    provinces.loc['เรอืนจาฯ'] = provinces.loc["Prison"]  # Rohinja?
     provinces.loc['อานาจเจรญ'] = provinces.loc["Amnat Charoen"]
     provinces.loc['ลาพนู'] = provinces.loc["Lamphun"]
     provinces.loc['กาแพงเพชร'] = provinces.loc["Kamphaeng Phet"]
@@ -414,7 +414,12 @@ def get_provinces():
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
     cases = pd.DataFrame(json.loads(cases)["Data"])
     cases = cases.rename(columns=dict(Province="ProvinceTh", ProvinceAlt="Provinces"))
-    lup_province = cases.groupby(['ProvinceId', 'ProvinceTh', 'ProvinceEn']).size().reset_index().rename({0: 'count'}, axis=1).sort_values('count', ascending=False).set_index("ProvinceEn")
+    lup_province = cases.groupby(
+        ['ProvinceId', 'ProvinceTh',
+         'ProvinceEn']).size().reset_index().rename({
+             0: 'count'
+         }, axis=1).sort_values('count',
+                                ascending=False).set_index("ProvinceEn")
     # get the proper names from provinces
     lup_province = lup_province.reset_index().rename(columns=dict(ProvinceEn="ProvinceAlt"))
     lup_province = lup_province.set_index("ProvinceAlt").join(provinces)
@@ -429,22 +434,39 @@ def get_provinces():
     file, _ = next(web_files(lupurl, dir="json", check=False))
     abr = pd.read_csv(file)
     on_enname = abr.merge(provinces, right_index=True, left_on="enName")
-    provinces = provinces.combine_first(on_enname.rename(columns=dict(thName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName", "thAbbr"]))
-    provinces = provinces.combine_first(on_enname.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName", "thName"]))
+    provinces = provinces.combine_first(
+        on_enname.rename(columns=dict(
+            thName="ProvinceAlt")).set_index("ProvinceAlt").drop(
+                columns=["enAbbr", "enName", "thAbbr"]))
+    provinces = provinces.combine_first(
+        on_enname.rename(columns=dict(
+            thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(
+                columns=["enAbbr", "enName", "thName"]))
 
     on_thai = abr.merge(provinces, right_index=True, left_on="thName")
-    provinces = provinces.combine_first(on_thai.rename(columns=dict(enName="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "thName", "thAbbr"]))
-    provinces = provinces.combine_first(on_thai.rename(columns=dict(thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["enAbbr", "enName", "thName"]))
-    provinces = provinces.combine_first(on_thai.rename(columns=dict(enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(columns=["thAbbr", "enName", "thName"]))
+    provinces = provinces.combine_first(
+        on_thai.rename(columns=dict(
+            enName="ProvinceAlt")).set_index("ProvinceAlt").drop(
+                columns=["enAbbr", "thName", "thAbbr"]))
+    provinces = provinces.combine_first(
+        on_thai.rename(columns=dict(
+            thAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(
+                columns=["enAbbr", "enName", "thName"]))
+    provinces = provinces.combine_first(
+        on_thai.rename(columns=dict(
+            enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(
+                columns=["thAbbr", "enName", "thName"]))
 
     # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
 
     # Add in population data
-    #popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
+    # popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
     popurl = "https://en.wikipedia.org/wiki/Provinces_of_Thailand"
     file, _ = next(web_files(popurl, dir="html", check=False))
     pop = pd.read_html(file)[2]
-    pop = pop.join(provinces, on="Name(in Thai)").set_index("ProvinceEn").rename(columns={"Population (2019)[1]": "Population"})
+    pop = pop.join(provinces,
+                   on="Name(in Thai)").set_index("ProvinceEn").rename(
+                       columns={"Population (2019)[1]": "Population"})
 
     provinces = provinces.join(pop["Population"], on="ProvinceEn")
 
@@ -467,10 +489,9 @@ def get_province(prov, guesses, ignore_error=False):
             else:
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
-                #continue
         proven = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
-        guesses.loc[(guesses.last_valid_index() or 0) +1] = dict(Province=prov, ProvinceEn=proven, count=1)  
-        return proven 
+        guesses.loc[(guesses.last_valid_index() or 0) + 1] = dict(Province=prov, ProvinceEn=proven, count=1)
+        return proven
 
 
 def prov_trim(p):
@@ -478,17 +499,31 @@ def prov_trim(p):
 
 
 def join_provinces(df, on, guesses):
-    joined, guess = fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn", return_unmatched=True)
+    joined, guess = fuzzy_join(
+        df,
+        PROVINCES[["Health District Number", "ProvinceEn"]],
+        on,
+        True,
+        prov_trim,
+        "ProvinceEn",
+        return_unmatched=True)
     if not guess.empty:
-        prov_guesses = guess.reset_index().rename(columns={on:"Province"})[['Province','ProvinceEn','count']]
+        prov_guesses = guess.reset_index().rename(columns={on: "Province"})[['Province', 'ProvinceEn', 'count']]
         for i, row in prov_guesses.iterrows():
             guesses.loc[(guesses.last_valid_index() or 0) + 1] = row
-    
+
     return joined
 
 
 def area_crosstab(df, col, suffix):
-    given_2 = df.reset_index()[['Date', col+suffix, 'Health District Number']]
-    given_by_area_2 = pd.crosstab(given_2['Date'], given_2['Health District Number'], values=given_2[col+suffix],  aggfunc='sum')
-    given_by_area_2.columns = [f"{col} Area {c}{suffix}" for c in given_by_area_2.columns]
+    given_2 = df.reset_index()[[
+        'Date', col + suffix, 'Health District Number'
+    ]]
+    given_by_area_2 = pd.crosstab(given_2['Date'],
+                                  given_2['Health District Number'],
+                                  values=given_2[col + suffix],
+                                  aggfunc='sum')
+    given_by_area_2.columns = [
+        f"{col} Area {c}{suffix}" for c in given_by_area_2.columns
+    ]
     return given_by_area_2
