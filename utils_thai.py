@@ -14,10 +14,8 @@ from utils_scraping import remove_prefix, remove_suffix, web_files
 DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
 DISTRICT_RANGE = DISTRICT_RANGE_SIMPLE + ["Prison"]
 DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
-pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-COLUMNS = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-RAW_COLS = ["Start", "End", ] + pos_cols + test_cols
+POS_COLS = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+TEST_COLS = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 

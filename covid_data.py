@@ -16,8 +16,8 @@ from utils_scraping import USE_CACHE_DATA, CHECK_NEWER, any_in, dav_files, get_n
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, RAW_COLS, COLUMNS, \
-    prov_guesses
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
+    prov_guesses, POS_COLS, TEST_COLS
 
 
 ##########################################
@@ -1418,12 +1418,12 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     pos = list(series["จำนวนผลบวก"])
     tests = list(series["จำนวนตรวจ"])
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, COLUMNS)
+    results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     # print(results)
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=RAW_COLS
+        columns=["Start", "End", ] + POS_COLS + TEST_COLS
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
@@ -1454,11 +1454,11 @@ def get_tests_by_area_pdf(file, page, data, raw):
     pos = numbers[0:13]
     tests = numbers[tests_start:tests_start + 13]
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, COLUMNS)
+    results = spread_date_range(start, end, row, ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"])
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=RAW_COLS
+        columns=["Start", "End", ] + pos_cols + test_cols
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
@@ -1836,11 +1836,11 @@ def scrape_and_combine():
 
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        situation = get_situation()
+        # situation = get_situation()
         # cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
+        # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
-        # tests = get_tests_by_day()
+        tests = get_tests_by_day()
         # tests_reports = get_test_reports()
         # cases = get_cases()
         pass
