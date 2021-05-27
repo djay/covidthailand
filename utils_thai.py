@@ -11,14 +11,18 @@ from utils_pandas import fuzzy_join, rearrange
 from utils_scraping import remove_prefix, remove_suffix, web_files
 
 
+DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
+DISTRICT_RANGE = DISTRICT_RANGE_SIMPLE + ["Prison"]
+DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
+pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+COLUMNS = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
+RAW_COLS = ["Start", "End", ] + pos_cols + test_cols
+
+
 ###############
 # Date helpers
 ###############
-def today() -> datetime.datetime:
-    """Return today's date and time"""
-    return datetime.datetime.today()
-
-
 AREA_LEGEND_ORDERED = [
     "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
     "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
@@ -67,6 +71,11 @@ THAI_FULL_MONTHS = [
     "พฤศจิกายน",
     "ธันวาคม",
 ]
+
+
+def today() -> datetime.datetime:
+    """Return today's date and time"""
+    return datetime.datetime.today()
 
 
 def file2date(file):
@@ -166,6 +175,7 @@ def find_date_range(content):
     else:
         return None, None
 
+
 def parse_gender(x):
     return "Male" if "ชาย" in x else "Female"
 
@@ -180,15 +190,6 @@ def thaipop2(num: float, pos: int) -> str:
     pp = num/69630000/2*100
     num = num/1000000
     return f'{num:.1f}M / {pp:.1f}%'
-
-
-DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
-DISTRICT_RANGE = DISTRICT_RANGE_SIMPLE + ["Prison"]
-DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
-pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-COLUMNS = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-RAW_COLS = ["Start", "End", ] + pos_cols + test_cols
 
 
 def get_provinces():
@@ -471,8 +472,10 @@ def get_province(prov, guesses, ignore_error=False):
         guesses.loc[(guesses.last_valid_index() or 0) +1] = dict(Province=prov, ProvinceEn=proven, count=1)  
         return proven 
 
+
 def prov_trim(p):
     return remove_suffix(remove_prefix(p, "จ.").strip(' .'), " Province")
+
 
 def join_provinces(df, on, guesses):
     joined, guess = fuzzy_join(df, PROVINCES[["Health District Number", "ProvinceEn"]], on, True, prov_trim, "ProvinceEn", return_unmatched=True)

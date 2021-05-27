@@ -192,7 +192,6 @@ def trendline(data: pd.DataFrame, order: int = 1) -> float:
 #################
 # Plot helpers
 #################
-
 def custom_cm(cm_name: str, size: int, last_colour: str = None, flip: bool = False) -> ListedColormap:
     """Returns a ListedColorMap object built with the supplied color scheme and with the last color forced to be equal
     to the parameter passed. The flip parameter allows to reverse the colour scheme if needed.

@@ -20,7 +20,8 @@ CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 USE_CACHE_DATA = \
     os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists(os.path.join('api', 'combined.csv'))
 
-
+NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
+INT_RE = re.compile(r"\d+(?:\,\d+)*")
 NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
 
 requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
@@ -35,8 +36,6 @@ s.mount("https://", HTTPAdapter(max_retries=RETRY))
 ####################
 # Extraction helpers
 #####################
-
-
 def parse_file(filename, html=False, paged=True):
     pages_txt = []
 
@@ -73,10 +72,6 @@ def parse_file(filename, html=False, paged=True):
         return pages_txt
     else:
         return '\n\n\n'.join(pages_txt)
-
-
-NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
-INT_RE = re.compile(r"\d+(?:\,\d+)*")
 
 
 def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None):
@@ -147,8 +142,6 @@ def pptx2chartdata(file):
 ####################
 # Download helpers
 ####################
-
-
 def is_remote_newer(file, remote_date, check=True):
     if not os.path.exists(file):
         print(f"Missing: {file}")
@@ -243,8 +236,6 @@ def dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav", username
 #################
 # Twitter helpers
 #################
-
-
 def parse_tweet(tw, tweet, found, *matches):
     """if tweet contains any of matches return its text joined with comments by the same person
     that also match (and contain [1/2] etc)"""
