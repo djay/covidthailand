@@ -60,13 +60,13 @@ jobs:
       # - name: Check for updated data
       #   if: ${{ github.event_name	== 'schedule' }}
       #   run: |
-      #       python covidthailand.py
+      #       python covid_plot.py
       #   env:
       #       CHECK_NEWER: True 
       - name: Check for new data only
       #  if: ${{ github.event_name	!= 'schedule' }}
         run: |
-            python covidthailand.py
+            python covid_plot.py
       - name: Upload png to wiki
         if: success() && github.ref == 'refs/heads/main'
         uses: kai-tub/external-repo-sync-action@v1
