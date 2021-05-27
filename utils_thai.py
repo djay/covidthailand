@@ -476,7 +476,7 @@ def get_provinces():
 PROVINCES = get_provinces()
 
 
-def get_province(prov, guesses, ignore_error=False):
+def get_province(prov, ignore_error=False):
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     try:
         return PROVINCES.loc[prov]['ProvinceEn']
@@ -490,7 +490,7 @@ def get_province(prov, guesses, ignore_error=False):
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
                 raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
         proven = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
-        guesses.loc[(guesses.last_valid_index() or 0) + 1] = dict(Province=prov, ProvinceEn=proven, count=1)
+        prov_guesses.loc[(prov_guesses.last_valid_index() or 0) + 1] = dict(Province=prov, ProvinceEn=proven, count=1)
         return proven
 
 
@@ -498,7 +498,7 @@ def prov_trim(p):
     return remove_suffix(remove_prefix(p, "จ.").strip(' .'), " Province")
 
 
-def join_provinces(df, on, guesses):
+def join_provinces(df, on):
     joined, guess = fuzzy_join(
         df,
         PROVINCES[["Health District Number", "ProvinceEn"]],
@@ -510,9 +510,17 @@ def join_provinces(df, on, guesses):
     if not guess.empty:
         prov_guesses = guess.reset_index().rename(columns={on: "Province"})[['Province', 'ProvinceEn', 'count']]
         for i, row in prov_guesses.iterrows():
-            guesses.loc[(guesses.last_valid_index() or 0) + 1] = row
+            prov_guesses.loc[(prov_guesses.last_valid_index() or 0) + 1] = row
 
     return joined
+
+
+def get_fuzzy_provinces():
+    "return dataframe of all the fuzzy matched province names"
+    if not prov_guesses.empty:
+        return prov_guesses.groupby(["Province", "ProvinceEn"]).sum().sort_values("count", ascending=False)
+    else:
+        return pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 
 
 def area_crosstab(df, col, suffix):

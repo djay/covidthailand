@@ -17,7 +17,7 @@ from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
-    prov_guesses, POS_COLS, TEST_COLS
+    get_fuzzy_provinces, POS_COLS, TEST_COLS
 
 
 ##########################################
@@ -854,7 +854,7 @@ def briefing_case_detail(date, pages):
                 # TODO: sometimes cells/data seperated by "-" 2021-01-03
 
                 prov, num = prov_num.strip().split("(", 1)
-                prov = get_province(prov, prov_guesses)
+                prov = get_province(prov)
                 num = int(num_people.search(num).group(1))
                 totals[title] = totals.get(title, 0) + num
 
@@ -1042,7 +1042,7 @@ def briefing_province_cases(date, pages):
             if thai in ['กทม. และปรมิ ณฑล', 'รวมจงัหวดัอนื่ๆ(']:
                 # bangkok + subrubrs, resst of thailand
                 break
-            prov = get_province(thai, prov_guesses)
+            prov = get_province(thai)
             numbers = parse_numbers(numbers)
             numbers = numbers[1:-1]  # last is total. first is previous days
             assert len(numbers) == 7
@@ -1087,7 +1087,7 @@ def briefing_deaths_summary(text, date):
             num = text_num
         elif num is None:
             raise Exception(f"No number of deaths found {date}: {text}")
-        province_count.update(dict((get_province(p, prov_guesses), num) for p in provs))
+        province_count.update(dict((get_province(p), num) for p in provs))
     # Congenital disease / risk factor The severity of the disease
     # congenital_disease = df[2][0]  # TODO: parse?
     # Risk factors for COVID-19 infection
@@ -1142,10 +1142,10 @@ def briefing_deaths_cells(cells, date, all):
         match = re.search(r"ขณะป่วย (\S*)", cell)  # TODO: work out how to grab just province
         if match:
             prov = match.group(1).replace("จังหวัด", "")
-            province = get_province(prov, prov_guesses)
+            province = get_province(prov)
         else:
             # handle province by itself on a line
-            p = [get_province(word, prov_guesses, True) for line in lines[:3] for word in line.split()]
+            p = [get_province(word, True) for line in lines[:3] for word in line.split()]
             p = [pr for pr in p if pr]
             if p:
                 province = p[0]
@@ -1170,7 +1170,7 @@ def briefing_deaths_table(orig, date, all):
     df['Date'] = date
     df['gender'] = df['gender'].map(parse_gender)  # TODO: handle mispelling
     df = df.set_index("death_num")
-    df = join_provinces(df, "Province", prov_guesses)
+    df = join_provinces(df, "Province")
     all = all.append(df, verify_integrity=True)
     # parts = [l.get_text() for l in soup.find_all("p")]
     # parts = [l for l in parts if l]
@@ -1321,7 +1321,7 @@ def get_cases_by_area_type():
     dfprov = briefings.combine_first(dfprov)  # TODO: check they aggree
     # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
     # dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
-    dfprov = join_provinces(dfprov, on="Province", guesses=prov_guesses)
+    dfprov = join_provinces(dfprov, on="Province")
     # Now we can save raw table of provice numbers
     export(dfprov, "cases_by_province")
 
@@ -1352,7 +1352,7 @@ def get_cases_by_area_type():
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
-    cases = join_provinces(cases, "province_of_onset", prov_guesses)
+    cases = join_provinces(cases, "province_of_onset")
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
     return case_areas
@@ -1557,7 +1557,7 @@ def vaccination_page(vaccinations, allocations, vacnew, date, page, file):
                 thaiprov, *cols = cols
             else:
                 thaiprov = area
-            prov = get_province(thaiprov, prov_guesses)
+            prov = get_province(thaiprov)
             numbers = parse_numbers(cols)
             added += 1
             if table == "alloc":
@@ -1672,7 +1672,7 @@ def get_vaccinations():
     thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     # Get vaccinations by district
-    all_vac = join_provinces(all_vac, "Province", prov_guesses)
+    all_vac = join_provinces(all_vac, "Province")
     given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
@@ -1730,7 +1730,7 @@ def get_ifr():
     provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
 
     # now normalise the province names
-    provifr = join_provinces(provifr, "Province", prov_guesses)
+    provifr = join_provinces(provifr, "Province")
     return provifr
 
 
@@ -1838,7 +1838,7 @@ def scrape_and_combine():
     if quick:
         # Comment out what you don't need to run
         # situation = get_situation()
-        # cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         tests = get_tests_by_day()
@@ -1861,10 +1861,7 @@ def scrape_and_combine():
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
-
-    if not prov_guesses.empty:
-        guess_counts = prov_guesses.groupby(["Province", "ProvinceEn"]).sum().sort_values("count", ascending=False)
-        export(guess_counts, "prov_guesses", csv_only=True)
+    export(get_fuzzy_provinces(), "fuzz_provinces", csv_only=True)
 
     if quick:
         old = import_csv("combined")

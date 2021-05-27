@@ -34,7 +34,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
     :param unknown_name: the column name containing data related to unknowns
-    :param unknown_total: the column name (to be created) with unknown totals 
+    :param unknown_total: the column name (to be created) with unknown totals
     :param unknown_percent: to include unknowns in a percentage fig if enabled
     :param ma_days: number of days used when computing the moving average
     :param cmap: the matplotlib colormap to be used
@@ -283,8 +283,8 @@ def save_plots(df: pd.DataFrame) -> None:
     ########################
     df['Tests Private Ratio'] = (df['Tests Private'] / df['Tests Public']).rolling('7d').mean()
     df['Tests Positive Private Ratio'] = (df['Pos Private'] / df['Pos Public']).rolling('7d').mean()
-    df['Positive Rate Private Ratio'] = (df['Pos Private'] / (df['Tests Private']) /
-                                         (df['Pos Public'] / df['Tests Public'])).rolling('7d').mean()
+    df['Positive Rate Private Ratio'] = (df['Pos Private'] / (df['Tests Private'])
+                                         / (df['Pos Public'] / df['Tests Public'])).rolling('7d').mean()
     df['PUI Private Ratio'] = (df['Tested PUI Walkin Private'] / df['Tested PUI Walkin Public']).rolling('7d').mean()
     cols = ['Tests Private Ratio', 'Tests Positive Private Ratio', 'PUI Private Ratio', 'Positive Rate Private Ratio']
     plot_area(df=df,
@@ -421,8 +421,8 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = [f'Positivity {area}' for area in DISTRICT_RANGE_SIMPLE]
     df['Total Positivity Area'] = df[cols].sum(axis=1)
     for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Positivity {area}'] = (df[f'Positivity {area}'] / df['Total Positivity Area'] *
-                                    df['Positivity Public+Private'])
+        df[f'Positivity {area}'] = (df[f'Positivity {area}'] / df['Total Positivity Area']
+                                    * df['Positivity Public+Private'])
     plot_area(df=df,
               png_prefix='positivity_area',
               cols_subset=rearrange(cols, *FIRST_AREAS),
