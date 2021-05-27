@@ -19,6 +19,8 @@ test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
 COLUMNS = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
 RAW_COLS = ["Start", "End", ] + pos_cols + test_cols
 
+prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
+
 
 ###############
 # Date helpers

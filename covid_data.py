@@ -16,10 +16,8 @@ from utils_scraping import USE_CACHE_DATA, CHECK_NEWER, any_in, dav_files, get_n
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, RAW_COLS, COLUMNS
-
-
-prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, RAW_COLS, COLUMNS, \
+    prov_guesses
 
 
 ##########################################
