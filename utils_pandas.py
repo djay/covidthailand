@@ -1,12 +1,13 @@
-from typing import List, Union
-import pandas as pd
-import difflib
 import datetime
-import numpy as np
+import difflib
 import os
+from typing import List, Union
+
+import matplotlib.cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.pyplot import cycler
-import matplotlib.cm
+import pandas as pd
+import numpy as np
 
 
 def daterange(start_date, end_date, offset=0):
@@ -191,7 +192,6 @@ def trendline(data: pd.DataFrame, order: int = 1) -> float:
 #################
 # Plot helpers
 #################
-
 def custom_cm(cm_name: str, size: int, last_colour: str = None, flip: bool = False) -> ListedColormap:
     """Returns a ListedColorMap object built with the supplied color scheme and with the last color forced to be equal
     to the parameter passed. The flip parameter allows to reverse the colour scheme if needed.

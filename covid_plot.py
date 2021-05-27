@@ -1,40 +1,18 @@
 import os
+import pathlib
 from typing import Sequence, Union, List, Callable
 
 import matplotlib
+import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-import matplotlib.cm
-import pathlib
 import pandas as pd
 
 from covid_data import USE_CACHE_DATA, get_ifr, scrape_and_combine
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, thaipop, thaipop2
-from utils_scraping import remove_suffix
 from utils_pandas import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
-
-
-AREA_LEGEND_ORDERED = [
-    "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
-    "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
-    "3: U-C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
-    "4: M-C: Nonthaburi, P.Thani, Ayutthaya, Saraburi, Lopburi, Sing Buri, Ang Thong, N.Nayok",
-    "5: L-C: S.Sakhon, Kanchanaburi, N.Pathom, Ratchaburi, Suphanburi, PKK, Phetchaburi, S.Songkhram",
-    "6: E: Trat, Rayong, Chonburi, S.Prakan, Chanthaburi, Prachinburi, Sa Kaeo, Chachoengsao",
-    "7: M-NE: Khon Kaen, Kalasin, Maha Sarakham, Roi Et",
-    "8: U-NE: S.Nakhon, Loei, U.Thani, Nong Khai, NBL, Bueng Kan, N.Phanom, Mukdahan",
-    "9: L-NE: Korat, Buriram, Surin, Chaiyaphum",
-    "10: E-NE: Yasothon, Sisaket, Amnat Charoen, Ubon Ratchathani",
-    "11: SE: Phuket, Krabi, Ranong, Phang Nga, S.Thani, Chumphon, N.S.Thammarat",
-    "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
-    "13: C: Bangkok",
-]
-
-
-FIRST_AREAS = [13, 4, 5, 6, 1]  # based on size-ish
-AREA_LEGEND = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS) + ["Prison"]
-AREA_LEGEND_SIMPLE = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
-
+from utils_scraping import remove_suffix
+from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
+    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,

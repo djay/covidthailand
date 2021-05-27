@@ -1,4 +1,3 @@
-# coding=utf8
 import datetime
 import dateutil
 from dateutil.parser import parse as d
@@ -12,14 +11,13 @@ import camelot
 import numpy as np
 import pandas as pd
 
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
-from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, \
-    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, web_links, all_in
-
-
-prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
+from utils_scraping import USE_CACHE_DATA, CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
+    web_links, all_in, NUM_OR_DASH
+from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
+    prov_guesses, POS_COLS, TEST_COLS
 
 
 ##########################################
@@ -1018,9 +1016,6 @@ def briefing_case_types(date, pages):
     return df
 
 
-NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
-
-
 def briefing_province_cases(date, pages):
     if date < d("2021-01-13"):
         pages = []
@@ -1418,12 +1413,6 @@ def get_tests_by_day():
     return tests
 
 
-pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-raw_cols = ["Start", "End", ] + pos_cols + test_cols
-
-
 def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     start, end = find_date_range(title)
     if start is None or "เริ่มเปิดบริการ" in title or not any_in(title, "เขตสุขภาพ", "เขตสุขภำพ"):
@@ -1434,12 +1423,12 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     pos = list(series["จำนวนผลบวก"])
     tests = list(series["จำนวนตรวจ"])
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, columns)
+    results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     # print(results)
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=raw_cols
+        columns=["Start", "End", ] + POS_COLS + TEST_COLS
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
@@ -1470,11 +1459,11 @@ def get_tests_by_area_pdf(file, page, data, raw):
     pos = numbers[0:13]
     tests = numbers[tests_start:tests_start + 13]
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, columns)
+    results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=raw_cols
+        columns=["Start", "End", ] + POS_COLS + TEST_COLS
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
@@ -1846,10 +1835,6 @@ def get_hospital_resources():
     return data
 
 
-USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
-    os.path.exists(os.path.join('api', 'combined.csv'))
-
-
 def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
@@ -1860,7 +1845,7 @@ def scrape_and_combine():
         cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
-        # tests = get_tests_by_day()
+        tests = get_tests_by_day()
         # tests_reports = get_test_reports()
         # cases = get_cases()
         pass
