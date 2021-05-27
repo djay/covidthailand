@@ -194,8 +194,8 @@ def thaipop2(num: float, pos: int) -> str:
 
 def get_provinces():
     url = "https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts"
-    # _, districts = next(web_files(url, dir="html"))
-    areas = pd.read_html(url)[0]
+    file, _ = next(web_files(url, dir="html", check=False))
+    areas = pd.read_html(file)[0]
     provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces")
     provinces['Provinces'] = provinces['Provinces'].str.strip()
     provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
