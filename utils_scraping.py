@@ -346,8 +346,8 @@ def parse_numbers(lst):
 
 
 def any_in(target, *matches):
-    return any(m in target for m in matches)
+    return any((m in target) if type(m) != re.Pattern else m.search(target) for m in matches)
 
 
 def all_in(target, *matches):
-    return all(m in target for m in matches)
+    return all((m in target) if type(m) != re.Pattern else m.search(target) for m in matches)
