@@ -17,6 +17,10 @@ from webdav3.client import Client
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
+USE_CACHE_DATA = \
+    os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists(os.path.join('api', 'combined.csv'))
+
+
 NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
 
 requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally

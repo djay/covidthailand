@@ -1832,10 +1832,6 @@ def get_hospital_resources():
     return data
 
 
-USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True' and \
-    os.path.exists(os.path.join('api', 'combined.csv'))
-
-
 def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
