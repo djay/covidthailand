@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
-from utils_scraping import USE_CACHE_DATA, CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
+from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
@@ -1831,10 +1831,11 @@ def get_hospital_resources():
 
 
 def scrape_and_combine():
+    quick = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists(os.path.join('api', 'combined.csv'))
 
-    print(f'\n\nUSE_CACHE_DATA = {USE_CACHE_DATA}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
+    print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
-    if USE_CACHE_DATA:
+    if quick:
         # Comment out what you don't need to run
         # situation = get_situation()
         # cases_by_area = get_cases_by_area()
@@ -1865,7 +1866,7 @@ def scrape_and_combine():
         guess_counts = prov_guesses.groupby(["Province", "ProvinceEn"]).sum().sort_values("count", ascending=False)
         export(guess_counts, "prov_guesses", csv_only=True)
 
-    if USE_CACHE_DATA:
+    if quick:
         old = import_csv("combined")
         old = old.set_index("Date")
         df = df.combine_first(old)

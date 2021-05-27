@@ -17,8 +17,6 @@ from webdav3.client import Client
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
-USE_CACHE_DATA = \
-    os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists(os.path.join('api', 'combined.csv'))
 
 NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
 INT_RE = re.compile(r"\d+(?:\,\d+)*")

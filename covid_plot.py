@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
-from covid_data import USE_CACHE_DATA, get_ifr, scrape_and_combine
+from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
@@ -72,7 +72,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if percent_fig:
         perccols = [c for c in cols if not unknown_total or unknown_percent or c != f'{unknown_name}{ma_suffix}']
-        for c in  perccols:
+        for c in perccols:
             df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
         if unknown_total and not unknown_percent:
             df[f'{unknown_name}{ma_suffix} (%)'] = 0
@@ -112,7 +112,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         '30d': df_clean.last('30d')
     }
 
-    if USE_CACHE_DATA:  #TODO: have its own switch
+    quick = os.environ.get('USE_CACHE_DATA', False) == 'True' #TODO: have its own switch
+    if quick:
         periods = {key: periods[key] for key in ['2']}
 
     for suffix, df_plot in periods.items():
