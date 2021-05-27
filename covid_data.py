@@ -13,10 +13,11 @@ import numpy as np
 import pandas as pd
 
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, raw_cols
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, \
-    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, web_links, all_in
+    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, web_links, all_in, \
+    NUM_OR_DASH
 
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
@@ -1013,9 +1014,6 @@ def briefing_case_types(date, pages):
     return df
 
 
-NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
-
-
 def briefing_province_cases(date, pages):
     if date < d("2021-01-13"):
         pages = []
@@ -1411,12 +1409,6 @@ def get_tests_by_day():
     print(file, len(tests))
 
     return tests
-
-
-pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-raw_cols = ["Start", "End", ] + pos_cols + test_cols
 
 
 def get_tests_by_area_chart_pptx(file, title, series, data, raw):

@@ -15,7 +15,7 @@ import os
 from itertools import compress, cycle
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
-
+NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
 
 requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
 s = requests.Session()

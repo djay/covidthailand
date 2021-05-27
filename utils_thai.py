@@ -1,5 +1,5 @@
 import json
-from utils_pandas import fuzzy_join
+from utils_pandas import fuzzy_join, rearrange
 from utils_scraping import remove_prefix, remove_suffix, web_files
 import pandas as pd
 import re
@@ -8,6 +8,7 @@ from dateutil.parser import parse as d
 import os
 import difflib
 
+
 ###############
 # Date helpers
 ###############
@@ -15,6 +16,26 @@ def today() -> datetime.datetime:
     """Return today's date and time"""
     return datetime.datetime.today()
 
+
+AREA_LEGEND_ORDERED = [
+    "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
+    "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
+    "3: U-C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
+    "4: M-C: Nonthaburi, P.Thani, Ayutthaya, Saraburi, Lopburi, Sing Buri, Ang Thong, N.Nayok",
+    "5: L-C: S.Sakhon, Kanchanaburi, N.Pathom, Ratchaburi, Suphanburi, PKK, Phetchaburi, S.Songkhram",
+    "6: E: Trat, Rayong, Chonburi, S.Prakan, Chanthaburi, Prachinburi, Sa Kaeo, Chachoengsao",
+    "7: M-NE: Khon Kaen, Kalasin, Maha Sarakham, Roi Et",
+    "8: U-NE: S.Nakhon, Loei, U.Thani, Nong Khai, NBL, Bueng Kan, N.Phanom, Mukdahan",
+    "9: L-NE: Korat, Buriram, Surin, Chaiyaphum",
+    "10: E-NE: Yasothon, Sisaket, Amnat Charoen, Ubon Ratchathani",
+    "11: SE: Phuket, Krabi, Ranong, Phang Nga, S.Thani, Chumphon, N.S.Thammarat",
+    "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
+    "13: C: Bangkok",
+]
+
+FIRST_AREAS = [13, 4, 5, 6, 1]  # based on size-ish
+AREA_LEGEND = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS) + ["Prison"]
+AREA_LEGEND_SIMPLE = rearrange(AREA_LEGEND_ORDERED, *FIRST_AREAS)
 
 THAI_ABBR_MONTHS = [
     "ม.ค.",
@@ -162,6 +183,10 @@ def thaipop2(num: float, pos: int) -> str:
 DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
 DISTRICT_RANGE = DISTRICT_RANGE_SIMPLE + ["Prison"]
 DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
+pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
+columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
+raw_cols = ["Start", "End", ] + pos_cols + test_cols
 
 
 def get_provinces():
