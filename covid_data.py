@@ -1454,11 +1454,11 @@ def get_tests_by_area_pdf(file, page, data, raw):
     pos = numbers[0:13]
     tests = numbers[tests_start:tests_start + 13]
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"])
+    results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=["Start", "End", ] + pos_cols + test_cols
+        columns=["Start", "End", ] + POS_COLS + TEST_COLS
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
