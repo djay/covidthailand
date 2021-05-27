@@ -1,18 +1,18 @@
 import os
+import pathlib
 from typing import Sequence, Union, List, Callable
 
 import matplotlib
+import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-import matplotlib.cm
-import pathlib
 import pandas as pd
 
 from covid_data import USE_CACHE_DATA, get_ifr, scrape_and_combine
+from utils_pandas import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
+from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
-from utils_scraping import remove_suffix
-from utils_pandas import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,

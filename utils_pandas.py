@@ -1,12 +1,13 @@
-from typing import List, Union
-import pandas as pd
-import difflib
 import datetime
-import numpy as np
+import difflib
 import os
+from typing import List, Union
+
+import matplotlib.cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.pyplot import cycler
-import matplotlib.cm
+import pandas as pd
+import numpy as np
 
 
 def daterange(start_date, end_date, offset=0):

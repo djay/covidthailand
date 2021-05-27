@@ -1,12 +1,14 @@
-import json
-from utils_pandas import fuzzy_join, rearrange
-from utils_scraping import remove_prefix, remove_suffix, web_files
-import pandas as pd
-import re
 import datetime
 from dateutil.parser import parse as d
-import os
 import difflib
+import json
+import os
+import re
+
+import pandas as pd
+
+from utils_pandas import fuzzy_join, rearrange
+from utils_scraping import remove_prefix, remove_suffix, web_files
 
 
 ###############

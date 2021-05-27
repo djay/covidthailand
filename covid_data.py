@@ -1,4 +1,3 @@
-# coding=utf8
 import datetime
 import dateutil
 from dateutil.parser import parse as d
@@ -12,12 +11,12 @@ import camelot
 import numpy as np
 import pandas as pd
 
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, raw_cols
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
-from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, get_tweets_from, \
-    pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, web_links, all_in, \
-    NUM_OR_DASH
+from utils_scraping import USE_CACHE_DATA, CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
+    web_links, all_in, NUM_OR_DASH
+from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, raw_cols
 
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])

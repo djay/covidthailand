@@ -1,8 +1,12 @@
 import datetime
 import dateutil
 from io import StringIO
+from itertools import compress, cycle
+import os
+import pickle
 import re
 import urllib.parse
+
 from bs4 import BeautifulSoup
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
@@ -10,9 +14,7 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
-import pickle
-import os
-from itertools import compress, cycle
+
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
