@@ -16,7 +16,7 @@ from utils_scraping import USE_CACHE_DATA, CHECK_NEWER, any_in, dav_files, get_n
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, raw_cols
+    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today, RAW_COLS, COLUMNS
 
 
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
@@ -1420,12 +1420,12 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     pos = list(series["จำนวนผลบวก"])
     tests = list(series["จำนวนตรวจ"])
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, columns)
+    results = spread_date_range(start, end, row, COLUMNS)
     # print(results)
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=raw_cols
+        columns=RAW_COLS
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw
@@ -1456,11 +1456,11 @@ def get_tests_by_area_pdf(file, page, data, raw):
     pos = numbers[0:13]
     tests = numbers[tests_start:tests_start + 13]
     row = pos + tests + [sum(pos), sum(tests)]
-    results = spread_date_range(start, end, row, columns)
+    results = spread_date_range(start, end, row, COLUMNS)
     data = data.combine_first(results)
     raw = raw.combine_first(pd.DataFrame(
         [[start, end, ] + pos + tests],
-        columns=raw_cols
+        columns=RAW_COLS
     ).set_index("Start"))
     print("Tests by Area", start.date(), "-", end.date(), file)
     return data, raw

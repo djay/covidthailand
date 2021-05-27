@@ -187,8 +187,8 @@ DISTRICT_RANGE = DISTRICT_RANGE_SIMPLE + ["Prison"]
 DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
 pos_cols = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
 test_cols = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
-columns = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
-raw_cols = ["Start", "End", ] + pos_cols + test_cols
+COLUMNS = ["Date"] + pos_cols + test_cols + ["Pos Area", "Tests Area"]
+RAW_COLS = ["Start", "End", ] + pos_cols + test_cols
 
 
 def get_provinces():
