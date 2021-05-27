@@ -1013,8 +1013,8 @@ def briefing_case_types(date, pages):
         "Recovered",
         "Deaths",
     ]).set_index(['Date'])
-    print(f"{date.date()} Briefing Cases:",
-          df.to_string(header=False, index=False))
+    if not df.empty:
+        print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
 
 
