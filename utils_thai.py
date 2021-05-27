@@ -499,6 +499,7 @@ def prov_trim(p):
 
 
 def join_provinces(df, on):
+    global prov_guesses
     joined, guess = fuzzy_join(
         df,
         PROVINCES[["Health District Number", "ProvinceEn"]],
