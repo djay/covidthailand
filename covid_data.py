@@ -640,6 +640,10 @@ def get_cases_by_demographics_api():
 ##################################
 
 
+UNOFFICIAL_TWEET = re.compile("🔴 BREAKING: ")
+OFFICIAL_TWEET = re.compile("Official #COVID19 update")
+
+
 def parse_official_tweet(df, date, text):
     imported, _ = get_next_number(text, "imported", before=True, default=0)
     local, _ = get_next_number(text, "local", before=True, default=0)
@@ -674,10 +678,11 @@ def parse_official_tweet(df, date, text):
 
 
 def parse_unofficial_tweet(df, date, text):
-    numbers, _ = get_next_numbers(text, "Thai health ministry reporting")
-    if not numbers:
+    deaths, _ = get_next_number(text, "deaths", before=True)
+    cases, _ = get_next_number(text, "cases", before=True)
+    prisons, _ = get_next_number(text, "prisons", before=True)
+    if any_in([None], deaths, cases):
         return df
-    deaths, cases, *_ = numbers
     cols = ["Date", "Deaths", "Cases"]
     row = [date, deaths, cases]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
@@ -737,10 +742,10 @@ def get_cases_by_prov_tweets():
 
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
-    new = get_tweets_from(531202184, d("2021-04-03"), None, "Official #COVID19 update", "📍")
+    new = get_tweets_from(531202184, d("2021-04-03"), None, OFFICIAL_TWEET, "📍")
     # old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
-    old = get_tweets_from(72888855, d("2021-02-21"), None, "Official #COVID19 update", "📍")
-    unofficial = get_tweets_from(531202184, d("2021-04-03"), None, "🔴 BREAKING: Thai health ministry reporting")
+    old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
+    unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
     officials = {}
     provs = {}
     breaking = {}
@@ -748,7 +753,7 @@ def get_cases_by_prov_tweets():
         for tweet in tweets:
             if "RT @RichardBarrow" in tweet:
                 continue
-            if "Official #COVID19 update" in tweet:
+            if OFFICIAL_TWEET.search(tweet):
                 officials[date] = tweet
             elif "👉" in tweet and "📍" in tweet:
                 if tweet in provs.get(date, ""):
@@ -756,7 +761,7 @@ def get_cases_by_prov_tweets():
                 provs[date] = provs.get(date, "") + " " + tweet
     for date, tweets in unofficial.items():
         for tweet in tweets:
-            if "🔴 BREAKING: Thai health ministry reporting" in tweet:
+            if UNOFFICIAL_TWEET.search(tweet):
                 breaking[date] = tweet
 
     # Get imported vs walkin totals
@@ -765,7 +770,7 @@ def get_cases_by_prov_tweets():
     for date, text in sorted(officials.items(), reverse=True):
         df = df.pipe(parse_official_tweet, date, text)
 
-    for date, text in breaking.items():
+    for date, text in sorted(breaking.items(), reverse=True):
         if date in officials:
             # do unoffical tweets in no official tweet
             continue
@@ -1851,9 +1856,9 @@ def scrape_and_combine():
 
     if USE_CACHE_DATA:
         # Comment out what you don't need to run
-        situation = get_situation()
-        # cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
+        # situation = get_situation()
+        cases_by_area = get_cases_by_area()
+        # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
