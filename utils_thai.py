@@ -191,6 +191,42 @@ def thaipop2(num: float, pos: int) -> str:
     num = num / 1000000
     return f'{num:.1f}M / {pp:.1f}%'
 
+
+def get_provinces():
+    url = "https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts"
+    file, _ = next(web_files(url, dir="html", check=False))
+    areas = pd.read_html(file)[0]
+    provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces")
+    provinces['Provinces'] = provinces['Provinces'].str.strip()
+    provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
+    provinces['ProvinceAlt'] = provinces['ProvinceEn']
+    provinces = provinces.set_index("ProvinceAlt")
+    provinces.loc["Bangkok"] = [13, "Central", "Bangkok"]
+    provinces.loc["Unknown"] = ["Unknown", "", "Unknown"]
+    provinces.loc["Prison"] = ["Prison", "", "Prison"]
+    provinces['Health District Number'] = provinces['Health District Number'].astype(str)
+
+    # Already incorporated into prov_mapping.csv
+    # provinces = provinces.pipe(prov_mapping_from_cases).pipe(prov_mapping_from_kristw)
+
+    altnames = pd.read_csv("province_mapping.csv").set_index("Province")
+    on_enname = altnames.merge(provinces, right_index=True, left_on="ProvinceEn").drop(columns=["ProvinceEn_y", "ProvinceEn_x"])
+    provinces = provinces.combine_first(on_enname)
+
+    # Add in population data
+    # popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
+    popurl = "https://en.wikipedia.org/wiki/Provinces_of_Thailand"
+    file, _ = next(web_files(popurl, dir="html", check=False))
+    pop = pd.read_html(file)[2]
+    pop = pop.join(provinces,
+                   on="Name(in Thai)").set_index("ProvinceEn").rename(
+                       columns={"Population (2019)[1]": "Population"})
+
+    provinces = provinces.join(pop["Population"], on="ProvinceEn")
+
+    return provinces
+
+
 def prov_mapping_from_cases(provinces):
 
     # use the case data as it has a mapping between thai and english names
@@ -242,41 +278,6 @@ def prov_mapping_from_kristw(provinces):
                 columns=["thAbbr", "enName", "thName"]))
 
     # TODO: https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
-    return provinces
-
-
-def get_provinces():
-    url = "https://en.wikipedia.org/wiki/Healthcare_in_Thailand#Health_Districts"
-    file, _ = next(web_files(url, dir="html", check=False))
-    areas = pd.read_html(file)[0]
-    provinces = areas.assign(Provinces=areas['Provinces'].str.split(", ")).explode("Provinces")
-    provinces['Provinces'] = provinces['Provinces'].str.strip()
-    provinces = provinces.rename(columns=dict(Provinces="ProvinceEn")).drop(columns="Area Code")
-    provinces['ProvinceAlt'] = provinces['ProvinceEn']
-    provinces = provinces.set_index("ProvinceAlt")
-    provinces.loc["Bangkok"] = [13, "Central", "Bangkok"]
-    provinces.loc["Unknown"] = ["Unknown", "", "Unknown"]
-    provinces.loc["Prison"] = ["Prison", "", "Prison"]
-    provinces['Health District Number'] = provinces['Health District Number'].astype(str)
-
-    # Already incorporated into prov_mapping.csv
-    # provinces = provinces.pipe(prov_mapping_from_cases).pipe(prov_mapping_from_kristw)
-
-    altnames = pd.read_csv("province_mapping.csv").set_index("Province")
-    on_enname = altnames.merge(provinces, right_index=True, left_on="ProvinceEn").drop(columns=["ProvinceEn_y", "ProvinceEn_x"])
-    provinces = provinces.combine_first(on_enname)
-
-    # Add in population data
-    # popurl = "http://mis.m-society.go.th/tab030104.php?y=2562&p=00&d=0000&xls=y"
-    popurl = "https://en.wikipedia.org/wiki/Provinces_of_Thailand"
-    file, _ = next(web_files(popurl, dir="html", check=False))
-    pop = pd.read_html(file)[2]
-    pop = pop.join(provinces,
-                   on="Name(in Thai)").set_index("ProvinceEn").rename(
-                       columns={"Population (2019)[1]": "Population"})
-
-    provinces = provinces.join(pop["Population"], on="ProvinceEn")
-
     return provinces
 
 
