@@ -13,7 +13,7 @@ import pandas as pd
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, toint, web_files, \
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
@@ -1079,20 +1079,28 @@ def briefing_deaths_summary(text, date):
     _, age_text, ptext, *risks = reversed(rest)
     if "วันที่ทราบผลติดเชื้อ" in ptext:
         age_text, ptext, *risks = risks
-    ptext = (pre.split("\n\n")[-1] + ptext)
+    ptext = (strip(pre.split("\n\n"))[-1] + ptext)
     ptext = re.sub("(ละ|/จังหวัด|จังหวัด|ราย)", "", ptext)
-    pcells = pairwise(re.split(r"(\(?\d+\)?)", ptext))
+    pcells = pairwise(strip(re.split(r"(\(?\d+\)?)", ptext)))
     province_count = {}
     for provinces, num in pcells:
         # len() < 2 because some stray modifier?
         text_num, rest = get_next_number(provinces, remove=True)
+        if rest.strip().startswith("("):
+            # special case where some in that province are in prison
+            # TODO: take them out of last prov and put into special province
+            continue
         provs = [p.strip("() ") for p in rest.split() if len(p) > 1 and p.strip("() ")]
+        provs = [get_province(p) for p in provs]
+        # TODO: unknown from another cell get in there. Work out how to remove it a better way
+        provs = [p for p in provs if p != "Unknown"]
         num, _ = get_next_number(num)
         if num is None and text_num is not None:
             num = text_num
         elif num is None:
             raise Exception(f"No number of deaths found {date}: {text}")
-        province_count.update(dict((get_province(p), num) for p in provs))
+
+        province_count.update(dict((p, num) for p in provs))
     # Congenital disease / risk factor The severity of the disease
     # congenital_disease = df[2][0]  # TODO: parse?
     # Risk factors for COVID-19 infection
