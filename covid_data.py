@@ -1846,7 +1846,7 @@ def scrape_and_combine():
         cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
-        tests = get_tests_by_day()
+        # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
         # cases = get_cases()
         pass

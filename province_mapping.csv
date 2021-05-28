@@ -1,0 +1,542 @@
+Province,ProvinceEn
+ACR,Amnat Charoen
+ATG,Ang Thong
+AYA,Phra Nakhon Si Ayutthaya
+Amnat Charoen,Amnat Charoen
+AmnatCharoen,Amnat Charoen
+Ang Thong,Ang Thong
+AngThong,Ang Thong
+Ayutthaya,Phra Nakhon Si Ayutthaya
+BKK,Bangkok
+BKN,Bueng Kan
+BRM,Buriram
+Bangkok,Bangkok
+BeungKan,Bueng Kan
+Bueng Kan,Bueng Kan
+Bung Kan,Bueng Kan
+Buri Ram,Buriram
+BuriRam,Buriram
+Buriram,Buriram
+CBI,Chonburi
+CCO,Chachoengsao
+CMI,Chiang Mai
+CNT,Chai Nat
+CPM,Chaiyaphum
+CPN,Chumphon
+CRI,Chiang Rai
+CTI,Chanthaburi
+Chachoengsao,Chachoengsao
+Chai Nat,Chai Nat
+ChaiNat,Chai Nat
+Chainat,Chai Nat
+Chaiyaphum,Chaiyaphum
+Chanthaburi,Chanthaburi
+Chiang Mai,Chiang Mai
+Chiang Rai,Chiang Rai
+ChiangMai,Chiang Mai
+ChiangRai,Chiang Rai
+Chon Buri,Chonburi
+ChonBuri,Chonburi
+Chonburi,Chonburi
+Chumphon,Chumphon
+KBI,Krabi
+KKN,Khon Kaen
+KPT,Kamphaeng Phet
+KRI,Kanchanaburi
+KSN,Kalasin
+Kalasin,Kalasin
+Kamphaeng Phet,Kamphaeng Phet
+KamphaengPhet,Kamphaeng Phet
+Kanchanaburi,Kanchanaburi
+Khon Kaen,Khon Kaen
+KhonKaen,Khon Kaen
+Khorat,Nakhon Ratchasima
+Korat,Nakhon Ratchasima
+Krabi,Krabi
+LEI,Loei
+LPG,Lampang
+LPN,Lamphun
+LRI,Lopburi
+Lam Phu,Nong Bua Lamphu
+Lampang,Lampang
+Lamphun,Lamphun
+Loei,Loei
+LopBuri,Lopburi
+Lopburi,Lopburi
+MDH,Mukdahan
+MKM,Maha Sarakham
+MSN,Mae Hong Son
+Mae Hong Son,Mae Hong Son
+MaeHongSon,Mae Hong Son
+Maha Sarakham,Maha Sarakham
+MahaSarakham,Maha Sarakham
+Mahasarakham,Maha Sarakham
+Mukdahan,Mukdahan
+NAN,Nan
+NBI,Nonthaburi
+NBP,Nong Bua Lamphu
+NKI,Nong Khai
+NMA,Nakhon Ratchasima
+NPM,Nakhon Phanom
+NPT,Nakhon Pathom
+NRT,Nakhon Si Thammarat
+NSN,Nakhon Sawan
+NWT,Narathiwat
+NYK,Nakhon Nayok
+Nakhon Nayok,Nakhon Nayok
+Nakhon Pathom,Nakhon Pathom
+Nakhon Phanom,Nakhon Phanom
+Nakhon Ratchasima,Nakhon Ratchasima
+Nakhon Sawan,Nakhon Sawan
+Nakhon Si Thammarat,Nakhon Si Thammarat
+NakhonNayok,Nakhon Nayok
+NakhonPathom,Nakhon Pathom
+NakhonPhanom,Nakhon Phanom
+NakhonRatchasima,Nakhon Ratchasima
+NakhonSawan,Nakhon Sawan
+NakhonSiThammarat,Nakhon Si Thammarat
+Nan,Nan
+Narathiwat,Narathiwat
+Nong Bua Lam Phu,Nong Bua Lamphu
+Nong Bua Lamphu,Nong Bua Lamphu
+Nong Khai,Nong Khai
+NongBuaLamPhu,Nong Bua Lamphu
+NongKhai,Nong Khai
+Nonthaburi,Nonthaburi
+PBI,Phetchaburi
+PCT,Phichit
+PKN,Prachuap Khiri Khan
+PKT,Phuket
+PLG,Phatthalung
+PLK,Phitsanulok
+PNA,Phang Nga
+PNB,Phetchabun
+PRE,Phrae
+PRI,Prachinburi
+PTE,Pathum Thani
+PTN,Pattani
+PYO,Phayao
+Pathom Thani,Pathum Thani
+Pathum Thani,Pathum Thani
+PathumThani,Pathum Thani
+Pattani,Pattani
+Phang Nga,Phang Nga
+Phang-nga,Phang Nga
+Phathum Thani,Pathum Thani
+Phatthalung,Phatthalung
+Phayao,Phayao
+Phetchabun,Phetchabun
+Phetchaburi,Phetchaburi
+Phichit,Phichit
+Phitsanulok,Phitsanulok
+Phra Nakhon Si Ayutthaya,Phra Nakhon Si Ayutthaya
+PhraNakhonSiAyutthaya,Phra Nakhon Si Ayutthaya
+Phrae,Phrae
+Phuket,Phuket
+Prachin Buri,Prachinburi
+PrachinBuri,Prachinburi
+Prachinburi,Prachinburi
+Prachuap Khiri Khan,Prachuap Khiri Khan
+PrachuapKhiriKhan,Prachuap Khiri Khan
+Prison,Prison
+RBR,Ratchaburi
+RET,Roi Et
+RNG,Ranong
+RYG,Rayong
+Ranong,Ranong
+Ratchaburi,Ratchaburi
+Rayong,Rayong
+Roi Et,Roi Et
+RoiEt,Roi Et
+SBR,Sing Buri
+SKA,Songkhla
+SKM,Samut Songkhram
+SKN,Samut Sakhon
+SKW,Sa Kaeo
+SNI,Surat Thani
+SNK,Sakon Nakhon
+SPB,Suphan Buri
+SPK,Samut Prakan
+SRI,Saraburi
+SRN,Surin
+SSK,Sisaket
+STI,Sukhothai
+STN,Satun
+Sa Kaeo,Sa Kaeo
+SaKaeo,Sa Kaeo
+Sakon Nakhon,Sakon Nakhon
+SakonNakhon,Sakon Nakhon
+Samut Prakan,Samut Prakan
+Samut Sakhon,Samut Sakhon
+Samut Songkhram,Samut Songkhram
+SamutPrakan,Samut Prakan
+SamutSakhon,Samut Sakhon
+SamutSongkhram,Samut Songkhram
+Saraburi,Saraburi
+Satun,Satun
+Si Sa Ket,Sisaket
+SiSaKet,Sisaket
+Sing Buri,Sing Buri
+SingBuri,Sing Buri
+Sisaket,Sisaket
+Songkhla,Songkhla
+Sukhothai,Sukhothai
+Suphan Buri,Suphan Buri
+SuphanBuri,Suphan Buri
+Suphanburi,Suphan Buri
+Surat Thani,Surat Thani
+SuratThani,Surat Thani
+Surin,Surin
+TAK,Tak
+TRG,Trang
+TRT,Trat
+Tak,Tak
+Trang,Trang
+Trat,Trat
+UBN,Ubon Ratchathani
+UDN,Udon Thani
+UTI,Uthai Thani
+UTT,Uttaradit
+Ubon Ratchathani,Ubon Ratchathani
+Ubon Thani,Udon Thani
+UbonRatchathani,Ubon Ratchathani
+Udon Thani,Udon Thani
+UdonThani,Udon Thani
+Unknown,Unknown
+Uthai Thani,Uthai Thani
+UthaiThani,Uthai Thani
+Uttaradit,Uttaradit
+YLA,Yala
+YST,Yasothon
+Yala,Yala
+Yasothon,Yasothon
+ก าแพงเพชร,Kamphaeng Phet
+ก ำแพงเพชร,Kamphaeng Phet
+กจ,Kanchanaburi
+กทม,Bangkok
+กบ,Krabi
+กพ,Kamphaeng Phet
+กรงุเทพมหานคร,Bangkok
+กรงุเทพมหำนคร,Bangkok
+กระบี่,Krabi
+กรุงเทพ,Bangkok
+กรุงเทพมหานคร,Bangkok
+กรุงเทพฯ,Bangkok
+กส,Kalasin
+กัมพูชา,Unknown
+กาญจนบรุ,Kanchanaburi
+กาญจนบุร,Kanchanaburi
+กาญจนบุรี,Kanchanaburi
+กาฬสนิธุ,Kalasin
+กาฬสินธุ,Kalasin
+กาฬสินธุ์,Kalasin
+กาแพงเพชร,Kamphaeng Phet
+กำญจนบรุ,Kanchanaburi
+กำแพงเพชร,Kamphaeng Phet
+ขก,Khon Kaen
+ขอนแกน่,Khon Kaen
+ขอนแก่น,Khon Kaen
+จนัทบรุ,Chanthaburi
+จนัทบุร,Chanthaburi
+จบ,Chanthaburi
+จันทบรุ,Chanthaburi
+จันทบุร,Chanthaburi
+จันทบุรี,Chanthaburi
+ฉช,Chachoengsao
+ฉะเชงิเทรา,Chachoengsao
+ฉะเชงิเทรำ,Chachoengsao
+ฉะเชิงเทรา,Chachoengsao
+ชน,Chai Nat
+ชบ,Chonburi
+ชพ,Chumphon
+ชม,Chiang Mai
+ชมุพร,Chumphon
+ชย,Chaiyaphum
+ชยันาท,Chai Nat
+ชยันำท,Chai Nat
+ชยัภมู,Chaiyaphum
+ชร,Chiang Rai
+ชลบรุ,Chonburi
+ชลบุร,Chonburi
+ชลบุรี,Chonburi
+ชลบุุรี,Chonburi
+ชัยนาท,Chai Nat
+ชัยภูม,Chaiyaphum
+ชัยภูมิ,Chaiyaphum
+ชุมพร,Chumphon
+ตก,Tak
+ตง,Trang
+ตร,Trat
+ตรงั,Trang
+ตรัง,Trang
+ตราด,Trat
+ตรำด,Trat
+ตาก,Tak
+ตำก,Tak
+นค,Nong Khai
+นครนายก,Nakhon Nayok
+นครนำยก,Nakhon Nayok
+นครปฐม,Nakhon Pathom
+นครพนม,Nakhon Phanom
+นครราชสมีา,Nakhon Ratchasima
+นครราชสีมา,Nakhon Ratchasima
+นครรำชสมีำ,Nakhon Ratchasima
+นครศรธีรรมราช,Nakhon Si Thammarat
+นครศรธีรรมรำช,Nakhon Si Thammarat
+นครศรีธรรมราช,Nakhon Si Thammarat
+นครสวรรค,Nakhon Sawan
+นครสวรรค์,Nakhon Sawan
+นฐ,Nakhon Pathom
+นธ,Narathiwat
+นน,Nan
+นนทบรุ,Nonthaburi
+นนทบุร,Nonthaburi
+นนทบุรี,Nonthaburi
+นนทบุุรี,Nonthaburi
+นบ,Nonthaburi
+นพ,Nakhon Phanom
+นภ,Nong Bua Lamphu
+นม,Nakhon Ratchasima
+นย,Nakhon Nayok
+นราธวิาส,Narathiwat
+นราธิวาส,Narathiwat
+นรำธวิำส,Narathiwat
+นว,Nakhon Sawan
+นศ,Nakhon Si Thammarat
+นา่น,Nan
+นำ่น,Nan
+น่าน,Nan
+บก,Bueng Kan
+บงึกาฬ,Bueng Kan
+บร,Buriram
+บรุรัีมย,Buriram
+บรุรีมัย,Buriram
+บรุรีัมย,Buriram
+บึงกาฬ,Bueng Kan
+บุรรีมัย,Buriram
+บุรีรัมย,Buriram
+บุรีรัมย์,Buriram
+ปข,Prachuap Khiri Khan
+ปจ,Prachinburi
+ปตัตาน,Pattani
+ปตัตานี,Pattani
+ปตัตำนี,Pattani
+ปท,Pathum Thani
+ปทมุธาน,Pathum Thani
+ปทมุธานี,Pathum Thani
+ปทมุธำน,Pathum Thani
+ปทุมธาน,Pathum Thani
+ปทุมธานี,Pathum Thani
+ปทุุมธานี,Pathum Thani
+ปน,Pattani
+ปรมิณฑล,Bangkok
+ประจวบครีขีนัธ,Prachuap Khiri Khan
+ประจวบคีรีขันธ,Prachuap Khiri Khan
+ประจวบคีรีขันธ์,Prachuap Khiri Khan
+ปราจนีบรุ,Prachinburi
+ปราจนีบุร,Prachinburi
+ปราจีนบุร,Prachinburi
+ปราจีนบุรี,Prachinburi
+ปรำจนีบรุ,Prachinburi
+ปัตตาน,Pattani
+ปัตตานี,Pattani
+พง,Phang Nga
+พงังา,Phang Nga
+พจ,Phichit
+พจิติร,Phichit
+พช,Phetchabun
+พท,Phatthalung
+พทัลงุ,Phatthalung
+พทัลงุ*,Phatthalung
+พบ,Phetchaburi
+พม่า,Unknown
+พย,Phayao
+พร,Phrae
+พระนครศรอียธุยา,Phra Nakhon Si Ayutthaya
+พระนครศรอียธุยำ,Phra Nakhon Si Ayutthaya
+พระนครศรอียุธยา,Phra Nakhon Si Ayutthaya
+พระนครศรอียุธยำ,Phra Nakhon Si Ayutthaya
+พระนครศรีอยุธยา,Phra Nakhon Si Ayutthaya
+พระนครศรีอยุธา,Phra Nakhon Si Ayutthaya
+พล,Phitsanulok
+พษิณุโลก,Phitsanulok
+พะเยา,Phayao
+พังงา,Phang Nga
+พัทลงุ,Phatthalung
+พัทลุง,Phatthalung
+พิจิตร,Phichit
+พิษณุโลก,Phitsanulok
+ภก,Phuket
+ภูเก็ต,Phuket
+ภเูก็ต,Phuket
+มกุดาหาร,Mukdahan
+มค,Maha Sarakham
+มส,Mae Hong Son
+มห,Mukdahan
+มหาสารคาม,Maha Sarakham
+มหำสำรคำม,Maha Sarakham
+มาเลเซีย,Unknown
+มุกดาหาร,Mukdahan
+ยล,Yala
+ยส,Yasothon
+ยะลา,Yala
+ยโสธร,Yasothon
+รน,Ranong
+รบ,Ratchaburi
+รย,Rayong
+รอ,Roi Et
+รอ้ยเอ็ด,Roi Et
+ระนอง,Ranong
+ระยอง,Rayong
+ราชบรุ,Ratchaburi
+ราชบุร,Ratchaburi
+ราชบุรี,Ratchaburi
+รำชบรุ,Ratchaburi
+ร้อยเอ็ด,Roi Et
+ล าปาง,Lampang
+ล าพนู,Lamphun
+ล าพูน,Lamphun
+ล ำปำง,Lampang
+ล ำพนู,Lamphun
+ลบ,Lopburi
+ลป,Lampang
+ลพ,Lamphun
+ลพบรุ,Lopburi
+ลพบุร,Lopburi
+ลพบุรี,Lopburi
+ลย,Loei
+ลาปาง,Lampang
+ลาพนู,Lamphun
+ลำปาง,Lampang
+ลำพูน,Lamphun
+ศก,Sisaket
+ศรสีะเกษ,Sisaket
+ศรีสะเกษ,Sisaket
+สก,Sa Kaeo
+สกลนคร,Sakon Nakhon
+สข,Songkhla
+สค,Samut Sakhon
+สงขลา,Songkhla
+สงขลำ,Songkhla
+สงิหบ์รุ,Sing Buri
+สงิหบ์ุร,Sing Buri
+สฎ,Surat Thani
+สต,Satun
+สตลู,Satun
+สตูล,Satun
+สท,Sukhothai
+สน,Sakon Nakhon
+สบ,Saraburi
+สป,Samut Prakan
+สพ,Suphan Buri
+สพุรรณบรุ,Suphan Buri
+สพุรรณบรุี,Suphan Buri
+สพุรรณบุร,Suphan Buri
+สมทุรปราการ,Samut Prakan
+สมทุรปรำกำร,Samut Prakan
+สมทุรสงคราม,Samut Songkhram
+สมทุรสงครำม,Samut Songkhram
+สมทุรสาคร,Samut Sakhon
+สมทุรสำคร,Samut Sakhon
+สมุทธสาคร,Samut Sakhon
+สมุทรปราการ,Samut Prakan
+สมุทรสงคราม,Samut Songkhram
+สมุทรสาคร,Samut Sakhon
+สมุุทรปราการ,Samut Prakan
+สมุุทรสงคราม,Samut Songkhram
+สมุุทรสาคร,Samut Sakhon
+สร,Surin
+สระบรุ,Saraburi
+สระบุร,Saraburi
+สระบุรี,Saraburi
+สระบุุรี,Saraburi
+สระแกว้,Sa Kaeo
+สระแก้ว,Sa Kaeo
+สรุนิทร,Surin
+สรุาษฎรธ์าน,Surat Thani
+สรุาษฎรธ์านี,Surat Thani
+สรุำษฎรธ์ำน,Surat Thani
+สส,Samut Songkhram
+สห,Sing Buri
+สะแก้ว,Sa Kaeo
+สิงห์บุร,Sing Buri
+สิงห์บุรี,Sing Buri
+สุพรรณบุร,Suphan Buri
+สุพรรณบุรี,Suphan Buri
+สุราษฎร์ธาน,Surat Thani
+สุราษฎร์ธานี,Surat Thani
+สุรินทร,Surin
+สุรินทร์,Surin
+สุโขทัย,Sukhothai
+สโุขทยั,Sukhothai
+สโุขทัย,Sukhothai
+หนองคาย,Nong Khai
+หนองคำย,Nong Khai
+หนองบวัล,Nong Bua Lamphu
+หนองบวัล าภู,Nong Bua Lamphu
+หนองบวัล ำภู,Nong Bua Lamphu
+หนองบวัลาภู,Nong Bua Lamphu
+หนองบัวล าภู,Nong Bua Lamphu
+หนองบัวลาภู,Nong Bua Lamphu
+หนองบัวลำภู,Nong Bua Lamphu
+อ านาจเจรญ,Amnat Charoen
+อ านาจเจริญ,Amnat Charoen
+อ ำนำจเจรญ,Amnat Charoen
+อจ,Amnat Charoen
+อด,Udon Thani
+อดุรธาน,Udon Thani
+อดุรธานี,Udon Thani
+อดุรธำน,Udon Thani
+อต,Uttaradit
+อตุรดติถ,Uttaradit
+อท,Ang Thong
+อทัุยธาน,Uthai Thani
+อทุยัธาน,Uthai Thani
+อทุยัธานี,Uthai Thani
+อทุัยธาน,Uthai Thani
+อน,Uthai Thani
+อบ,Ubon Ratchathani
+อบุลราชธาน,Ubon Ratchathani
+อบุลราชธานี,Ubon Ratchathani
+อบุลรำชธำน,Ubon Ratchathani
+อย,Phra Nakhon Si Ayutthaya
+อยุธยา,Phra Nakhon Si Ayutthaya
+อานาจเจรญ,Amnat Charoen
+อา่งทอง,Ang Thong
+อำนาจเจริญ,Amnat Charoen
+อำ่งทอง,Ang Thong
+อุดรธาน,Udon Thani
+อุดรธานี,Udon Thani
+อุตรดิตถ,Uttaradit
+อุตรดิตถ์,Uttaradit
+อุทัยธาน,Uthai Thani
+อุทัยธานี,Uthai Thani
+อุบลราชธาน,Ubon Ratchathani
+อุบลราชธานี,Ubon Ratchathani
+อ่างทอง,Ang Thong
+เชยีงราย,Chiang Rai
+เชยีงรำย,Chiang Rai
+เชยีงใหม่,Chiang Mai
+เชียงราย,Chiang Rai
+เชียงใหม่,Chiang Mai
+เชีียงราย,Chiang Rai
+เพชรบรุ,Phetchaburi
+เพชรบรุี,Phetchaburi
+เพชรบรูณ,Phetchabun
+เพชรบรูณ์,Phetchabun
+เพชรบุร,Phetchaburi
+เพชรบุรี,Phetchaburi
+เพชรบุรีี,Phetchaburi
+เพชรบุุรี,Phetchaburi
+เพชรบูรณ,Phetchabun
+เพชรบูรณ์,Phetchabun
+เรอืนจา/ทีต่อ้งขงั,Prison
+เรอืนจาฯ,Prison
+เรอืนจาและทีต่อ้งขงั,Prison
+เลย,Loei
+เวียงจันทร์,Unknown
+แพร่,Phrae
+แมฮ่อ่งสอน,Mae Hong Son
+แม่ฮ่องสอน,Mae Hong Son
+ไม่ระบุ,Unknown
+ระบุไม่ได้,Unknown
