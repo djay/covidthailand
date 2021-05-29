@@ -495,11 +495,12 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # TODO: use unknowns to show this plot earlier?
 
-    df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
-    non_split = df[["Hospitalized Severe", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=False, axis=1)
+    # because severe includes those on respirators
+    df["Hospitalized Severe excl vent"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
+    non_split = df[["Hospitalized Severe excl vent", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=False, axis=1)
 
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
-    cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field"]
+    cols = ["Hospitalized Respirator", "Hospitalized Severe excl vent", "Hospitalized Hospital", "Hospitalized Field"]
     legends = ['On Respirator', 'Severe Case', 'Hospitalised Other', 'Field Hospital']
     plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
               title='Thailand Active Covid Cases\n(Severe, Field, and Respirator only available from '
@@ -507,8 +508,8 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    cols = ["Hospitalized Severe", "Hospitalized Respirator"]
-    legends = ['Severe Case', 'On Ventilator']
+    cols = ["Hospitalized Severe excl vent", "Hospitalized Respirator", "Hospitalized Severe"]
+    legends = ['Severe (excl. Ventilators)', 'On Ventilator', "All Severe Cases"]
     plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
               title='Thailand Severe Covid Hospitalisations',
               legends=legends,
