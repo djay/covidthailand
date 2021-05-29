@@ -1108,7 +1108,11 @@ def briefing_deaths_summary(text, date):
             if not last_provs:
                 raise Exception(f"subset of province can't be adjusted for {rest}")
             add_deaths(last_provs, -num)  # TODO: should only be prison. check this
-        add_deaths(rest, num)
+        try:
+            add_deaths(rest, num)
+        except KeyError:
+            # Something else from another cell got in here thats not a province. skip it
+            continue
         last_provs = rest
 
     # Congenital disease / risk factor The severity of the disease
