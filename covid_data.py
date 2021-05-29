@@ -1083,24 +1083,34 @@ def briefing_deaths_summary(text, date):
     ptext = re.sub("(ละ|/จังหวัด|จังหวัด|ราย)", "", ptext)
     pcells = pairwise(strip(re.split(r"(\(?\d+\)?)", ptext)))
     province_count = {}
-    for provinces, num in pcells:
-        # len() < 2 because some stray modifier?
-        text_num, rest = get_next_number(provinces, remove=True)
-        if rest.strip().startswith("("):
-            # special case where some in that province are in prison
-            # TODO: take them out of last prov and put into special province
-            continue
-        provs = [p.strip("() ") for p in rest.split() if len(p) > 1 and p.strip("() ")]
+    last_provs = None
+
+    def add_deaths(provinces, num):
+        provs = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
         provs = [get_province(p) for p in provs]
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
         provs = [p for p in provs if p != "Unknown"]
+        for p in provs:
+            province_count[p] = province_count.get(p, 0) + num
+
+    for provinces, num in pcells:
+        # len() < 2 because some stray modifier?
+        text_num, rest = get_next_number(provinces, remove=True)
         num, _ = get_next_number(num)
         if num is None and text_num is not None:
             num = text_num
         elif num is None:
             raise Exception(f"No number of deaths found {date}: {text}")
 
-        province_count.update(dict((p, num) for p in provs))
+        if rest.strip().startswith("("):
+            # special case where some in that province are in prison
+            # take them out of last prov and put into special province
+            if not last_provs:
+                raise Exception(f"subset of province can't be adjusted for {rest}")
+            add_deaths(last_provs, -num)  # TODO: should only be prison. check this
+        add_deaths(rest, num)
+        last_provs = rest
+
     # Congenital disease / risk factor The severity of the disease
     # congenital_disease = df[2][0]  # TODO: parse?
     # Risk factors for COVID-19 infection
