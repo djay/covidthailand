@@ -6,15 +6,18 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 *Note* Now available full page at https://djay.github.io/covidthailand
 
-# Active Cases 3rd Wave <a name="active-cases">
+# Active Cases Since April 1st <a name="active-cases">
 
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
+
+![Thailand Severe Hospital](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + severe + ventilator + field hospitals = Hospitalised, which is everyone who is 
   confirmed (for 14days at least)
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [CCSA Daily Briefing ](#dl-briefings)
+
 
 # Cases
 
@@ -383,6 +386,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- show severe and ventilator in more detail (either seperate graph or subplot?)
 - trending province vaccinations
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand

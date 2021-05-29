@@ -506,6 +506,15 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
+    cols = ["Hospitalized Respirator", "Hospitalized Severe"]
+    legends = ['On Ventilator', 'Severe Case']
+    plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
+              title='Thailand Severe Covid Hospitalisations\n',
+              legends=legends,
+              kind='line', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+
+
+
     # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
     df['Recovered since 2021-04-01'] = df['2021-04-14':]['Recovered'].cumsum()
     df['Died since 2021-04-01'] = df['2021-04-01':]['Deaths'].cumsum()
