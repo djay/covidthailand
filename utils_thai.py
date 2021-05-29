@@ -296,7 +296,7 @@ def get_province(prov, ignore_error=False):
                 return None
             else:
                 print(f"provinces.loc['{prov}'] = provinces.loc['x']")
-                raise Exception(f"provinces.loc['{prov}'] = provinces.loc['x']")
+                raise KeyError(f"Province {prov} can't be guessed")
         proven = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
         prov_guesses.loc[(prov_guesses.last_valid_index() or 0) + 1] = dict(Province=prov, ProvinceEn=proven, count=1)
         return proven
