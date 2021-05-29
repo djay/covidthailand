@@ -1021,7 +1021,8 @@ def briefing_province_cases(date, pages):
         pages = []
     rows = {}
     for i, soup in enumerate(pages):
-        if "อโควิดในประเทศรายใหม่" not in str(soup):
+        text = str(soup)
+        if "อโควิดในประเทศรายใหม่" not in text or "รวมท ัง้ประเทศ" in text:
             continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
@@ -1865,7 +1866,7 @@ def scrape_and_combine():
     if quick:
         # Comment out what you don't need to run
         # situation = get_situation()
-        # cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
