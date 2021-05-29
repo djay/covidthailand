@@ -490,8 +490,10 @@ def save_plots(df: pd.DataFrame) -> None:
     #######################
     cols_delayed = ["Hospitalized", "Recovered", "Hospitalized Severe", "Hospitalized Respirator", "Hospitalized Field"]
 
-    # TODO: only do for last day? Should do unknown instead? or just not show until we have all the data?
-    df[cols_delayed] = df[cols_delayed].ffill()
+    # TODO: we are missing some severe, ventilator mid april. why?
+    df[cols_delayed] = df[cols_delayed].interpolate(limit_area="inside")
+
+    # TODO: use unknowns to show this plot earlier?
 
     df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
     non_split = df[["Hospitalized Severe", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=False, axis=1)
