@@ -7,7 +7,7 @@ import re
 
 import pandas as pd
 
-from utils_pandas import export, fuzzy_join, rearrange
+from utils_pandas import fuzzy_join, rearrange
 from utils_scraping import remove_prefix, remove_suffix, web_files
 
 
@@ -210,7 +210,8 @@ def get_provinces():
     # provinces = provinces.pipe(prov_mapping_from_cases).pipe(prov_mapping_from_kristw)
 
     altnames = pd.read_csv("province_mapping.csv").set_index("Province")
-    on_enname = altnames.merge(provinces, right_index=True, left_on="ProvinceEn").drop(columns=["ProvinceEn_y", "ProvinceEn_x"])
+    on_enname = altnames.merge(provinces, right_index=True,
+                               left_on="ProvinceEn").drop(columns=["ProvinceEn_y", "ProvinceEn_x"])
     provinces = provinces.combine_first(on_enname)
 
     # Add in population data
@@ -277,7 +278,8 @@ def prov_mapping_from_kristw(provinces):
             enAbbr="ProvinceAlt")).set_index("ProvinceAlt").drop(
                 columns=["thAbbr", "enName", "thName"]))
 
-    # TODO: https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
+    # TODO: another source of alternative names
+    # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
     return provinces
 
 

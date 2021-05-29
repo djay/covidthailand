@@ -498,7 +498,6 @@ def save_plots(df: pd.DataFrame) -> None:
     df["Hospitalized Severe"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
     non_split = df[["Hospitalized Severe", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=False, axis=1)
 
-    # sometimes we deaths and cases but not the rest so fillfoward.
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
     cols = ["Hospitalized Respirator", "Hospitalized Severe", "Hospitalized Hospital", "Hospitalized Field"]
     legends = ['On Respirator', 'Severe Case', 'Hospitalised Other', 'Field Hospital']
@@ -508,14 +507,12 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    cols = ["Hospitalized Respirator", "Hospitalized Severe"]
-    legends = ['On Ventilator', 'Severe Case']
+    cols = ["Hospitalized Severe", "Hospitalized Respirator"]
+    legends = ['Severe Case', 'On Ventilator']
     plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
-              title='Thailand Severe Covid Hospitalisations\n',
+              title='Thailand Severe Covid Hospitalisations',
               legends=legends,
               kind='line', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
-
-
 
     # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
     df['Recovered since 2021-04-01'] = df['2021-04-14':]['Recovered'].cumsum()
