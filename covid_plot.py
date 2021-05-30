@@ -509,9 +509,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     cols = ["Hospitalized Severe excl vent", "Hospitalized Respirator", "Hospitalized Severe"]
-    legends = ['Severe (excl. Ventilators)', 'On Ventilator', "All Severe Cases"]
+    legends = ['Critical not on Ventilator', 'On Ventilator', "All Critical Cases"]
     plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
-              title='Thailand Severe Covid Hospitalisations',
+              title='Thailand Active Critical Covid Hospitalisations',
               legends=legends,
               kind='line', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 

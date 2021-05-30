@@ -472,7 +472,7 @@ def get_case_details_csv():
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     # links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
-    file, _ = next(web_files(*links, dir="json"))
+    file, _ = next(web_files(*links, dir="json"), check=False)
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
