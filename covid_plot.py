@@ -496,10 +496,11 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: use unknowns to show this plot earlier?
 
     # because severe includes those on respirators
-    df["Hospitalized Severe excl vent"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=0)
-    non_split = df[["Hospitalized Severe excl vent", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=False, axis=1)
+    df["Hospitalized Severe excl vent"] = df["Hospitalized Severe"].sub(df["Hospitalized Respirator"], fill_value=None)
+    non_split = df[["Hospitalized Severe excl vent", "Hospitalized Respirator", "Hospitalized Field"]].sum(skipna=True,
+                                                                                                           axis=1)
 
-    df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=0)
+    df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=None)
     cols = ["Hospitalized Respirator", "Hospitalized Severe excl vent", "Hospitalized Hospital", "Hospitalized Field"]
     legends = ['On Respirator', 'Severe Case', 'Hospitalised Other', 'Field Hospital']
     plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
