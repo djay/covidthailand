@@ -18,7 +18,7 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, AREA_LE
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
-              ma_days: int = None, cmap: str = 'tab20', actuals = False,
+              ma_days: int = None, cmap: str = 'tab20', actuals: bool = False,
               reverse_cmap: bool = False, highlight: List[str] = [],
               y_formatter: Callable[[float, int], str] = human_format, clean_end=True,
               between: List[str] = []) -> None:
@@ -69,7 +69,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if ma_days:
         for c in cols:
-            df[f'{c} (MA)'] = df[c].rolling(ma_days, min_periods=ma_days, center=True).mean()
+            df[f'{c} (MA)'] = df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
         cols = [f'{c} (MA)' for c in cols]
         ma_suffix = ' (MA)'
     else:
@@ -81,7 +81,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(ma_days, min_periods=ma_days, center=True).mean()
+            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
@@ -674,10 +674,10 @@ def save_plots(df: pd.DataFrame) -> None:
     # cases_est['Deaths Unknown'] = (df['Deaths'] - cases_est['Deaths']) / ifr['ifr']['Whole Kingdom'] * 100
 
     cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-14)
-    #cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
+    # cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
     cases_est = cases_est.rename(columns=dict(Deaths="Deaths prov sum"))
     cases_est = cases_est.join(df['Deaths'], on="Date")
-    #cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
+    # cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-14) / 0.0054
     cols = ["Cases", "Infections Estimate"]
     legend = ["Lower Estimate of Infections", "Cases"]
