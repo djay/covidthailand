@@ -203,19 +203,22 @@ def save_plots(df: pd.DataFrame) -> None:
     df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
     df["Positivity Cases/Tests"] = df["Cases"] / df["Tests XLS"] * 100
     df["Positivity Public+Private"] = (df["Pos XLS"] / df["Tests XLS"] * 100)
-    df['Positivity Walkins/PUI'] = df['Cases Walkin'] / df['Tested PUI'] * 100
+    df['Positivity Walkins/PUI3'] = df['Cases Walkin'] / df['Tested PUI'] / 3.0 * 100
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
     df['Cases per PUI3'] = df['Cases'] / df['Tested PUI'] / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
 
     cols = [
-        'Positivity Public+Private', 'Cases per Tests', 'Cases per PUI3',
-        'Positive Rate Private'
+        'Positivity Public+Private', 
+        'Positive Rate Private', 
+        'Cases per PUI3',
+        'Positivity Walkins/PUI3',
     ]
     legends = [
         'Positive Rate: Share of PCR tests that are positive ',
-        'Share of PCR tests that have Covid', 'Share of PUI*3 that have Covid',
-        'Share of Private PCR tests that are positive'
+        'Share of Private PCR tests that are positive',
+        'Share of PUI*3 that are confirmed cases',
+        'Share of PUI*3 that are walkin cases'
     ]
     plot_area(df=df,
               png_prefix='positivity',
