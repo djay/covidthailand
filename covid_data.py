@@ -681,8 +681,8 @@ def parse_unofficial_tweet(df, date, text):
     prisons, _ = get_next_number(text, "prisons", before=True)
     if any_in([None], deaths, cases):
         return df
-    cols = ["Date", "Deaths", "Cases"]
-    row = [date, deaths, cases]
+    cols = ["Date", "Deaths", "Cases", "Cases Area Prison"]
+    row = [date, deaths, cases, prisons]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
     print(date, "Breaking:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
@@ -988,6 +988,7 @@ def briefing_case_types(date, pages):
             walkins,
             proactive,
             imported,
+            prison,
             hospital,
             field,
             severe,
@@ -1003,6 +1004,7 @@ def briefing_case_types(date, pages):
         "Cases Walkin",
         "Cases Proactive",
         "Cases Imported",
+        "Cases Area Prison",  # Keep as Area so we don't repeat number.
         "Hospitalized Hospital",
         "Hospitalized Field",
         "Hospitalized Severe",
