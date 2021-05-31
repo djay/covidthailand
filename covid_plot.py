@@ -382,7 +382,7 @@ def save_plots(df: pd.DataFrame) -> None:
               unknown_total='Cases',
               kind='area',
               stacked=True,
-              percent_fig=True,
+              percent_fig=False,
               ma_days=7,
               cmap='tab20')
 
@@ -448,7 +448,7 @@ def save_plots(df: pd.DataFrame) -> None:
               '(excludes some proactive tests)',
               kind='area',
               stacked=True,
-              percent_fig=True,
+              percent_fig=False,
               ma_days=7,
               cmap='tab20')
 
@@ -709,7 +709,7 @@ Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
+              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
 
 if __name__ == "__main__":
