@@ -85,6 +85,11 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 # Deaths
 
+## COVID-19 Deaths
+
+![Thailand Covid Deaths by Reason](https://github.com/djay/covidthailand/wiki/deaths_reason_3.png)
+- source: [CCSA Daily Briefing ](#dl-briefings)
+
 ## COVID-19 Deaths by Health District
 
 ![Thailand Covid Deaths by Health District](https://github.com/djay/covidthailand/wiki/deaths_by_area_3.png)
