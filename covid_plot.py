@@ -320,14 +320,16 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test results compared to Confirmed Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
-    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive']
+    df['Cases Proactive Community'] = df['Cases Proactive'].sub(df['Cases Area Prison'], fill_value=0)
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison']
     plot_area(df=df,
               png_prefix='cases_types',
               cols_subset=cols,
               title='Thailand Covid Cases by Where Tested',
               legends=[
                   "Quarantine (Imported)", "Hospital (Walk-ins/Traced)",
-                  "Mobile Community Testing/Prisons (Proactive)"
+                  "Mobile Community Testing (Proactive)",
+                  "Prison (Proactive)"
               ],
               unknown_name='Cases Unknown',
               unknown_total='Cases',
