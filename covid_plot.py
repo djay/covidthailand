@@ -301,14 +301,17 @@ def save_plots(df: pd.DataFrame) -> None:
     # Test Plots
     ##################
     cols = ['Cases',
+            'Cases Walkin',
+            'Pos XLS',
             'Pos Public',
-            'Pos XLS']
+            ]
     legends = ['Confirmed Cases',
-               'Positive Test Results (Public)',
-               'Positive Test Results (All)']
+               'Walkin Confirmed Cases',
+               'Positive Test Results (All)',
+               'Positive Test Results (Public)']
     plot_area(df=df, png_prefix='cases', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases', legends=legends,
-              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="brg")
 
     cols = ['Cases',
             'Pos Area',
@@ -318,7 +321,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Pos']
     plot_area(df=df, png_prefix='cases_all', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases',
-              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab20')
 
     df['Cases Proactive Community'] = df['Cases Proactive'].sub(df['Cases Area Prison'], fill_value=0)
     cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison']
