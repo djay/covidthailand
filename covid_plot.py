@@ -18,7 +18,7 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, AREA_LE
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
               legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
-              ma_days: int = None, cmap: str = 'tab20',
+              ma_days: int = None, cmap: str = 'tab20', actuals: bool = False,
               reverse_cmap: bool = False, highlight: List[str] = [],
               y_formatter: Callable[[float, int], str] = human_format, clean_end=True,
               between: List[str] = []) -> None:
@@ -42,6 +42,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     :param highlight: cols to make thicker to highlight them
     :param y_formatter: function to format y axis numbers
     :param clean_end: remove days at end if there is no data (inc unknown)
+    :param between: columns to display as dashed
+    :param actuals: display non MA as dashed
     """
 
     if type(cols_subset) is str:
@@ -59,9 +61,15 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     if len(cols) > 6:
         plt.rcParams.update({"legend.fontsize": 18})
 
+    if actuals:
+        # display the originals dashed along side MA
+        actuals = cols
+    else:
+        actuals = []
+
     if ma_days:
         for c in cols:
-            df[f'{c} (MA)'] = df[c].rolling(f'{ma_days}d').mean()
+            df[f'{c} (MA)'] = df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
         cols = [f'{c} (MA)' for c in cols]
         ma_suffix = ' (MA)'
     else:
@@ -73,7 +81,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(f'{ma_days}d').mean()
+            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
@@ -93,7 +101,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     title = f'{title}\n'
 
     if ma_days:
-        title = title + f'({ma_days} day rolling average)\n'
+        title = title + f'({ma_days} day rolling average) '
     title += f'Last Data: {last_update}\n'
     title += 'https://djay.github.io/covidthailand'
 
@@ -145,8 +153,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         if kind == "area":
             df_plot.plot(ax=a0, y=cols, kind=kind, stacked=stacked)
         else:
-            for c in cols:
-                style = "--" if c in [f"{b}{ma_suffix}" for b in between] else None
+            for c in cols + actuals:
+                style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
                 width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
                 df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind=kind)
         #     a0.plot(df_plot.index, df_plot.reset_index()[c])
@@ -531,7 +539,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
               title='Thailand Active Covid Cases in ICU',
               legends=legends,
-              kind='line', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+              kind='line', stacked=True, percent_fig=False, ma_days=7, cmap='tab10', actuals=True)
 
     # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
     df['Recovered since 2021-04-01'] = df['2021-04-14':]['Recovered'].cumsum()
@@ -666,16 +674,13 @@ def save_plots(df: pd.DataFrame) -> None:
     # cases_est['Deaths Unknown'] = (df['Deaths'] - cases_est['Deaths']) / ifr['ifr']['Whole Kingdom'] * 100
 
     cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-14)
-    cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
+    # cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
     cases_est = cases_est.rename(columns=dict(Deaths="Deaths prov sum"))
     cases_est = cases_est.join(df['Deaths'], on="Date")
-    cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
+    # cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-14) / 0.0054
-    cols = ["Cases (MA)", "Infections Estimate (MA)", "Infections Estimate", "Cases"]
-    legend = [
-        "Cases (7d moving avg.)", "Lower Estimate of Infections (7d moving avg.)", "Lower Estimate of Infections",
-        "Cases"
-    ]
+    cols = ["Cases", "Infections Estimate"]
+    legend = ["Lower Estimate of Infections", "Cases"]
     title = """Thailand Confirmed Covid Cases vs Estimate of Infections based on Deaths
 Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
 (DISCLAIMER: estimate is simple and probably lower than reality. see site below for more details on this model)"""
@@ -687,18 +692,22 @@ Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=None,
+              ma_days=7,
               cmap='tab10',
-              between=[
-                  "Infections Estimate",
-                  "Cases",
-              ])
+              actuals=True
+              )
 
     ####################
     # Deaths
     ####################
 
     # predict median age of death based on population demographics
+
+    cols = ['Deaths', 'Deaths Comorbidity None', 'Deaths Risk Family']
+    plot_area(df=df, png_prefix='deaths_reason', cols_subset=cols, title='Thailand Covid Deaths',
+              legends=['Deaths', 'No underlying diseases', 'Infected from family'],
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10',
+              actuals=True)
 
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
     cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
