@@ -1403,11 +1403,18 @@ def get_cases_by_area():
 # Testing data
 ##########################################
 
+def test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
+                   username="wbioWZAQfManokc",
+                   password="null",
+                   ext=".pdf .pptx",
+                   dir="testing_moph"):
+    return dav_files(url, username, password, ext, dir)
+
 
 def get_tests_by_day():
     print("========Tests by Day==========")
 
-    file = next(dav_files(ext="xlsx"))
+    file = next(test_dav_files(ext="xlsx"))
     tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
     tests.dropna(how="any", inplace=True)  # get rid of totals row
     tests = tests.set_index("Date")
@@ -1530,14 +1537,14 @@ def get_test_reports():
     raw = pd.DataFrame()
     pubpriv = pd.DataFrame()
 
-    for file in dav_files(ext=".pptx"):
+    for file in test_dav_files(ext=".pptx"):
         for chart, title, series, pagenum in pptx2chartdata(file):
             data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
                 # Latest file as all the data we need
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
     # Also need pdf copies because of missing pptx
-    for file in dav_files(ext=".pdf"):
+    for file in test_dav_files(ext=".pdf"):
         pages = parse_file(file, html=False, paged=True)
         for page in pages:
             data, raw = get_tests_by_area_pdf(file, page, data, raw)

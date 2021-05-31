@@ -203,8 +203,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         yield file, content
 
 
-def dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav", username="wbioWZAQfManokc", password="null",
-              ext=".pdf .pptx", dir="testing_moph"):
+def dav_files(url, username=None, password=None,
+              ext=".pdf .pptx", dir=os.getcwd()):
 
     options = {
         "webdav_hostname": url,
