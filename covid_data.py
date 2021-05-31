@@ -1137,8 +1137,13 @@ def briefing_deaths_summary(text, date):
     title_num, _ = get_next_numbers(text, title_re)
     day, year, deaths_title, *_ = title_num
 
+<<<<<<< HEAD
     no_comorbidity, _ = get_next_number(text, "ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", default=0)
     risk_family, _ = get_next_number(text, "คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม", default=0)
+=======
+    no_comorbidity, _ = get_next_number(text, "ไม่มีโรคประจ")
+    risk_family, _ = get_next_number(text, "คนในครอบครัว")
+>>>>>>> e9ef84c996fae55f0f29ffceef082c1e453bc983
 
     assert male + female == deaths_title
     # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
