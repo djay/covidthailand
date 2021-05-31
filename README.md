@@ -10,10 +10,10 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
 
-![Thailand Severe Hospital](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
+![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
-- Other Active Cases + severe + ventilator + field hospitals = Hospitalised, which is everyone who is 
+- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is 
   confirmed (for 14days at least)
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [CCSA Daily Briefing ](#dl-briefings)

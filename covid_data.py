@@ -648,7 +648,7 @@ def parse_official_tweet(df, date, text):
     cases = imported + local
     # cases_cum, _ = get_next_number(text, "Since Jan(?:uary)? 2020")
     deaths, _ = get_next_number(text, "dead +", "deaths +")
-    serious, _ = get_next_number(text, "in serious condition", before=True)
+    serious, _ = get_next_number(text, "in serious condition", "in ICU", before=True)
     recovered, _ = get_next_number(text, "discharged", "left care", before=True)
     hospitalised, _ = get_next_number(text, "in care", before=True)
     vent, _ = get_next_number(text, "on ventilators", before=True)

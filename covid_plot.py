@@ -502,17 +502,17 @@ def save_plots(df: pd.DataFrame) -> None:
 
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=None)
     cols = ["Hospitalized Respirator", "Hospitalized Severe excl vent", "Hospitalized Hospital", "Hospitalized Field"]
-    legends = ['On Respirator', 'Severe Case', 'Hospitalised Other', 'Field Hospital']
+    legends = ['On Ventilator', 'In ICU', 'Hospitalised Other', 'Field Hospital']
     plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
               title='Thailand Active Covid Cases\n(Severe, Field, and Respirator only available from '
                     '2021-04-24 onwards)',
               legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    cols = ["Hospitalized Severe excl vent", "Hospitalized Respirator", "Hospitalized Severe"]
-    legends = ['Critical not on Ventilator', 'On Ventilator', "All Critical Cases"]
+    cols = ["Hospitalized Severe", "Hospitalized Severe excl vent", "Hospitalized Respirator"]
+    legends = ["In ICU", 'In ICU not on Ventilator', 'In ICU on Ventilator']
     plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
-              title='Thailand Active Critical Covid Hospitalisations',
+              title='Thailand Active Covid Cases in ICU',
               legends=legends,
               kind='line', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
