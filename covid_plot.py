@@ -43,10 +43,21 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     :param y_formatter: function to format y axis numbers
     :param clean_end: remove days at end if there is no data (inc unknown)
     """
+
     if type(cols_subset) is str:
         cols = [c for c in df.columns if str(c).startswith(cols_subset)]
     else:
         cols = cols_subset
+
+    plt.rcParams.update({
+        "font.size": 24,
+        "figure.titlesize": 30,
+        "figure.titleweight": "bold",
+        "axes.titlesize": 28,
+        "legend.fontsize": 24
+    })
+    if len(cols) > 6:
+        plt.rcParams.update({"legend.fontsize": 18})
 
     if ma_days:
         for c in cols:
@@ -167,8 +178,6 @@ def save_plots(df: pd.DataFrame) -> None:
     # matplotlib global settings
     matplotlib.use('AGG')
     plt.style.use('seaborn-whitegrid')
-    plt.rcParams.update({'font.size': 16})
-    plt.rc('legend', **{'fontsize': 14})
 
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
@@ -209,8 +218,8 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
 
     cols = [
-        'Positivity Public+Private', 
-        'Positive Rate Private', 
+        'Positivity Public+Private',
+        'Positive Rate Private',
         'Cases per PUI3',
         'Positivity Walkins/PUI3',
     ]
