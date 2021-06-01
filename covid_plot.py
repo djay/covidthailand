@@ -51,6 +51,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     else:
         cols = cols_subset
 
+    orig_cols = cols
+
     plt.rcParams.update({
         "font.size": 24,
         "figure.titlesize": 30,
@@ -76,12 +78,13 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         ma_suffix = ''
 
     # try to hone in on last day of "important" data. Assume first col
-    last_update = df[cols[:1]].dropna().index[-1].date().strftime('%d %b %Y')  # date format chosen: '05 May 2021'
+    last_update = df[orig_cols[:1]].dropna().last_valid_index()  # date format chosen: '05 May 2021'
     # last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
+            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2),
+                                                                    center=True).mean()
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
@@ -102,7 +105,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if ma_days:
         title = title + f'({ma_days} day rolling average) '
-    title += f'Last Data: {last_update}\n'
+    title += f"Last Data: {last_update.date().strftime('%d %b %Y')}\n"
     title += 'https://djay.github.io/covidthailand'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
@@ -557,8 +560,8 @@ def save_plots(df: pd.DataFrame) -> None:
         'Recovered since 2021-04-01',
     ]
     legends = [
-        'Deaths from cases since 1st April', 'On Ventilator', 'In severe condition', 'In Hospital', 'In Field Hospital',
-        'Recovered from cases since 1st April'
+        'Deaths from cases since 1st April', 'On Ventilator', 'In ICU without Ventilator', 'In Hospital/Mild',
+        'In Field Hospital', 'Recovered from cases since 1st April'
     ]
     plot_area(df=df,
               png_prefix='cases_cumulative',

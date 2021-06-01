@@ -24,19 +24,19 @@ prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 # Date helpers
 ###############
 AREA_LEGEND_ORDERED = [
-    "1: U-N: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
-    "2: L-N: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
-    "3: U-C: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
-    "4: M-C: Nonthaburi, P.Thani, Ayutthaya, Saraburi, Lopburi, Sing Buri, Ang Thong, N.Nayok",
-    "5: L-C: S.Sakhon, Kanchanaburi, N.Pathom, Ratchaburi, Suphanburi, PKK, Phetchaburi, S.Songkhram",
+    "1: UpN: C.Mai, C.Rai, MHS, Lampang, Lamphun, Nan, Phayao, Phrae",
+    "2: LoN: Tak, Phitsanulok, Phetchabun, Sukhothai, Uttaradit",
+    "3: UpC: Kamphaeng Phet, Nakhon Sawan, Phichit, Uthai Thani, Chai Nat",
+    "4: MidC: Nonthaburi, P.Thani, Ayutthaya, Saraburi, Lopburi, Sing Buri, Ang Thong, N.Nayok",
+    "5: LoC: S.Sakhon, Kanchanaburi, N.Pathom, Ratchaburi, Suphanburi, PKK, Phetchaburi, S.Songkhram",
     "6: E: Trat, Rayong, Chonburi, S.Prakan, Chanthaburi, Prachinburi, Sa Kaeo, Chachoengsao",
-    "7: M-NE: Khon Kaen, Kalasin, Maha Sarakham, Roi Et",
-    "8: U-NE: S.Nakhon, Loei, U.Thani, Nong Khai, NBL, Bueng Kan, N.Phanom, Mukdahan",
-    "9: L-NE: Korat, Buriram, Surin, Chaiyaphum",
-    "10: E-NE: Yasothon, Sisaket, Amnat Charoen, Ubon Ratchathani",
+    "7: MidNE: Khon Kaen, Kalasin, Maha Sarakham, Roi Et",
+    "8: UpNE: S.Nakhon, Loei, U.Thani, Nong Khai, NBL, Bueng Kan, N.Phanom, Mukdahan",
+    "9: LoNE: Korat, Buriram, Surin, Chaiyaphum",
+    "10: ENE: Yasothon, Sisaket, Amnat Charoen, Ubon Ratchathani",
     "11: SE: Phuket, Krabi, Ranong, Phang Nga, S.Thani, Chumphon, N.S.Thammarat",
     "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
-    "13: C: Bangkok",
+    "13: MidC: Bangkok",
 ]
 
 FIRST_AREAS = [13, 4, 5, 6, 1]  # based on size-ish
