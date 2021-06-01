@@ -530,7 +530,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=None)
     cols = ["Hospitalized Respirator", "Hospitalized Severe excl vent", "Hospitalized Hospital", "Hospitalized Field"]
-    legends = ['On Ventilator', 'In ICU', 'Hospitalised Other', 'Field Hospital']
+    legends = ['On Ventilator', 'In Serious Condition', 'In Isolation/Hospital', 'In Field Hospital']
     plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
               title='Thailand Active Covid Cases\n(Severe, Field, and Respirator only available from '
                     '2021-04-24 onwards)',
@@ -538,9 +538,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     cols = ["Hospitalized Severe", "Hospitalized Severe excl vent", "Hospitalized Respirator"]
-    legends = ["In ICU", 'In ICU not on Ventilator', 'In ICU on Ventilator']
+    legends = ["In Serious Condition", 'In Serious Condition (without ventilator)', 'On Ventilator']
     plot_area(df=df, png_prefix='active_severe', cols_subset=cols,
-              title='Thailand Active Covid Cases in ICU',
+              title='Thailand Active Covid Cases in Serious Condition',
               legends=legends,
               kind='line', stacked=True, percent_fig=False, ma_days=7, cmap='tab10', actuals=True)
 
@@ -560,7 +560,7 @@ def save_plots(df: pd.DataFrame) -> None:
         'Recovered since 2021-04-01',
     ]
     legends = [
-        'Deaths from cases since 1st April', 'On Ventilator', 'In ICU without Ventilator', 'In Hospital/Mild',
+        'Deaths from cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)', 'In Hospital/Mild',
         'In Field Hospital', 'Recovered from cases since 1st April'
     ]
     plot_area(df=df,
