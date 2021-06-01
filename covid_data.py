@@ -1144,13 +1144,13 @@ def briefing_deaths_summary(text, date):
     # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
 
     # TODO: what if they have more than one page?
-    sum = \
-        pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female, no_comorbidity, risk_family]],
-                     columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max",
-                              "Deaths Male", "Deaths Female", "Deaths Comorbidity None", "Deaths Risk Family"]).set_index("Date")
-    dfprov = \
-        pd.DataFrame(((date, p, c) for p, c in province_count.items()),
-                     columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
+    sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female, no_comorbidity, risk_family]],
+                       columns=[
+                           "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male",
+                           "Deaths Female", "Deaths Comorbidity None", "Deaths Risk Family"]
+                       ).set_index("Date")
+    dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
+                          columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
     assert male + female == dfprov['Deaths'].sum()
     print(f"{date.date()} Deaths:", len(dfprov), "|",
           sum.to_string(header=False, index=False))
@@ -1885,7 +1885,7 @@ def scrape_and_combine():
     if quick:
         # Comment out what you don't need to run
         # situation = get_situation()
-        # cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
