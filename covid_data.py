@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import camelot
 import numpy as np
 import pandas as pd
+from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
@@ -455,8 +456,11 @@ def get_situation():
 
 def get_cases():
     print("========Covid19 Timeline==========")
-
-    file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline?123", dir="json", check=True))
+    try:
+        file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline?123", dir="json", check=True))
+    except ConnectionError:
+        # I think we have all this data covered by other sources. It's a little unreliable.
+        return pd.DataFrame()
     data = pd.DataFrame(json.loads(text)['Data'])
     data['Date'] = pd.to_datetime(data['Date'])
     data = data.set_index("Date")
@@ -1885,12 +1889,12 @@ def scrape_and_combine():
     if quick:
         # Comment out what you don't need to run
         # situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        # cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
-        # cases = get_cases()
+        cases = get_cases()
         pass
     else:
         cases_by_area = get_cases_by_area()

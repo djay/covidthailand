@@ -362,6 +362,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [Stefano Starita](https://twitter.com/DrSteStarita) - more excellent analysis and visualisations
 - [Richard Barrow](https://www.facebook.com/richardbarrowthailand) - maybe the fastest way to get COVID-19 updates in English
 - Thai Gov news feeds
+  - [Thai Gov Covid Information: FB](https://www.facebook.com/informationcovid19) - has daily briefing infographics and broadcast (eng and thai) updated quickly
   - [Thai Gov Spokesman: FB](https://www.facebook.com/ThaigovSpokesman), 
   - [Thai Government PR: FB](https://www.facebook.com/thailandprd),
   - [Ministry of Health: Twitter](https://twitter.com/thaimoph), 

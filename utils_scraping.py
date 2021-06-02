@@ -22,10 +22,10 @@ NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
 INT_RE = re.compile(r"\d+(?:\,\d+)*")
 NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
 
-requests.adapters.DEFAULT_RETRIES = 5  # for other tools that use requests internally
+requests.adapters.DEFAULT_RETRIES = 3  # for other tools that use requests internally
 s = requests.Session()
 RETRY = Retry(
-    total=10, backoff_factor=1
+    total=3, backoff_factor=1
 )  # should make it more reliable as ddc.moph.go.th often fails
 s.mount("http://", HTTPAdapter(max_retries=RETRY))
 s.mount("https://", HTTPAdapter(max_retries=RETRY))
