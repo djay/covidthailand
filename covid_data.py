@@ -650,7 +650,7 @@ def get_cases_by_demographics_api():
 
 
 UNOFFICIAL_TWEET = re.compile("🔴 BREAKING: ")
-OFFICIAL_TWEET = re.compile("Official #COVID19 update")
+OFFICIAL_TWEET = re.compile("#COVID19 update")
 
 
 def parse_official_tweet(df, date, text):
@@ -1889,12 +1889,12 @@ def scrape_and_combine():
     if quick:
         # Comment out what you don't need to run
         # situation = get_situation()
-        # cases_by_area = get_cases_by_area()
+        cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
-        cases = get_cases()
+        # cases = get_cases()
         pass
     else:
         cases_by_area = get_cases_by_area()
