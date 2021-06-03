@@ -191,8 +191,8 @@ def situation_pui(parsed_pdf, date):
         if len(numbers) == 7:
             tests_total, pui, active_finding, asq, not_pui, pui2, pui_port, *rest = numbers
         elif len(numbers) == 6:
-            tests_total, pui, asq, not_pui, pui2, pui_port, *rest = numbers
-            active_finding = None
+            tests_total, pui, asq, active_finding, pui2, pui_port, *rest = numbers
+            not_pui = None
         else:
             raise Exception(numbers)
 
@@ -215,7 +215,7 @@ def situation_pui(parsed_pdf, date):
         pui = None
     elif tests_total in [783679, 849874, 936458]:
         tests_total = None
-    elif None in (tests_total, pui, asq, not_pui) and date > d("2020-06-30"):
+    elif None in (tests_total, pui, asq, active_finding) and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
 
     # walkin public vs private
@@ -233,7 +233,9 @@ def situation_pui(parsed_pdf, date):
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and 5000000 > pui_walkin > 0)
     assert pui_walkin_public is None or (5000000 > pui_walkin_public > 10000)
 
-    row = (tests_total, pui, active_finding, asq, not_pui, pui_walkin, pui_walkin_private, pui_walkin_public)
+    if not_pui is not None:
+        active_finding += not_pui
+    row = (tests_total, pui, active_finding, asq, pui_walkin, pui_walkin_private, pui_walkin_public)
     return pd.DataFrame(
         [(date, ) + row],
         columns=[
@@ -242,7 +244,6 @@ def situation_pui(parsed_pdf, date):
             "Tested PUI Cum",
             "Tested Proactive Cum",
             "Tested Quarantine Cum",
-            "Tested Not PUI Cum",
             "Tested PUI Walkin Cum",
             "Tested PUI Walkin Private Cum",
             "Tested PUI Walkin Public Cum",
@@ -305,23 +306,19 @@ def situation_pui_th(parsed_pdf, date, results):
         r"ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
         r"นวนการตรวจทาง\S+องปฏิบัติการ",
         "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
+        until="(?:โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลเอกชน)"
     )
     # cases = None
-    if len(numbers) > 6:
-        (
-            screened_port,
-            screened_cw,
-            tests_total,
-            pui,
-            active_finding,
-            asq,
-            not_pui,
-            *rest,
-        ) = numbers
-        if tests_total < 30000:
-            tests_total, pui, active_finding, asq, not_pui, *rest = numbers
-            if pui == 4534137:
-                pui = 453413  # situation-no273-021063n.pdf
+    if len(numbers) == 7:  # numbers and numbers[2] < 30000:
+        tests_total, pui, active_finding, asq, not_pui, *rest = numbers
+        if pui == 4534137:
+            pui = 453413  # situation-no273-021063n.pdf
+    elif len(numbers) > 8:
+        _, _, tests_total, pui, active_finding, asq, not_pui, *rest = numbers
+    elif len(numbers) == 8:
+        # 2021 - removed not_pui
+        _, _, tests_total, pui, asq, active_finding, *rest = numbers
+        not_pui = None
     else:
         numbers, content = get_next_numbers(
             parsed_pdf,
@@ -357,7 +354,9 @@ def situation_pui_th(parsed_pdf, date, results):
 
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and pui_walkin > 0)
 
-    row = (tests_total, pui, active_finding, asq, not_pui, pui_walkin_private, pui_walkin_public, pui_walkin)
+    if not_pui is not None:
+        active_finding += not_pui # later reports combined it anyway
+    row = (tests_total, pui, active_finding, asq, pui_walkin_private, pui_walkin_public, pui_walkin)
     if None in row and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
     df = pd.DataFrame(
@@ -368,7 +367,6 @@ def situation_pui_th(parsed_pdf, date, results):
             "Tested PUI Cum",
             "Tested Proactive Cum",
             "Tested Quarantine Cum",
-            "Tested Not PUI Cum",
             "Tested PUI Walkin Private Cum",
             "Tested PUI Walkin Public Cum",
             "Tested PUI Walkin Cum"]
@@ -1030,6 +1028,8 @@ def briefing_case_types(date, pages):
 
 
 def briefing_province_cases(date, pages):
+    # TODO: also can be got from https://ddc.moph.go.th/viralpneumonia/file/scoreboard/scoreboard_02062564.pdf
+    # Seems updated around 3pm so perhaps not better than briefing
     if date < d("2021-01-13"):
         pages = []
     rows = {}
@@ -1888,8 +1888,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        # situation = get_situation()
-        cases_by_area = get_cases_by_area()
+        situation = get_situation()
+        # cases_by_area = get_cases_by_area()
         # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()

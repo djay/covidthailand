@@ -70,10 +70,10 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         actuals = []
 
     if ma_days:
-        for c in cols:
-            df[f'{c} (MA)'] = df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
-        cols = [f'{c} (MA)' for c in cols]
         ma_suffix = ' (MA)'
+        for c in cols:
+            df[f'{c}{ma_suffix}'] = df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
+        cols = [f'{c}{ma_suffix}' for c in cols]
     else:
         ma_suffix = ''
 
@@ -83,7 +83,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total} (MA)'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2),
+            df[f'{unknown_total}{ma_suffix}'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2),
                                                                     center=True).mean()
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
@@ -110,7 +110,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
-        legends = [remove_suffix(c, " (MA)") for c in cols]
+        legends = [remove_suffix(c, ma_suffix) for c in cols]
     elif unknown_total and unknown_name not in legends:
         legends = legends + [unknown_name]
 
@@ -207,7 +207,6 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = ['Tested Cum',
             'Tested PUI Cum',
-            'Tested Not PUI Cum',
             'Tested Proactive Cum',
             'Tested Quarantine Cum',
             'Tested PUI Walkin Private Cum',
