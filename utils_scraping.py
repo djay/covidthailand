@@ -84,9 +84,9 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         matched, *behind = behind
         behind = "".join(behind)
         found = ahead if before else behind
-        if until is not None and until in found:
-            found, rest = found.split(until, 1)  # TODO: how to put it back togeather if behind=True?
-            rest = until + rest
+        if until is not None:
+            found, *rest = re.split(until, found, 1)  # TODO: how to put it back togeather if behind=True?
+            rest = until + (rest[0] if rest else "")
         else:
             rest = ""
         numbers = (INT_RE if ints else NUM_RE).findall(found)
