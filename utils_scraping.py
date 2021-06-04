@@ -179,7 +179,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
     for url in urls:
         modified = s.head(url).headers.get("last-modified") if check else None
-        file = url.rsplit("/", 1)[-1]
+        file = sanitize_filename(url.rsplit("/", 1)[-1])
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
         if is_remote_newer(file, modified, check):
@@ -201,6 +201,10 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         with open(file, "rb") as f:
             content = f.read()
         yield file, content
+
+
+def sanitize_filename(filename):
+    return filename.translate({"*": "_", "?": "_", ":": "_", "\\": "_"})
 
 
 def dav_files(url, username=None, password=None,
