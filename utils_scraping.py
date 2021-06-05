@@ -181,6 +181,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         modified = s.head(url).headers.get("last-modified") if check else None
         file = sanitize_filename(url.rsplit("/", 1)[-1])
         file = os.path.join(dir, file)
+        file = ''.join([f for f in file if f not in '?*:<>|']) # Windows Filename Compatibility.
         os.makedirs(os.path.dirname(file), exist_ok=True)
         if is_remote_newer(file, modified, check):
             r = s.get(url)

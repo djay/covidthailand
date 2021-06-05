@@ -1,541 +1,80 @@
-Province,ProvinceEn
-ACR,Amnat Charoen
-ATG,Ang Thong
-AYA,Phra Nakhon Si Ayutthaya
-Amnat Charoen,Amnat Charoen
-AmnatCharoen,Amnat Charoen
-Ang Thong,Ang Thong
-AngThong,Ang Thong
-Ayutthaya,Phra Nakhon Si Ayutthaya
-BKK,Bangkok
-BKN,Bueng Kan
-BRM,Buriram
-Bangkok,Bangkok
-BeungKan,Bueng Kan
-Bueng Kan,Bueng Kan
-Bung Kan,Bueng Kan
-Buri Ram,Buriram
-BuriRam,Buriram
-Buriram,Buriram
-CBI,Chonburi
-CCO,Chachoengsao
-CMI,Chiang Mai
-CNT,Chai Nat
-CPM,Chaiyaphum
-CPN,Chumphon
-CRI,Chiang Rai
-CTI,Chanthaburi
-Chachoengsao,Chachoengsao
-Chai Nat,Chai Nat
-ChaiNat,Chai Nat
-Chainat,Chai Nat
-Chaiyaphum,Chaiyaphum
-Chanthaburi,Chanthaburi
-Chiang Mai,Chiang Mai
-Chiang Rai,Chiang Rai
-ChiangMai,Chiang Mai
-ChiangRai,Chiang Rai
-Chon Buri,Chonburi
-ChonBuri,Chonburi
-Chonburi,Chonburi
-Chumphon,Chumphon
-KBI,Krabi
-KKN,Khon Kaen
-KPT,Kamphaeng Phet
-KRI,Kanchanaburi
-KSN,Kalasin
-Kalasin,Kalasin
-Kamphaeng Phet,Kamphaeng Phet
-KamphaengPhet,Kamphaeng Phet
-Kanchanaburi,Kanchanaburi
-Khon Kaen,Khon Kaen
-KhonKaen,Khon Kaen
-Khorat,Nakhon Ratchasima
-Korat,Nakhon Ratchasima
-Krabi,Krabi
-LEI,Loei
-LPG,Lampang
-LPN,Lamphun
-LRI,Lopburi
-Lam Phu,Nong Bua Lamphu
-Lampang,Lampang
-Lamphun,Lamphun
-Loei,Loei
-LopBuri,Lopburi
-Lopburi,Lopburi
-MDH,Mukdahan
-MKM,Maha Sarakham
-MSN,Mae Hong Son
-Mae Hong Son,Mae Hong Son
-MaeHongSon,Mae Hong Son
-Maha Sarakham,Maha Sarakham
-MahaSarakham,Maha Sarakham
-Mahasarakham,Maha Sarakham
-Mukdahan,Mukdahan
-NAN,Nan
-NBI,Nonthaburi
-NBP,Nong Bua Lamphu
-NKI,Nong Khai
-NMA,Nakhon Ratchasima
-NPM,Nakhon Phanom
-NPT,Nakhon Pathom
-NRT,Nakhon Si Thammarat
-NSN,Nakhon Sawan
-NWT,Narathiwat
-NYK,Nakhon Nayok
-Nakhon Nayok,Nakhon Nayok
-Nakhon Pathom,Nakhon Pathom
-Nakhon Phanom,Nakhon Phanom
-Nakhon Ratchasima,Nakhon Ratchasima
-Nakhon Sawan,Nakhon Sawan
-Nakhon Si Thammarat,Nakhon Si Thammarat
-NakhonNayok,Nakhon Nayok
-NakhonPathom,Nakhon Pathom
-NakhonPhanom,Nakhon Phanom
-NakhonRatchasima,Nakhon Ratchasima
-NakhonSawan,Nakhon Sawan
-NakhonSiThammarat,Nakhon Si Thammarat
-Nan,Nan
-Narathiwat,Narathiwat
-Nong Bua Lam Phu,Nong Bua Lamphu
-Nong Bua Lamphu,Nong Bua Lamphu
-Nong Khai,Nong Khai
-NongBuaLamPhu,Nong Bua Lamphu
-NongKhai,Nong Khai
-Nonthaburi,Nonthaburi
-PBI,Phetchaburi
-PCT,Phichit
-PKN,Prachuap Khiri Khan
-PKT,Phuket
-PLG,Phatthalung
-PLK,Phitsanulok
-PNA,Phang Nga
-PNB,Phetchabun
-PRE,Phrae
-PRI,Prachinburi
-PTE,Pathum Thani
-PTN,Pattani
-PYO,Phayao
-Pathom Thani,Pathum Thani
-Pathum Thani,Pathum Thani
-PathumThani,Pathum Thani
-Pattani,Pattani
-Phang Nga,Phang Nga
-Phang-nga,Phang Nga
-Phathum Thani,Pathum Thani
-Phatthalung,Phatthalung
-Phayao,Phayao
-Phetchabun,Phetchabun
-Phetchaburi,Phetchaburi
-Phichit,Phichit
-Phitsanulok,Phitsanulok
-Phra Nakhon Si Ayutthaya,Phra Nakhon Si Ayutthaya
-PhraNakhonSiAyutthaya,Phra Nakhon Si Ayutthaya
-Phrae,Phrae
-Phuket,Phuket
-Prachin Buri,Prachinburi
-PrachinBuri,Prachinburi
-Prachinburi,Prachinburi
-Prachuap Khiri Khan,Prachuap Khiri Khan
-PrachuapKhiriKhan,Prachuap Khiri Khan
-Prison,Prison
-RBR,Ratchaburi
-RET,Roi Et
-RNG,Ranong
-RYG,Rayong
-Ranong,Ranong
-Ratchaburi,Ratchaburi
-Rayong,Rayong
-Roi Et,Roi Et
-RoiEt,Roi Et
-SBR,Sing Buri
-SKA,Songkhla
-SKM,Samut Songkhram
-SKN,Samut Sakhon
-SKW,Sa Kaeo
-SNI,Surat Thani
-SNK,Sakon Nakhon
-SPB,Suphan Buri
-SPK,Samut Prakan
-SRI,Saraburi
-SRN,Surin
-SSK,Sisaket
-STI,Sukhothai
-STN,Satun
-Sa Kaeo,Sa Kaeo
-SaKaeo,Sa Kaeo
-Sakon Nakhon,Sakon Nakhon
-SakonNakhon,Sakon Nakhon
-Samut Prakan,Samut Prakan
-Samut Sakhon,Samut Sakhon
-Samut Songkhram,Samut Songkhram
-SamutPrakan,Samut Prakan
-SamutSakhon,Samut Sakhon
-SamutSongkhram,Samut Songkhram
-Saraburi,Saraburi
-Satun,Satun
-Si Sa Ket,Sisaket
-SiSaKet,Sisaket
-Sing Buri,Sing Buri
-SingBuri,Sing Buri
-Sisaket,Sisaket
-Songkhla,Songkhla
-Sukhothai,Sukhothai
-Suphan Buri,Suphan Buri
-SuphanBuri,Suphan Buri
-Suphanburi,Suphan Buri
-Surat Thani,Surat Thani
-SuratThani,Surat Thani
-Surin,Surin
-TAK,Tak
-TRG,Trang
-TRT,Trat
-Tak,Tak
-Trang,Trang
-Trat,Trat
-UBN,Ubon Ratchathani
-UDN,Udon Thani
-UTI,Uthai Thani
-UTT,Uttaradit
-Ubon Ratchathani,Ubon Ratchathani
-Ubon Thani,Udon Thani
-UbonRatchathani,Ubon Ratchathani
-Udon Thani,Udon Thani
-UdonThani,Udon Thani
-Unknown,Unknown
-Uthai Thani,Uthai Thani
-UthaiThani,Uthai Thani
-Uttaradit,Uttaradit
-YLA,Yala
-YST,Yasothon
-Yala,Yala
-Yasothon,Yasothon
-ก าแพงเพชร,Kamphaeng Phet
-ก ำแพงเพชร,Kamphaeng Phet
-กจ,Kanchanaburi
-กทม,Bangkok
-กบ,Krabi
-กพ,Kamphaeng Phet
-กรงุเทพมหานคร,Bangkok
-กรงุเทพมหำนคร,Bangkok
-กระบี่,Krabi
-กรุงเทพ,Bangkok
-กรุงเทพมหานคร,Bangkok
-กรุงเทพฯ,Bangkok
-กส,Kalasin
-กัมพูชา,Unknown
-กาญจนบรุ,Kanchanaburi
-กาญจนบุร,Kanchanaburi
-กาญจนบุรี,Kanchanaburi
-กาฬสนิธุ,Kalasin
-กาฬสินธุ,Kalasin
-กาฬสินธุ์,Kalasin
-กาแพงเพชร,Kamphaeng Phet
-กำญจนบรุ,Kanchanaburi
-กำแพงเพชร,Kamphaeng Phet
-ขก,Khon Kaen
-ขอนแกน่,Khon Kaen
-ขอนแก่น,Khon Kaen
-จนัทบรุ,Chanthaburi
-จนัทบุร,Chanthaburi
-จบ,Chanthaburi
-จันทบรุ,Chanthaburi
-จันทบุร,Chanthaburi
-จันทบุรี,Chanthaburi
-ฉช,Chachoengsao
-ฉะเชงิเทรา,Chachoengsao
-ฉะเชงิเทรำ,Chachoengsao
-ฉะเชิงเทรา,Chachoengsao
-ชน,Chai Nat
-ชบ,Chonburi
-ชพ,Chumphon
-ชม,Chiang Mai
-ชมุพร,Chumphon
-ชย,Chaiyaphum
-ชยันาท,Chai Nat
-ชยันำท,Chai Nat
-ชยัภมู,Chaiyaphum
-ชร,Chiang Rai
-ชลบรุ,Chonburi
-ชลบุร,Chonburi
-ชลบุรี,Chonburi
-ชลบุุรี,Chonburi
-ชัยนาท,Chai Nat
-ชัยภูม,Chaiyaphum
-ชัยภูมิ,Chaiyaphum
-ชุมพร,Chumphon
-ตก,Tak
-ตง,Trang
-ตร,Trat
-ตรงั,Trang
-ตรัง,Trang
-ตราด,Trat
-ตรำด,Trat
-ตาก,Tak
-ตำก,Tak
-นค,Nong Khai
-นครนายก,Nakhon Nayok
-นครนำยก,Nakhon Nayok
-นครปฐม,Nakhon Pathom
-นครพนม,Nakhon Phanom
-นครราชสมีา,Nakhon Ratchasima
-นครราชสีมา,Nakhon Ratchasima
-นครรำชสมีำ,Nakhon Ratchasima
-นครศรธีรรมราช,Nakhon Si Thammarat
-นครศรธีรรมรำช,Nakhon Si Thammarat
-นครศรีธรรมราช,Nakhon Si Thammarat
-นครสวรรค,Nakhon Sawan
-นครสวรรค์,Nakhon Sawan
-นฐ,Nakhon Pathom
-นธ,Narathiwat
-นน,Nan
-นนทบรุ,Nonthaburi
-นนทบุร,Nonthaburi
-นนทบุรี,Nonthaburi
-นนทบุุรี,Nonthaburi
-นบ,Nonthaburi
-นพ,Nakhon Phanom
-นภ,Nong Bua Lamphu
-นม,Nakhon Ratchasima
-นย,Nakhon Nayok
-นราธวิาส,Narathiwat
-นราธิวาส,Narathiwat
-นรำธวิำส,Narathiwat
-นว,Nakhon Sawan
-นศ,Nakhon Si Thammarat
-นา่น,Nan
-นำ่น,Nan
-น่าน,Nan
-บก,Bueng Kan
-บงึกาฬ,Bueng Kan
-บร,Buriram
-บรุรัีมย,Buriram
-บรุรีมัย,Buriram
-บรุรีัมย,Buriram
-บึงกาฬ,Bueng Kan
-บุรรีมัย,Buriram
-บุรีรัมย,Buriram
-บุรีรัมย์,Buriram
-ปข,Prachuap Khiri Khan
-ปจ,Prachinburi
-ปตัตาน,Pattani
-ปตัตานี,Pattani
-ปตัตำนี,Pattani
-ปท,Pathum Thani
-ปทมุธาน,Pathum Thani
-ปทมุธานี,Pathum Thani
-ปทมุธำน,Pathum Thani
-ปทุมธาน,Pathum Thani
-ปทุมธานี,Pathum Thani
-ปทุุมธานี,Pathum Thani
-ปน,Pattani
-ปรมิณฑล,Bangkok
-ประจวบครีขีนัธ,Prachuap Khiri Khan
-ประจวบคีรีขันธ,Prachuap Khiri Khan
-ประจวบคีรีขันธ์,Prachuap Khiri Khan
-ปราจนีบรุ,Prachinburi
-ปราจนีบุร,Prachinburi
-ปราจีนบุร,Prachinburi
-ปราจีนบุรี,Prachinburi
-ปรำจนีบรุ,Prachinburi
-ปัตตาน,Pattani
-ปัตตานี,Pattani
-พง,Phang Nga
-พงังา,Phang Nga
-พจ,Phichit
-พจิติร,Phichit
-พช,Phetchabun
-พท,Phatthalung
-พทัลงุ,Phatthalung
-พทัลงุ*,Phatthalung
-พบ,Phetchaburi
-พม่า,Unknown
-พย,Phayao
-พร,Phrae
-พระนครศรอียธุยา,Phra Nakhon Si Ayutthaya
-พระนครศรอียธุยำ,Phra Nakhon Si Ayutthaya
-พระนครศรอียุธยา,Phra Nakhon Si Ayutthaya
-พระนครศรอียุธยำ,Phra Nakhon Si Ayutthaya
-พระนครศรีอยุธยา,Phra Nakhon Si Ayutthaya
-พระนครศรีอยุธา,Phra Nakhon Si Ayutthaya
-พล,Phitsanulok
-พษิณุโลก,Phitsanulok
-พะเยา,Phayao
-พังงา,Phang Nga
-พัทลงุ,Phatthalung
-พัทลุง,Phatthalung
-พิจิตร,Phichit
-พิษณุโลก,Phitsanulok
-ภก,Phuket
-ภูเก็ต,Phuket
-ภเูก็ต,Phuket
-มกุดาหาร,Mukdahan
-มค,Maha Sarakham
-มส,Mae Hong Son
-มห,Mukdahan
-มหาสารคาม,Maha Sarakham
-มหำสำรคำม,Maha Sarakham
-มาเลเซีย,Unknown
-มุกดาหาร,Mukdahan
-ยล,Yala
-ยส,Yasothon
-ยะลา,Yala
-ยโสธร,Yasothon
-รน,Ranong
-รบ,Ratchaburi
-รย,Rayong
-รอ,Roi Et
-รอ้ยเอ็ด,Roi Et
-ระนอง,Ranong
-ระยอง,Rayong
-ราชบรุ,Ratchaburi
-ราชบุร,Ratchaburi
-ราชบุรี,Ratchaburi
-รำชบรุ,Ratchaburi
-ร้อยเอ็ด,Roi Et
-ล าปาง,Lampang
-ล าพนู,Lamphun
-ล าพูน,Lamphun
-ล ำปำง,Lampang
-ล ำพนู,Lamphun
-ลบ,Lopburi
-ลป,Lampang
-ลพ,Lamphun
-ลพบรุ,Lopburi
-ลพบุร,Lopburi
-ลพบุรี,Lopburi
-ลย,Loei
-ลาปาง,Lampang
-ลาพนู,Lamphun
-ลำปาง,Lampang
-ลำพูน,Lamphun
-ศก,Sisaket
-ศรสีะเกษ,Sisaket
-ศรีสะเกษ,Sisaket
-สก,Sa Kaeo
-สกลนคร,Sakon Nakhon
-สข,Songkhla
-สค,Samut Sakhon
-สงขลา,Songkhla
-สงขลำ,Songkhla
-สงิหบ์รุ,Sing Buri
-สงิหบ์ุร,Sing Buri
-สฎ,Surat Thani
-สต,Satun
-สตลู,Satun
-สตูล,Satun
-สท,Sukhothai
-สน,Sakon Nakhon
-สบ,Saraburi
-สป,Samut Prakan
-สพ,Suphan Buri
-สพุรรณบรุ,Suphan Buri
-สพุรรณบรุี,Suphan Buri
-สพุรรณบุร,Suphan Buri
-สมทุรปราการ,Samut Prakan
-สมทุรปรำกำร,Samut Prakan
-สมทุรสงคราม,Samut Songkhram
-สมทุรสงครำม,Samut Songkhram
-สมทุรสาคร,Samut Sakhon
-สมทุรสำคร,Samut Sakhon
-สมุทธสาคร,Samut Sakhon
-สมุทรปราการ,Samut Prakan
-สมุทรสงคราม,Samut Songkhram
-สมุทรสาคร,Samut Sakhon
-สมุุทรปราการ,Samut Prakan
-สมุุทรสงคราม,Samut Songkhram
-สมุุทรสาคร,Samut Sakhon
-สร,Surin
-สระบรุ,Saraburi
-สระบุร,Saraburi
-สระบุรี,Saraburi
-สระบุุรี,Saraburi
-สระแกว้,Sa Kaeo
-สระแก้ว,Sa Kaeo
-สรุนิทร,Surin
-สรุาษฎรธ์าน,Surat Thani
-สรุาษฎรธ์านี,Surat Thani
-สรุำษฎรธ์ำน,Surat Thani
-สส,Samut Songkhram
-สห,Sing Buri
-สะแก้ว,Sa Kaeo
-สิงห์บุร,Sing Buri
-สิงห์บุรี,Sing Buri
-สุพรรณบุร,Suphan Buri
-สุพรรณบุรี,Suphan Buri
-สุราษฎร์ธาน,Surat Thani
-สุราษฎร์ธานี,Surat Thani
-สุรินทร,Surin
-สุรินทร์,Surin
-สุโขทัย,Sukhothai
-สโุขทยั,Sukhothai
-สโุขทัย,Sukhothai
-หนองคาย,Nong Khai
-หนองคำย,Nong Khai
-หนองบวัล,Nong Bua Lamphu
-หนองบวัล าภู,Nong Bua Lamphu
-หนองบวัล ำภู,Nong Bua Lamphu
-หนองบวัลาภู,Nong Bua Lamphu
-หนองบัวล าภู,Nong Bua Lamphu
-หนองบัวลาภู,Nong Bua Lamphu
-หนองบัวลำภู,Nong Bua Lamphu
-อ านาจเจรญ,Amnat Charoen
-อ านาจเจริญ,Amnat Charoen
-อ ำนำจเจรญ,Amnat Charoen
-อจ,Amnat Charoen
-อด,Udon Thani
-อดุรธาน,Udon Thani
-อดุรธานี,Udon Thani
-อดุรธำน,Udon Thani
-อต,Uttaradit
-อตุรดติถ,Uttaradit
-อท,Ang Thong
-อทัุยธาน,Uthai Thani
-อทุยัธาน,Uthai Thani
-อทุยัธานี,Uthai Thani
-อทุัยธาน,Uthai Thani
-อน,Uthai Thani
-อบ,Ubon Ratchathani
-อบุลราชธาน,Ubon Ratchathani
-อบุลราชธานี,Ubon Ratchathani
-อบุลรำชธำน,Ubon Ratchathani
-อย,Phra Nakhon Si Ayutthaya
-อยุธยา,Phra Nakhon Si Ayutthaya
-อานาจเจรญ,Amnat Charoen
-อา่งทอง,Ang Thong
-อำนาจเจริญ,Amnat Charoen
-อำ่งทอง,Ang Thong
-อุดรธาน,Udon Thani
-อุดรธานี,Udon Thani
-อุตรดิตถ,Uttaradit
-อุตรดิตถ์,Uttaradit
-อุทัยธาน,Uthai Thani
-อุทัยธานี,Uthai Thani
-อุบลราชธาน,Ubon Ratchathani
-อุบลราชธานี,Ubon Ratchathani
-อ่างทอง,Ang Thong
-เชยีงราย,Chiang Rai
-เชยีงรำย,Chiang Rai
-เชยีงใหม่,Chiang Mai
-เชียงราย,Chiang Rai
-เชียงใหม่,Chiang Mai
-เชีียงราย,Chiang Rai
-เพชรบรุ,Phetchaburi
-เพชรบรุี,Phetchaburi
-เพชรบรูณ,Phetchabun
-เพชรบรูณ์,Phetchabun
-เพชรบุร,Phetchaburi
-เพชรบุรี,Phetchaburi
-เพชรบุรีี,Phetchaburi
-เพชรบุุรี,Phetchaburi
-เพชรบูรณ,Phetchabun
-เพชรบูรณ์,Phetchabun
-เรอืนจา/ทีต่อ้งขงั,Prison
-เรอืนจาฯ,Prison
-เรอืนจาและทีต่อ้งขงั,Prison
-เลย,Loei
-เวียงจันทร์,Unknown
-แพร่,Phrae
-แมฮ่อ่งสอน,Mae Hong Son
-แม่ฮ่องสอน,Mae Hong Son
-ไม่ระบุ,Unknown
+Name,Name(in Thai),Population (2019)[1],Area (km²)[2],Population density,Namesake town/city,HS[6],ISO[7],FIPS,Alt_names,district_num
+Bangkok,กรุงเทพมหานคร,5666264.0,1564.0,3623.0,Bangkok,BKK,TH-10,TH40,"['BKK', 'Bangkok', 'กทม', 'กรงุเทพมหานคร', 'กรงุเทพมหำนคร', 'กรุงเทพ', 'กรุงเทพมหานคร', 'กรุงเทพฯ', 'ปรมิณฑล']",13
+Amnat Charoen,อำนาจเจริญ,378438.0,3290.0,115.0,Amnat Charoen,ACR,TH-37,TH77,"['ACR', 'Amnat Charoen', 'AmnatCharoen', 'อ านาจเจรญ', 'อ านาจเจริญ', 'อ ำนำจเจรญ', 'อจ', 'อานาจเจรญ', 'อำนาจเจริญ']",10
+Ang Thong,อ่างทอง,279654.0,950.0,294.0,Ang Thong,ATG,TH-15,TH35,"['ATG', 'Ang Thong', 'AngThong', 'อท', 'อา่งทอง', 'อำ่งทอง', 'อ่างทอง']",4
+Bueng Kan,บึงกาฬ,424091.0,4003.0,106.0,Bueng Kan,BKN,TH-38,TH81,"['BKN', 'BeungKan', 'Bueng Kan', 'Bung Kan', 'บก', 'บงึกาฬ', 'บึงกาฬ']",8
+Buriram,บุรีรัมย์,1595747.0,10080.0,159.0,Buriram,BRM,TH-31,TH28,"['BRM', 'Buri Ram', 'BuriRam', 'Buriram', 'บร', 'บรุรัีมย', 'บรุรีมัย', 'บรุรีัมย', 'บุรรีมัย', 'บุรีรัมย', 'บุรีรัมย์']",9
+Chachoengsao,ฉะเชิงเทรา,720113.0,5169.0,139.0,Chachoengsao,CCO,TH-24,TH44,"['CCO', 'Chachoengsao', 'ฉช', 'ฉะเชงิเทรา', 'ฉะเชงิเทรำ', 'ฉะเชิงเทรา']",6
+Chai Nat,ชัยนาท,326611.0,2506.0,131.0,Chai Nat,CNT,TH-18,TH32,"['CNT', 'Chai Nat', 'ChaiNat', 'Chainat', 'ชน', 'ชยันาท', 'ชยันำท', 'ชัยนาท']",3
+Chaiyaphum,ชัยภูมิ,1137357.0,12698.0,91.0,Chaiyaphum,CPM,TH-36,TH26,"['CPM', 'Chaiyaphum', 'ชย', 'ชยัภมู', 'ชัยภูม', 'ชัยภูมิ']",9
+Chanthaburi,จันทบุรี,537698.0,6415.0,84.0,Chanthaburi,CTI,TH-22,TH48,"['CTI', 'Chanthaburi', 'จนัทบรุ', 'จนัทบุร', 'จบ', 'จันทบรุ', 'จันทบุร', 'จันทบุรี']",6
+Chiang Mai,เชียงใหม่,1779254.0,22135.0,79.0,Chiang Mai,CMI,TH-50,TH02,"['CMI', 'Chiang Mai', 'ChiangMai', 'ชม', 'เชยีงใหม่', 'เชียงใหม่']",1
+Chiang Rai,เชียงราย,1298304.0,11503.0,113.0,Chiang Rai,CRI,TH-57,TH03,"['CRI', 'Chiang Rai', 'ChiangRai', 'ชร', 'เชยีงราย', 'เชยีงรำย', 'เชียงราย', 'เชีียงราย']",1
+Chonburi,ชลบุรี,1558301.0,4508.0,346.0,Chonburi,CBI,TH-20,TH46,"['CBI', 'Chon Buri', 'ChonBuri', 'Chonburi', 'ชบ', 'ชลบรุ', 'ชลบุร', 'ชลบุรี', 'ชลบุุรี']",6
+Chumphon,ชุมพร,511304.0,5998.0,85.0,Chumphon,CPN,TH-86,TH58,"['CPN', 'Chumphon', 'ชพ', 'ชมุพร', 'ชุมพร']",11
+Kalasin,กาฬสินธุ์,983418.0,6936.0,142.0,Kalasin,KSN,TH-46,TH23,"['KSN', 'Kalasin', 'กส', 'กาฬสนิธุ', 'กาฬสินธุ', 'กาฬสินธุ์']",7
+Kamphaeng Phet,กำแพงเพชร,725867.0,8512.0,86.0,Kamphaeng Phet,KPT,TH-62,TH11,"['KPT', 'Kamphaeng Phet', 'KamphaengPhet', 'ก าแพงเพชร', 'ก ำแพงเพชร', 'กพ', 'กาแพงเพชร', 'กำแพงเพชร']",3
+Kanchanaburi,กาญจนบุรี,895525.0,19385.0,46.0,Kanchanaburi,KRI,TH-71,TH50,"['KRI', 'Kanchanaburi', 'กจ', 'กาญจนบรุ', 'กาญจนบุร', 'กาญจนบุรี', 'กำญจนบรุ']",5
+Khon Kaen,ขอนแก่น,1802872.0,10659.0,169.0,Khon Kaen,KKN,TH-40,TH22,"['KKN', 'Khon Kaen', 'KhonKaen', 'ขก', 'ขอนแกน่', 'ขอนแก่น']",7
+Krabi,กระบี่,476739.0,5323.0,90.0,Krabi,KBI,TH-81,TH63,"['KBI', 'Krabi', 'กบ', 'กระบี่']",11
+Lampang,ลำปาง,738316.0,12488.0,59.0,Lampang,LPG,TH-52,TH06,"['LPG', 'Lampang', 'ล าปาง', 'ล ำปำง', 'ลป', 'ลาปาง', 'ลำปาง']",1
+Lamphun,ลำพูน,405075.0,4478.0,92.0,Lamphun,LPN,TH-51,TH05,"['LPN', 'Lamphun', 'ล าพนู', 'ล าพูน', 'ล ำพนู', 'ลพ', 'ลาพนู', 'ลำพูน']",1
+Loei,เลย,642950.0,10500.0,61.0,Loei,LEI,TH-42,TH18,"['LEI', 'Loei', 'ลย', 'เลย']",8
+Lopburi,ลพบุรี,755556.0,6493.0,116.0,Lopburi,LRI,TH-16,TH34,"['LRI', 'LopBuri', 'Lopburi', 'ลบ', 'ลพบรุ', 'ลพบุร', 'ลพบุรี']",4
+Mae Hong Son,แม่ฮ่องสอน,284138.0,12765.0,23.0,Mae Hong Son,MSN,TH-58,TH01,"['MSN', 'Mae Hong Son', 'MaeHongSon', 'มส', 'แมฮ่อ่งสอน', 'แม่ฮ่องสอน']",1
+Maha Sarakham,มหาสารคาม,962665.0,5607.0,172.0,Maha Sarakham,MKM,TH-44,TH24,"['MKM', 'Maha Sarakham', 'MahaSarakham', 'Mahasarakham', 'มค', 'มหาสารคาม', 'มหำสำรคำม']",7
+Mukdahan,มุกดาหาร,353174.0,4126.0,87.0,Mukdahan,MDH,TH-49,TH78,"['MDH', 'Mukdahan', 'มกุดาหาร', 'มห', 'มุกดาหาร']",8
+Nakhon Nayok,นครนายก,260751.0,2141.0,122.0,Nakhon Nayok,NYK,TH-26,TH43,"['NYK', 'Nakhon Nayok', 'NakhonNayok', 'นครนายก', 'นครนำยก', 'นย']",4
+Nakhon Pathom,นครปฐม,920030.0,2142.0,430.0,Nakhon Pathom,NPT,TH-73,TH53,"['NPT', 'Nakhon Pathom', 'NakhonPathom', 'นครปฐม', 'นฐ']",5
+Nakhon Phanom,นครพนม,719136.0,5637.0,127.0,Nakhon Phanom,NPM,TH-48,TH73,"['NPM', 'Nakhon Phanom', 'NakhonPhanom', 'นครพนม', 'นพ']",8
+Nakhon Ratchasima,นครราชสีมา,2648927.0,20736.0,128.0,Nakhon Ratchasima,NMA,TH-30,TH27,"['Khorat', 'Korat', 'NMA', 'Nakhon Ratchasima', 'NakhonRatchasima', 'นครราชสมีา', 'นครราชสีมา', 'นครรำชสมีำ', 'นม']",9
+Nakhon Sawan,นครสวรรค์,1059887.0,9526.0,111.0,Nakhon Sawan,NSN,TH-60,TH16,"['NSN', 'Nakhon Sawan', 'NakhonSawan', 'นครสวรรค', 'นครสวรรค์', 'นว']",3
+Nakhon Si Thammarat,นครศรีธรรมราช,1561927.0,9885.0,158.0,Nakhon Si Thammarat,NRT,TH-80,TH64,"['NRT', 'Nakhon Si Thammarat', 'NakhonSiThammarat', 'นครศรธีรรมราช', 'นครศรธีรรมรำช', 'นครศรีธรรมราช', 'นศ']",11
+Nan,น่าน,478227.0,12130.0,40.0,Nan,NAN,TH-55,TH04,"['NAN', 'Nan', 'นน', 'นา่น', 'นำ่น', 'น่าน']",1
+Narathiwat,นราธิวาส,808020.0,4491.0,180.0,Narathiwat,NWT,TH-96,TH31,"['NWT', 'Narathiwat', 'นธ', 'นราธวิาส', 'นราธิวาส', 'นรำธวิำส']",12
+Nong Bua Lamphu,หนองบัวลำภู,512780.0,4099.0,125.0,Nong Bua Lam Phu,NBP,TH-39,TH79,"['Lam Phu', 'NBP', 'Nong Bua Lam Phu', 'Nong Bua Lamphu', 'NongBuaLamPhu', 'นภ', 'หนองบวัล', 'หนองบวัล าภู', 'หนองบวัล ำภู', 'หนองบวัลาภู', 'หนองบัวล าภู', 'หนองบัวลาภู', 'หนองบัวลำภู']",8
+Nong Khai,หนองคาย,522311.0,3275.0,160.0,Nong Khai,NKI,TH-43,TH17,"['NKI', 'Nong Khai', 'NongKhai', 'นค', 'หนองคาย', 'หนองคำย']",8
+Nonthaburi,นนทบุรี,1265387.0,637.0,1986.0,Nonthaburi,NBI,TH-12,TH38,"['NBI', 'Nonthaburi', 'นนทบรุ', 'นนทบุร', 'นนทบุรี', 'นนทบุุรี', 'นบ']",4
+Pathum Thani,ปทุมธานี,1163604.0,1520.0,766.0,Pathum Thani,PTE,TH-13,TH39,"['PTE', 'Pathom Thani', 'Pathum Thani', 'PathumThani', 'Phathum Thani', 'ปท', 'ปทมุธาน', 'ปทมุธานี', 'ปทมุธำน', 'ปทุมธาน', 'ปทุมธานี', 'ปทุุมธานี']",4
+Pattani,ปัตตานี,725104.0,1977.0,367.0,Pattani,PTN,TH-94,TH69,"['PTN', 'Pattani', 'ปตัตาน', 'ปตัตานี', 'ปตัตำนี', 'ปน', 'ปัตตาน', 'ปัตตานี']",12
+Phang Nga,พังงา,268788.0,5495.0,49.0,Phang Nga,PNA,TH-82,TH61,"['PNA', 'Phang Nga', 'Phang-nga', 'พง', 'พงังา', 'พังงา']",11
+Phatthalung,พัทลุง,524865.0,3861.0,135.0,Phatthalung,PLG,TH-93,TH66,"['PLG', 'Phatthalung', 'พท', 'พทัลงุ', 'พทัลงุ*', 'พัทลงุ', 'พัทลุง']",12
+Phayao,พะเยา,472356.0,6189.0,76.0,Phayao,PYO,TH-56,TH41,"['PYO', 'Phayao', 'พย', 'พะเยา']",1
+Phetchabun,เพชรบูรณ์,992451.0,12340.0,80.0,Phetchabun,PNB,TH-67,TH14,"['PNB', 'Phetchabun', 'พช', 'เพชรบรูณ', 'เพชรบรูณ์', 'เพชรบูรณ', 'เพชรบูรณ์']",2
+Phetchaburi,เพชรบุรี,485191.0,6172.0,77.0,Phetchaburi,PBI,TH-76,TH56,"['PBI', 'Phetchaburi', 'พบ', 'เพชรบรุ', 'เพชรบรุี', 'เพชรบุร', 'เพชรบุรี', 'เพชรบุรีี', 'เพชรบุุรี']",5
+Phichit,พิจิตร,536311.0,4319.0,124.0,Phichit,PCT,TH-66,TH13,"['PCT', 'Phichit', 'พจ', 'พจิติร', 'พิจิตร']",3
+Phitsanulok,พิษณุโลก,865247.0,10589.0,82.0,Phitsanulok,PLK,TH-65,TH12,"['PLK', 'Phitsanulok', 'พล', 'พษิณุโลก', 'พิษณุโลก']",2
+Phra Nakhon Si Ayutthaya,พระนครศรีอยุธยา,820188.0,2548.0,322.0,Phra Nakhon Si Ayutthaya,AYA,TH-14,TH36,"['AYA', 'Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'PhraNakhonSiAyutthaya', 'พระนครศรอียธุยา', 'พระนครศรอียธุยำ', 'พระนครศรอียุธยา', 'พระนครศรอียุธยำ', 'พระนครศรีอยุธยา', 'พระนครศรีอยุธา', 'อย', 'อยุธยา']",4
+Phrae,แพร่,441726.0,6483.0,68.0,Phrae,PRE,TH-54,TH07,"['PRE', 'Phrae', 'พร', 'แพร่']",1
+Phuket,ภูเก็ต,416582.0,547.0,762.0,Phuket,PKT,TH-83,TH62,"['PKT', 'Phuket', 'ภก', 'ภูเก็ต', 'ภเูก็ต']",11
+Prachinburi,ปราจีนบุรี,494680.0,5026.0,99.0,Prachinburi,PRI,TH-25,TH74,"['PRI', 'Prachin Buri', 'PrachinBuri', 'Prachinburi', 'ปจ', 'ปราจนีบรุ', 'ปราจนีบุร', 'ปราจีนบุร', 'ปราจีนบุรี', 'ปรำจนีบรุ']",6
+Prachuap Khiri Khan,ประจวบคีรีขันธ์,554116.0,6414.0,88.0,Prachuap Khiri Khan,PKN,TH-77,TH57,"['PKN', 'Prachuap Khiri Khan', 'PrachuapKhiriKhan', 'ปข', 'ประจวบครีขีนัธ', 'ประจวบคีรีขันธ', 'ประจวบคีรีขันธ์']",5
+Ranong,ระนอง,193370.0,3230.0,60.0,Ranong,RNG,TH-85,TH59,"['RNG', 'Ranong', 'รน', 'ระนอง']",11
+Ratchaburi,ราชบุรี,873101.0,5189.0,168.0,Ratchaburi,RBR,TH-70,TH52,"['RBR', 'Ratchaburi', 'รบ', 'ราชบรุ', 'ราชบุร', 'ราชบุรี', 'รำชบรุ']",5
+Rayong,ระยอง,734753.0,3666.0,201.0,Rayong,RYG,TH-21,TH47,"['RYG', 'Rayong', 'รย', 'ระยอง']",6
+Roi Et,ร้อยเอ็ด,1305211.0,7873.0,166.0,Roi Et,RET,TH-45,TH25,"['RET', 'Roi Et', 'RoiEt', 'รอ', 'รอ้ยเอ็ด', 'ร้อยเอ็ด']",7
+Sa Kaeo,สระแก้ว,566303.0,6831.0,83.0,Sa Kaeo,SKW,TH-27,TH80,"['SKW', 'Sa Kaeo', 'SaKaeo', 'สก', 'สระแกว้', 'สระแก้ว', 'สะแก้ว']",6
+Sakon Nakhon,สกลนคร,1153390.0,9580.0,121.0,Sakon Nakhon,SNK,TH-47,TH20,"['SNK', 'Sakon Nakhon', 'SakonNakhon', 'สกลนคร', 'สน']",8
+Samut Prakan,สมุทรปราการ,1344875.0,947.0,1420.0,Samut Prakan,SPK,TH-11,TH42,"['SPK', 'Samut Prakan', 'SamutPrakan', 'สป', 'สมทุรปราการ', 'สมทุรปรำกำร', 'สมุทรปราการ', 'สมุุทรปราการ']",6
+Samut Sakhon,สมุทรสาคร,584703.0,866.0,675.0,Samut Sakhon,SKN,TH-74,TH55,"['SKN', 'Samut Sakhon', 'SamutSakhon', 'สค', 'สมทุรสาคร', 'สมทุรสำคร', 'สมุทธสาคร', 'สมุทรสาคร', 'สมุุทรสาคร']",5
+Samut Songkhram,สมุทรสงคราม,193305.0,414.0,467.0,Samut Songkhram,SKM,TH-75,TH54,"['SKM', 'Samut Songkhram', 'SamutSongkhram', 'สมทุรสงคราม', 'สมทุรสงครำม', 'สมุทรสงคราม', 'สมุุทรสงคราม', 'สส']",5
+Saraburi,สระบุรี,645911.0,3499.0,185.0,Saraburi,SRI,TH-19,TH37,"['SRI', 'Saraburi', 'สบ', 'สระบรุ', 'สระบุร', 'สระบุรี', 'สระบุุรี']",4
+Satun,สตูล,323586.0,3019.0,107.0,Satun,STN,TH-91,TH67,"['STN', 'Satun', 'สต', 'สตลู', 'สตูล']",12
+Sing Buri,สิงห์บุรี,208446.0,817.0,255.0,Sing Buri,SBR,TH-17,TH33,"['SBR', 'Sing Buri', 'SingBuri', 'สงิหบ์รุ', 'สงิหบ์ุร', 'สห', 'สิงห์บุร', 'สิงห์บุรี']",4
+Sisaket,ศรีสะเกษ,1472859.0,8936.0,165.0,Sisaket,SSK,TH-33,TH30,"['SSK', 'Si Sa Ket', 'SiSaKet', 'Sisaket', 'ศก', 'ศรสีะเกษ', 'ศรีสะเกษ']",10
+Songkhla,สงขลา,1435968.0,7741.0,186.0,Songkhla,SKA,TH-90,TH68,"['SKA', 'Songkhla', 'สข', 'สงขลา', 'สงขลำ']",12
+Sukhothai,สุโขทัย,595072.0,6671.0,89.0,Sukhothai (Sukhothai Thani),STI,TH-64,TH09,"['STI', 'Sukhothai', 'สท', 'สุโขทัย', 'สโุขทยั', 'สโุขทัย']",2
+Suphan Buri,สุพรรณบุรี,846334.0,5410.0,156.0,Suphan Buri,SPB,TH-72,TH51,"['SPB', 'Suphan Buri', 'SuphanBuri', 'Suphanburi', 'สพ', 'สพุรรณบรุ', 'สพุรรณบรุี', 'สพุรรณบุร', 'สุพรรณบุร', 'สุพรรณบุรี']",5
+Surat Thani,สุราษฎร์ธานี,1068010.0,13079.0,81.0,Surat Thani,SNI,TH-84,TH60,"['SNI', 'Surat Thani', 'SuratThani', 'สฎ', 'สรุาษฎรธ์าน', 'สรุาษฎรธ์านี', 'สรุำษฎรธ์ำน', 'สุราษฎร์ธาน', 'สุราษฎร์ธานี']",11
+Surin,สุรินทร์,1396831.0,8854.0,157.0,Surin,SRN,TH-32,TH29,"['SRN', 'Surin', 'สร', 'สรุนิทร', 'สุรินทร', 'สุรินทร์']",9
+Tak,ตาก,665620.0,17303.0,39.0,Tak,TAK,TH-63,TH08,"['TAK', 'Tak', 'ตก', 'ตาก', 'ตำก']",2
+Trang,ตรัง,643164.0,4726.0,136.0,Trang,TRG,TH-92,TH65,"['TRG', 'Trang', 'ตง', 'ตรงั', 'ตรัง']",12
+Trat,ตราด,229958.0,2866.0,78.0,Trat,TRT,TH-23,TH49,"['TRT', 'Trat', 'ตร', 'ตราด', 'ตรำด']",6
+Ubon Ratchathani,อุบลราชธานี,1878146.0,15626.0,120.0,Ubon Ratchathani,UBN,TH-34,TH75,"['UBN', 'Ubon Ratchathani', 'UbonRatchathani', 'อบ', 'อบุลราชธาน', 'อบุลราชธานี', 'อบุลรำชธำน', 'อุบลราชธาน', 'อุบลราชธานี']",10
+Udon Thani,อุดรธานี,1586646.0,11072.0,143.0,Udon Thani,UDN,TH-41,TH76,"['UDN', 'Ubon Thani', 'Udon Thani', 'UdonThani', 'อด', 'อดุรธาน', 'อดุรธานี', 'อดุรธำน', 'อุดรธาน', 'อุดรธานี']",8
+Uthai Thani,อุทัยธานี,328618.0,6647.0,50.0,Uthai Thani,UTI,TH-61,TH15,"['UTI', 'Uthai Thani', 'UthaiThani', 'อทัุยธาน', 'อทุยัธาน', 'อทุยัธานี', 'อทุัยธาน', 'อน', 'อุทัยธาน', 'อุทัยธานี']",3
+Uttaradit,อุตรดิตถ์,453103.0,7906.0,58.0,Uttaradit,UTD,TH-53,TH10,"['UTT', 'Uttaradit', 'อต', 'อตุรดติถ', 'อุตรดิตถ', 'อุตรดิตถ์']",2
+Yala,ยะลา,536330.0,4476.0,119.0,Yala,YLA,TH-95,TH70,"['YLA', 'Yala', 'ยล', 'ยะลา']",12
+Yasothon,ยโสธร,537299.0,4131.0,130.0,Yasothon,YST,TH-35,TH72,"['YST', 'Yasothon', 'ยส', 'ยโสธร']",10
+Prison,เรือนจำฯ,,,,,,,,"['Prison', 'เรอืนจา/ทีต่อ้งขงั', 'เรอืนจาฯ', 'เรอืนจาและทีต่อ้งขงั']",Unknown
+Unknown,ไม่ระบุ,,,,,,,,"['Unknown', 'กัมพูชา', 'พม่า', 'มาเลเซีย', 'เวียงจันทร์', 'ไม่ระบุ']",Unknown
