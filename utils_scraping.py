@@ -360,3 +360,13 @@ def all_in(target, *matches):
 def strip(lst):
     lst = [i.strip() for i in lst]
     return [i for i in lst if i]
+
+
+def unique_values(iterable):
+    it = iter(iterable)
+    seen = set()
+    for item in it:
+        if item in seen:
+            continue
+        seen.add(item)
+        yield item

@@ -1,7 +1,7 @@
 import datetime
 import dateutil
 from dateutil.parser import parse as d
-from itertools import islice
+from itertools import chain, islice
 import json
 import os
 import re
@@ -14,7 +14,7 @@ from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, web_files, \
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, unique_values, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
@@ -355,7 +355,7 @@ def situation_pui_th(parsed_pdf, date, results):
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and pui_walkin > 0)
 
     if not_pui is not None:
-        active_finding += not_pui # later reports combined it anyway
+        active_finding += not_pui  # later reports combined it anyway
     row = (tests_total, pui, active_finding, asq, pui_walkin_private, pui_walkin_public, pui_walkin)
     if None in row and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
@@ -1576,7 +1576,71 @@ def get_test_reports():
 # Vaccination reports
 ################################
 
-def vaccination_page(vaccinations, allocations, vacnew, date, page, file):
+def vac_problem(daily, date, file, page):
+    if "Anaphylaxis" not in page:
+        return daily
+    prob_a, rest = get_next_number(page, "Anaphylaxis")
+    prob_p, rest = get_next_number(page, "Polyneuropathy")
+    row = [date, prob_a, prob_p]
+    assert not any_in(['None'], row)
+    df = pd.DataFrame([row], columns=[
+        "Date",
+        "Vac Problem Anaphylaxis",
+        "Vac Problem Polyneuropathy",
+    ]).set_index("Date")
+    return daily.combine_first(df)
+
+
+def vaccination_daily(daily, date, file, page):
+    if not re.search("(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19)", page):
+        return daily
+    alloc_sv, rest = get_next_number(page, "Sinovac", until="โดส")
+    alloc_az, rest = get_next_number(page, "AstraZeneca", until="โดส")
+    alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
+    assert alloc_total == alloc_sv + alloc_az
+    # dose1_total, rest1 = get_next_number(page, "ได้รับวัคซีนเข็มที่ 1", until="โดส")
+    # dose2_total, rest2 = get_next_number(page, "ได้รับวัคซีน 2 เข็ม", until="โดส")
+    d1_num, rest = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
+    d2_num, _ = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม")
+
+    row = [date, alloc_sv, alloc_az]
+    assert not any_in(['None'], row)
+    df = pd.DataFrame([row], columns=[
+        "Date",
+        "Vac Allocated Sinovac",
+        "Vac Allocated AstraZeneca",
+    ]).set_index("Date")
+    daily = daily.combine_first(df)
+
+    for dose, numbers in enumerate([d1_num, d2_num], 1):
+        total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
+        assert sixty == 60
+
+        # get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
+        # medical, _ = get_next_number(text, "เป็นบุคลำกรทำงกำรแพทย์", "คลำกรทำงกำรแพทย์", until="รำย")
+        # frontline, _ = get_next_number(text, "เจ้ำหน้ำที่ที่มีโอกำสสัมผัส", "โอกำสสัมผัสผู้ป่วย", until="รำย")
+        # over60, _ = get_next_number(text, "ผู้ที่มีอำยุตั้งแต่ 60 ปีขึ้นไป", "ผู้ที่มีอำยุตั้งแต่ 60", until="รำย")
+        # chronic, _ = get_next_number(text, "บุคคลที่มีโรคประจ", until="รำย")
+        # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
+        row = [medical, frontline, over60, chronic, area]
+        assert not any_in(row, None)
+        assert 0.99 <= (sum(row) / total) <= 1.0
+        df = pd.DataFrame([[date, total] + row],
+                          columns=[
+                              "Date",
+                              f"Vac Given {dose} Cum",
+                              f"Vac Group Medical Staff {dose} Cum",
+                              f"Vac Group Other Frontline Staff {dose} Cum",
+                              f"Vac Group Over 60 {dose} Cum",
+                              f"Vac Group Risk: Disease {dose} Cum",
+                              f"Vac Group Risk: Location {dose} Cum",
+                          ]).set_index("Date")
+        daily = daily.combine_first(df)
+    print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
+    return daily
+
+
+def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
     def assert_no_repeat(d, prov, thaiprov, numbers):
         prev = d.get((date, prov))
         msg = f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {prev}"
@@ -1640,17 +1704,25 @@ def get_vaccinations():
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
+    url = "https://ddc.moph.go.th/uploads/ckeditor2//files/Daily report "
+    gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
+                 for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
+    links = unique_values(chain(gen_links, links))
+    # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
     pages = ((page, file2date(f), f) for f, _ in web_files(
         *links, dir="vaccinations") for page in parse_file(f) if file2date(f))
     vaccinations = {}
     allocations = {}
     vacnew = {}
+    vac_daily = pd.DataFrame()
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-        vaccinations, allocations, vacnew = vaccination_page(vaccinations, allocations, vacnew, date, page, file)
+        vaccinations, allocations, vacnew = vaccination_tables(vaccinations, allocations, vacnew, date, page, file)
+        vac_daily = vaccination_daily(vac_daily, date, file, page)
+        vac_daily = vac_problem(vac_daily, date, file, page)
     df = pd.DataFrame((list(key) + value for key, value in vaccinations.items()), columns=[
         "Date",
         "Province",
@@ -1720,6 +1792,7 @@ def get_vaccinations():
     export(all_vac, "vaccinations", csv_only=True)
 
     thaivac = all_vac.groupby("Date").sum()
+    thaivac = thaivac.combine_first(vac_daily)
     thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     # Get vaccinations by district
@@ -1888,9 +1961,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        situation = get_situation()
+        # situation = get_situation()
         # cases_by_area = get_cases_by_area()
-        # vac = get_vaccinations()
+        vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
