@@ -193,43 +193,40 @@ def thaipop2(num: float, pos: int) -> str:
 
 
 def get_provinces():
-    def get_province_mappings_df():
-        def __get_alt_name_mappings(df):
-            """ Return dict of alternative name lookup keys for provinces from the Complete Provinces + Alt Names dataframe/ dataset. 
-                Format: {AltName->Province,..}
-            """
-            alt_names_lookup_dict = df.set_index('Name')[['Alt_names']].to_dict()['Alt_names']
-            r = {}
-            for prov_en,altnames in alt_names_lookup_dict.items():
-                altnames = eval(altnames)
-                if type(altnames) is list and len(altnames) > 0: # Is a list and has entries, therefore add them:
-                    for name in altnames:
-                        if type(name) is str and len(name) > 1: # 
-                            if name not in r:
-                                r[name] = prov_en
-                            elif name in r:
-                                print(f"Warning: duplicate entry of {name} for Province: {prov_en} from Alt Names set: {altnames}")
-                            else:
-                                raise ValueError(f"Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
+    def __get_alt_name_mappings(df):
+        """ Return dict of alternative name lookup keys for provinces from the Complete Provinces + Alt Names
+            dataframe/ dataset.
+            Format: {AltName->Province,..}
+        """
+        alt_names_lookup_dict = df.set_index('Name')[['Alt_names']].to_dict()['Alt_names']
+        r = {}
+        for prov_en, altnames in alt_names_lookup_dict.items():
+            altnames = eval(altnames)
+            if type(altnames) is list and len(altnames) > 0:  # Is a list and has entries, therefore add them:
+                for name in altnames:
+                    if type(name) is str and len(name) > 1:  # 
+                        if name not in r:
+                            r[name] = prov_en
+                        elif name in r:
+                            print(f"Warning: duplicate entry of {name} for Province: {prov_en} from Alt Names set: {altnames}")
                         else:
-                            raise ValueError(f"Error in alt name: '{name}'. Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
-            return r
+                            raise ValueError(f"Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
+                    else:
+                        raise ValueError(f"Error in alt name: '{name}'. Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
+        return r
 
-        df = pd.read_csv('province_mapping.csv')
-        map_data = __get_alt_name_mappings(df)
-        map_data = [(k,v) for k,v in map_data.items()]
-        
-        df2 = pd.DataFrame.from_records(map_data, columns=['Alt_names', 'ProvinceEn'])
-        df2 = df2.set_index('ProvinceEn')
-        df3 = df2.join(df.set_index('Name')[['district_num','Name(in Thai)','Population (2019)[1]','Area (km²)[2]']])
-        df3 = df3.reset_index().rename(columns={'index':'ProvinceEn','district_num':'Health District Number',
-                                'Name(in Thai)':'ProvinceTh','Population (2019)[1]':'Population','Area (km²)[2]':'Area_km2'}).set_index('Alt_names')
-        
-        return df3
+    df = pd.read_csv('province_mapping.csv', header=0)
+    map_data = __get_alt_name_mappings(df)
+    map_data = [(k, v) for k, v in map_data.items()]
+    df2 = pd.DataFrame.from_records(map_data, columns=['Alt_names', 'ProvinceEn'])
+    df2 = df2.set_index('ProvinceEn')
+    df3 = df2.join(df.set_index('Name')[['district_num', 'Name(in Thai)', 'Population (2019)[1]', 'Area (km²)[2]']])
+    df3 = df3.reset_index().rename(columns={
+        'index': 'ProvinceEn', 'district_num': 'Health District Number',
+        'Name(in Thai)': 'ProvinceTh', 'Population (2019)[1]': 'Population',
+        'Area (km²)[2]': 'Area_km2'}).set_index('Alt_names')
 
-    provinces = get_province_mappings_df()
-
-    return provinces
+    return df3
 
 
 def prov_mapping_from_cases(provinces):
