@@ -149,15 +149,6 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
-## Provinces most fully vaccinated
-
-![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_top5_full_3.png)
-
-## Vaccinations by Health District
-![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_areas_s2_3.png)
-![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_areas_s1_3.png)
-- Source: [DDC Daily Vaccination Reports](#dl-vac)
-
 # Downloads
 
 ## Disclaimer
@@ -310,13 +301,12 @@ Bureau, Chaeng Watthana"
 - Notes:
   - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
-## Daily DDC Vaccination Reports <a name="dl-vac">
+## Daily DDC Vaccination Reports<a name="dl-vac">
 - Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
-- [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
+- [Download CSV](https://github.com/djay/covidthailand/wiki/vac_timeline.csv)
 - e.g.
 ```
       "Date":"2021-04-25",
-      "Province":"Mae Hong Son",
       "Vaccinations Allocated Sinovac {1|2}":3840.0,
       "Vaccinations Allocated AstraZeneca {1|2}":0.0,
       "Vaccinations Given {1|2} Cum":3189.0,
@@ -328,6 +318,7 @@ Bureau, Chaeng Watthana"
       "Vaccinations Group Risk: Location {1|2} Cum":115.0,
 ```
 - Note
+   - The previous data per province is no longer updated in the reports so this download has been removed.
    - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
    - 1/2 refers to shot 1 or shot 2.
    - Some days some tables are images so there is missing data. 
@@ -371,6 +362,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
+- 2021-06-30 - death reasons and hospitalisation critical plots
 - 2021-05-21 - Estimate of Infections from Deaths
 - 2021-05-18 - Include prisons as seperate province/health district (because briefings do)
 - 2021-05-15 - improve highest positive rate plot to show top 5 only.

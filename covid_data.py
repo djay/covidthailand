@@ -1800,6 +1800,7 @@ def get_vaccinations():
     given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
     thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+    export(thaivac, "vac_timeline")
 
     # TODO: can get todays from - https://ddc.moph.go.th/vaccine-covid19/ or briefings
 
@@ -1963,7 +1964,7 @@ def scrape_and_combine():
         # Comment out what you don't need to run
         # situation = get_situation()
         # cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
+        # vac = get_vaccinations()
         # cases_demo = get_cases_by_demographics_api()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
