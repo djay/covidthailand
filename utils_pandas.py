@@ -6,6 +6,7 @@ from typing import List, Union
 import matplotlib.cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.pyplot import cycler
+from cycler import Cycler
 import pandas as pd
 import numpy as np
 
@@ -228,6 +229,8 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
 
 
 def get_cycle(cmap, n=None, use_index="auto"):
+    if isinstance(cmap, Cycler):
+        return cmap
     if isinstance(cmap, str):
         if use_index == "auto":
             if cmap in ['Pastel1', 'Pastel2', 'Paired', 'Accent',

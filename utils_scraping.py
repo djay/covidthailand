@@ -304,7 +304,7 @@ def remove_prefix(text: str, prefix: str) -> str:
 
 def remove_suffix(text: str, suffix: str) -> str:
     """Removes the suffix of a string"""
-    if text.endswith(suffix):
+    if suffix and text.endswith(suffix):
         return text[:-len(suffix)]
     else:
         return text

@@ -58,7 +58,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         "figure.titlesize": 30,
         "figure.titleweight": "bold",
         "axes.titlesize": 28,
-        "legend.fontsize": 24
+        "legend.fontsize": 24,
+        "axes.prop_cycle": get_cycle(cmap),
     })
     if len(cols) > 6:
         plt.rcParams.update({"legend.fontsize": 18})
@@ -83,8 +84,9 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total}{ma_suffix}'] = df[unknown_total].rolling(ma_days, min_periods=int(ma_days / 2),
-                                                                    center=True).mean()
+            df[f'{unknown_total}{ma_suffix}'] = df[unknown_total].rolling(ma_days,
+                                                                          min_periods=int(ma_days / 2),
+                                                                          center=True).mean()
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
@@ -111,13 +113,14 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
         legends = [remove_suffix(c, ma_suffix) for c in cols]
-    elif unknown_total and unknown_name not in legends:
+    if unknown_total and unknown_name not in legends:
         legends = legends + [unknown_name]
 
-    if unknown_total:
-        colormap = custom_cm(cmap, len(cols) + 1, 'lightgrey', flip=reverse_cmap)
-    else:
-        colormap = custom_cm(cmap, len(cols), flip=reverse_cmap)
+    # if unknown_total:
+    #     colormap = custom_cm(cmap, len(cols) + 1, 'lightgrey', flip=reverse_cmap)
+    # else:
+    #     colormap = custom_cm(cmap, len(cols), flip=reverse_cmap)
+#    colormap = cmap
 
     # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
     # df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
@@ -148,31 +151,34 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
         # plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
-        a0.set_prop_cycle(get_cycle(colormap))
+        a0.set_prop_cycle(None)
 
         if y_formatter is not None:
             a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
         if kind == "area":
-            df_plot.plot(ax=a0, y=cols, kind=kind, stacked=stacked)
+            areacols = [c for c in cols if c not in between]
+            df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked)
+            linecols = between + actuals
         else:
-            for c in cols + actuals:
-                style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
-                width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
-                df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind=kind)
-        #     a0.plot(df_plot.index, df_plot.reset_index()[c])
-        # if between:
-        #     a0.fill_between(x=df.index.values, y1=between[0], y2=between[1], data=df)
+            linecols = cols + actuals
+        for c in linecols:
+            style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
+            width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
+            df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind="line")
 
         a0.set_title(label=title)
-        a0.legend(labels=legends)
+        leg = a0.legend(labels=legends)
+        for line in leg.get_lines():
+            line.set_linewidth(4.0)
 
         if unknown_total:
             a0.set_ylabel(unknown_total)
         a0.xaxis.label.set_visible(False)
 
         if percent_fig:
-            df_plot.plot(ax=a1, y=perccols, kind='area', colormap=colormap, legend=False)
+            a1.set_prop_cycle(None)
+            df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
             a1.set_ylabel('Percent')
             a1.xaxis.label.set_visible(False)
 
@@ -333,7 +339,7 @@ def save_plots(df: pd.DataFrame) -> None:
                'Positive Test Results (Public)']
     plot_area(df=df, png_prefix='cases', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases', legends=legends,
-              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="brg")
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="tab10")
 
     cols = ['Cases',
             'Pos Area',
@@ -362,7 +368,7 @@ def save_plots(df: pd.DataFrame) -> None:
               stacked=True,
               percent_fig=False,
               ma_days=7,
-              cmap="viridis")
+              cmap="tab10")
 
     cols = ['Cases Symptomatic', 'Cases Asymptomatic']
     plot_area(df=df, png_prefix='cases_sym', cols_subset=cols, title='Thailand Covid Cases by Symptoms',
@@ -374,9 +380,10 @@ def save_plots(df: pd.DataFrame) -> None:
     #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # Thailand Covid Cases by Age
-    plot_area(df=df, png_prefix='cases_ages', cols_subset='Age', title='Thailand Covid Cases by Age',
+    cols = [c for c in df.columns if str(c).startswith('Age')]
+    plot_area(df=df, png_prefix='cases_ages', cols_subset=cols, title='Thailand Covid Cases by Age',
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
-              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='summer', reverse_cmap=True)
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap=get_cycle('summer_r', len(cols) + 1))
 
     # Thailand Covid Cases by Risk
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
@@ -394,7 +401,7 @@ def save_plots(df: pd.DataFrame) -> None:
               stacked=True,
               percent_fig=False,
               ma_days=7,
-              cmap='tab20')
+              cmap='tab10')
 
     ##########################
     # Tests by area
@@ -559,8 +566,8 @@ def save_plots(df: pd.DataFrame) -> None:
         'Recovered since 2021-04-01',
     ]
     legends = [
-        'Deaths from cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)', 'In Hospital/Mild',
-        'In Field Hospital', 'Recovered from cases since 1st April'
+        'Deaths from cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)',
+        'In Hospital/Mild', 'In Field Hospital', 'Recovered from cases since 1st April'
     ]
     plot_area(df=df,
               png_prefix='cases_cumulative',
@@ -576,54 +583,59 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
-    cols = [c for c in df.columns if str(c).startswith('Vac Group')]
+    df['Allocated Vaccines'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum()
+    lines = ['Allocated Vaccines', 'Vac Allocated Sinovac']
+    cols = [c for c in df.columns if str(c).startswith('Vac Group')] + lines
 
     def clean_vac_leg(c):
-        return c.replace(' Cum', '').replace('Vac Group', '').replace('1', 'Dose 1').replace('2', 'Dose 2')
+        return c.replace(' Cum', '').replace('Vac ', '').replace("Group ", "").replace('1',
+                                                                                       'Dose 1').replace('2', 'Dose 2')
 
     cols.sort(key=lambda c: clean_vac_leg(c)[-1] + clean_vac_leg(c))  # put 2nd shot at end
 
+    # TODO: get paired colour map and use do 5 + 5 pairs
     legends = [clean_vac_leg(c) for c in cols]
     df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
               title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Set3',
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10', 
+              between=lines,
               y_formatter=thaipop2)
 
-    cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
-    plot_area(df=df_vac_areas_s1,
-              png_prefix='vac_areas_s1',
-              cols_subset=cols,
-              title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)',
-              legends=AREA_LEGEND_SIMPLE,
-              kind='area',
-              stacked=True,
-              percent_fig=False,
-              ma_days=None,
-              cmap='tab20',
-              y_formatter=thaipop)
+    # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
+    # plot_area(df=df_vac_areas_s1,
+    #           png_prefix='vac_areas_s1',
+    #           cols_subset=cols,
+    #           title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)',
+    #           legends=AREA_LEGEND_SIMPLE,
+    #           kind='area',
+    #           stacked=True,
+    #           percent_fig=False,
+    #           ma_days=None,
+    #           cmap='tab20',
+    #           y_formatter=thaipop)
 
-    cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
-    plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
-              title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
-              legends=AREA_LEGEND_SIMPLE,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
-              y_formatter=thaipop)
+    # cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    # df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
+    # plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
+    #           title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
+    #           legends=AREA_LEGEND_SIMPLE,
+    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
+    #           y_formatter=thaipop)
 
-    # Top 5 vaccine rollouts
-    vac = import_csv("vaccinations")
-    vac['Date'] = pd.to_datetime(vac['Date'])
-    vac = vac.set_index('Date')
-    vac = vac.join(PROVINCES['Population'], on='Province')
-    top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100)
+    # # Top 5 vaccine rollouts
+    # vac = import_csv("vaccinations")
+    # vac['Date'] = pd.to_datetime(vac['Date'])
+    # vac = vac.set_index('Date')
+    # vac = vac.join(PROVINCES['Population'], on='Province')
+    # top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100)
 
-    cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
-              title='Top 5 Thai Provinces Closest to Fully Vaccinated',
-              kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
-              )
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
+    #           title='Top 5 Thai Provinces Closest to Fully Vaccinated',
+    #           kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
+    #           )
 
     #######################
     # Cases by provinces
@@ -705,9 +717,9 @@ Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
 
     # predict median age of death based on population demographics
 
-    cols = ['Deaths', 'Deaths Comorbidity None', 'Deaths Risk Family']
+    cols = ['Deaths', 'Deaths Risk Family', 'Deaths Comorbidity None']
     plot_area(df=df, png_prefix='deaths_reason', cols_subset=cols, title='Thailand Covid Deaths',
-              legends=['Deaths', 'No underlying diseases', 'Infected from family'],
+              legends=['Deaths', 'Infected from family', 'No underlying diseases'],
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10',
               actuals=True)
 
