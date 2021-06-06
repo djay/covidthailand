@@ -204,8 +204,9 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
 
 
 def sanitize_filename(filename):
-    return filename.translate({"*": "_", "?": "_", ":": "_", "\\": "_"})
-
+    return filename.translate(str.maketrans({"*": "_", "?": "_", ":": "_", "\\": "_", 
+                                                "<": "_", ">": "_","|": "_"}))
+                                            # Windows Filename Compatibility: '?*:<>|'
 
 def dav_files(url, username=None, password=None,
               ext=".pdf .pptx", dir=os.getcwd()):
