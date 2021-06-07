@@ -216,6 +216,7 @@ def get_provinces():
         return r
 
     df = pd.read_csv('province_mapping.csv', header=0)
+    print(df)
     map_data = __get_alt_name_mappings(df)
     map_data = [(k, v) for k, v in map_data.items()]
     df2 = pd.DataFrame.from_records(map_data, columns=['Alt_names', 'ProvinceEn'])
