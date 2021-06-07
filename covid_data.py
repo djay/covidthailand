@@ -1133,7 +1133,12 @@ def briefing_deaths_summary(text, date):
     # congenital_disease = df[2][0]  # TODO: parse?
     # Risk factors for COVID-19 infection
     # risk_factors = df[3][0]
-    numbers, *_ = get_next_numbers(text, "ค่ามัธยฐานของอายุ", "ค่ากลาง อายุ", "ค่ากลางอายุ", ints=False)
+    numbers, *_ = get_next_numbers(text,
+                                   "ค่ามัธยฐานของอายุ",
+                                   "ค่ากลาง อายุ",
+                                   "ค่ากลางอายุ",
+                                   "ค่ากลางของอายุ",
+                                   ints=False)
     med_age, min_age, max_age, *_ = numbers
     numbers, *_ = get_next_numbers(text, "ชาย")
     male, female, *_ = numbers
