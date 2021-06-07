@@ -66,7 +66,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if actuals:
         # display the originals dashed along side MA
-        actuals = cols
+        if type(actuals) != list:
+            actuals = cols
     else:
         actuals = []
 
@@ -339,7 +340,8 @@ def save_plots(df: pd.DataFrame) -> None:
                'Positive Test Results (Public)']
     plot_area(df=df, png_prefix='cases', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases', legends=legends,
-              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="tab10")
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="tab10",
+              actuals=["Cases", "Pos XLS"])
 
     cols = ['Cases',
             'Pos Area',
