@@ -39,10 +39,15 @@ jobs:
             **/*.xlsx
             **/*.pptx
             **/*.pickle
-            **/*.json
-            **/*.csv
             html/*
             json/*
+            briefings/*
+            tweets/*
+            webdav/*
+            situation_en/*
+            situation_th/*
+            testing_moph/*
+            vaccinations/*
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
