@@ -16,6 +16,14 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - uses: actions/checkout@v2
+      - name: Get current date
+        id: date
+        run: |
+          echo "::set-output name=date::$(date +'%Y-%m-%d')"
+          echo "::set-output name=yesterday::$(date --date=yesterday +'%Y-%m-%d')"
+          echo "::set-output name=month::$(date +'%Y-%m')"
+          echo "::set-output name=year::$(date +'%Y')"
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
@@ -43,7 +51,6 @@ jobs:
             ${{ runner.os }}-${{ steps.date.outputs.month }}
             ${{ runner.os }}-${{ steps.date.outputs.year }}
             ${{ runner.os }}
-      - uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -51,13 +58,6 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 15
-      - name: Get current date
-        id: date
-        run: |
-          echo "::set-output name=date::$(date +'%Y-%m-%d')"
-          echo "::set-output name=yesterday::$(date --date=yesterday +'%Y-%m-%d')"
-          echo "::set-output name=month::$(date +'%Y-%m')"
-          echo "::set-output name=year::$(date +'%Y')"
       - name: Install dependencies
         run: |
           sudo apt-get update
