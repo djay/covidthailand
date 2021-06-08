@@ -976,14 +976,17 @@ def briefing_case_types(date, pages):
             recovered, _ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)", until="ราย")
         else:
             # 2021-05-18 Using single infographic with 3rd wave numbers?
-            numbers, _ = get_next_numbers(text, "หายป่วยแล้ว")
+            numbers, _ = get_next_numbers(text, "หายป่วยแล้ว", "หายป่วยแลว้")
             cum_recovered_3rd, recovered, *_ = numbers
             if cum_recovered_3rd < recovered:
                 recovered = cum_recovered_3rd
 
         assert recovered is not None
 
-        deaths, _ = get_next_number(text, "เสียชีวิตสะสม", before=True)
+        deaths, _ = get_next_number(text, "เสียชีวิตสะสม", "เสียชีวติสะสม", "เสียชีวติ", before=True)
+        assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
+        if date > d("2021-04-23"):
+            assert not any_in([None], hospital, field, severe, respirator, hospitalised)
 
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
