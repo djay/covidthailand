@@ -141,13 +141,16 @@ def export(df, name, csv_only=False):
     )
 
 
-def import_csv(name):
+def import_csv(name, index=None):
     path = os.path.join("api", f"{name}.csv")
     if not os.path.exists(path):
         return None
     old = pd.read_csv(path)
     old['Date'] = pd.to_datetime(old['Date'])
-    return old
+    if index:
+        return old.set_index(index)
+    else:
+        return old
 
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):

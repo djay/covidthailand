@@ -1,4 +1,5 @@
 import datetime
+import functools
 import dateutil
 from dateutil.parser import parse as d
 from itertools import chain, islice
@@ -13,7 +14,7 @@ import pandas as pd
 from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
-from utils_scraping import CHECK_NEWER, any_in, dav_files, get_next_number, get_next_numbers, \
+from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, unique_values, web_files, \
     web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
@@ -455,7 +456,7 @@ def get_situation():
 def get_cases():
     print("========Covid19 Timeline==========")
     try:
-        file, text = next(web_files("https://covid19.th-stat.com/api/open/timeline?123", dir="json", check=True))
+        file, text = next(web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="json", check=True))
     except ConnectionError:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
@@ -467,14 +468,16 @@ def get_cases():
     return cases
 
 
+@functools.lru_cache(maxsize=100, typed=False)
 def get_case_details_csv():
     url = "https://data.go.th/dataset/covid-19-daily"
     file, text = next(web_files(url, dir="json", check=True))
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
+    links = sorted([l for l in links if '.php' not in l], key=lambda l: l.split(".")[-1])  # should put csv first
     # links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
-    file, _ = next(web_files(*links, dir="json", check=False))
+    file, _ = next(web_files(next(iter(links)), dir="json", check=False))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
@@ -1720,7 +1723,8 @@ def get_vaccinations():
     vaccinations = {}
     allocations = {}
     vacnew = {}
-    vac_daily = pd.DataFrame()
+    vac_daily = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame()
+    all_vac = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame()
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
@@ -1770,7 +1774,8 @@ def get_vaccinations():
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
-    all_vac = df.combine_first(alloc)  # TODO: pesky 2021-04-26
+    all_vac = all_vac.combine_first(df)
+    all_vac = all_vac.combine_first(alloc)
 
     # Do cross check we got the same number of allocations to vaccination
     counts = all_vac.groupby("Date").count()
@@ -1827,7 +1832,7 @@ def get_vaccinations():
 
 def get_ifr():
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _ = next(web_files(url, dir="json"))
+    file, _ = next(web_files(url, dir="json", check=True))
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):
@@ -1961,25 +1966,26 @@ def get_hospital_resources():
 
 
 def scrape_and_combine():
-    quick = os.environ.get('USE_CACHE_DATA', False) == 'True' and os.path.exists(os.path.join('api', 'combined.csv'))
+    quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
     if quick:
         # Comment out what you don't need to run
-        # situation = get_situation()
         cases_by_area = get_cases_by_area()
-        # vac = get_vaccinations()
-        # cases_demo = get_cases_by_demographics_api()
-        # tests = get_tests_by_day()
-        # tests_reports = get_test_reports()
-        # cases = get_cases()
+        situation = get_situation()
+        vac = get_vaccinations()
+        tests = get_tests_by_day()
+        tests_reports = get_test_reports()
+        cases = get_cases()
+        # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
+        cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()
         situation = get_situation()
         cases_demo = get_cases_by_demographics_api()
-        hospital = get_hospital_resources()
+        # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()

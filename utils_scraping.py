@@ -17,6 +17,8 @@ from webdav3.client import Client
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
+USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True'
+MAX_DAYS = int(os.environ.get("MAX_DAYS", 1 if USE_CACHE_DATA else 0))
 
 NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
 INT_RE = re.compile(r"\d+(?:\,\d+)*")
@@ -160,6 +162,16 @@ def is_remote_newer(file, remote_date, check=True):
     return False
 
 
+def is_cutshort(file, modified, check):
+
+    if type(modified) == str:
+        modified = dateutil.parser.parse(modified).astimezone()
+    if not check and MAX_DAYS and modified and (datetime.datetime.today().astimezone()
+                                                - modified).days > MAX_DAYS and os.path.exists(file):
+        return True
+    return False
+
+
 def web_links(*index_urls, ext=".pdf", dir="html", match=None):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
@@ -178,10 +190,12 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
     for url in urls:
-        modified = s.head(url).headers.get("last-modified") if check else None
+        modified = s.head(url).headers.get("Last-Modified") if check or MAX_DAYS else None
         file = sanitize_filename(url.rsplit("/", 1)[-1])
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
+        if is_cutshort(file, modified, check):
+            break
         if is_remote_newer(file, modified, check):
             r = s.get(url)
             if r.status_code == 200:
@@ -204,9 +218,9 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
 
 
 def sanitize_filename(filename):
-    return filename.translate(str.maketrans({"*": "_", "?": "_", ":": "_", "\\": "_", 
-                                                "<": "_", ">": "_","|": "_"}))
-                                            # Windows Filename Compatibility: '?*:<>|'
+    return filename.translate(str.maketrans({"*": "_", "?": "_", ":": "_", "\\": "_", "<": "_", ">": "_", "|": "_"}))
+    # Windows Filename Compatibility: '?*:<>|'
+
 
 def dav_files(url, username=None, password=None,
               ext=".pdf .pptx", dir=os.getcwd()):
@@ -231,6 +245,8 @@ def dav_files(url, username=None, password=None,
             continue
         target = os.path.join(dir, file)
         os.makedirs(os.path.dirname(target), exist_ok=True)
+        if is_cutshort(target, info["modified"], False):
+            break
         if is_remote_newer(target, info["modified"]):
             client.download_file(file, target)
         yield target
