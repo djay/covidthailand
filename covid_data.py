@@ -1723,8 +1723,8 @@ def get_vaccinations():
     vaccinations = {}
     allocations = {}
     vacnew = {}
-    vac_daily = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame()
-    all_vac = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame()
+    vac_daily = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    all_vac = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
