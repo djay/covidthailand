@@ -59,20 +59,22 @@ jobs:
             ${{ runner.os }}
       - name: After 1pm skip run if briefing downloaded or not there
         id: briefing
-        if: ${{ github.event_name	== 'schedule' && steps.date.outputs.hour > 13 && hashFiles(steps.date.outputs.briefingfile) == '' }}
         continue-on-error: true
         uses: lakuapik/gh-actions-http-status@v1
         with:
           sites: '["${{ steps.date.outputs.briefingurl }}"]'
           expected: '[301, 200]'
       - name: Set up Python
+        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - uses: actions/setup-java@v1
+        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
         with:
           java-version: 15
       - name: Install dependencies
+        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
         run: |
           sudo apt-get update
           sudo apt-get install ghostscript python3-tk
@@ -84,12 +86,12 @@ jobs:
       #   env:
       #       CHECK_NEWER: True 
       - name: Check for new data only
-      #  if: ${{ github.event_name	!= 'schedule' }}
-        if: $${{ steps.briefing.outcome != 'failure' }}
+        id: update
+        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
         run: |
             python covid_plot.py
       - name: Upload png to wiki
-        if: $${{ steps.briefing.outcome != 'failure' && github.ref == 'refs/heads/main' }}
+        if: $${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
@@ -97,7 +99,7 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
       - name: Upload json to wiki
-        if: $${{ steps.briefing.outcome != 'failure' && github.ref == 'refs/heads/main' }}
+        if: $${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"
