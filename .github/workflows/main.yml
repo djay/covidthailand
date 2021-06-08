@@ -26,10 +26,8 @@ jobs:
           echo "::set-output name=month::$(TZ=Asia/Bangkok date +'%Y-%m')"
           echo "::set-output name=year::$(TZ=Asia/Bangkok date +'%Y')"
           echo "::set-output name=hour::$(TZ=Asia/Bangkok date +'%H')"
-          echo "::set-output name=ddmm::$(TZ=Asia/Bangkok date +'%d%m')"
-          echo "::set-output name=briefing::${{ steps.date.outputs.ddmm }}64.pdf"
-          echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/${{ steps.date.outputs.ddmm }}64.pdf"
-          echo "::set-output name=briefingfile::briefings/${{ steps.date.outputs.ddmm }}64.pdf"
+          echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/$(TZ=Asia/Bangkok date +'%d%m')64.pdf"
+          echo "::set-output name=briefingfile::briefings/$(TZ=Asia/Bangkok date +'%d%m')64.pdf"
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
@@ -57,24 +55,27 @@ jobs:
             ${{ runner.os }}-${{ steps.date.outputs.month }}
             ${{ runner.os }}-${{ steps.date.outputs.year }}
             ${{ runner.os }}
-      - name: After 1pm skip run if briefing downloaded or not there
+      - name: Check briefing doc available
         id: briefing
         continue-on-error: true
         uses: lakuapik/gh-actions-http-status@v1
         with:
           sites: '["${{ steps.date.outputs.briefingurl }}"]'
           expected: '[301, 200]'
-      - name: Set up Python
+      - id: go
         if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
+        run: true        
+      - name: Set up Python
+        if: ${{ steps.go.outcome == 'success' }}
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - uses: actions/setup-java@v1
-        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
+        if: ${{ steps.go.outcome == 'success' }}
         with:
           java-version: 15
       - name: Install dependencies
-        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
+        if: ${{ steps.go.outcome == 'success' }}
         run: |
           sudo apt-get update
           sudo apt-get install ghostscript python3-tk
@@ -85,9 +86,9 @@ jobs:
       #       python covid_plot.py
       #   env:
       #       CHECK_NEWER: True 
-      - name: Check for new data only
+      - name: Scape Covid Data
         id: update
-        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
+        if: ${{ steps.go.outcome == 'success' }}
         run: |
             python covid_plot.py
       - name: Upload png to wiki
