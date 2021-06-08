@@ -6,6 +6,7 @@ on:
   schedule: # can be up to 20min late. So better to have more updates
     - cron: "00 01 * * *" # 08:00 Unofficial tweet
     - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
+    - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
     - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
     - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
     - cron: "20 10 * * *" # 17:20 new PUI number
@@ -20,10 +21,15 @@ jobs:
       - name: Get current date
         id: date
         run: |
-          echo "::set-output name=date::$(date +'%Y-%m-%d')"
-          echo "::set-output name=yesterday::$(date --date=yesterday +'%Y-%m-%d')"
-          echo "::set-output name=month::$(date +'%Y-%m')"
-          echo "::set-output name=year::$(date +'%Y')"
+          echo "::set-output name=date::$(TZ=Asia/Bangkok date +'%Y-%m-%d')"
+          echo "::set-output name=yesterday::$(TZ=Asia/Bangkok date --date=yesterday +'%Y-%m-%d')"
+          echo "::set-output name=month::$(TZ=Asia/Bangkok date +'%Y-%m')"
+          echo "::set-output name=year::$(TZ=Asia/Bangkok date +'%Y')"
+          echo "::set-output name=hour::$(TZ=Asia/Bangkok date +'%H')"
+          echo "::set-output name=ddmm::$(TZ=Asia/Bangkok date +'%d%m')"
+          echo "::set-output name=briefing::${{ steps.date.outputs.ddmm }}64.pdf"
+          echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/${{ steps.date.outputs.ddmm }}64.pdf"
+          echo "::set-output name=briefingfile::briefings/${{ steps.date.outputs.ddmm }}64.pdf"
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
@@ -51,6 +57,14 @@ jobs:
             ${{ runner.os }}-${{ steps.date.outputs.month }}
             ${{ runner.os }}-${{ steps.date.outputs.year }}
             ${{ runner.os }}
+      - name: After 1pm skip run if briefing downloaded or not there
+        id: briefing
+        if: ${{ github.event_name	== 'schedule' && steps.date.outputs.hour > 13 && hashFiles(steps.date.outputs.briefingfile) == '' }}
+        continue-on-error: true
+        uses: lakuapik/gh-actions-http-status@v1
+        with:
+          sites: '["${{ steps.date.outputs.briefingurl }}"]'
+          expected: '[301, 200]'
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -71,10 +85,11 @@ jobs:
       #       CHECK_NEWER: True 
       - name: Check for new data only
       #  if: ${{ github.event_name	!= 'schedule' }}
+        if: $${{ steps.briefing.outcome != 'failure' }}
         run: |
             python covid_plot.py
       - name: Upload png to wiki
-        if: success() && github.ref == 'refs/heads/main'
+        if: $${ steps.briefing.outcome != 'failure' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
@@ -82,7 +97,7 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
       - name: Upload json to wiki
-        if: success() && github.ref == 'refs/heads/main'
+        if: $${{ steps.briefing.outcome != 'failure' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"
