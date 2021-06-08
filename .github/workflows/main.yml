@@ -89,7 +89,7 @@ jobs:
         run: |
             python covid_plot.py
       - name: Upload png to wiki
-        if: $${ steps.briefing.outcome != 'failure' && github.ref == 'refs/heads/main' }}
+        if: $${{ steps.briefing.outcome != 'failure' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
