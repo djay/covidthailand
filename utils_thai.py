@@ -1,4 +1,5 @@
 import datetime
+import functools
 from dateutil.parser import parse as d
 import difflib
 import json
@@ -192,6 +193,7 @@ def thaipop2(num: float, pos: int) -> str:
     return f'{num:.1f}M / {pp:.1f}%'
 
 
+@functools.lru_cache(maxsize=100, typed=False)
 def get_provinces():
     def __get_alt_name_mappings(df):
         """ Return dict of alternative name lookup keys for provinces from the Complete Provinces + Alt Names
@@ -202,17 +204,21 @@ def get_provinces():
         r = {}
         for prov_en, altnames in alt_names_lookup_dict.items():
             altnames = eval(altnames)
-            if type(altnames) is list and len(altnames) > 0:  # Is a list and has entries, therefore add them:
-                for name in altnames:
-                    if type(name) is str and len(name) > 1:  # 
-                        if name not in r:
-                            r[name] = prov_en
-                        elif name in r:
-                            print(f"Warning: duplicate entry of {name} for Province: {prov_en} from Alt Names set: {altnames}")
-                        else:
-                            raise ValueError(f"Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
-                    else:
-                        raise ValueError(f"Error in alt name: '{name}'. Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
+            if type(altnames) is not list or len(altnames) <= 0:  # Is a list and has entries, therefore add them:
+                break
+            for name in altnames:
+                if type(name) is not str or len(name) <= 1:  #
+                    raise ValueError(
+                        f"Error in alt name: '{name}'. Unexpected error while iterating over "
+                        f"mappings: {name}<-{altnames} for Province: {prov_en}"
+                    )
+                elif name not in r:
+                    r[name] = prov_en
+                elif name in r:
+                    print(f"Warning: duplicate entry of {name} for Province: {prov_en} from Alt Names set: {altnames}")
+                else:
+                    raise ValueError(
+                        f"Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
         return r
 
     df = pd.read_csv('province_mapping.csv', header=0)
@@ -284,22 +290,20 @@ def prov_mapping_from_kristw(provinces):
     return provinces
 
 
-PROVINCES = get_provinces()
-
-
 def get_province(prov, ignore_error=False):
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
+    provinces = get_provinces()
     try:
-        return PROVINCES.loc[prov]['ProvinceEn']
+        return provinces.loc[prov]['ProvinceEn']
     except KeyError:
         try:
-            close = difflib.get_close_matches(prov, PROVINCES.index)[0]
+            close = difflib.get_close_matches(prov, provinces.index)[0]
         except IndexError:
             if ignore_error:
                 return None
             else:
                 raise KeyError(f"Province {prov} can't be guessed")
-        proven = PROVINCES.loc[close]['ProvinceEn']  # get english name here so we know we got it
+        proven = provinces.loc[close]['ProvinceEn']  # get english name here so we know we got it
         prov_guesses.loc[(prov_guesses.last_valid_index() or 0) + 1] = dict(Province=prov, ProvinceEn=proven, count=1)
         return proven
 
@@ -312,7 +316,7 @@ def join_provinces(df, on):
     global prov_guesses
     joined, guess = fuzzy_join(
         df,
-        PROVINCES[["Health District Number", "ProvinceEn"]],
+        get_provinces()[["Health District Number", "ProvinceEn"]],
         on,
         True,
         prov_trim,
