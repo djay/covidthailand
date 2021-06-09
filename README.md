@@ -25,17 +25,11 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
+- Consider this a *lower estimate* as there are many assumptions, that if wrong, could make this estimate higher e.g. uncounted covid deaths. See my analysis for more details: [Are there are a lot more infections than confirmed cases?](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases)
 - Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
   and applies it to Thailand province demographics to get an Infection Fatality Rate (IFR) per province. Each death (-14 days) / Province IFR is an estimateof infections that would lead to the recorded deaths.
-- Some assumptions in this model include:
-   - All covid deaths are accounted for. Since reported deaths will be lower than actual deaths
-     this estimate is likely a lower bound on the real infections.
-   - Elderly in thailand are as protected/cautious as global average, i.e. everyone has an equal chance to catch it.
-   - Diseases that increase the chance of death from covid (co-morbidities) have the same prevelence in thailand as globally.
-   - Age demographics of a province match those exposed to covid (clusters in factories, prisons etc have different age demographics from the province for example)
-   - Everyone sick has equal access to good healthcare (e.g. health system is not overloaded) 
-- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) does a more detailed
-  estimate with upper and lower bounds and includes future case/death/hospitalisation predictions. [OWID Covid Models](https://ourworldindata.org/covid-models) has more models for thailand to compare.
+- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) and [IHME Covid Model](https://covid19.healthdata.org/thailand) does detailed
+  (higher) estimates includes future case/death/hospitalisation predictions. [OWID Covid Models](https://ourworldindata.org/covid-models) lets you compare.
 - Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 ## Cases by Health District

@@ -689,16 +689,17 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: work out unknown deaths and use whole thailand IFR for them
     # cases_est['Deaths Unknown'] = (df['Deaths'] - cases_est['Deaths']) / ifr['ifr']['Whole Kingdom'] * 100
 
-    cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-14)
+    # 11 days was median days to death reported in situation reports I think
+    cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-11)
     # cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
     cases_est = cases_est.rename(columns=dict(Deaths="Deaths prov sum"))
     cases_est = cases_est.join(df['Deaths'], on="Date")
     # cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
-    cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-14) / 0.0054
-    cols = ["Cases", "Infections Estimate"]
-    legend = ["Lower Estimate of Infections", "Cases"]
+    cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-11) / 0.0054
+    cols = ["Infections Estimate", "Cases", ]
+    legend = ["Infections Estimate (based on deaths)", "Confirmed Cases"]
     title = """Thailand Confirmed Covid Cases vs Estimate of Infections based on Deaths
-Estimate of Infections = (Deaths - 14days)/(Province Infection Fatality Rate)
+Estimate of Infections = (Deaths - 11days)/(Province Infection Fatality Rate)
 (DISCLAIMER: estimate is simple and probably lower than reality. see site below for more details on this model)"""
     plot_area(df=cases_est,
               png_prefix='cases_infections_estimate',
