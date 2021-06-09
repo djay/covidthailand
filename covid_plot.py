@@ -9,10 +9,10 @@ from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import custom_cm, get_cycle, human_format, import_csv, rearrange, topprov, trendline
+from utils_pandas import get_cycle, human_format, import_csv, rearrange, topprov, trendline
 from utils_scraping import remove_suffix
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, PROVINCES, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
+from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
+    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop2
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -600,7 +600,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
               title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10', 
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
               between=lines,
               y_formatter=thaipop2)
 

@@ -15,9 +15,9 @@ from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, unique_values, web_files, \
-    web_links, all_in, NUM_OR_DASH
-from utils_thai import DISTRICT_RANGE, PROVINCES, area_crosstab, file2date, find_date_range, \
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, unique_values,\
+    web_files, web_links, all_in, NUM_OR_DASH
+from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
 
@@ -456,7 +456,8 @@ def get_situation():
 def get_cases():
     print("========Covid19 Timeline==========")
     try:
-        file, text = next(web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="json", check=True))
+        file, text = next(
+            web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="json", check=True))
     except ConnectionError:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
@@ -475,8 +476,8 @@ def get_case_details_csv():
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
-    links = sorted([l for l in links if '.php' not in l], key=lambda l: l.split(".")[-1])  # should put csv first
-    # links = [l for l in web_links(url, ext=".csv") if "pm-" in l]
+    # ensure csv is first pick but we can handle either if one is missing
+    links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
     file, _ = next(web_files(next(iter(links)), dir="json", check=False))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
@@ -1076,11 +1077,11 @@ def briefing_province_cases(date, pages):
                     break
                 olddate = date - datetime.timedelta(days=i)
                 rows[(olddate, prov)] = cases + rows.get((olddate, prov), 0)  # rare case where we need to merge
-                if False and olddate == date:
-                    if cases > 0:
-                        print(date, linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
-                    else:
-                        print("no cases", linenum, thai, *numbers)
+                # if False and olddate == date:
+                #     if cases > 0:
+                #         print(date, linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
+                #     else:
+                #         print("no cases", linenum, thai, *numbers)
     data = ((d, p, c) for (d, p), c in rows.items())
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
@@ -1644,8 +1645,8 @@ def vaccination_daily(daily, date, file, page):
                               f"Vac Group Other Frontline Staff {dose} Cum",
                               f"Vac Group Over 60 {dose} Cum",
                               f"Vac Group Risk: Disease {dose} Cum",
-                              f"Vac Group Risk: Location {dose} Cum",
-                          ]).set_index("Date")
+                              f"Vac Group Risk: Location {dose} Cum", ]
+                          ).set_index("Date")
         daily = daily.combine_first(df)
     print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
@@ -1726,8 +1727,10 @@ def get_vaccinations():
     vaccinations = {}
     allocations = {}
     vacnew = {}
-    vac_daily = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame(columns=["Date"]).set_index(["Date"])
-    all_vac = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
+    vac_daily = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame(
+        columns=["Date"]).set_index(["Date"])
+    all_vac = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame(
+        columns=["Date", "Province"]).set_index(["Date", "Province"])
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
@@ -1835,7 +1838,7 @@ def get_vaccinations():
 
 def get_ifr():
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _ = next(web_files(url, dir="json", check=True))
+    file, _ = next(web_files(url, dir="json", check=False))
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):

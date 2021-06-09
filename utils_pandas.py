@@ -94,7 +94,7 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=
     if unmatched.empty:
         second = first
     else:
-        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index)), None),
+        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index, 1)), None),
                                              na_action="ignore")
         second = first.combine_first(a.join(b, on="fuzzy_match"))
         del second["fuzzy_match"]
