@@ -100,7 +100,8 @@ jobs:
         run: |
             python covid_plot.py
       - name: outputfiles.txt
-        run: ls -al tweets/* webdav/* situation_en/* situation_th/* testing_moph/* vaccinations/* > outputfiles.txt
+        continue-on-error: true
+        run: ls -al tweets/* json/* situation_en/* situation_th/* testing_moph/* vaccinations/* > outputfiles.txt
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
