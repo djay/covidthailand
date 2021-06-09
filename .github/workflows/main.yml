@@ -65,8 +65,12 @@ jobs:
           follow-redirect: yes
       - name: skip rest if schedule > 1pm and briefing not ready or done
         id: go
-        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
-        run: true        
+        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
+        run: |
+          echo  github.event_name(${{ github.event_name }})	!= 'schedule' OR
+          echo  steps.date.outputs.hour=${{ steps.date.outputs.hour }} < 13 OR
+          echo  (steps.briefing.outcome=${{ steps.briefing.outcome }} == 'success' AND
+          echo  '' == hashFiles(steps.date.outputs.briefingfile)=${{ hashFiles(steps.date.outputs.briefingfile) }})
       - name: Set up Python
         if: ${{ steps.go.outcome == 'success' }}
         uses: actions/setup-python@v2
