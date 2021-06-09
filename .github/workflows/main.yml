@@ -49,7 +49,7 @@ jobs:
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
-          key: ${{ runner.os }}-${{ steps.date.outputs.date }}
+          key: ${{ runner.os }}-${{ steps.date.outputs.date }}-${{ hashfiles('outputfiles.txt') }}
           restore-keys: |
             ${{ runner.os }}-${{ steps.date.outputs.date }}
             ${{ runner.os }}-${{ steps.date.outputs.yesterday }}
@@ -99,6 +99,8 @@ jobs:
         if: ${{ steps.go.outcome == 'success' }}
         run: |
             python covid_plot.py
+      - name: outputfiles.txt
+        run: ls -al tweets/* webdav/* situation_en/* situation_th/* testing_moph/* vaccinations/* > outputfiles.txt
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
