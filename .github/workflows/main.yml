@@ -70,8 +70,9 @@ jobs:
           echo  "'${{ github.event_name }}'(github.event_name)'	!= 'schedule' OR"
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "('${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
-          echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles($${{ steps.date.outputs.briefingfile }}) == '')"
-          ls -al ${{ steps.date.outputs.briefingfile }}
+          echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles(${{ steps.date.outputs.briefingfile }}) == '')"
+          echo $PWD
+          ls -al briefings
       - name: Set up Python
         if: ${{ steps.go.outcome == 'success' }}
         uses: actions/setup-python@v2
