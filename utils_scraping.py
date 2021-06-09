@@ -189,16 +189,20 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
+    i = 0
     for url in urls:
         modified = s.head(url).headers.get("Last-Modified") if check or MAX_DAYS else None
         file = sanitize_filename(url.rsplit("/", 1)[-1])
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
-        if is_cutshort(file, modified, check):
+        if i > 0 and is_cutshort(file, modified, check):
             break
         if is_remote_newer(file, modified, check):
-            r = s.get(url)
-            if r.status_code == 200:
+            try:
+                r = s.get(url)
+            except ConnectionError:
+                r = None
+            if r is not None and r.status_code == 200:
                 print(f"Download: {file}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 with open(file, "wb") as f:
@@ -214,6 +218,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
                 continue
         with open(file, "rb") as f:
             content = f.read()
+        i += 1
         yield file, content
 
 
@@ -239,16 +244,18 @@ def dav_files(url, username=None, password=None,
         key=lambda info: dateutil.parser.parse(info["modified"]),
         reverse=True,
     )
+    i = 0
     for info in files:
         file = info["path"].split("/")[-1]
         if not any([ext == file[-len(ext):] for ext in ext.split()]):
             continue
         target = os.path.join(dir, file)
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        if is_cutshort(target, info["modified"], False):
+        if i > 0 and is_cutshort(target, info["modified"], False):
             break
         if is_remote_newer(target, info["modified"]):
             client.download_file(file, target)
+        i += 1
         yield target
 
 
