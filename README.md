@@ -27,9 +27,9 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 - Consider this a *lower estimate* as there are many assumptions, that if wrong, could make this estimate higher e.g. uncounted covid deaths. See my analysis for more details: [Are there are a lot more infections than confirmed cases?](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases)
 - Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
-  and applies it to Thailand province demographics to get an Infection Fatality Rate (IFR) per province. Each death (-14 days) / Province IFR is an estimateof infections that would lead to the recorded deaths.
-- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) and [IHME Covid Model](https://covid19.healthdata.org/thailand) does detailed
-  (higher) estimates includes future case/death/hospitalisation predictions. [OWID Covid Models](https://ourworldindata.org/covid-models) lets you compare.
+  and applies it to Thailand province demographics to get an Infection Fatality Rate (IFR) per province. Each death (-11 days) / Province IFR is an estimate of infections that would lead to the recorded deaths. 11 Days is the median days from infection to death reported by MOPH.
+- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)) and [IHME Covid Model](https://covid19.healthdata.org/thailand) ([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) does more detailed
+  (higher) estimates includeing uncertainty and future predictions of cases/death/hospitalisation. [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
 - Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 ## Cases by Health District
