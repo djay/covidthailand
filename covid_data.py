@@ -262,6 +262,8 @@ def get_en_situation():
         date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
             continue  # TODO: can manually put in numbers before this
+        parsed_pdf = parsed_pdf.replace("DDC Thailand 1", "")  # footer put in teh wrong place
+
         pui = situation_pui(parsed_pdf, date)
         cases = situation_cases_cum(parsed_pdf, date)
         new_cases = situation_cases_new(parsed_pdf, date)
