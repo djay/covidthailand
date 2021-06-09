@@ -585,8 +585,8 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
-    df['Allocated Vaccines'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum()
-    lines = ['Allocated Vaccines', 'Vac Allocated Sinovac']
+    df['Allocated Total'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
+    lines = ['Allocated Total', 'Vac Allocated Sinovac']
     cols = [c for c in df.columns if str(c).startswith('Vac Group')] + lines
 
     def clean_vac_leg(c):

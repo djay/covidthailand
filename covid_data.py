@@ -27,7 +27,7 @@ from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range
 ##########################################
 
 def situation_cases_cum(parsed_pdf, date):
-    _, rest = get_next_numbers(parsed_pdf, "The Disease Situation in Thailand", debug=True)
+    _, rest = get_next_numbers(parsed_pdf, "Disease Situation in Thailand", debug=False)
     cases, rest = get_next_numbers(
         rest,
         "Total number of confirmed cases",
