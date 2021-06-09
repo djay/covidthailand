@@ -59,10 +59,10 @@ jobs:
       - name: Check briefing doc available
         id: briefing
         continue-on-error: true
-        uses: lakuapik/gh-actions-http-status@v1
+        uses: jtalk/url-health-check-action@v1.5
         with:
-          sites: '["${{ steps.date.outputs.briefingurl }}"]'
-          expected: '[301, 200]'
+          url: ${{ steps.date.outputs.briefingurl }}
+          follow-redirect: yes
       - name: skip rest if schedule > 1pm and briefing not ready or done
         id: go
         if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
