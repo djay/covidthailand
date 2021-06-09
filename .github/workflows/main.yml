@@ -6,10 +6,11 @@ on:
   schedule: # can be up to 20min late. So better to have more updates
     - cron: "00 01 * * *" # 08:00 Unofficial tweet
     - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
-    - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
-    - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
-    - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
-    - cron: "20 10 * * *" # 17:20 new PUI number
+    - cron: "*/30 06-08 * * *" # Quick checks for briefing after 1pm
+    # - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
+    # - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
+    # - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
+#    - cron: "20 10 * * *" # 17:20 new PUI number
     - cron: "20 16 * * *" # 23:20 test data/situation report/vaccination report
 jobs:
   build:
@@ -62,7 +63,8 @@ jobs:
         with:
           sites: '["${{ steps.date.outputs.briefingurl }}"]'
           expected: '[301, 200]'
-      - id: go
+      - name: skip rest if schedule > 1pm and briefing not ready or done
+        id: go
         if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '' }}
         run: true        
       - name: Set up Python
@@ -92,7 +94,7 @@ jobs:
         run: |
             python covid_plot.py
       - name: Upload png to wiki
-        if: $${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
@@ -100,7 +102,7 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
       - name: Upload json to wiki
-        if: $${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"
