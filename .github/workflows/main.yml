@@ -4,6 +4,7 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
+    - cron: "20 00 * * *" # 08:00 Unofficial tweet
     - cron: "00 01 * * *" # 08:00 Unofficial tweet
     - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
     - cron: "*/15 06-09 * * *" # Quick checks for briefing after 1pm
@@ -11,7 +12,7 @@ on:
     # - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
     # - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
 #    - cron: "20 10 * * *" # 17:20 new PUI number
-    - cron: "20 16 * * *" # 23:20 test data/situation report/vaccination report
+#    - cron: "20 16 * * *" # 23:20 test data/situation report/vaccination report
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -77,7 +78,7 @@ jobs:
             ${{ runner.os }}
       - name: skip rest if schedule > 1pm and briefing not ready or already done
         id: go
-        if: ${{ (steps.briefing.go1.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
+        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
         run: |
           echo  "'${{ github.event_name }}'(github.event_name)'	!= 'schedule' OR"
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
