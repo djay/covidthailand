@@ -659,7 +659,7 @@ def get_cases_by_demographics_api():
 ##################################
 
 
-UNOFFICIAL_TWEET = re.compile("🔴 BREAKING: ")
+UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
 
 
@@ -791,7 +791,7 @@ def get_cases_by_prov_tweets():
 
     for date, text in sorted(breaking.items(), reverse=True):
         if date in officials:
-            # do unoffical tweets in no official tweet
+            # do unoffical tweets if no official tweet
             continue
         df = df.pipe(parse_unofficial_tweet, date, text)
 
