@@ -1,6 +1,6 @@
 Name,Name(in Thai),Population (2019)[1],Area (km²)[2],Population density,Namesake town/city,HS[6],ISO[7],FIPS,Alt_names,district_num
 Bangkok,กรุงเทพมหานคร,5666264,1564,3623,Bangkok,BKK,TH-10,TH40,"['BKK', 'Bangkok', 'กทม', 'กรงุเทพมหานคร', 'กรงุเทพมหำนคร', 'กรุงเทพ', 'กรุงเทพมหานคร', 'กรุงเทพฯ', 'ปรมิณฑล']",13
-Amnat Charoen,อำนาจเจริญ,378438,3290,115,Amnat Charoen,ACR,TH-37,TH77,"['ACR', 'Amnat Charoen', 'AmnatCharoen', 'อ านาจเจรญ', 'อ านาจเจริญ', 'อ ำนำจเจรญ', 'อจ', 'อานาจเจรญ', 'อำนาจเจริญ']",10
+Amnat Charoen,อำนาจเจริญ,378438,3290,115,Amnat Charoen,ACR,TH-37,TH77,"['ACR', 'Amnat Charoen', 'AmnatCharoen', 'อ านาจเจรญ', 'อ านาจเจริญ', 'อ ำนำจเจรญ', 'อจ', 'อานาจเจรญ', 'อำนาจเจริญ', 'อานาจเจริญ']",10
 Ang Thong,อ่างทอง,279654,950,294,Ang Thong,ATG,TH-15,TH35,"['ATG', 'Ang Thong', 'AngThong', 'อท', 'อา่งทอง', 'อำ่งทอง', 'อ่างทอง']",4
 Bueng Kan,บึงกาฬ,424091,4003,106,Bueng Kan,BKN,TH-38,TH81,"['BKN', 'BeungKan', 'Bueng Kan', 'Bung Kan', 'บก', 'บงึกาฬ', 'บึงกาฬ']",8
 Buriram,บุรีรัมย์,1595747,10080,159,Buriram,BRM,TH-31,TH28,"['BRM', 'Buri Ram', 'BuriRam', 'Buriram', 'บร', 'บรุรัีมย', 'บรุรีมัย', 'บรุรีัมย', 'บุรรีมัย', 'บุรีรัมย', 'บุรีรัมย์']",9
@@ -12,12 +12,12 @@ Chiang Mai,เชียงใหม่,1779254,22135,79,Chiang Mai,CMI,TH-50,TH0
 Chiang Rai,เชียงราย,1298304,11503,113,Chiang Rai,CRI,TH-57,TH03,"['CRI', 'Chiang Rai', 'ChiangRai', 'ชร', 'เชยีงราย', 'เชยีงรำย', 'เชียงราย', 'เชีียงราย']",1
 Chonburi,ชลบุรี,1558301,4508,346,Chonburi,CBI,TH-20,TH46,"['CBI', 'Chon Buri', 'ChonBuri', 'Chonburi', 'ชบ', 'ชลบรุ', 'ชลบุร', 'ชลบุรี', 'ชลบุุรี']",6
 Chumphon,ชุมพร,511304,5998,85,Chumphon,CPN,TH-86,TH58,"['CPN', 'Chumphon', 'ชพ', 'ชมุพร', 'ชุมพร']",11
-Kalasin,กาฬสินธุ์,983418,6936,142,Kalasin,KSN,TH-46,TH23,"['KSN', 'Kalasin', 'กส', 'กาฬสนิธุ', 'กาฬสินธุ', 'กาฬสินธุ์']",7
+Kalasin,กาฬสินธุ์,983418,6936,142,Kalasin,KSN,TH-46,TH23,"['KSN', 'Kalasin', 'กส', 'กาฬสนิธุ', 'กาฬสินธุ', 'กาฬสินธุ์', 'กาฬสินธ์ุ']",7
 Kamphaeng Phet,กำแพงเพชร,725867,8512,86,Kamphaeng Phet,KPT,TH-62,TH11,"['KPT', 'Kamphaeng Phet', 'KamphaengPhet', 'ก าแพงเพชร', 'ก ำแพงเพชร', 'กพ', 'กาแพงเพชร', 'กำแพงเพชร']",3
 Kanchanaburi,กาญจนบุรี,895525,19385,46,Kanchanaburi,KRI,TH-71,TH50,"['KRI', 'Kanchanaburi', 'กจ', 'กาญจนบรุ', 'กาญจนบุร', 'กาญจนบุรี', 'กำญจนบรุ']",5
 Khon Kaen,ขอนแก่น,1802872,10659,169,Khon Kaen,KKN,TH-40,TH22,"['KKN', 'Khon Kaen', 'KhonKaen', 'ขก', 'ขอนแกน่', 'ขอนแก่น']",7
-Krabi,กระบี่,476739,5323,90,Krabi,KBI,TH-81,TH63,"['KBI', 'Krabi', 'กบ', 'กระบี่']",11
-Lampang,ลำปาง,738316,12488,59,Lampang,LPG,TH-52,TH06,"['LPG', 'Lampang', 'ล าปาง', 'ล ำปำง', 'ลป', 'ลาปาง', 'ลำปาง']",1
+Krabi,กระบี่,476739,5323,90,Krabi,KBI,TH-81,TH63,"['KBI', 'Krabi', 'กบ', 'กระบี่', 'กระบ่ี']",11
+Lampang,ลำปาง,738316,12488,59,Lampang,LPG,TH-52,TH06,"['LPG', 'Lampang', 'ล าปาง', 'ล ำปำง', 'ลป', 'ลาปาง', 'ลำปาง', ]",1
 Lamphun,ลำพูน,405075,4478,92,Lamphun,LPN,TH-51,TH05,"['LPN', 'Lamphun', 'ล าพนู', 'ล าพูน', 'ล ำพนู', 'ลพ', 'ลาพนู', 'ลำพูน']",1
 Loei,เลย,642950,10500,61,Loei,LEI,TH-42,TH18,"['LEI', 'Loei', 'ลย', 'เลย']",8
 Lopburi,ลพบุรี,755556,6493,116,Lopburi,LRI,TH-16,TH34,"['LRI', 'LopBuri', 'Lopburi', 'ลบ', 'ลพบรุ', 'ลพบุร', 'ลพบุรี']",4
