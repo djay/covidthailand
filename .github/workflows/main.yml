@@ -27,6 +27,7 @@ jobs:
           echo "::set-output name=month::$(TZ=Asia/Bangkok date +'%Y-%m')"
           echo "::set-output name=year::$(TZ=Asia/Bangkok date +'%Y')"
           echo "::set-output name=hour::$(TZ=Asia/Bangkok date +'%H')"
+          echo "::set-output name=time::$(TZ=Asia/Bangkok date +'%H:%M')"
           echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/$(TZ=Asia/Bangkok date +'%d%m')64.pdf"
           echo "::set-output name=briefingfile::briefings/$(TZ=Asia/Bangkok date +'%d%m')64.pdf"
       - name: Cache multiple paths
@@ -49,7 +50,10 @@ jobs:
             ~/.cache/pip
             /tmp/tika-server.jar
             /tmp/tika-server.jar.md5
-          key: ${{ runner.os }}-${{ steps.date.outputs.date }}-${{ hashfiles('outputfiles.txt') }}
+          # key is evaluated only at the start so no way we can based it on files downloaded
+          # without checking them all first. Time is hack that will cause caching on every run
+          # see https://github.com/actions/cache/issues/135
+          key: ${{ runner.os }}-${{ steps.date.outputs.date }}-${{ steps.date.outputs.time }}
           restore-keys: |
             ${{ runner.os }}-${{ steps.date.outputs.date }}
             ${{ runner.os }}-${{ steps.date.outputs.yesterday }}
