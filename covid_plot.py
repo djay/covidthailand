@@ -12,7 +12,7 @@ from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import get_cycle, human_format, import_csv, rearrange, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop2
+    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -362,12 +362,42 @@ def save_plots(df: pd.DataFrame) -> None:
         df=df,
         png_prefix='cases_tests',
         cols_subset=cols,
-        title='21 day Moving Average comparing Tests to Positive tests',
+        title='21 day Moving Average comparing Cases to Positive tests',
         legends=legends,
         kind='line',
         stacked=False,
         percent_fig=False,
         ma_days=21,
+        cmap="tab10",
+    )
+
+
+    df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
+    df['Cases outside Prison 3rd Cum'] = df['2021-04-01':]['Cases outside Prison'].cumsum()
+    df['Cases Walkin 3rd Cum'] = df['2021-04-01':]['Cases Walkin'].cumsum()
+    df['Pos XLS 3rd Cum'] = df['2021-04-01':]['Pos XLS'].cumsum()
+    cols = [
+        'Cases 3rd Cum',
+        'Cases outside Prison 3rd Cum',
+        'Cases Walkin 3rd Cum',
+        'Pos XLS 3rd Cum',
+    ]
+    legends = [
+        'Confirmed Cases',
+        'Confirmed Cases (excl. Prisons)',
+        'Confirmed Cases (excl. All Proactive Cases)',
+        'Positive Test Results',
+    ]
+    plot_area(
+        df=df,
+        png_prefix='cases_tests_cum3',
+        cols_subset=cols,
+        title='3rd Wave Cumulative Cases and Positive tests',
+        legends=legends,
+        kind='line',
+        stacked=False,
+        percent_fig=False,
+        ma_days=None,
         cmap="tab10",
     )
 
@@ -613,24 +643,35 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
-    df['Allocated Total'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
-    lines = ['Allocated Total', 'Vac Allocated Sinovac']
-    cols = [c for c in df.columns if str(c).startswith('Vac Group')] + lines
+    df['Allocated Vaccines'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
+    lines = ['Allocated Vaccines']
+    groups = [c for c in df.columns if str(c).startswith('Vac Group')]
+    cols = []
+    for c in groups:
+        if "1" in c:
+            df[c.replace("1", "Only 1")] = df[c] - df[c.replace("1", "2")]
+            cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
+
+    cols = cols + lines
+    cols = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
 
     def clean_vac_leg(c):
-        return c.replace(' Cum', '').replace('Vac ', '').replace("Group ", "").replace('1',
-                                                                                       'Dose 1').replace('2', 'Dose 2')
+        return c.replace(' Cum', ''
+                        ).replace('Vac ', ''
+                        ).replace("Group ", ""
+                        ).replace('Only 1', '(At least 1 Dose)'
+                        ).replace('2', '(Fully Vaccinated)')
 
-    cols.sort(key=lambda c: clean_vac_leg(c)[-1] + clean_vac_leg(c))  # put 2nd shot at end
+    # cols.sort(key=lambda c: clean_vac_leg(c)[-1] + clean_vac_leg(c))  # put 2nd shot at end
 
     # TODO: get paired colour map and use do 5 + 5 pairs
     legends = [clean_vac_leg(c) for c in cols]
     df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
     plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
-              title='Thailand Vaccinations by Groups\n(% of 2 doses per Thai population)', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
+              title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
               between=lines,
-              y_formatter=thaipop2)
+              y_formatter=thaipop)
 
     # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
