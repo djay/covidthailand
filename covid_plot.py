@@ -123,8 +123,8 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     #     colormap = custom_cm(cmap, len(cols), flip=reverse_cmap)
 #    colormap = cmap
 
-    # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
-    # df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
+# drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
+# df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
     last_date_unknown = df[cols].last_valid_index()  # last date with some data (inc unknown)
     if clean_end:
         df_clean = df.loc[:last_date_unknown]
@@ -210,7 +210,8 @@ def save_plots(df: pd.DataFrame) -> None:
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
     plot_area(df=df, png_prefix='tests', cols_subset=cols,
               title='Thailand PCR Tests and PUI (totals exclude some proactive testing)', legends=legends,
-              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10',
+              actuals=['Tests XLS'])
 
     cols = ['Tested Cum',
             'Tested PUI Cum',
@@ -329,6 +330,8 @@ def save_plots(df: pd.DataFrame) -> None:
     ##################
     # Test Plots
     ##################
+    df["Cases outside Prison"] = df["Cases Local Transmission"].sub(df["Cases Area Prison"], fill_value=0)
+
     cols = ['Cases',
             'Cases Walkin',
             'Pos XLS',
@@ -342,6 +345,31 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test results compared to Confirmed Cases', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="tab10",
               actuals=["Cases", "Pos XLS"])
+
+    cols = [
+        'Cases',
+        'Cases outside Prison',
+        'Cases Walkin',
+        'Pos XLS',
+    ]
+    legends = [
+        'Confirmed Cases',
+        'Confirmed Cases (excl. Prisons)',
+        'Confirmed Cases (excl. All Proactive Cases)',
+        'Positive Test Results',
+    ]
+    plot_area(
+        df=df,
+        png_prefix='cases_tests',
+        cols_subset=cols,
+        title='21 day Moving Average comparing Tests to Positive tests',
+        legends=legends,
+        kind='line',
+        stacked=False,
+        percent_fig=False,
+        ma_days=21,
+        cmap="tab10",
+    )
 
     cols = ['Cases',
             'Pos Area',
