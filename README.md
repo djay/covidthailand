@@ -143,6 +143,10 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
+![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_3.png)
+- Source: [DDC Daily Vaccination Reports](#dl-vac)
+
+
 # Downloads
 
 ## Disclaimer
@@ -356,6 +360,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-06-12 - Add vacination daily and improve cumulative vaccinations
 - 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
 - 2021-06-30 - death reasons and hospitalisation critical plots
 - 2021-05-21 - Estimate of Infections from Deaths
@@ -379,8 +384,6 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
-- show severe and ventilator in more detail (either seperate graph or subplot?)
-- trending province vaccinations
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand
   - potentially could adjust the IFR to get a better infeciton estimtate.
@@ -388,8 +391,6 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
   - https://github.com/TheEconomist/covid-19-excess-deaths-tracker/blob/master/output-data/excess-deaths/thailand_excess_deaths.csv
 - fix vaccination numbers dropping based on the idea that later reports are corrections
    - so fill forward with current max? or fill back with current min?
-- put non MA lines on some area graphs e.g. deaths, cases 
-- fix vaccinations by parsing daily numbers table
 - plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic

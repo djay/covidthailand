@@ -2,17 +2,61 @@ import os
 import pathlib
 from typing import Sequence, Union, List, Callable
 
+import numpy as np
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+import matplotlib.dates as mdates
 import pandas as pd
 
+
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import get_cycle, human_format, import_csv, rearrange, topprov, trendline
+from utils_pandas import cum2daily, get_cycle, human_format, import_csv, rearrange, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
+
+
+def line_format(label):
+    """
+    Convert time label to the format of pandas line plot
+    """
+    month = label.month_name()[:3]
+    if month == 'Jan':
+        month += f'\n{label.year}'
+    return month
+
+
+def set_time_series_labels(df, ax):
+    # Create list of monthly timestamps by selecting the first weekly timestamp of each
+    # month (in this example, the first Sunday of each month)
+    monthly_timestamps = [
+        timestamp for idx, timestamp in enumerate(df.index) if (timestamp.month != df.index[idx - 1].month) | (idx == 0)
+    ]
+
+    # Automatically select appropriate number of timestamps so that x-axis does
+    # not get overcrowded with tick labels
+    step = 1
+    while len(monthly_timestamps[::step]) > 10:  # increase number if time range >3 years
+        step += 1
+    timestamps = monthly_timestamps[::step]
+
+    # Create tick labels from timestamps
+    labels = [
+        ts.strftime('%b\n%Y') if ts.year != timestamps[idx - 1].year else ts.strftime('%b')
+        for idx, ts in enumerate(timestamps)
+    ]
+
+    # Set major ticks and labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in timestamps])
+    ax.set_xticklabels(labels)
+
+    # Set minor ticks without labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
+
+    # Rotate and center labels
+    ax.figure.autofmt_xdate(rotation=0, ha='center')
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -157,7 +201,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         if y_formatter is not None:
             a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
-        if kind == "area":
+        if kind != "line":
             areacols = [c for c in cols if c not in between]
             df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked)
             linecols = between + actuals
@@ -167,6 +211,9 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
             df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind="line")
+
+        if kind == "bar":
+            set_time_series_labels(df_plot, a0)
 
         a0.set_title(label=title)
         leg = a0.legend(labels=legends)
@@ -643,8 +690,8 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
-    df['Allocated Vaccines'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
-    lines = ['Allocated Vaccines']
+    df['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
+    lines = ['Allocated Vaccines Cum']
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     cols = []
     for c in groups:
@@ -672,6 +719,24 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
               between=lines,
               y_formatter=thaipop)
+
+    df_vac_groups = df['2021-02-16':][groups].interpolate(limit_area="inside")
+    vac_daily = cum2daily(df_vac_groups[groups])
+    cols = rearrange(vac_daily.columns, 1, 2, 3, 4, 9, 10, 7, 8, )
+    # cols = [c for c in vac_daily.columns if c != "Allocated Vaccines"]
+    legends = [clean_vac_leg(c) for c in cols]
+    plot_area(
+        df=vac_daily,
+        png_prefix='vac_groups_daily',
+        cols_subset=cols,
+        title='Thailand Daily Vaccinations by Priority Groups',
+        legends=legends,
+        kind='bar',
+        stacked=True,
+        percent_fig=False,
+        ma_days=None,
+        cmap='Paired_r',
+    )
 
     # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()

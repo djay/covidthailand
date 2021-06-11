@@ -1728,6 +1728,7 @@ def get_vaccinations():
     gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
                  for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
     links = unique_values(chain(gen_links, links))
+    links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
     pages = ((page, file2date(f), f) for f, _ in web_files(
