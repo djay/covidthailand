@@ -312,6 +312,7 @@ def situation_pui_th(parsed_pdf, date, results):
         until="(?:โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลเอกชน)"
     )
     # cases = None
+
     if len(numbers) == 7:  # numbers and numbers[2] < 30000:
         tests_total, pui, active_finding, asq, not_pui, *rest = numbers
         if pui == 4534137:
@@ -320,7 +321,12 @@ def situation_pui_th(parsed_pdf, date, results):
         _, _, tests_total, pui, active_finding, asq, not_pui, *rest = numbers
     elif len(numbers) == 8:
         # 2021 - removed not_pui
-        _, _, tests_total, pui, asq, active_finding, *rest = numbers
+        _, _, tests_total, pui, asq, active_finding, pui2, *rest = numbers
+        assert pui == pui2
+        not_pui = None
+    elif len(numbers) == 6:  # > 2021-05-10
+        tests_total, pui, asq, active_finding, pui2, screened = numbers
+        assert pui == pui2
         not_pui = None
     else:
         numbers, content = get_next_numbers(
@@ -332,7 +338,7 @@ def situation_pui_th(parsed_pdf, date, results):
         if len(numbers) > 0:
             pui, *rest = numbers
     if date > dateutil.parser.parse("2020-03-26") and not numbers:
-        raise Exception(f"Problem parsing {date}")
+        raise Exception(f"Problem finding PUI numbers for date {date}")
     elif not numbers:
         return
     if tests_total == 167515:  # situation-no447-250364.pdf
