@@ -153,7 +153,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     if ma_days:
         title = title + f'({ma_days} day rolling average) '
     title += f"Last Data: {last_update.date().strftime('%d %b %Y')}\n"
-    title += 'https://djay.github.io/covidthailand'
+    title += 'Sources: https://djay.github.io/covidthailand - (CC BY)'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
