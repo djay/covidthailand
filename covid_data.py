@@ -1620,8 +1620,8 @@ def vaccination_daily(daily, date, file, page):
     assert alloc_total == alloc_sv + alloc_az
     # dose1_total, rest1 = get_next_number(page, "ได้รับวัคซีนเข็มที่ 1", until="โดส")
     # dose2_total, rest2 = get_next_number(page, "ได้รับวัคซีน 2 เข็ม", until="โดส")
-    d1_num, rest = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
-    d2_num, _ = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม")
+    d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
+    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", until="รำย ดังรูป")
 
     row = [date, alloc_sv, alloc_az]
     assert not any_in(['None'], row)
@@ -1633,6 +1633,15 @@ def vaccination_daily(daily, date, file, page):
     daily = daily.combine_first(df)
 
     for dose, numbers in enumerate([d1_num, d2_num], 1):
+        if len(numbers) == 1 or not re.search("บุคคลที่มีโรคประจ", rest):
+            total, *_ = numbers
+            df = pd.DataFrame([[date, total]], columns=[
+                "Date",
+                f"Vac Given {dose} Cum",
+            ]).set_index("Date")
+            daily = daily.combine_first(df)
+            continue
+
         total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
         assert sixty == 60
 
