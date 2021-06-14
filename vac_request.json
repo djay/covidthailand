@@ -1,0 +1,154 @@
+{
+    "dataRequest": [
+        {
+            "requestContext": {
+                "reportContext": {
+                    "reportId": "731713b6-a3c4-4766-ab9d-a6502a4e7dd6",
+                    "pageId": "33037739",
+                    "mode": "VIEW",
+                    "componentId": "cd-8me2cc9kkc",
+                    "displayType": "simple-barchart"
+                }
+            },
+            "datasetSpec": {
+                "dataset": [
+                    {
+                        "datasourceId": "be20cc44-8f07-40e9-a197-6803fe40ce87",
+                        "revisionNumber": 0,
+                        "parameterOverrides": []
+                    }
+                ],
+                "queryFields": [
+                    {
+                        "name": "qt_3g0rrc9kkc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_vaccinated_on_",
+                            "transformationConfig": {
+                                "transformationType": 5
+                            }
+                        }
+                    },
+                    {
+                        "name": "qt_cems1c9kkc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_person_type_"
+                        }
+                    },
+                    {
+                        "name": "qt_wg0rrc9kkc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "datastudio_record_count_system_field_id_98323387"
+                        }
+                    }
+                ],
+                "sortData": [
+                    {
+                        "sortColumn": {
+                            "name": "qt_3g0rrc9kkc",
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "dataTransformation": {
+                                "sourceFieldName": "_vaccinated_on_",
+                                "transformationConfig": {
+                                    "transformationType": 5
+                                }
+                            }
+                        },
+                        "sortDir": 0
+                    }
+                ],
+                "includeRowsCount": false,
+                "blendConfig": {
+                    "blockDatasource": {
+                        "datasourceBlock": {
+                            "id": "block_qja0o8pnkc",
+                            "type": 1,
+                            "inputBlockIds": [],
+                            "outputBlockIds": [],
+                            "fields": []
+                        },
+                        "blocks": [
+                            {
+                                "id": "block_rja0o8pnkc",
+                                "type": 5,
+                                "inputBlockIds": [],
+                                "outputBlockIds": [],
+                                "fields": [],
+                                "queryBlockConfig": {
+                                    "joinQueryConfig": {
+                                        "joinKeys": [],
+                                        "queries": [
+                                            {
+                                                "datasourceId": "be20cc44-8f07-40e9-a197-6803fe40ce87",
+                                                "concepts": []
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        "delegatedAccessEnabled": true,
+                        "isUnlocked": true,
+                        "isCacheable": false
+                    }
+                },
+                "filters": [
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": true,
+                                "conceptType": 0,
+                                "concept": {
+                                    "name": "qt_tf5sjc9kkc",
+                                    "ns": "t0"
+                                },
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_hospital_province_code_"
+                                    },
+                                    "displayTransformation": {
+                                        "displayName": "Province"
+                                    }
+                                },
+                                "filterConditionType": "IN",
+                                "stringValues": [
+                                    "TH-10"
+                                ]
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    }
+                ],
+                "features": [],
+                "dateRanges": [],
+                "contextNsCount": 1,
+                "dateRangeDimensions": [
+                    {
+                        "name": "qt_0tcsrc9kkc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_vaccinated_on_"
+                        }
+                    }
+                ],
+                "calculatedField": [],
+                "needGeocoding": false,
+                "geoFieldMask": [],
+                "geoVertices": 100000
+            },
+            "useDataColumn": true
+        }
+    ]
+}

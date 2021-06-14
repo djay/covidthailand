@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import camelot
 import numpy as np
 import pandas as pd
+import requests
 from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
@@ -1596,6 +1597,30 @@ def get_test_reports():
 # Vaccination reports
 ################################
 
+def get_vaccination_coldtraindata():
+    all_prov = pd.DataFrame()
+    codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
+    url = "https://datastudio.google.com/batchedDataV2?appVersion=20210506_00020034"
+    with open("vac_request.json") as fp:
+        post = json.load(fp)
+    for _, row in codes.iterrows():
+        if "special" in row['Subdivision category']:
+            continue
+        post['dataRequest'][0]['datasetSpec']['filters'][0]['filterDefinition']['filterExpression']['stringValues'] = [row['Code']]
+        r = requests.post(url, json=post)
+        _, _, data = r.text.split("\n")
+        data = json.loads(data)
+        index, manuf, given = data['dataResponse'][0]['dataSubset'][0]['dataset']['tableDataset']['column']
+        df = pd.DataFrame({
+            "Date": [d(date) for date in index['dateColumn']['values']],
+            "Vaccine": manuf['stringColumn']['values'],
+            "Given": [int(i) for i in given['longColumn']['values']]
+        })
+        df['Province'] = row['Subdivision name (th)(National 2000 = ISO 11940-2:2007 = UN VIII/12 2002)'].split("(")[0]
+        all_prov = all_prov.combine_first(df)
+    return all_prov.set_index(["Date", "Province", "Vaccine"])
+
+
 def vac_problem(daily, date, file, page):
     if "Anaphylaxis" not in page:
         return daily
@@ -1730,6 +1755,7 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 
 
 def get_vaccinations():
+    vacct = get_vaccination_coldtraindata()
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
@@ -1996,9 +2022,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         situation = get_situation()
-        vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         cases = get_cases()

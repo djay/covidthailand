@@ -2,61 +2,18 @@ import os
 import pathlib
 from typing import Sequence, Union, List, Callable
 
-import numpy as np
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-import matplotlib.dates as mdates
 import pandas as pd
 
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, get_cycle, human_format, import_csv, rearrange, topprov, trendline
+from utils_pandas import cum2daily, get_cycle, human_format, import_csv, perc_format, rearrange, set_time_series_labels, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
-
-
-def line_format(label):
-    """
-    Convert time label to the format of pandas line plot
-    """
-    month = label.month_name()[:3]
-    if month == 'Jan':
-        month += f'\n{label.year}'
-    return month
-
-
-def set_time_series_labels(df, ax):
-    # Create list of monthly timestamps by selecting the first weekly timestamp of each
-    # month (in this example, the first Sunday of each month)
-    monthly_timestamps = [
-        timestamp for idx, timestamp in enumerate(df.index) if (timestamp.month != df.index[idx - 1].month) | (idx == 0)
-    ]
-
-    # Automatically select appropriate number of timestamps so that x-axis does
-    # not get overcrowded with tick labels
-    step = 1
-    while len(monthly_timestamps[::step]) > 10:  # increase number if time range >3 years
-        step += 1
-    timestamps = monthly_timestamps[::step]
-
-    # Create tick labels from timestamps
-    labels = [
-        ts.strftime('%b\n%Y') if ts.year != timestamps[idx - 1].year else ts.strftime('%b')
-        for idx, ts in enumerate(timestamps)
-    ]
-
-    # Set major ticks and labels
-    ax.set_xticks([df.index.get_loc(ts) for ts in timestamps])
-    ax.set_xticklabels(labels)
-
-    # Set minor ticks without labels
-    ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
-
-    # Rotate and center labels
-    ax.figure.autofmt_xdate(rotation=0, ha='center')
+    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -418,7 +375,6 @@ def save_plots(df: pd.DataFrame) -> None:
         cmap="tab10",
     )
 
-
     df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
     df['Cases outside Prison 3rd Cum'] = df['2021-04-01':]['Cases outside Prison'].cumsum()
     df['Cases Walkin 3rd Cum'] = df['2021-04-01':]['Cases Walkin'].cumsum()
@@ -736,7 +692,39 @@ def save_plots(df: pd.DataFrame) -> None:
         percent_fig=False,
         ma_days=None,
         cmap='Paired_r',
+        y_formatter=perc_format
     )
+
+    # Targets for groups
+    # https://www.facebook.com/informationcovid19/photos/a.106455480972785/342985323986465/
+
+    # 712,000 for medical staff
+    # 1,900,000 for frontline staffs
+    # 1,000,000 for village health volunteer
+    # 5,350,000 for risk: disease
+    # 12,500,000 for risk: over 60
+    # 28,538,000 for general population
+    df_vac_groups['Vac Group Medical Staff 2 Cum %'] = df_vac_groups['Vac Group Medical Staff 2 Cum'] / (712000 + 1000000) * 100
+    df_vac_groups['Vac Group Over 60 2 Cum %'] = df_vac_groups['Vac Group Over 60 2 Cum'] / 12500000 * 100
+    df_vac_groups['Vac Group Risk: Disease 2 Cum %'] = df_vac_groups['Vac Group Risk: Disease 2 Cum'] / 5350000 * 100
+    df_vac_groups['Vac Group Other Frontline Staff 2 Cum %'] = df_vac_groups['Vac Group Other Frontline Staff 2 Cum'] / 1900000 * 100
+    df_vac_groups['Vac Group Other Population 2 %'] = df_vac_groups['Vac Group Risk: Location 2 Cum'] / 28538000 * 100
+    cols2 = [c for c in df_vac_groups.columns if " 2 Cum %" in c and "Vac Group " in c]
+    legends = [clean_vac_leg(c) for c in cols2]
+    plot_area(
+        df=df_vac_groups,
+        png_prefix='vac_groups_goals',
+        cols_subset=cols2,
+        title='Thailand Daily Vaccinations by Priority Groups Progress to goal',
+        legends=legends,
+        kind='line',
+        stacked=False,
+        percent_fig=False,
+        ma_days=None,
+        cmap='tab10',
+    )
+
+
 
     # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()

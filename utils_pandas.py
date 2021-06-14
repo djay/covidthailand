@@ -69,6 +69,10 @@ def human_format(num: float, pos: int) -> str:
     return f'{num:.1f}{suffix}'
 
 
+def perc_format(num: float, pos: int) -> str:
+    return f'{num:.0f}%'
+
+
 def rearrange(lst, *first):
     "reorder a list by moving first items to the front. Can be index or value"
     lst = list(lst)
@@ -258,3 +262,44 @@ def get_cycle(cmap, n=None, use_index="auto"):
     else:
         colors = cmap(np.linspace(0, 1, n))
         return cycler("color", colors)
+
+
+def line_format(label):
+    """
+    Convert time label to the format of pandas line plot
+    """
+    month = label.month_name()[:3]
+    if month == 'Jan':
+        month += f'\n{label.year}'
+    return month
+
+
+def set_time_series_labels(df, ax):
+    # Create list of monthly timestamps by selecting the first weekly timestamp of each
+    # month (in this example, the first Sunday of each month)
+    monthly_timestamps = [
+        timestamp for idx, timestamp in enumerate(df.index) if (timestamp.month != df.index[idx - 1].month) | (idx == 0)
+    ]
+
+    # Automatically select appropriate number of timestamps so that x-axis does
+    # not get overcrowded with tick labels
+    step = 1
+    while len(monthly_timestamps[::step]) > 10:  # increase number if time range >3 years
+        step += 1
+    timestamps = monthly_timestamps[::step]
+
+    # Create tick labels from timestamps
+    labels = [
+        ts.strftime('%b\n%Y') if ts.year != timestamps[idx - 1].year else ts.strftime('%b')
+        for idx, ts in enumerate(timestamps)
+    ]
+
+    # Set major ticks and labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in timestamps])
+    ax.set_xticklabels(labels)
+
+    # Set minor ticks without labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
+
+    # Rotate and center labels
+    ax.figure.autofmt_xdate(rotation=0, ha='center')
