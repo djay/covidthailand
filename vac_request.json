@@ -31,11 +31,11 @@
                         }
                     },
                     {
-                        "name": "qt_cems1c9kkc",
+                        "name": "qt_09asrc9kkc",
                         "datasetNs": "d0",
                         "tableNs": "t0",
                         "dataTransformation": {
-                            "sourceFieldName": "_person_type_"
+                            "sourceFieldName": "_manuf_name_"
                         }
                     },
                     {
@@ -67,7 +67,7 @@
                 "blendConfig": {
                     "blockDatasource": {
                         "datasourceBlock": {
-                            "id": "block_qja0o8pnkc",
+                            "id": "block_ucs0e4cokc",
                             "type": 1,
                             "inputBlockIds": [],
                             "outputBlockIds": [],
@@ -75,7 +75,7 @@
                         },
                         "blocks": [
                             {
-                                "id": "block_rja0o8pnkc",
+                                "id": "block_vcs0e4cokc",
                                 "type": 5,
                                 "inputBlockIds": [],
                                 "outputBlockIds": [],
@@ -105,6 +105,35 @@
                                 "include": true,
                                 "conceptType": 0,
                                 "concept": {
+                                    "ns": "t0",
+                                    "name": "qt_kraj088kkc"
+                                },
+                                "filterConditionType": "IN",
+                                "stringValues": [
+                                    "Sinovac Life Sciences",
+                                    "AstraZeneca"
+                                ],
+                                "numberValues": [],
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_manuf_name_"
+                                    }
+                                }
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    },
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": true,
+                                "conceptType": 0,
+                                "concept": {
                                     "name": "qt_tf5sjc9kkc",
                                     "ns": "t0"
                                 },
@@ -119,6 +148,152 @@
                                 "filterConditionType": "IN",
                                 "stringValues": [
                                     "TH-10"
+                                ]
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    },
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": true,
+                                "conceptType": 0,
+                                "concept": {
+                                    "name": "qt_3g0rrc9kkc",
+                                    "ns": "t0"
+                                },
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_vaccinated_on_",
+                                        "transformationConfig": {
+                                            "transformationType": 5
+                                        }
+                                    }
+                                },
+                                "filterConditionType": "IN",
+                                "stringValues": [
+                                    "20210228",
+                                    "20210302",
+                                    "20210303",
+                                    "20210304",
+                                    "20210305",
+                                    "20210308",
+                                    "20210309",
+                                    "20210310",
+                                    "20210311",
+                                    "20210312",
+                                    "20210315",
+                                    "20210316",
+                                    "20210317",
+                                    "20210318",
+                                    "20210319",
+                                    "20210322",
+                                    "20210323",
+                                    "20210324",
+                                    "20210325",
+                                    "20210326",
+                                    "20210327",
+                                    "20210329",
+                                    "20210330",
+                                    "20210331",
+                                    "20210401",
+                                    "20210402",
+                                    "20210405",
+                                    "20210406",
+                                    "20210407",
+                                    "20210408",
+                                    "20210409",
+                                    "20210412",
+                                    "20210415",
+                                    "20210416",
+                                    "20210417",
+                                    "20210419",
+                                    "20210420",
+                                    "20210421",
+                                    "20210422",
+                                    "20210423",
+                                    "20210424",
+                                    "20210425",
+                                    "20210426",
+                                    "20210427",
+                                    "20210428",
+                                    "20210429",
+                                    "20210430",
+                                    "20210501",
+                                    "20210503",
+                                    "20210505",
+                                    "20210506",
+                                    "20210507",
+                                    "20210508",
+                                    "20210510",
+                                    "20210511",
+                                    "20210512",
+                                    "20210513",
+                                    "20210514",
+                                    "20210515",
+                                    "20210516",
+                                    "20210517",
+                                    "20210518",
+                                    "20210519",
+                                    "20210520",
+                                    "20210521",
+                                    "20210522",
+                                    "20210523",
+                                    "20210524",
+                                    "20210525",
+                                    "20210526",
+                                    "20210527",
+                                    "20210528",
+                                    "20210529",
+                                    "20210530",
+                                    "20210531",
+                                    "20210601",
+                                    "20210602",
+                                    "20210603",
+                                    "20210604",
+                                    "20210605",
+                                    "20210606",
+                                    "20210607",
+                                    "20210608",
+                                    "20210609",
+                                    "20210610",
+                                    "20210611",
+                                    "20210612",
+                                    "20210613",
+                                    "20210614"
+                                ]
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    },
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": true,
+                                "conceptType": 0,
+                                "concept": {
+                                    "name": "qt_09asrc9kkc",
+                                    "ns": "t0"
+                                },
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_manuf_name_"
+                                    }
+                                },
+                                "filterConditionType": "IN",
+                                "stringValues": [
+                                    "Sinovac Life Sciences",
+                                    "AstraZeneca"
                                 ]
                             }
                         },

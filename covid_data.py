@@ -6,6 +6,7 @@ from itertools import chain, islice
 import json
 import os
 import re
+import copy
 
 from bs4 import BeautifulSoup
 import camelot
@@ -1598,27 +1599,44 @@ def get_test_reports():
 ################################
 
 def get_vaccination_coldtraindata():
-    all_prov = pd.DataFrame()
-    codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
+    df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
+    codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+    provinces = [prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+
     url = "https://datastudio.google.com/batchedDataV2?appVersion=20210506_00020034"
     with open("vac_request.json") as fp:
         post = json.load(fp)
-    for _, row in codes.iterrows():
-        if "special" in row['Subdivision category']:
-            continue
-        post['dataRequest'][0]['datasetSpec']['filters'][0]['filterDefinition']['filterExpression']['stringValues'] = [row['Code']]
+    spec = post['dataRequest'][0]
+    post['dataRequest'] = []
+
+    def set_filter(filters, field, value):
+        for filter in filters:
+            if filter['filterDefinition']['filterExpression']['queryTimeTransformation']['dataTransformation']['sourceFieldName'] == field:
+                filter['filterDefinition']['filterExpression']['stringValues'] = value
+        return filters
+
+    def make_request(post, codes):
+        for code in codes:
+            pspec = copy.deepcopy(spec)
+            set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
+            post['dataRequest'].append(pspec)            
         r = requests.post(url, json=post)
         _, _, data = r.text.split("\n")
         data = json.loads(data)
-        index, manuf, given = data['dataResponse'][0]['dataSubset'][0]['dataset']['tableDataset']['column']
+        for resp in data['dataResponse']:
+            yield resp
+    all_prov = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
+    for prov, data in zip(provinces, make_request(post, codes)):
+        index, manuf, given = data['dataSubset'][0]['dataset']['tableDataset']['column']
         df = pd.DataFrame({
             "Date": [d(date) for date in index['dateColumn']['values']],
             "Vaccine": manuf['stringColumn']['values'],
-            "Given": [int(i) for i in given['longColumn']['values']]
+            "Vac Given": [int(i) for i in given['longColumn']['values']]
         })
-        df['Province'] = row['Subdivision name (th)(National 2000 = ISO 11940-2:2007 = UN VIII/12 2002)'].split("(")[0]
-        all_prov = all_prov.combine_first(df)
-    return all_prov.set_index(["Date", "Province", "Vaccine"])
+        df['Province'] = get_province(prov)
+        all_prov = all_prov.combine_first(df.set_index(["Date", "Province", "Vaccine"]))
+    # TODO: comine different vaccine amounts for now
+    return all_prov.groupby(["Date", "Province"]).sum()
 
 
 def vac_problem(daily, date, file, page):
