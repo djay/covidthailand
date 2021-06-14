@@ -32,8 +32,11 @@ def add_data(data, df):
     except ValueError:
         print('detected duplicates; dropping only the duplicate rows')
         idx_names = data.index.names
-        data = data.reset_index().append(df.reset_index()).drop_duplicates()
-        data = data.set_index(idx_names)
+        if [None] != idx_names:
+            data = data.reset_index()
+        data = data.append(df.reset_index()).drop_duplicates()
+        if [None] != idx_names:
+            data = data.set_index(idx_names)
     return data
 
 
