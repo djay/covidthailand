@@ -1137,17 +1137,11 @@ def briefing_deaths_provinces(text, date, total_deaths):
             if not last_provs:
                 raise Exception(f"subset of province can't be adjusted for {rest}")
             add_deaths(last_provs, -num)  # TODO: should only be prison. check this
-        try:
-            add_deaths(rest, num)
-        except KeyError:
-            # Something else from another cell got in here thats not a province. skip it
-            continue
+        add_deaths(rest, num)
         last_provs = rest
     dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                           columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
-
     assert total_deaths == dfprov['Deaths'].sum()
-
     return dfprov
 
 

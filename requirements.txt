@@ -8,7 +8,7 @@ python-pptx
 python-dateutil
 jupyter
 pytwitterscraper
-camelot-py[cv,plot]
+camelot-py[cv,plot] == 0.8.2
 pandas
 numpy
 matplotlib
