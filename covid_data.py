@@ -1097,28 +1097,28 @@ def briefing_province_cases(date, pages):
     return df
 
 
-def briefing_deaths_summary(text, date):
-    title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19)")
-    if not title_re.search(text):
-        return pd.DataFrame(), pd.DataFrame()
-    # Summary of locations, reasons, medium age, etc
+def briefing_deaths_provinces(text, date, total_deaths):
 
-    # all bullets with no spaces == one cell
-    pre, comorbid, _, *rest = re.split(r"(•[\d\D]*?)\n\n", text)
-    _, age_text, ptext, *risks = reversed(rest)
-    if "วันที่ทราบผลติดเชื้อ" in ptext:
-        age_text, ptext, *risks = risks
-    ptext = (strip(pre.split("\n\n"))[-1] + ptext)
-    ptext = re.sub("(ละ|/จังหวัด|จังหวัด|ราย)", "", ptext)
+    # get rid of extra words in brakets to make easier
+    text = re.sub("(ละ|/จังหวัด|จังหวัด|อย่างละ|ราย)", "", text)
+
+    # Provinces are split between bullets with disease and risk.
+    pre, rest = re.split("โควิด *-?19\n\n", text, 1)
+    bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
+    ptext1, b1, rest = bullets_re.split(rest, 1)
+    *bullets, ptext2 = bullets_re.split(rest)
+    ptext2, age_text = re.split("•", ptext2, 1)
+    ptext = ptext1 + ptext2
     pcells = pairwise(strip(re.split(r"(\(?\d+\)?)", ptext)))
+
     province_count = {}
     last_provs = None
 
     def add_deaths(provinces, num):
         provs = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
-        provs = [get_province(p) for p in provs]
+        provs = [get_province(p, ignore_error=True) for p in provs]
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
-        provs = [p for p in provs if p != "Unknown"]
+        provs = [p for p in provs if p and p != "Unknown"]
         for p in provs:
             province_count[p] = province_count.get(p, 0) + num
 
@@ -1143,6 +1143,19 @@ def briefing_deaths_summary(text, date):
             # Something else from another cell got in here thats not a province. skip it
             continue
         last_provs = rest
+    dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
+                          columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
+
+    assert total_deaths == dfprov['Deaths'].sum()
+
+    return dfprov
+
+
+def briefing_deaths_summary(text, date):
+    title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19)")
+    if not title_re.search(text):
+        return pd.DataFrame(), pd.DataFrame()
+    # Summary of locations, reasons, medium age, etc
 
     # Congenital disease / risk factor The severity of the disease
     # congenital_disease = df[2][0]  # TODO: parse?
@@ -1173,11 +1186,8 @@ def briefing_deaths_summary(text, date):
                            "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male",
                            "Deaths Female", "Deaths Comorbidity None", "Deaths Risk Family"]
                        ).set_index("Date")
-    dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
-                          columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
-    assert male + female == dfprov['Deaths'].sum()
-    print(f"{date.date()} Deaths:", len(dfprov), "|",
-          sum.to_string(header=False, index=False))
+    dfprov = briefing_deaths_provinces(text, date, deaths_title)
+    print(f"{date.date()} Deaths:", len(dfprov), "|", sum.to_string(header=False, index=False))
     return sum, dfprov
 
 
