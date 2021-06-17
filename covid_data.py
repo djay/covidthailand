@@ -2026,7 +2026,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases', 'cases_by_area', 'situation', 'tests_reports', 'tests', 'cases_demo', 'vac']:
+    for f in ['cases_by_area', 'cases', 'situation', 'tests_reports', 'tests', 'cases_demo', 'vac']:
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
