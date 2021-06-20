@@ -1598,15 +1598,15 @@ def get_test_reports():
 # Vaccination reports
 ################################
 
-def get_vaccination_coldtraindata():
+def get_vaccination_coldtraindata(request_json):
     df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
     codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
     provinces = [prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
 
     url = "https://datastudio.google.com/batchedDataV2?appVersion=20210506_00020034"
-    with open("vac_request.json") as fp:
+    with open(request_json) as fp:
         post = json.load(fp)
-    spec = post['dataRequest'][0]
+    specs = post['dataRequest']
     post['dataRequest'] = []
 
     def set_filter(filters, field, value):
@@ -1617,26 +1617,46 @@ def get_vaccination_coldtraindata():
 
     def make_request(post, codes):
         for code in codes:
-            pspec = copy.deepcopy(spec)
-            set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
-            post['dataRequest'].append(pspec)            
+            for spec  in specs:
+                pspec = copy.deepcopy(spec)
+                set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
+                post['dataRequest'].append(pspec)
         r = requests.post(url, json=post)
         _, _, data = r.text.split("\n")
         data = json.loads(data)
         for resp in data['dataResponse']:
             yield resp
     all_prov = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
-    for prov, data in zip(provinces, make_request(post, codes)):
-        index, manuf, given = data['dataSubset'][0]['dataset']['tableDataset']['column']
-        df = pd.DataFrame({
-            "Date": [d(date) for date in index['dateColumn']['values']],
-            "Vaccine": manuf['stringColumn']['values'],
-            "Vac Given": [int(i) for i in given['longColumn']['values']]
-        })
-        df['Province'] = get_province(prov)
-        all_prov = all_prov.combine_first(df.set_index(["Date", "Province", "Vaccine"]))
-    # TODO: comine different vaccine amounts for now
-    return all_prov.groupby(["Date", "Province"]).sum()
+    for prov_spec, data in zip([(p, s) for p in provinces for s in specs], make_request(post, codes)):
+        prov, spec = prov_spec
+        prov = get_province(prov)
+        fields = [(f['name'], f['dataTransformation']['sourceFieldName']) for f in spec['datasetSpec']['queryFields']]
+        for datasubset in data['dataSubset']:
+            colmuns = datasubset['dataset']['tableDataset']['column']
+            df_cols = {}
+            is_today = True
+            for field, column in zip(fields, colmuns):
+                if 'dateColumn' in column:
+                    values = [d(date) for date in column['dateColumn']['values']]
+                    is_today = False
+                elif 'longColumn' in column:
+                    values = [int(i) for i in column['longColumn']['values']]
+                elif 'stringColumn' in column:
+                    values = column['stringColumn']['values']
+                else:
+                    raise Exception("Unknown column type", column.keys())
+                fieldname = dict(_vaccinated_on_='Date',
+                                 _manuf_name_='Vaccine',
+                                 datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
+                # datastudio_record_count_system_field_id_98323387 = supply?
+
+                df_cols[fieldname] = values
+            df = pd.DataFrame(df_cols)
+            df['Province'] = prov
+            if is_today:
+                df['Date'] = today()
+            all_prov = all_prov.combine_first(df.set_index(["Date", "Province", "Vaccine"]))
+    return all_prov.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
 
 
 def vac_problem(daily, date, file, page):
@@ -1773,7 +1793,14 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 
 
 def get_vaccinations():
-    vacct = get_vaccination_coldtraindata()
+    vacct = get_vaccination_coldtraindata("vac_request.json")
+    vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
+    vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
+    vacct['Vac Given'] = vacct.sum(axis=1)
+    vaccum = vacct.groupby("Province").apply(lambda pdf: pdf.cumsum())
+    vaccum.columns = [c + " Cum" for c in vaccum.columns]
+    vacct = vacct.combine_first(vaccum)
+
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
@@ -1818,6 +1845,7 @@ def get_vaccinations():
         "Vac Group Risk: Location 1 Cum",
         "Vac Group Risk: Location 2 Cum",
     ]).set_index(["Date", "Province"])
+    df = df.combine_first(vacct)
     # df_new = pd.DataFrame((list(key)+value for key,value in vacnew.items()), columns=[
     #     "Date",
     #     "Province",
@@ -1877,7 +1905,8 @@ def get_vaccinations():
     all_vac = join_provinces(all_vac, "Province")
     given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
-    thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2)
+    given_by_area_both = area_crosstab(all_vac, 'Vac Given', ' Cum')
+    thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2).combine_first(given_by_area_both)
     export(thaivac, "vac_timeline")
 
     # TODO: can get todays from - https://ddc.moph.go.th/vaccine-covid19/ or briefings

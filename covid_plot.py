@@ -13,7 +13,7 @@ from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, get_cycle, human_format, import_csv, perc_format, rearrange, set_time_series_labels, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop
+    AREA_LEGEND_ORDERED, FIRST_AREAS, get_province, get_provinces, thaipop
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -708,7 +708,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups['Vac Group Over 60 2 Cum %'] = df_vac_groups['Vac Group Over 60 2 Cum'] / 12500000 * 100
     df_vac_groups['Vac Group Risk: Disease 2 Cum %'] = df_vac_groups['Vac Group Risk: Disease 2 Cum'] / 5350000 * 100
     df_vac_groups['Vac Group Other Frontline Staff 2 Cum %'] = df_vac_groups['Vac Group Other Frontline Staff 2 Cum'] / 1900000 * 100
-    df_vac_groups['Vac Group Other Population 2 %'] = df_vac_groups['Vac Group Risk: Location 2 Cum'] / 28538000 * 100
+    df_vac_groups['Vac Group Remainder to 70% 2 Cum %'] = df_vac_groups['Vac Group Risk: Location 2 Cum'] / 28538000 * 100
     cols2 = [c for c in df_vac_groups.columns if " 2 Cum %" in c and "Vac Group " in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
@@ -724,42 +724,31 @@ def save_plots(df: pd.DataFrame) -> None:
         cmap='tab10',
     )
 
+    cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
+    plot_area(df=df_vac_areas_s1,
+              png_prefix='vac_areas_s1',
+              cols_subset=cols,
+              title='Thailand Vaccinations Doses by Health District',
+              legends=AREA_LEGEND_SIMPLE,
+              kind='area',
+              stacked=True,
+              percent_fig=False,
+              ma_days=None,
+              cmap='tab20',)
 
+    # Top 5 vaccine rollouts
+    vac = import_csv("vaccinations")
+    vac['Date'] = pd.to_datetime(vac['Date'])
+    vac = vac.set_index('Date')
+    vac = vac.join(get_provinces()['Population'], on='Province')
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100000)
 
-    # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
-    # plot_area(df=df_vac_areas_s1,
-    #           png_prefix='vac_areas_s1',
-    #           cols_subset=cols,
-    #           title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)',
-    #           legends=AREA_LEGEND_SIMPLE,
-    #           kind='area',
-    #           stacked=True,
-    #           percent_fig=False,
-    #           ma_days=None,
-    #           cmap='tab20',
-    #           y_formatter=thaipop)
-
-    # cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    # df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
-    # plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
-    #           title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
-    #           legends=AREA_LEGEND_SIMPLE,
-    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
-    #           y_formatter=thaipop)
-
-    # # Top 5 vaccine rollouts
-    # vac = import_csv("vaccinations")
-    # vac['Date'] = pd.to_datetime(vac['Date'])
-    # vac = vac.set_index('Date')
-    # vac = vac.join(PROVINCES['Population'], on='Province')
-    # top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100)
-
-    # cols = top5.columns.to_list()
-    # plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
-    #           title='Top 5 Thai Provinces Closest to Fully Vaccinated',
-    #           kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
-    #           )
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
+              title='Top 5 Provinces for Vaccinations per 100,000',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
+              )
 
     #######################
     # Cases by provinces
