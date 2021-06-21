@@ -15,7 +15,7 @@ import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
 
-from utils_pandas import add_data, check_cum, cum2daily, daterange, export, fuzzy_join, import_csv, spread_date_range
+from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH
@@ -1684,17 +1684,15 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search("(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19)", page):
+    if not re.search("(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19)", page):
         return daily
-    alloc_sv, rest = get_next_number(page, "Sinovac", until="โดส")
-    alloc_az, rest = get_next_number(page, "AstraZeneca", until="โดส")
-    alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
-    assert alloc_total == alloc_sv + alloc_az
     # dose1_total, rest1 = get_next_number(page, "ได้รับวัคซีนเข็มที่ 1", until="โดส")
     # dose2_total, rest2 = get_next_number(page, "ได้รับวัคซีน 2 เข็ม", until="โดส")
-    d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
-    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", until="รำย ดังรูป")
 
+    alloc_sv, rest = get_next_number(page, "Sinovac", until="โดส")
+    alloc_az, rest = get_next_number(page, "AstraZeneca", until="โดส")
+    #alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
+    #assert alloc_total == alloc_sv + alloc_az
     row = [date, alloc_sv, alloc_az]
     assert not any_in(['None'], row)
     df = pd.DataFrame([row], columns=[
@@ -1704,8 +1702,18 @@ def vaccination_daily(daily, date, file, page):
     ]).set_index("Date")
     daily = daily.combine_first(df)
 
+    d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", "รับวัคซีนเข็มท่ี 1 จํานวน", until="2 เข็ม")
+    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until="รำย ดังรูป")
+
+    # get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
+    # medical, _ = get_next_number(text, "เป็นบุคลำกรทำงกำรแพทย์", "คลำกรทำงกำรแพทย์", until="รำย")
+    # frontline, _ = get_next_number(text, "เจ้ำหน้ำที่ที่มีโอกำสสัมผัส", "โอกำสสัมผัสผู้ป่วย", until="รำย")
+    # over60, _ = get_next_number(text, "ผู้ที่มีอำยุตั้งแต่ 60 ปีขึ้นไป", "ผู้ที่มีอำยุตั้งแต่ 60", until="รำย")
+    # chronic, _ = get_next_number(text, "บุคคลที่มีโรคประจ", until="รำย")
+    # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
+
     for dose, numbers in enumerate([d1_num, d2_num], 1):
-        if len(numbers) == 1 or not re.search("บุคคลที่มีโรคประจ", rest):
+        if len(numbers) != 6 or not re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว)", rest):
             total, *_ = numbers
             df = pd.DataFrame([[date, total]], columns=[
                 "Date",
@@ -1716,13 +1724,6 @@ def vaccination_daily(daily, date, file, page):
 
         total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
         assert sixty == 60
-
-        # get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
-        # medical, _ = get_next_number(text, "เป็นบุคลำกรทำงกำรแพทย์", "คลำกรทำงกำรแพทย์", until="รำย")
-        # frontline, _ = get_next_number(text, "เจ้ำหน้ำที่ที่มีโอกำสสัมผัส", "โอกำสสัมผัสผู้ป่วย", until="รำย")
-        # over60, _ = get_next_number(text, "ผู้ที่มีอำยุตั้งแต่ 60 ปีขึ้นไป", "ผู้ที่มีอำยุตั้งแต่ 60", until="รำย")
-        # chronic, _ = get_next_number(text, "บุคคลที่มีโรคประจ", until="รำย")
-        # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
         row = [medical, frontline, over60, chronic, area]
         assert not any_in(row, None)
         assert 0.99 <= (sum(row) / total) <= 1.0
@@ -1805,8 +1806,8 @@ def get_vaccinations():
     vacct = get_vaccination_coldtraindata("vac_request.json")
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
-    vacct['Vac Given'] = vacct.sum(axis=1)
-    vaccum = vacct.groupby("Province").apply(lambda pdf: pdf.cumsum())
+    vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
+    vaccum = vacct.groupby("Province").apply(lambda pdf: daily2cum(pdf))
     vaccum.columns = [c + " Cum" for c in vaccum.columns]
     vacct = vacct.combine_first(vaccum)
 

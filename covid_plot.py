@@ -704,12 +704,14 @@ def save_plots(df: pd.DataFrame) -> None:
     # 5,350,000 for risk: disease
     # 12,500,000 for risk: over 60
     # 28,538,000 for general population
-    df_vac_groups['Vac Group Medical Staff 2 Cum %'] = df_vac_groups['Vac Group Medical Staff 2 Cum'] / (712000 + 1000000) * 100
-    df_vac_groups['Vac Group Over 60 2 Cum %'] = df_vac_groups['Vac Group Over 60 2 Cum'] / 12500000 * 100
-    df_vac_groups['Vac Group Risk: Disease 2 Cum %'] = df_vac_groups['Vac Group Risk: Disease 2 Cum'] / 5350000 * 100
-    df_vac_groups['Vac Group Other Frontline Staff 2 Cum %'] = df_vac_groups['Vac Group Other Frontline Staff 2 Cum'] / 1900000 * 100
-    df_vac_groups['Vac Group Remainder to 70% 2 Cum %'] = df_vac_groups['Vac Group Risk: Location 2 Cum'] / 28538000 * 100
-    cols2 = [c for c in df_vac_groups.columns if " 2 Cum %" in c and "Vac Group " in c]
+    cols2 = []
+    for d in [1, 2]:
+        df_vac_groups[f'Vac Group Medical Staff {d} Cum %'] = df_vac_groups[f'Vac Group Medical Staff {d} Cum'] / (712000 + 1000000) * 100
+        df_vac_groups[f'Vac Group Other Frontline Staff {d} Cum %'] = df_vac_groups[f'Vac Group Other Frontline Staff {d} Cum'] / 1900000 * 100
+        df_vac_groups[f'Vac Group Risk: Disease {d} Cum %'] = df_vac_groups[f'Vac Group Risk: Disease {d} Cum'] / 5350000 * 100
+        df_vac_groups[f'Vac Group Over 60 {d} Cum %'] = df_vac_groups[f'Vac Group Over 60 {d} Cum'] / 12500000 * 100
+        df_vac_groups[f'Vac Group Remainder to 70% {d} Cum %'] = df_vac_groups[f'Vac Group Risk: Location {d} Cum'] / 28538000 * 100
+        cols2 += [c for c in df_vac_groups.columns if f" {d} Cum %" in c and "Vac Group " in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
         df=df_vac_groups,
@@ -727,7 +729,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
     plot_area(df=df_vac_areas_s1,
-              png_prefix='vac_areas_s1',
+              png_prefix='vac_areas',
               cols_subset=cols,
               title='Thailand Vaccinations Doses by Health District',
               legends=AREA_LEGEND_SIMPLE,
@@ -746,7 +748,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
-              title='Top 5 Provinces for Vaccinations per 100,000',
+              title='Top 5 Provinces for Vaccinations per 100,000 population',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
               )
 
