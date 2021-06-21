@@ -35,8 +35,8 @@ AREA_LEGEND_ORDERED = [
     "8: UpNE: S.Nakhon, Loei, U.Thani, Nong Khai, NBL, Bueng Kan, N.Phanom, Mukdahan",
     "9: LoNE: Korat, Buriram, Surin, Chaiyaphum",
     "10: ENE: Yasothon, Sisaket, Amnat Charoen, Ubon Ratchathani",
-    "11: SE: Phuket, Krabi, Ranong, Phang Nga, S.Thani, Chumphon, N.S.Thammarat",
-    "12: SW: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
+    "11: SW: Phuket, Krabi, Ranong, Phang Nga, S.Thani, Chumphon, N.S.Thammarat",
+    "12: SE: Narathiwat, Satun, Trang, Songkhla, Pattani, Yala, Phatthalung",
     "13: MidC: Bangkok",
 ]
 
