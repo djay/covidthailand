@@ -1052,6 +1052,8 @@ def briefing_province_cases(date, pages):
         text = str(soup)
         if "อโควิดในประเทศรายใหม่" not in text or "รวมท ัง้ประเทศ" in text:
             continue
+        if not re.search("ที่\s*จังหวัด", text):
+            continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
         preamble, *tables = split(parts, re.compile(r"รวม\s*\(ราย\)").search)
