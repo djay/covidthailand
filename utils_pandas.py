@@ -63,16 +63,25 @@ def cum2daily(results):
 
 
 def daily2cum(results):
-    daily = results[(c for c in results.columns if " Cum" in c)]
+    cols = [c for c in results.columns if " Cum" not in c]
+    daily = results[cols]
     names = daily.index.names
+    # bit of a hack.pick first value to fill in the gaps later
+    extra_index = [(n, daily.first_valid_index()[names.index('Province')]) for n in names if n != 'Date']
+
     daily = daily.reset_index().set_index("Date")
     all_days = pd.date_range(daily.index.min(), daily.index.max(), name="Date")
-    daily = daily.reindex(all_days)  # put in missing days with NaN
+    daily = daily.reindex(all_days)
     # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
-    cum = daily.cumsum()  # we got cumilitive data
+    cum = daily[cols].fillna(0).cumsum()  # we got cumilitive data
     renames = dict((c, c + ' Cum') for c in list(cum.columns))
     cum = cum.rename(columns=renames)
-    return cum.reset_index().set_index(names)
+    # Add back in the extra index.
+    cum = cum.assign(**dict([(n, daily[n].fillna(value)) for n, value in extra_index]) )
+    # what about gaps in province names?
+
+    cum = cum.reset_index().set_index(names)
+    return cum[cum.columns]
 
 
 def human_format(num: float, pos: int) -> str:

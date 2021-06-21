@@ -1807,9 +1807,8 @@ def get_vaccinations():
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
-    vaccum = vacct.groupby("Province").apply(lambda pdf: daily2cum(pdf))
-    vaccum.columns = [c + " Cum" for c in vaccum.columns]
-    vacct = vacct.combine_first(vaccum)
+    vaccum = vacct.groupby(level="Province", as_index=False).apply(lambda pdf: daily2cum(pdf))
+    vacct = vacct.combine_first(vaccum.droplevel(0))
 
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
