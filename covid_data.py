@@ -661,6 +661,7 @@ def get_cases_by_demographics_api():
 
 UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
+MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19 📆")
 
 
 def parse_official_tweet(df, date, text):
@@ -697,15 +698,36 @@ def parse_official_tweet(df, date, text):
 
 
 def parse_unofficial_tweet(df, date, text):
+    if not MOPH_TWEET.search(text):
+        return df
     deaths, _ = get_next_number(text, "deaths", before=True)
     cases, _ = get_next_number(text, "cases", before=True)
     prisons, _ = get_next_number(text, "prisons", before=True)
     if any_in([None], deaths, cases):
-        return df
+        raise Exception(f"Can't parse tweet {date} {text}")
     cols = ["Date", "Deaths", "Cases", "Cases Area Prison"]
     row = [date, deaths, cases, prisons]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
     print(date, "Breaking:", tdf.to_string(index=False, header=False))
+    return df.combine_first(tdf)
+
+
+def parse_moph_tweet(df, date, text):
+    cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
+    prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
+    recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
+    deaths, _ = get_next_number(text, "เสียชีวิต", "เสียชีวิต", until="ราย")
+
+    if any_in([None], deaths, cases):
+        raise Exception(f"Can't parse tweet {date} {text}")
+    numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่") # TODO: test len to make sure we didn't miss something
+
+    if any_in([None], prisons, recovered):
+        pass
+    cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Recovered"]
+    row = [date, deaths, cases, prisons, recovered]
+    tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+    print(date, "Moph:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
@@ -765,6 +787,7 @@ def get_cases_by_prov_tweets():
     # old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
     unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
+    thaimoph = get_tweets_from(2789900497, d("2021-06-18"), None, MOPH_TWEET)
     officials = {}
     provs = {}
     breaking = {}
@@ -785,6 +808,11 @@ def get_cases_by_prov_tweets():
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
+
+    for date, tweets in sorted(thaimoph.items(), reverse=True):
+        for tweet in tweets:
+            df = df.pipe(parse_moph_tweet, date, tweet)
+
 
     for date, text in sorted(officials.items(), reverse=True):
         df = df.pipe(parse_official_tweet, date, text)
