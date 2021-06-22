@@ -486,7 +486,7 @@ def get_case_details_csv():
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     # ensure csv is first pick but we can handle either if one is missing
     links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
-    file, _ = next(web_files(next(iter(links)), dir="json", check=False))
+    file, _ = next(web_files(next(iter(links)), dir="json", check=True))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
@@ -496,7 +496,8 @@ def get_case_details_csv():
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
-    print("Covid19daily", file, cases.reset_index().iloc[-1].to_string(header=False, index=False))
+    cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
+    print("Covid19daily: ", file, cases.last_valid_index())
     return cases
 
 
@@ -2037,6 +2038,7 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        cases_demo = get_cases_by_demographics_api()
         vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         situation = get_situation()
@@ -2044,7 +2046,6 @@ def scrape_and_combine():
         tests_reports = get_test_reports()
         cases = get_cases()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
-        cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()
