@@ -99,6 +99,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install ghostscript python3-tk
           pip install -r requirements.txt
+        env:
+          TIKA_VERSION = 1.23 # Prevent delays in upgrades
       # - name: Check for updated data
       #   if: ${{ github.event_name	== 'schedule' }}
       #   run: |
