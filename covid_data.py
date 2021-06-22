@@ -1670,7 +1670,7 @@ def vaccination_daily(daily, date, file, page):
     daily = daily.combine_first(df)
 
     d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", "รับวัคซีนเข็มท่ี 1 จํานวน", until="2 เข็ม")
-    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until="รำย ดังรูป")
+    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until="ดังรูป")
 
     # get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
     # medical, _ = get_next_number(text, "เป็นบุคลำกรทำงกำรแพทย์", "คลำกรทำงกำรแพทย์", until="รำย")
@@ -1679,21 +1679,22 @@ def vaccination_daily(daily, date, file, page):
     # chronic, _ = get_next_number(text, "บุคคลที่มีโรคประจ", until="รำย")
     # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
 
-    for dose, numbers in enumerate([d1_num, d2_num], 1):
-        if len(numbers) != 6 or not re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว)", rest):
-            total, *_ = numbers
-            df = pd.DataFrame([[date, total]], columns=[
-                "Date",
-                f"Vac Given {dose} Cum",
-            ]).set_index("Date")
-            daily = daily.combine_first(df)
+    for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2)]:
+        if len(numbers) != 7 or not re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว)", rest):
+            if numbers:
+                total, *_ = numbers
+                df = pd.DataFrame([[date, total]], columns=[
+                    "Date",
+                    f"Vac Given {dose} Cum",
+                ]).set_index("Date")
+                daily = daily.combine_first(df)
             continue
 
         total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
         assert sixty == 60
         row = [medical, frontline, over60, chronic, area]
         assert not any_in(row, None)
-        assert 0.99 <= (sum(row) / total) <= 1.0
+        assert 0.99 <= (sum(row) / total) <= 1.01
         df = pd.DataFrame([[date, total] + row],
                           columns=[
                               "Date",
@@ -2036,9 +2037,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         situation = get_situation()
-        vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         cases = get_cases()
