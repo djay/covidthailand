@@ -21,13 +21,13 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 # Cases
 
-## Cases vs Estimated Infections based on Deaths
+## Unoffcial Estimated Infections based on Deaths/IFR
 
-![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
+![Estimated Infections Thailand](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
-- Consider this a **lower estimate** as there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths. See my analysis for more details: [Are there are a lot more infections than confirmed cases?](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases)
-- Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
-  and applies it to Thailand province demographics to get an Infection Fatality Rate (IFR) per province. Each death (-11 days) / Province IFR is an estimate of infections that would lead to the recorded deaths. 11 Days is the median days from infection to death reported by MOPH.
+- Due to the Asymptomatic nature of Covid all countries have more infections than are confirmed.
+- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for thailand) gives a simple estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths, or lower.
+- This doesn't mean there is not enough testing being done in Thailand. [Positive rate](#positive-rate) is a better indication of testing effectiveness.
 - [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)), [IHME Covid Model](https://covid19.healthdata.org/thailand) 
 ([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) does more detailed
   (higher) estimates includeing uncertainty and future predictions of cases/death/hospitalisation. 
