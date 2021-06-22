@@ -65,6 +65,8 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
 
+![Cases by Contact](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
+
 - Grouped from original data which has over 70 risk categories. Clusters have
   been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
 - Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to separate out SS cluster cases
@@ -72,6 +74,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 - Risk is most likely determined as part of the PUI criteria process?
 - [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 
 ## Cases by Age
 ![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)

@@ -587,7 +587,7 @@ def get_cases_by_demographics_api():
         42: 'Cluster The Lounge Salaya:Entertainment',
         43: 'Cluster ชลบุรี โรงเบียร์ 90:Entertainment',
         44: 'Cluster โรงงาน standard can:Work',
-        45: 'Cluster ตราด:Community',  # Trat?
+        45: 'Cluster ตราด :Community',  # Trat?
         46: 'Cluster สถานบันเทิงย่านทองหล่อ:Entertainment',
         47: 'ไปยังพื้นที่ที่มีการระบาด:Community',
         48: 'Cluster สมุทรสาคร:Work',  # Samut Sakhon
@@ -636,7 +636,47 @@ def get_cases_by_demographics_api():
         20210531.3: 'Cluster ตราด:Community',
         20210531.4: 'ผู้ที่เดินทางมาจากต่างประเทศ และเข้า AOQ:Imported',
         20210531.5: 'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community',
-        20210531.6: 'Cluster กรุงเทพมหานคร. คลองเตย:Community'
+        20210531.6: 'Cluster กรุงเทพมหานคร. คลองเตย:Community',
+        20210622.0: 'อยู่ระหว่างการสอบสวน\n:Investigating',
+        20210622.1: 'Cluster ตราด:Community',
+        20210622.2: "สัมผัสผู้ป่วยยืนยัน \n อยู่ระหว่างสอบสวน:Contact",
+        20210622.3: "ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร.:Community",
+        20210622.4: "อาศัย/เดินทางไปในพื้นที่ที่มีการระบาด:Community",
+        20210622.5: "อยุ่ระหว่างสอบสวน:Unknown",
+        20210622.6: "สัมผัสผู้ป่วยยืนยัน อยุ๋ระหว่างสอบสวน:Contact",
+        20210622.7: "สัมผัสผู้ติดเชื้อยืนยัน\nอยู่ระหว่างสอบสวน:Contact",
+        20210622.8: "ระหว่างการสอบสวนโรค:Investigating",
+        20210622.9: "ปอดอักเสบ Pneumonia:Pneumonia",
+        20210622.01: "Cluster ตลาดบางแค:Community",
+        20210622.11: "คนไทยเดินทางมาจากต่างประเทศ:Imported",
+        20210622.12: "คนไทยมาจากพื้นที่เสี่ยง:Community",
+        20210622.13: "cluster ชลบุรี\n(อยู่ระหว่างการสอบสวน):Investigating",
+        20210622.14: "Cluster โรงงาน  Big Star:Work",
+        20210622.15: "Cluster สมุทรปราการ ตลาดเคหะบางพลี:Work",
+        20210622.16: "Cluster ระยอง วิริยะประกันภัย:Work",
+        20210622.17: "Cluster ตลาดบางแค/คลองขวาง:Work",
+        20210622.18: "เดินทางมาจากพื้นที่มีการระบาดของโรค:Community",
+        20210622.19: "Cluster งานมอเตอร์ โชว์:Community",
+        20210622.02: "ทัณฑสถาน/เรือนจำ:Prison",
+        20210622.21: "สถานที่ทำงาน:Work",
+        20210622.22: "รอประสาน:Unknown",
+        20210622.23: "ผู้ติดเชื้อในประเทศ:Contact",
+        20210622.24: "ค้นหาเชิงรุก:Proactive Search",
+        20210622.25: "Cluster ทัณฑสถานโรงพยาบาลราชทัณฑ์:Prison",
+        20210622.26: "2.สัมผัสผู้ติดเชื้อ:Contact",
+        20210622.27: "Cluster ระยอง:Community",
+        20210622.28: "ตรวจสุขภาพแรงงานต่างด้าว:Work",
+        20210622.29: "สัมผัสในสถานพยาบาล:Work", # contact in hospital
+        20210622.03: "ไปเที่ยวสถานบันเทิงในอุบลที่พบการระบาดของโรค Ubar:Entertainment",
+        20210622.31: "ไปสถานที่เสี่ยง เช่น ตลาด สถานที่ชุมชน:Community",
+        20210622.32: "Cluster ทัณฑสถานหญิงกลาง:Prison",
+        20210622.33: "ACF สนามกีฬาไทย-ญี่ปุ่น:Entertainment",
+        20210622.34: "ACF สีลม:Entertainment",
+        20210622.35: "ACF รองเมือง:Entertainment",
+        20210622.36: "ACF สนามกีฬาธูปะเตมีย์:Entertainment",
+        20210622.37: "Cluster ห้างแสงทอง (สายล่าง):Community",
+        20210622.38: "Cluster ทันฑสถานบำบัดพิเศษกลาง:Community",
+        
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -644,15 +684,26 @@ def get_cases_by_demographics_api():
     risks = pd.DataFrame(risks.items(), columns=[
                          "risk", "risk_group"]).set_index("risk")
     cases_risks, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
-    matched = cases_risks[["risk", "risk_group"]]
-    case_risks = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
-    case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
     # dump mappings to file so can be inspected
+    matched = cases_risks[["risk", "risk_group"]]
     export(matched.value_counts().to_frame("count"), "risk_groups", csv_only=True)
     export(unmatched, "risk_groups_unmatched", csv_only=True)
 
-    return case_risks.combine_first(case_ages)
+    case_risks_daily = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
+    case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
+
+    cases_risks['Province'] = cases_risks['province_of_onset']
+    risks_prov = join_provinces(cases_risks, 'Province')
+    risks_prov = risks_prov.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
+    risks_prov = risks_prov.reset_index()
+    risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
+                             columns=risks_prov["risk_group"],
+                             values=risks_prov['Cases'],
+                             aggfunc="sum")
+    risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
+
+    return case_risks_daily.combine_first(case_ages), risks_prov
 
 
 ##################################
@@ -1419,6 +1470,7 @@ def get_cases_by_prov_briefings():
 
 
 def get_cases_by_area_type():
+    cases_demo, risks_prov = get_cases_by_demographics_api()
     dfprov, twcases = get_cases_by_prov_tweets()
     briefings, cases = get_cases_by_prov_briefings()
     cases = cases.combine_first(twcases)
@@ -1427,6 +1479,10 @@ def get_cases_by_area_type():
     # dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
     dfprov = join_provinces(dfprov, on="Province")
     # Now we can save raw table of provice numbers
+
+    dfprov = dfprov.combine_first(risks_prov)
+    cases = cases.combine_first(cases_demo)
+
     export(dfprov, "cases_by_province")
 
     # Reduce down to health areas
@@ -2038,9 +2094,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        cases_demo = get_cases_by_demographics_api()
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
@@ -2050,7 +2105,6 @@ def scrape_and_combine():
     else:
         cases_by_area = get_cases_by_area()
         situation = get_situation()
-        cases_demo = get_cases_by_demographics_api()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
@@ -2059,7 +2113,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'cases', 'situation', 'tests_reports', 'tests', 'cases_demo', 'vac']:
+    for f in ['cases_by_area', 'cases', 'situation', 'tests_reports', 'tests', 'vac']:
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
