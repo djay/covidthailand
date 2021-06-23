@@ -104,13 +104,10 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=
 
     unmatched_counts = pd.DataFrame()
     if return_unmatched and not unmatched.empty:
-        to_keep = [
-            test, replace_on_with] if replace_on_with is not None else [test]
-        # unmatched_counts = unmatched[[on]].join(
-        #     second[to_keep]).value_counts().reset_index().rename(columns={0: "count"})
-        #unmatched_counts = unmatched[[on]].join(second.set_index(on)[to_keep], on=on).value_counts().to_frame("count")
-        mapping = second[[on]+to_keep].value_counts().to_frame("Count")
-        unmatched_counts = unmatched[[on]].join(mapping.reset_index().set_index(on)[to_keep], on=on, how="outer").groupby([on]+to_keep, dropna=False).count()
+        to_keep = [test, replace_on_with] if replace_on_with is not None else [test]
+        counts = unmatched.reset_index()[on].value_counts().to_frame('count')
+        guessed = second[[on] + to_keep].set_index(on)
+        unmatched_counts = counts.join(guessed).reset_index().rename(columns=dict(index=on))
 
     if replace_on_with is not None:
         second[on] = second[replace_on_with]
