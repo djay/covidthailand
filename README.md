@@ -25,14 +25,15 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Estimated Infections Thailand](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
-- Due to the Asymptomatic nature of Covid all countries have more infections than are confirmed.
-- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for thailand) gives a simple estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths, or lower.
-- This doesn't mean there is not enough testing being done in Thailand. [Positive rate](#positive-rate) is a better indication of testing effectiveness.
-- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)), [IHME Covid Model](https://covid19.healthdata.org/thailand) 
-([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) does more detailed
-  (higher) estimates includeing uncertainty and future predictions of cases/death/hospitalisation. 
-  [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
-  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
+- Due to the Asymptomatic nature of Covid all countries have more infections than can be confirmed via testing.
+- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for thailand) gives an estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths.
+- This doesn't mean there is not enough testing being done in Thailand. [Positive rate](#positive-rate) is another indication of testing effectiveness.
+- More detail models with predictions that take into account factors like [Goggle mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) to predict infections based on adherence to social distancing measures.
+   - [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)), 
+   - [IHME Covid Model](https://covid19.healthdata.org/thailand) 
+([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) 
+   - [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
+   - [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
 - Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 ## Cases by Health District
@@ -370,6 +371,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-06-22 - Add trending provinces for contact cases
 - 2021-06-12 - Add vacination daily and improve cumulative vaccinations
 - 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
 - 2021-06-30 - death reasons and hospitalisation critical plots
