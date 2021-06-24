@@ -809,29 +809,29 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Provinces with Most Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
-    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Contact"].rolling(7).mean().rolling(7).apply(trendline)
+    # def increasing(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Contact"].rolling(7).mean().rolling(7).apply(trendline)
 
-    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Contact"].rolling(7).mean()
+    # def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Contact"].rolling(7).mean()
 
-    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
-    cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_contact_increasing', cols_subset=cols,
-              title='Contact Cases Provinces Trending up\n (using 7 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+    # top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5, png_prefix='cases_contact_increasing', cols_subset=cols,
+    #           title='Contact Cases Provinces Trending up\n (using 7 days rolling average)',
+    #           kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
-    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Proactive Search"].rolling(7).mean().rolling(7).apply(trendline)
+    # def increasing(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Proactive Search"].rolling(7).mean().rolling(7).apply(trendline)
 
-    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Proactive Search"].rolling(7).mean()
+    # def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Proactive Search"].rolling(7).mean()
 
-    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
-    cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_proactive_increasing', cols_subset=cols,
-              title='Proactive Cases Provinces Trending up\n (using 7 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+    # top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5, png_prefix='cases_proactive_increasing', cols_subset=cols,
+    #           title='Proactive Cases Provinces Trending up\n (using 7 days rolling average)',
+    #           kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
     # TODO: work out based on districts of deaths / IFR for that district
     ifr = get_ifr()
