@@ -12,7 +12,7 @@ import pandas as pd
 
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, get_cycle, human_format, import_csv, rearrange, topprov, trendline
+from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, rearrange, topprov, trendline, value_ma
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
@@ -777,61 +777,72 @@ def save_plots(df: pd.DataFrame) -> None:
     # Cases by provinces
     #######################
 
-    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases"].rolling(3).mean().rolling(3).apply(trendline)
-
-    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases"].rolling(3).mean()
-
-    def decreasing(adf: pd.DataFrame) -> pd.DataFrame:
-        return 1 / increasing(adf)
-
-    def cases_ma_7(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases"]
 
     cases = import_csv("cases_by_province").set_index(["Date", "Province"])
 
-    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    top5 = cases.pipe(topprov,
+                      increasing("Cases", 3),
+                      value_ma("Cases", 3),
+                      name="Province Cases (3d MA)",
+                      other_name=None,
+                      num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_prov_increasing', cols_subset=cols,
+    plot_area(df=top5,
+              png_prefix='cases_prov_increasing',
+              cols_subset=cols,
               title='Provinces with Cases Trending Up\nin last 30 days (using 3 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+              kind='line',
+              stacked=False,
+              percent_fig=False,
+              ma_days=None,
+              cmap='tab10')
 
-    top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    top5 = cases.pipe(topprov,
+                      decreasing("Cases", 3),
+                      value_ma("Cases", 3),
+                      name="Province Cases (3d MA)",
+                      other_name=None,
+                      num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_prov_decreasing', cols_subset=cols,
+    plot_area(df=top5,
+              png_prefix='cases_prov_decreasing',
+              cols_subset=cols,
               title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+              kind='line',
+              stacked=False,
+              percent_fig=False,
+              ma_days=None,
+              cmap='tab10')
 
-    top5 = cases.pipe(topprov, cases_ma_7, name="Province Cases", other_name="Other Provinces", num=6)
+    top5 = cases.pipe(topprov, value_ma("Cases", 7), name="Province Cases", other_name="Other Provinces", num=6)
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_prov_top', cols_subset=cols,
+    plot_area(df=top5,
+              png_prefix='cases_prov_top',
+              cols_subset=cols,
               title='Provinces with Most Cases',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+              kind='line',
+              stacked=False,
+              percent_fig=False,
+              ma_days=None,
+              cmap='tab10')
 
-    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Contact"].rolling(7).mean().rolling(7).apply(trendline)
-
-    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Contact"].rolling(7).mean()
-
-    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
-    cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_contact_increasing', cols_subset=cols,
-              title='Contact Cases Provinces Trending up\n (using 7 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
-
-    def increasing(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Proactive Search"].rolling(7).mean().rolling(7).apply(trendline)
-
-    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases Risk: Proactive Search"].rolling(7).mean()
-
-    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
-    cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_proactive_increasing', cols_subset=cols,
-              title='Proactive Cases Provinces Trending up\n (using 7 days rolling average)',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+    for risk in ['Contact', 'Proactive Search', 'Community', 'Work']:
+        top5 = cases.pipe(topprov,
+                          increasing(f"Cases Risk: {risk}", 5),
+                          value_ma(f"Cases Risk: {risk}", 0),
+                          name=f"Province Cases {risk} (7d MA)",
+                          other_name=None,
+                          num=7)
+        cols = top5.columns.to_list()
+        plot_area(df=top5,
+                  png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing',
+                  cols_subset=cols,
+                  title=f'{risk} Case Provinces Trending up\n (using 7 days rolling average)',
+                  kind='line',
+                  stacked=False,
+                  percent_fig=False,
+                  ma_days=7,
+                  cmap='tab10')
 
     # TODO: work out based on districts of deaths / IFR for that district
     ifr = get_ifr()

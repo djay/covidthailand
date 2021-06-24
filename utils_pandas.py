@@ -141,16 +141,37 @@ def export(df, name, csv_only=False):
     )
 
 
-def import_csv(name, index=None):
+def import_csv(name, index=None, return_empty=False):
     path = os.path.join("api", f"{name}.csv")
-    if not os.path.exists(path):
-        return None
+    if not os.path.exists(path) or return_empty:
+        return pd.DataFrame(columns=index).set_index(index)
+    print("Importing CSV:", path)
     old = pd.read_csv(path)
     old['Date'] = pd.to_datetime(old['Date'])
     if index:
         return old.set_index(index)
     else:
         return old
+
+
+def increasing(col, ma=3):
+    def increasing_func(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf[col].rolling(ma, min_periods=1).mean().rolling(ma, min_periods=1).apply(trendline)
+    return increasing_func
+
+
+def decreasing(col, ma=3):
+    inc_func = increasing(col, ma)
+
+    def decreasing_func(adf: pd.DataFrame) -> pd.DataFrame:
+        return 1 / inc_func(adf)
+    return decreasing_func
+
+
+def value_ma(col, ma=3):
+    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+        return adf["Cases"].rolling(3).mean()
+    return cases_ma
 
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
