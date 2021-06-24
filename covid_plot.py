@@ -699,8 +699,14 @@ def save_plots(df: pd.DataFrame) -> None:
             df[c.replace("1", "Only 1")] = df[c] - df[c.replace("1", "2")]
             cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
 
-    cols = cols + lines
-    cols = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
+
+    cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
+    cols_cum = cols_cum + lines
+
+    df_vac_groups = df['2021-02-16':][cols_cum].interpolate(limit_area="inside")
+    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
+    df_vac_groups = df_vac_groups.cummin()  # get rid of the corrections
+    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
 
     def clean_vac_leg(c):
         return c.replace(' Cum', ''
@@ -712,16 +718,16 @@ def save_plots(df: pd.DataFrame) -> None:
     # cols.sort(key=lambda c: clean_vac_leg(c)[-1] + clean_vac_leg(c))  # put 2nd shot at end
 
     # TODO: get paired colour map and use do 5 + 5 pairs
-    legends = [clean_vac_leg(c) for c in cols]
-    df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
-    plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
+    legends = [clean_vac_leg(c) for c in cols_cum]
+
+    plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
               between=lines,
               y_formatter=thaipop)
 
-    df_vac_groups = df['2021-02-16':][groups].interpolate(limit_area="inside")
-    vac_daily = cum2daily(df_vac_groups[groups])
+    #df_vac_groups = df['2021-02-16':][groups].interpolate(limit_area="inside")
+    vac_daily = cum2daily(df_vac_groups[cols])
     cols = rearrange(vac_daily.columns, 1, 2, 3, 4, 9, 10, 7, 8, )
     # cols = [c for c in vac_daily.columns if c != "Allocated Vaccines"]
     legends = [clean_vac_leg(c) for c in cols]
