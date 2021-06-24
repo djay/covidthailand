@@ -676,7 +676,7 @@ def get_cases_by_demographics_api():
         20210622.36: "ACF สนามกีฬาธูปะเตมีย์:Entertainment",
         20210622.37: "Cluster ห้างแสงทอง (สายล่าง):Community",
         20210622.38: "Cluster ทันฑสถานบำบัดพิเศษกลาง:Community",
-        
+
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -1398,6 +1398,7 @@ def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
+    vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
@@ -1417,6 +1418,8 @@ def get_cases_by_prov_briefings():
         prov = briefing_province_cases(date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
+        for i, page in enumerate(pages):
+            vac_prov = vac_briefing_provs(vac_prov, date, file, page)
 
         wrong_deaths_report = date in [
             d("2021-03-19"),  # 19th was reported on 18th
@@ -1691,6 +1694,35 @@ def get_test_reports():
 ################################
 # Vaccination reports
 ################################
+
+# vac given table
+# <p>สรุปการฉดีวัคซีนโควิด 19 ตัง้แตว่ันที่ 7 มิถุนายน 2564
+# ผลการใหบ้ริการ ณ วนัที ่23 มิถุนายน 2564 เวลา 18.00 น.
+
+def vac_briefing_provs(df, date, file, page):
+    text = page.get_text()
+    if "ความครอบคลุมการรับบริการวัคซีนโควิด 19" not in text:
+        return df
+
+    pre, table = text.split("กรุงเทพมหานคร และ ปริมณฑล", 1)
+    lines = re.split(r"([\u0E00-\u0E7F \(\)\*]+(?:[0-9,\. ]+)+)", text)
+    lines = [li.strip() for li in lines if li.strip()]
+    *pre, table = split(lines, re.compile("ความครอบคลุม").search)
+    rows = []
+    for line in table:
+        prov = re.search(r"[\u0E00-\u0E7F]+", line)
+        numbers, _ = get_next_numbers(line, "", ints=False)
+        if prov:
+            prov = get_province(prov.group(0), ignore_error=True)
+        if not prov or len(numbers) != 5:
+            continue
+        total, dose1, perc1, dose2, perc2 = numbers
+        rows.append([date, prov, total, dose1, dose2])
+
+    return df.combine_first(
+        pd.DataFrame(rows, columns=["Date", "Province", "Vac Given Cum", "Vac Given 1 Cum",
+                                    "Vac Given 2 Cum"]).set_index(["Date", "Province"]))
+
 
 def vac_problem(daily, date, file, page):
     if "Anaphylaxis" not in page:
