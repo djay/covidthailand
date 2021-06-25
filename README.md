@@ -150,7 +150,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
-![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_3.png)
+![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 

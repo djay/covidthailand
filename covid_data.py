@@ -1704,7 +1704,6 @@ def vac_briefing_provs(df, date, file, page):
     if "ความครอบคลุมการรับบริการวัคซีนโควิด 19" not in text:
         return df
 
-    #pre, table = text.split("กรุงเทพมหานคร และ ปริมณฑล", 1)
     lines = re.split(r"([\u0E00-\u0E7F \(\)\*]+(?:[0-9,\. ]+)+)", text)
     lines = [li.strip() for li in lines if li.strip()]
     *pre, table = split(lines, re.compile("ความครอบคลุม").search)
