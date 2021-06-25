@@ -494,7 +494,7 @@ def get_case_details_csv():
     else:
         raise Exception(f"Unknown filetype for covid19daily {file}")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
-    cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
+    cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
     print("Covid19daily: ", file, cases.last_valid_index())
@@ -1017,6 +1017,7 @@ def briefing_case_detail(date, pages):
 
 def briefing_case_types(date, pages):
     rows = []
+    vac_rows = []
     if date < d("2021-02-01"):
         pages = []
     for i, soup in enumerate(pages):
@@ -1077,6 +1078,16 @@ def briefing_case_types(date, pages):
         if date > d("2021-04-23"):
             assert not any_in([None], hospital, field, severe, respirator, hospitalised)
 
+        # Vaccines
+        numbers, _ = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
+        if numbers:
+            vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum, *_ = numbers
+            vac_rows.append([date - datetime.timedelta(days=1), vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum])
+        elif date < d("2021-5-18"):
+            vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum = [None] * 4
+        else:
+            assert numbers
+
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
         # north, _ = get_next_number(text, "ภาคเหนือ")
@@ -1117,6 +1128,7 @@ def briefing_case_types(date, pages):
         "Recovered",
         "Deaths",
     ]).set_index(['Date'])
+    df = df.combine_first(pd.DataFrame(vac_rows, columns=["Date", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2", "Vac Given 2 Cum"]).set_index("Date"))
     if not df.empty:
         print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
@@ -1421,19 +1433,20 @@ def get_cases_by_prov_briefings():
         for i, page in enumerate(pages):
             vac_prov = vac_briefing_provs(vac_prov, date, file, page)
 
-        wrong_deaths_report = date in [
-            d("2021-03-19"),  # 19th was reported on 18th
-            d("2021-03-18"),
-            d("2021-03-17"),  # 15th and 17th no details of death
-            d("2021-03-15"),
-            d("2021-02-24"),  # 02-24 infographic is image
-            d("2021-02-19"),  # 02-19 death deatils is graphic (the doctor)
-            d("2021-02-15"),  # no details of deaths (2)
-            d("2021-02-10"),  # no details of deaths (1)
-        ] or date < d("2021-02-01")  # TODO: check out why later
-        ideaths, ddeaths = today_types['Deaths'], death_sum['Deaths']
-        assert wrong_deaths_report or (ddeaths == ideaths).all(
-        ), f"Death details {ddeaths} didn't match total {ideaths}"
+        if not today_types.empty:
+            wrong_deaths_report = date in [
+                d("2021-03-19"),  # 19th was reported on 18th
+                d("2021-03-18"),
+                d("2021-03-17"),  # 15th and 17th no details of death
+                d("2021-03-15"),
+                d("2021-02-24"),  # 02-24 infographic is image
+                d("2021-02-19"),  # 02-19 death deatils is graphic (the doctor)
+                d("2021-02-15"),  # no details of deaths (2)
+                d("2021-02-10"),  # no details of deaths (1)
+            ] or date < d("2021-02-01")  # TODO: check out why later
+            ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
+                death_sum.last_valid_index()]['Deaths']
+            assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
