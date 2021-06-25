@@ -701,8 +701,11 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df_vac_groups.cummin()  # get rid of the corrections
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
 
-    # TODO: instead of interpolate, adjust using ratios against the daily total vaccines given
-    # TODO: parse official daily vaccines given
+    # TODO: instead of interpolate, adjust using ratios against the daily total vaccines given. 
+    # Example is report 2021-06-21 report missing so total is higher than expected
+    # Alternative is nuke those days and show as unknown.
+
+    # TODO: replace allocated with vaccines remaining (+ vaccines given)
 
     # TODO: get value directly and only add missing via this method
     df_vac_groups['Vac Given Cum'] = df_vac_groups['Vac Given 1 Cum'] + df_vac_groups['Vac Given 2 Cum']
@@ -735,7 +738,9 @@ def save_plots(df: pd.DataFrame) -> None:
     #df_vac_groups = df['2021-02-16':][groups].interpolate(limit_area="inside")
     vac_daily = cum2daily(df_vac_groups[groups + ['Vac Given Cum']])
     cols = rearrange(vac_daily.columns, 2, 1, 4, 3, 10, 9, 8, 7, )
-    cols = [c for c in cols if c != 'Vac Given']
+    # bring in any daily figures we might have collected first
+    vac_daily = df[[c for c in cols if c in df.columns]].combine_first(vac_daily)
+    cols = [c for c in cols if c != 'Vac Given']  # Keep for unknown
     # cols = [c for c in vac_daily.columns if c != "Allocated Vaccines"]
     legends = [clean_vac_leg(c) for c in cols]
     plot_area(
