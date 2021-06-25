@@ -164,7 +164,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         0).reset_index().set_index("Date")
 
     # = metricfunc(df)
-    last_day = with_metric.loc[with_metric.last_valid_index()]
+    last_day = with_metric.loc[with_metric.dropna().last_valid_index()]
     top5 = last_day.nlargest(num, 0).reset_index()
     # sort data into top 5 + rest
     top5[name] = top5['Province']
