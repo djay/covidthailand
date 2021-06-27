@@ -133,10 +133,10 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=
 
     unmatched_counts = pd.DataFrame()
     if return_unmatched and not unmatched.empty:
-        to_keep = [
-            test, replace_on_with] if replace_on_with is not None else [test]
-        unmatched_counts = unmatched[[on]].join(
-            second[to_keep]).value_counts().reset_index().rename(columns={0: "count"})
+        to_keep = [test, replace_on_with] if replace_on_with is not None else [test]
+        counts = unmatched.reset_index()[on].value_counts().to_frame('count')
+        guessed = second[[on] + to_keep].set_index(on)
+        unmatched_counts = counts.join(guessed).reset_index().rename(columns=dict(index=on))
 
     if replace_on_with is not None:
         second[on] = second[replace_on_with]
@@ -193,7 +193,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         0).reset_index().set_index("Date")
 
     # = metricfunc(df)
-    last_day = with_metric.loc[with_metric.last_valid_index()]
+    last_day = with_metric.loc[with_metric.dropna().last_valid_index()]
     top5 = last_day.nlargest(num, 0).reset_index()
     # sort data into top 5 + rest
     top5[name] = top5['Province']

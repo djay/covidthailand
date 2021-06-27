@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
 import requests
+from requests.exceptions import Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
@@ -191,7 +192,10 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
     "if check is None, then always download"
     i = 0
     for url in urls:
-        modified = s.head(url).headers.get("Last-Modified") if check or MAX_DAYS else None
+        try:
+            modified = s.head(url, timeout=1).headers.get("Last-Modified") if check or MAX_DAYS else None
+        except (Timeout, ConnectionError):
+            modified = None
         file = sanitize_filename(url.rsplit("/", 1)[-1])
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
@@ -199,8 +203,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
             break
         if is_remote_newer(file, modified, check):
             try:
-                r = s.get(url)
-            except ConnectionError:
+                r = s.get(url, timeout=2)
+            except (Timeout, ConnectionError):
                 r = None
             if r is not None and r.status_code == 200:
                 print(f"Download: {file}", end="")

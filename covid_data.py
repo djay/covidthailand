@@ -201,7 +201,7 @@ def situation_pui(parsed_pdf, date):
 
         pui = {309371: 313813}.get(pui, pui)  # 2020-07-01
         # TODO: find 1529045 below and see which is correct 20201-04-26
-        pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045] else pui2
+        pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780] else pui2
         assert pui == pui2
     else:
         numbers, _ = get_next_numbers(
@@ -488,7 +488,7 @@ def get_case_details_csv():
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     # ensure csv is first pick but we can handle either if one is missing
     links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
-    file, _ = next(web_files(next(iter(links)), dir="json", check=False))
+    file, _ = next(web_files(next(iter(links)), dir="json", check=True))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
@@ -496,9 +496,10 @@ def get_case_details_csv():
     else:
         raise Exception(f"Unknown filetype for covid19daily {file}")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
-    cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True,)
+    cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
-    print("Covid19daily", file, cases.reset_index().iloc[-1].to_string(header=False, index=False))
+    cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
+    print("Covid19daily: ", file, cases.last_valid_index())
     return cases
 
 
@@ -588,7 +589,7 @@ def get_cases_by_demographics_api():
         42: 'Cluster The Lounge Salaya:Entertainment',
         43: 'Cluster ชลบุรี โรงเบียร์ 90:Entertainment',
         44: 'Cluster โรงงาน standard can:Work',
-        45: 'Cluster ตราด:Community',  # Trat?
+        45: 'Cluster ตราด :Community',  # Trat?
         46: 'Cluster สถานบันเทิงย่านทองหล่อ:Entertainment',
         47: 'ไปยังพื้นที่ที่มีการระบาด:Community',
         48: 'Cluster สมุทรสาคร:Work',  # Samut Sakhon
@@ -637,7 +638,47 @@ def get_cases_by_demographics_api():
         20210531.3: 'Cluster ตราด:Community',
         20210531.4: 'ผู้ที่เดินทางมาจากต่างประเทศ และเข้า AOQ:Imported',
         20210531.5: 'ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร:Community',
-        20210531.6: 'Cluster กรุงเทพมหานคร. คลองเตย:Community'
+        20210531.6: 'Cluster กรุงเทพมหานคร. คลองเตย:Community',
+        20210622.0: 'อยู่ระหว่างการสอบสวน\n:Investigating',
+        20210622.1: 'Cluster ตราด:Community',
+        20210622.2: "สัมผัสผู้ป่วยยืนยัน \n อยู่ระหว่างสอบสวน:Contact",
+        20210622.3: "ผู้เดินทางมาจากพื้นที่เสี่ยง กรุงเทพมหานคร.:Community",
+        20210622.4: "อาศัย/เดินทางไปในพื้นที่ที่มีการระบาด:Community",
+        20210622.5: "อยุ่ระหว่างสอบสวน:Unknown",
+        20210622.6: "สัมผัสผู้ป่วยยืนยัน อยุ๋ระหว่างสอบสวน:Contact",
+        20210622.7: "สัมผัสผู้ติดเชื้อยืนยัน\nอยู่ระหว่างสอบสวน:Contact",
+        20210622.8: "ระหว่างการสอบสวนโรค:Investigating",
+        20210622.9: "ปอดอักเสบ Pneumonia:Pneumonia",
+        20210622.01: "Cluster ตลาดบางแค:Community",
+        20210622.11: "คนไทยเดินทางมาจากต่างประเทศ:Imported",
+        20210622.12: "คนไทยมาจากพื้นที่เสี่ยง:Community",
+        20210622.13: "cluster ชลบุรี\n(อยู่ระหว่างการสอบสวน):Investigating",
+        20210622.14: "Cluster โรงงาน  Big Star:Work",
+        20210622.15: "Cluster สมุทรปราการ ตลาดเคหะบางพลี:Work",
+        20210622.16: "Cluster ระยอง วิริยะประกันภัย:Work",
+        20210622.17: "Cluster ตลาดบางแค/คลองขวาง:Work",
+        20210622.18: "เดินทางมาจากพื้นที่มีการระบาดของโรค:Community",
+        20210622.19: "Cluster งานมอเตอร์ โชว์:Community",
+        20210622.02: "ทัณฑสถาน/เรือนจำ:Prison",
+        20210622.21: "สถานที่ทำงาน:Work",
+        20210622.22: "รอประสาน:Unknown",
+        20210622.23: "ผู้ติดเชื้อในประเทศ:Contact",
+        20210622.24: "ค้นหาเชิงรุก:Proactive Search",
+        20210622.25: "Cluster ทัณฑสถานโรงพยาบาลราชทัณฑ์:Prison",
+        20210622.26: "2.สัมผัสผู้ติดเชื้อ:Contact",
+        20210622.27: "Cluster ระยอง:Community",
+        20210622.28: "ตรวจสุขภาพแรงงานต่างด้าว:Work",
+        20210622.29: "สัมผัสในสถานพยาบาล:Work", # contact in hospital
+        20210622.03: "ไปเที่ยวสถานบันเทิงในอุบลที่พบการระบาดของโรค Ubar:Entertainment",
+        20210622.31: "ไปสถานที่เสี่ยง เช่น ตลาด สถานที่ชุมชน:Community",
+        20210622.32: "Cluster ทัณฑสถานหญิงกลาง:Prison",
+        20210622.33: "ACF สนามกีฬาไทย-ญี่ปุ่น:Entertainment",
+        20210622.34: "ACF สีลม:Entertainment",
+        20210622.35: "ACF รองเมือง:Entertainment",
+        20210622.36: "ACF สนามกีฬาธูปะเตมีย์:Entertainment",
+        20210622.37: "Cluster ห้างแสงทอง (สายล่าง):Community",
+        20210622.38: "Cluster ทันฑสถานบำบัดพิเศษกลาง:Community",
+
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -645,15 +686,26 @@ def get_cases_by_demographics_api():
     risks = pd.DataFrame(risks.items(), columns=[
                          "risk", "risk_group"]).set_index("risk")
     cases_risks, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
-    matched = cases_risks[["risk", "risk_group"]]
-    case_risks = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
-    case_risks.columns = [f"Risk: {x}" for x in case_risks.columns]
 
     # dump mappings to file so can be inspected
+    matched = cases_risks[["risk", "risk_group"]]
     export(matched.value_counts().to_frame("count"), "risk_groups", csv_only=True)
     export(unmatched, "risk_groups_unmatched", csv_only=True)
 
-    return case_risks.combine_first(case_ages)
+    case_risks_daily = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
+    case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
+
+    cases_risks['Province'] = cases_risks['province_of_onset']
+    risks_prov = join_provinces(cases_risks, 'Province')
+    risks_prov = risks_prov.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
+    risks_prov = risks_prov.reset_index()
+    risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
+                             columns=risks_prov["risk_group"],
+                             values=risks_prov['Cases'],
+                             aggfunc="sum")
+    risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
+
+    return case_risks_daily.combine_first(case_ages), risks_prov
 
 
 ##################################
@@ -663,6 +715,7 @@ def get_cases_by_demographics_api():
 
 UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
+MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19 📆")
 
 
 def parse_official_tweet(df, date, text):
@@ -699,15 +752,36 @@ def parse_official_tweet(df, date, text):
 
 
 def parse_unofficial_tweet(df, date, text):
+    if not MOPH_TWEET.search(text):
+        return df
     deaths, _ = get_next_number(text, "deaths", before=True)
     cases, _ = get_next_number(text, "cases", before=True)
     prisons, _ = get_next_number(text, "prisons", before=True)
     if any_in([None], deaths, cases):
-        return df
+        raise Exception(f"Can't parse tweet {date} {text}")
     cols = ["Date", "Deaths", "Cases", "Cases Area Prison"]
     row = [date, deaths, cases, prisons]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
     print(date, "Breaking:", tdf.to_string(index=False, header=False))
+    return df.combine_first(tdf)
+
+
+def parse_moph_tweet(df, date, text):
+    cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
+    prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
+    recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
+    deaths, _ = get_next_number(text, "เสียชีวิต", "เสียชีวิต", until="ราย")
+
+    if any_in([None], deaths, cases):
+        raise Exception(f"Can't parse tweet {date} {text}")
+    numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่") # TODO: test len to make sure we didn't miss something
+
+    if any_in([None], prisons, recovered):
+        pass
+    cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Recovered"]
+    row = [date, deaths, cases, prisons, recovered]
+    tdf = pd.DataFrame([row], columns=cols).set_index("Date")
+    print(date, "Moph:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
@@ -767,6 +841,7 @@ def get_cases_by_prov_tweets():
     # old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
     old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
     unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
+    thaimoph = get_tweets_from(2789900497, d("2021-06-18"), None, MOPH_TWEET)
     officials = {}
     provs = {}
     breaking = {}
@@ -787,6 +862,11 @@ def get_cases_by_prov_tweets():
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
+
+    for date, tweets in sorted(thaimoph.items(), reverse=True):
+        for tweet in tweets:
+            df = df.pipe(parse_moph_tweet, date, tweet)
+
 
     for date, text in sorted(officials.items(), reverse=True):
         df = df.pipe(parse_official_tweet, date, text)
@@ -939,6 +1019,7 @@ def briefing_case_detail(date, pages):
 
 def briefing_case_types(date, pages):
     rows = []
+    vac_rows = []
     if date < d("2021-02-01"):
         pages = []
     for i, soup in enumerate(pages):
@@ -998,6 +1079,7 @@ def briefing_case_types(date, pages):
         assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
         if date > d("2021-04-23"):
             assert not any_in([None], hospital, field, severe, respirator, hospitalised)
+
 
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
@@ -1320,6 +1402,7 @@ def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
+    vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
@@ -1339,20 +1422,25 @@ def get_cases_by_prov_briefings():
         prov = briefing_province_cases(date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
+        for i, page in enumerate(pages):
+            text = page.get_text()
+            vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
+            types = vac_briefing_totals(types, date, file, page, text)
 
-        wrong_deaths_report = date in [
-            d("2021-03-19"),  # 19th was reported on 18th
-            d("2021-03-18"),
-            d("2021-03-17"),  # 15th and 17th no details of death
-            d("2021-03-15"),
-            d("2021-02-24"),  # 02-24 infographic is image
-            d("2021-02-19"),  # 02-19 death deatils is graphic (the doctor)
-            d("2021-02-15"),  # no details of deaths (2)
-            d("2021-02-10"),  # no details of deaths (1)
-        ] or date < d("2021-02-01")  # TODO: check out why later
-        ideaths, ddeaths = today_types['Deaths'], death_sum['Deaths']
-        assert wrong_deaths_report or (ddeaths == ideaths).all(
-        ), f"Death details {ddeaths} didn't match total {ideaths}"
+        if not today_types.empty:
+            wrong_deaths_report = date in [
+                d("2021-03-19"),  # 19th was reported on 18th
+                d("2021-03-18"),
+                d("2021-03-17"),  # 15th and 17th no details of death
+                d("2021-03-15"),
+                d("2021-02-24"),  # 02-24 infographic is image
+                d("2021-02-19"),  # 02-19 death deatils is graphic (the doctor)
+                d("2021-02-15"),  # no details of deaths (2)
+                d("2021-02-10"),  # no details of deaths (1)
+            ] or date < d("2021-02-01")  # TODO: check out why later
+            ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
+                death_sum.last_valid_index()]['Deaths']
+            assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
@@ -1392,6 +1480,7 @@ def get_cases_by_prov_briefings():
 
 
 def get_cases_by_area_type():
+    cases_demo, risks_prov = get_cases_by_demographics_api()
     dfprov, twcases = get_cases_by_prov_tweets()
     briefings, cases = get_cases_by_prov_briefings()
     cases = cases.combine_first(twcases)
@@ -1400,6 +1489,10 @@ def get_cases_by_area_type():
     # dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
     dfprov = join_provinces(dfprov, on="Province")
     # Now we can save raw table of provice numbers
+
+    dfprov = dfprov.combine_first(risks_prov)
+    cases = cases.combine_first(cases_demo)
+
     export(dfprov, "cases_by_province")
 
     # Reduce down to health areas
@@ -1669,6 +1762,58 @@ def get_vaccination_coldtraindata(request_json):
             all_prov = all_prov.combine_first(df.set_index(["Date", "Province", "Vaccine"]))
     return all_prov.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
 
+# vac given table
+# <p>สรุปการฉดีวัคซีนโควิด 19 ตัง้แตว่ันที่ 7 มิถุนายน 2564
+# ผลการใหบ้ริการ ณ วนัที ่23 มิถุนายน 2564 เวลา 18.00 น.
+
+
+def vac_briefing_totals(df, date, file, page, text):
+    if not re.search("(รายงานสถานการณ์|ระลอกใหม่ เมษายน ประเทศไทย ตั้งแต่วันที่)", text):
+        return df
+    if not re.search("(ผู้รับวัคซีน|ผูรั้บวัคซีน)", text):
+        return df
+    # Vaccines
+    numbers, _ = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
+    if numbers:
+        vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum, *_ = numbers
+        row = [date - datetime.timedelta(days=1), vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum]
+    # elif date < d("2021-5-18"):
+    #     vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum = [None] * 4
+    #     return df
+    else:
+        #assert numbers
+        return df
+
+    vac = pd.DataFrame([row], columns=["Date", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2", "Vac Given 2 Cum"]).set_index("Date")
+    if not vac.empty:
+        print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
+    df = df.combine_first(vac)
+
+    return df
+
+
+def vac_briefing_provs(df, date, file, page, text):
+    if "ความครอบคลุมการรับบริการวัคซีนโควิด 19" not in text:
+        return df
+
+    lines = re.split(r"([\u0E00-\u0E7F \(\)\*]+(?:[0-9,\. ]+)+)", text)
+    lines = [li.strip() for li in lines if li.strip()]
+    *pre, table = split(lines, re.compile("ความครอบคลุม").search)
+    rows = []
+    for line in table:
+        prov = re.search(r"[\u0E00-\u0E7F]+", line)
+        numbers, _ = get_next_numbers(line, "", ints=False)
+        if prov:
+            prov = get_province(prov.group(0), ignore_error=True)
+        if not prov or len(numbers) != 5:
+            continue
+        total, dose1, perc1, dose2, perc2 = numbers
+        rows.append([date, prov, total, dose1, dose2])
+
+    return df.combine_first(
+        pd.DataFrame(rows, columns=["Date", "Province", "Vac Given Cum", "Vac Given 1 Cum",
+                                    "Vac Given 2 Cum"]).set_index(["Date", "Province"]))
+
 
 def vac_problem(daily, date, file, page):
     if "Anaphylaxis" not in page:
@@ -1693,8 +1838,8 @@ def vaccination_daily(daily, date, file, page):
 
     alloc_sv, rest = get_next_number(page, "Sinovac", until="โดส")
     alloc_az, rest = get_next_number(page, "AstraZeneca", until="โดส")
-    #alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
-    #assert alloc_total == alloc_sv + alloc_az
+    # alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
+    # assert alloc_total == alloc_sv + alloc_az
     row = [date, alloc_sv, alloc_az]
     assert not any_in(['None'], row)
     df = pd.DataFrame([row], columns=[
@@ -1705,7 +1850,7 @@ def vaccination_daily(daily, date, file, page):
     daily = daily.combine_first(df)
 
     d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", "รับวัคซีนเข็มท่ี 1 จํานวน", until="2 เข็ม")
-    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until="รำย ดังรูป")
+    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until="ดังรูป")
 
     # get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", until="ได้รับวัคซีน 2 เข็ม")
     # medical, _ = get_next_number(text, "เป็นบุคลำกรทำงกำรแพทย์", "คลำกรทำงกำรแพทย์", until="รำย")
@@ -1714,21 +1859,22 @@ def vaccination_daily(daily, date, file, page):
     # chronic, _ = get_next_number(text, "บุคคลที่มีโรคประจ", until="รำย")
     # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
 
-    for dose, numbers in enumerate([d1_num, d2_num], 1):
-        if len(numbers) != 6 or not re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว)", rest):
-            total, *_ = numbers
-            df = pd.DataFrame([[date, total]], columns=[
-                "Date",
-                f"Vac Given {dose} Cum",
-            ]).set_index("Date")
-            daily = daily.combine_first(df)
+    for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2)]:
+        if len(numbers) != 7 or not re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว)", rest):
+            if numbers:
+                total, *_ = numbers
+                df = pd.DataFrame([[date, total]], columns=[
+                    "Date",
+                    f"Vac Given {dose} Cum",
+                ]).set_index("Date")
+                daily = daily.combine_first(df)
             continue
 
         total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
         assert sixty == 60
         row = [medical, frontline, over60, chronic, area]
         assert not any_in(row, None)
-        assert 0.99 <= (sum(row) / total) <= 1.0
+        assert 0.99 <= (sum(row) / total) <= 1.01
         df = pd.DataFrame([[date, total] + row],
                           columns=[
                               "Date",
@@ -2087,12 +2233,10 @@ def scrape_and_combine():
         tests_reports = get_test_reports()
         cases = get_cases()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
-        cases_demo = get_cases_by_demographics_api()
         pass
     else:
         cases_by_area = get_cases_by_area()
         situation = get_situation()
-        cases_demo = get_cases_by_demographics_api()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
@@ -2101,7 +2245,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'cases', 'situation', 'tests_reports', 'tests', 'cases_demo', 'vac']:
+    for f in ['cases_by_area', 'cases', 'situation', 'tests_reports', 'tests', 'vac']:
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)

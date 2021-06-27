@@ -21,18 +21,19 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 # Cases
 
-## Cases vs Estimated Infections based on Deaths
+## Unoffcial Estimated Infections based on Deaths/IFR
 
-![Cases vs Estimated Infections](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
+![Estimated Infections Thailand](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
-- Consider this a **lower estimate** as there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths. See my analysis for more details: [Are there are a lot more infections than confirmed cases?](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases)
-- Uses [estimated global Infection Fatality Rate](http://epimonitor.net/Covid-IFR-Analysis.htm) 
-  and applies it to Thailand province demographics to get an Infection Fatality Rate (IFR) per province. Each death (-11 days) / Province IFR is an estimate of infections that would lead to the recorded deaths. 11 Days is the median days from infection to death reported by MOPH.
-- [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)), [IHME Covid Model](https://covid19.healthdata.org/thailand) 
-([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) does more detailed
-  (higher) estimates includeing uncertainty and future predictions of cases/death/hospitalisation. 
-  [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
-  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
+- Due to the Asymptomatic nature of Covid all countries have more infections than can be confirmed via testing.
+- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for thailand) gives an estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths.
+- This doesn't mean there is not enough testing being done in Thailand. [Positive rate](#positive-rate) is another indication of testing effectiveness.
+- More detail models with predictions that take into account factors like [Goggle mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) to predict infections based on adherence to social distancing measures.
+   - [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)), 
+   - [IHME Covid Model](https://covid19.healthdata.org/thailand) 
+([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) 
+   - [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
+   - [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
 - Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 ## Cases by Health District
@@ -65,6 +66,8 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
 
+![Cases by Contact](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
+
 - Grouped from original data which has over 70 risk categories. Clusters have
   been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
 - Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to separate out SS cluster cases
@@ -72,6 +75,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 - Risk is most likely determined as part of the PUI criteria process?
 - [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 
 ## Cases by Age
 ![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
@@ -146,7 +150,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
-![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_3.png)
+![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 
@@ -367,6 +371,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-06-22 - Add trending provinces for contact cases
 - 2021-06-12 - Add vacination daily and improve cumulative vaccinations
 - 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
 - 2021-06-30 - death reasons and hospitalisation critical plots
@@ -391,13 +396,13 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- get death age brackets from CFR in situation reports
+  - also has intersection of deaths and disease deaths
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand
   - potentially could adjust the IFR to get a better infeciton estimtate.
 - excess deaths adjusted for road accidents and suicides
   - https://github.com/TheEconomist/covid-19-excess-deaths-tracker/blob/master/output-data/excess-deaths/thailand_excess_deaths.csv
-- fix vaccination numbers dropping based on the idea that later reports are corrections
-   - so fill forward with current max? or fill back with current min?
 - plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic

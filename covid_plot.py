@@ -646,17 +646,6 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
-    df['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
-    lines = ['Allocated Vaccines Cum']
-    groups = [c for c in df.columns if str(c).startswith('Vac Group')]
-    cols = []
-    for c in groups:
-        if "1" in c:
-            df[c.replace("1", "Only 1")] = df[c] - df[c.replace("1", "2")]
-            cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
-
-    cols = cols + lines
-    cols = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
 
     def clean_vac_leg(c):
         return c.replace(' Cum', ''
@@ -665,35 +654,81 @@ def save_plots(df: pd.DataFrame) -> None:
                         ).replace('Only 1', '(At least 1 Dose)'
                         ).replace('2', '(Fully Vaccinated)')
 
-    # cols.sort(key=lambda c: clean_vac_leg(c)[-1] + clean_vac_leg(c))  # put 2nd shot at end
+    groups = [c for c in df.columns if str(c).startswith('Vac Group')]
+    df_vac_groups = df['2021-02-28':][groups]
 
-    # TODO: get paired colour map and use do 5 + 5 pairs
-    legends = [clean_vac_leg(c) for c in cols]
-    df_vac_groups = df['2021-02-16':][cols].interpolate(limit_area="inside")
-    plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols,
-              title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
-              between=lines,
-              y_formatter=thaipop)
+    # go backwards to get rid of "dips". ie take later cum value as correct. e.g. 2021-06-21
+    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
+    df_vac_groups = df_vac_groups.cummin()  # if later corrected down, take that number into past
+    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
 
-    df_vac_groups = df['2021-02-16':][groups].interpolate(limit_area="inside")
-    vac_daily = cum2daily(df_vac_groups[groups])
-    cols = rearrange(vac_daily.columns, 1, 2, 3, 4, 9, 10, 7, 8, )
-    # cols = [c for c in vac_daily.columns if c != "Allocated Vaccines"]
-    legends = [clean_vac_leg(c) for c in cols]
+    df_vac_groups['Vac Given Cum'] = df['Vac Given 1 Cum'] + df['Vac Given 2 Cum']
+    df['Vac Given'] = df['Vac Given 1'] + df['Vac Given 2']
+    df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
+    df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
+
+    # now convert to daily and interpolate and then normalise to real daily total.
+    vac_daily = cum2daily(df_vac_groups)
+    # bring in any daily figures we might have collected first
+    vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2']].combine_first(vac_daily)
+    daily_cols = [c for c in vac_daily.columns if not c.startswith('Vac Given')]  # Keep for unknown
+    # interpolate to fill gaps and get some values for each group
+    vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
+    # now normalise the filled in days so they add to their real total
+    for c in daily_cols:
+        vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
+
+    daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
         df=vac_daily,
         png_prefix='vac_groups_daily',
-        cols_subset=cols,
+        cols_subset=daily_cols,
         title='Thailand Daily Vaccinations by Priority Groups',
-        legends=legends,
+        legends=[clean_vac_leg(c) for c in daily_cols],
         kind='bar',
+#        unknown_total='Vac Given',
         stacked=True,
         percent_fig=False,
+#        between=['Vac Depletion Rate'],
+#        actuals=['Vac Given'],
         ma_days=None,
         cmap='Paired_r',
         y_formatter=perc_format
     )
+
+    # Now turn daily back to cumulative since we now have estimates for every day without dips
+    vac_cum = vac_daily.fillna(0).cumsum()
+    vac_cum.columns = [f"{c} Cum" for c in vac_cum.columns]
+    # Not sure why but we end up with large cumalitive than originally so normalise
+    for c in groups:
+        vac_cum[c] = vac_cum[c] / vac_cum[groups].sum(axis=1) * df_vac_groups['Vac Given Cum']
+
+    # TODO: adjust allocated for double dose group
+    second_dose = [c for c in groups if "2 Cum" in c]
+    vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
+
+    #vac_cum['Vac Remaining'] = vac_cum['Allocated Vaccines Cum'] - vac_cum['Vac Given Cum']
+    #vac_cum['Vac 2 Week Runway Rate'] = vac_cum['Vac Remaining'] / 14
+    # TODO: get delivered from https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC
+
+    cols = []
+    # We want people vaccinated not total doses
+    for c in groups:
+        if "1" in c:
+            vac_cum[c.replace("1", "Only 1")] = vac_cum[c].sub(vac_cum[c.replace("1", "2")], fill_value=0)
+            cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
+
+    cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
+    cols_cum = cols_cum + ['Allocated Vaccines Cum']
+
+    # TODO: get paired colour map and use do 5 + 5 pairs
+    legends = [clean_vac_leg(c) for c in cols_cum]
+
+    plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
+              title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
+              between=['Allocated Vaccines Cum'],
+              y_formatter=thaipop)
 
     # Targets for groups
     # https://www.facebook.com/informationcovid19/photos/a.106455480972785/342985323986465/
@@ -752,6 +787,42 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
               )
 
+
+    # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
+    # plot_area(df=df_vac_areas_s1,
+    #           png_prefix='vac_areas_s1',
+    #           cols_subset=cols,
+    #           title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)',
+    #           legends=AREA_LEGEND_SIMPLE,
+    #           kind='area',
+    #           stacked=True,
+    #           percent_fig=False,
+    #           ma_days=None,
+    #           cmap='tab20',
+    #           y_formatter=thaipop)
+
+    # cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    # df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
+    # plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
+    #           title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
+    #           legends=AREA_LEGEND_SIMPLE,
+    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
+    #           y_formatter=thaipop)
+
+    # # Top 5 vaccine rollouts
+    # vac = import_csv("vaccinations")
+    # vac['Date'] = pd.to_datetime(vac['Date'])
+    # vac = vac.set_index('Date')
+    # vac = vac.join(PROVINCES['Population'], on='Province')
+    # top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100)
+
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
+    #           title='Top 5 Thai Provinces Closest to Fully Vaccinated',
+    #           kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
+    #           )
+
     #######################
     # Cases by provinces
     #######################
@@ -788,6 +859,30 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Provinces with Most Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
+    # def increasing(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Contact"].rolling(7).mean().rolling(7).apply(trendline)
+
+    # def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Contact"].rolling(7).mean()
+
+    # top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5, png_prefix='cases_contact_increasing', cols_subset=cols,
+    #           title='Contact Cases Provinces Trending up\n (using 7 days rolling average)',
+    #           kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
+    # def increasing(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Proactive Search"].rolling(7).mean().rolling(7).apply(trendline)
+
+    # def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+    #     return adf["Cases Risk: Proactive Search"].rolling(7).mean()
+
+    # top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5, png_prefix='cases_proactive_increasing', cols_subset=cols,
+    #           title='Proactive Cases Provinces Trending up\n (using 7 days rolling average)',
+    #           kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
     # TODO: work out based on districts of deaths / IFR for that district
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
@@ -811,9 +906,8 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-11) / 0.0054
     cols = ["Infections Estimate", "Cases", ]
     legend = ["Infections Estimate (based on deaths)", "Confirmed Cases"]
-    title = """Thailand Confirmed Covid Cases vs Estimate of Infections based on Deaths
-Estimate of Infections = (Deaths - 11days)/(Province Infection Fatality Rate)
-(DISCLAIMER: estimate is simple and probably lower than reality. see site below for more details on this model)"""
+    title = """Unofficial Estimate of Covid Infections in Thailand (based on Deaths/IFR)\n
+(DISCLAIMER: see site below for the assumptions of this simple estimate)"""
     plot_area(df=cases_est,
               png_prefix='cases_infections_estimate',
               cols_subset=cols,
