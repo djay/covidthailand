@@ -1078,15 +1078,6 @@ def briefing_case_types(date, pages):
         if date > d("2021-04-23"):
             assert not any_in([None], hospital, field, severe, respirator, hospitalised)
 
-        # Vaccines
-        numbers, _ = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
-        if numbers:
-            vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum, *_ = numbers
-            vac_rows.append([date - datetime.timedelta(days=1), vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum])
-        elif date < d("2021-5-18"):
-            vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum = [None] * 4
-        else:
-            assert numbers
 
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
@@ -1128,7 +1119,6 @@ def briefing_case_types(date, pages):
         "Recovered",
         "Deaths",
     ]).set_index(['Date'])
-    df = df.combine_first(pd.DataFrame(vac_rows, columns=["Date", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2", "Vac Given 2 Cum"]).set_index("Date"))
     if not df.empty:
         print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
     return df
@@ -1431,7 +1421,9 @@ def get_cases_by_prov_briefings():
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
         for i, page in enumerate(pages):
-            vac_prov = vac_briefing_provs(vac_prov, date, file, page)
+            text = page.get_text()
+            vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
+            types = vac_briefing_totals(types, date, file, page, text)
 
         if not today_types.empty:
             wrong_deaths_report = date in [
@@ -1712,8 +1704,33 @@ def get_test_reports():
 # <p>สรุปการฉดีวัคซีนโควิด 19 ตัง้แตว่ันที่ 7 มิถุนายน 2564
 # ผลการใหบ้ริการ ณ วนัที ่23 มิถุนายน 2564 เวลา 18.00 น.
 
-def vac_briefing_provs(df, date, file, page):
-    text = page.get_text()
+
+def vac_briefing_totals(df, date, file, page, text):
+    if not re.search("(รายงานสถานการณ์|ระลอกใหม่ เมษายน ประเทศไทย ตั้งแต่วันที่)", text):
+        return df
+    if not re.search("(ผู้รับวัคซีน|ผูรั้บวัคซีน)", text):
+        return df
+    # Vaccines
+    numbers, _ = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
+    if numbers:
+        vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum, *_ = numbers
+        row = [date - datetime.timedelta(days=1), vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum]
+    # elif date < d("2021-5-18"):
+    #     vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum = [None] * 4
+    #     return df
+    else:
+        #assert numbers
+        return df
+
+    vac = pd.DataFrame([row], columns=["Date", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2", "Vac Given 2 Cum"]).set_index("Date")
+    if not vac.empty:
+        print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
+    df = df.combine_first(vac)
+
+    return df
+
+
+def vac_briefing_provs(df, date, file, page, text):
     if "ความครอบคลุมการรับบริการวัคซีนโควิด 19" not in text:
         return df
 

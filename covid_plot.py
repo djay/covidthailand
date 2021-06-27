@@ -690,34 +690,6 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
-    df['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False)
-    lines = ['Allocated Vaccines Cum']
-    groups = [c for c in df.columns if str(c).startswith('Vac Group')]
-    to_Fix = groups + lines + ['Vac Given 1 Cum', 'Vac Given 2 Cum']
-
-    df_vac_groups = df['2021-02-28':][to_Fix].interpolate(limit_area="inside")
-    # go backwards to get rid of "dips". ie take later cum value as correct
-    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
-    df_vac_groups = df_vac_groups.cummin()  # get rid of the corrections
-    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
-
-    # TODO: instead of interpolate, adjust using ratios against the daily total vaccines given. 
-    # Example is report 2021-06-21 report missing so total is higher than expected
-    # Alternative is nuke those days and show as unknown.
-
-    # TODO: replace allocated with vaccines remaining (+ vaccines given)
-
-    # TODO: get value directly and only add missing via this method
-    df_vac_groups['Vac Given Cum'] = df_vac_groups['Vac Given 1 Cum'] + df_vac_groups['Vac Given 2 Cum']
-    cols = []
-    # We want people vaccinated not total doses
-    for c in groups:
-        if "1" in c:
-            df_vac_groups[c.replace("1", "Only 1")] = df_vac_groups[c] - df_vac_groups[c.replace("1", "2")]
-            cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
-
-    cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
-    cols_cum = cols_cum + lines
 
     def clean_vac_leg(c):
         return c.replace(' Cum', ''
@@ -726,36 +698,80 @@ def save_plots(df: pd.DataFrame) -> None:
                         ).replace('Only 1', '(At least 1 Dose)'
                         ).replace('2', '(Fully Vaccinated)')
 
-    # TODO: get paired colour map and use do 5 + 5 pairs
-    legends = [clean_vac_leg(c) for c in cols_cum]
+    groups = [c for c in df.columns if str(c).startswith('Vac Group')]
+    df_vac_groups = df['2021-02-28':][groups]
 
-    plot_area(df=df_vac_groups, png_prefix='vac_groups', cols_subset=cols_cum,
-              title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
-              between=lines,
-              y_formatter=thaipop)
+    # go backwards to get rid of "dips". ie take later cum value as correct. e.g. 2021-06-21
+    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
+    df_vac_groups = df_vac_groups.cummin()  # if later corrected down, take that number into past
+    df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
 
-    #df_vac_groups = df['2021-02-16':][groups].interpolate(limit_area="inside")
-    vac_daily = cum2daily(df_vac_groups[groups + ['Vac Given Cum']])
-    cols = rearrange(vac_daily.columns, 2, 1, 4, 3, 10, 9, 8, 7, )
+    df_vac_groups['Vac Given Cum'] = df['Vac Given 1 Cum'] + df['Vac Given 2 Cum']
+    df['Vac Given'] = df['Vac Given 1'] + df['Vac Given 2']
+    df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
+    df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
+
+    # now convert to daily and interpolate and then normalise to real daily total.
+    vac_daily = cum2daily(df_vac_groups)
     # bring in any daily figures we might have collected first
-    vac_daily = df[[c for c in cols if c in df.columns]].combine_first(vac_daily)
-    cols = [c for c in cols if c != 'Vac Given']  # Keep for unknown
-    # cols = [c for c in vac_daily.columns if c != "Allocated Vaccines"]
-    legends = [clean_vac_leg(c) for c in cols]
+    vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2']].combine_first(vac_daily)
+    daily_cols = [c for c in vac_daily.columns if not c.startswith('Vac Given')]  # Keep for unknown
+    # interpolate to fill gaps and get some values for each group
+    vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
+    # now normalise the filled in days so they add to their real total
+    for c in daily_cols:
+        vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
+
+    daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
         df=vac_daily,
         png_prefix='vac_groups_daily',
-        cols_subset=cols,
+        cols_subset=daily_cols,
         title='Thailand Daily Vaccinations by Priority Groups',
-        legends=legends,
+        legends=[clean_vac_leg(c) for c in daily_cols],
         kind='bar',
-        unknown_total='Vac Given',
+#        unknown_total='Vac Given',
         stacked=True,
         percent_fig=False,
+#        between=['Vac Depletion Rate'],
+#        actuals=['Vac Given'],
         ma_days=None,
         cmap='Paired_r',
     )
+
+    # Now turn daily back to cumulative since we now have estimates for every day without dips
+    vac_cum = vac_daily.fillna(0).cumsum()
+    vac_cum.columns = [f"{c} Cum" for c in vac_cum.columns]
+    # Not sure why but we end up with large cumalitive than originally so normalise
+    for c in groups:
+        vac_cum[c] = vac_cum[c] / vac_cum[groups].sum(axis=1) * df_vac_groups['Vac Given Cum']
+
+    # TODO: adjust allocated for double dose group
+    second_dose = [c for c in groups if "2 Cum" in c]
+    vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
+
+    #vac_cum['Vac Remaining'] = vac_cum['Allocated Vaccines Cum'] - vac_cum['Vac Given Cum']
+    #vac_cum['Vac 2 Week Runway Rate'] = vac_cum['Vac Remaining'] / 14
+    # TODO: get delivered from https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC
+
+    cols = []
+    # We want people vaccinated not total doses
+    for c in groups:
+        if "1" in c:
+            vac_cum[c.replace("1", "Only 1")] = vac_cum[c].sub(vac_cum[c.replace("1", "2")], fill_value=0)
+            cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
+
+    cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
+    cols_cum = cols_cum + ['Allocated Vaccines Cum']
+
+    # TODO: get paired colour map and use do 5 + 5 pairs
+    legends = [clean_vac_leg(c) for c in cols_cum]
+
+    plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
+              title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
+              between=['Allocated Vaccines Cum'],
+              y_formatter=thaipop)
 
     # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()

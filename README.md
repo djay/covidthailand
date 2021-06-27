@@ -396,13 +396,13 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- get death age brackets from CFR in situation reports
+  - also has intersection of deaths and disease deaths
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand
   - potentially could adjust the IFR to get a better infeciton estimtate.
 - excess deaths adjusted for road accidents and suicides
   - https://github.com/TheEconomist/covid-19-excess-deaths-tracker/blob/master/output-data/excess-deaths/thailand_excess_deaths.csv
-- fix vaccination numbers dropping based on the idea that later reports are corrections
-   - so fill forward with current max? or fill back with current min?
 - plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic
