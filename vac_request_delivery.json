@@ -1,0 +1,173 @@
+{
+    "dataRequest": [
+        {
+            "requestContext": {
+                "reportContext": {
+                    "reportId": "731713b6-a3c4-4766-ab9d-a6502a4e7dd6",
+                    "pageId": "31081300",
+                    "mode": "VIEW",
+                    "componentId": "cd-02l738acjc",
+                    "displayType": "simple-table"
+                }
+            },
+            "datasetSpec": {
+                "dataset": [
+                    {
+                        "datasourceId": "05bbf5e6-7c84-45c4-9028-e8fe8de09357",
+                        "revisionNumber": 0,
+                        "parameterOverrides": []
+                    }
+                ],
+                "queryFields": [
+                    {
+                        "name": "qt_12l738acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_vaccine_name_"
+                        }
+                    },
+                    {
+                        "name": "qt_22l738acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_batch_no_"
+                        }
+                    },
+                    {
+                        "name": "qt_xjhme9acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_transporter_"
+                        }
+                    },
+                    {
+                        "name": "qt_42l738acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_arrive_at_hospital_"
+                        }
+                    },
+                    {
+                        "name": "qt_3494kabcjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_hospital_code_"
+                        }
+                    },
+                    {
+                        "name": "qt_6g09rabcjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_hospital_name_"
+                        }
+                    },
+                    {
+                        "name": "qt_l9qtvabcjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_hospital_zone_"
+                        }
+                    },
+                    {
+                        "name": "qt_s7sg0abcjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_hospital_province_"
+                        }
+                    },
+                    {
+                        "name": "qt_62l738acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_quantity_",
+                            "aggregation": 6
+                        }
+                    },
+                    {
+                        "name": "qt_72l738acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_temp_min_import_",
+                            "aggregation": 5
+                        }
+                    },
+                    {
+                        "name": "qt_92l738acjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_temp_max_import_",
+                            "aggregation": 4
+                        }
+                    }
+                ],
+                "sortData": [
+                    {
+                        "sortColumn": {
+                            "name": "qt_42l738acjc",
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "dataTransformation": {
+                                "sourceFieldName": "_arrive_at_hospital_"
+                            }
+                        },
+                        "sortDir": 1
+                    }
+                ],
+                "includeRowsCount": true,
+                "paginateInfo": {
+                    "startRow": 1,
+                    "rowsCount": 20000
+                },
+                "filters": [
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": false,
+                                "conceptType": 0,
+                                "concept": {
+                                    "ns": "t0",
+                                    "name": "qt_kh0bqwzbjc"
+                                },
+                                "filterConditionType": "NU",
+                                "stringValues": [
+                                    "20210501150000"
+                                ],
+                                "numberValues": [],
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_arrive_at_hospital_"
+                                    }
+                                }
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    }
+                ],
+                "features": [],
+                "dateRanges": [],
+                "contextNsCount": 1,
+                "calculatedField": [],
+                "needGeocoding": false,
+                "geoFieldMask": [],
+                "geoVertices": 100000
+            },
+            "useDataColumn": true
+        }
+   ]
+}

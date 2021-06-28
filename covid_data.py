@@ -1702,10 +1702,15 @@ def get_test_reports():
 # Vaccination reports
 ################################
 
-def get_vaccination_coldtraindata(request_json):
-    df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
-    codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
-    provinces = [prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+def get_vaccination_coldchain(request_json, join_prov=False):
+    print("Requesting coldchain:", request_json)
+    if join_prov:
+        df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
+        codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+        provinces = [prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+        provinces = [get_province(prov) for prov in provinces]
+    else:
+        provinces = codes = [None]
 
     url = "https://datastudio.google.com/batchedDataV2?appVersion=20210506_00020034"
     with open(request_json) as fp:
@@ -1721,46 +1726,58 @@ def get_vaccination_coldtraindata(request_json):
 
     def make_request(post, codes):
         for code in codes:
-            for spec  in specs:
+            for spec in specs:
                 pspec = copy.deepcopy(spec)
-                set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
+                if code:
+                    set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
                 post['dataRequest'].append(pspec)
-        r = requests.post(url, json=post)
+        r = requests.post(url, json=post, timeout=20)
         _, _, data = r.text.split("\n")
         data = json.loads(data)
         for resp in data['dataResponse']:
             yield resp
-    all_prov = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
+    if join_prov:
+        dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
+    else:
+        dfall = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+
     for prov_spec, data in zip([(p, s) for p in provinces for s in specs], make_request(post, codes)):
         prov, spec = prov_spec
-        prov = get_province(prov)
         fields = [(f['name'], f['dataTransformation']['sourceFieldName']) for f in spec['datasetSpec']['queryFields']]
         for datasubset in data['dataSubset']:
             colmuns = datasubset['dataset']['tableDataset']['column']
             df_cols = {}
-            is_today = True
+            date_col = None
             for field, column in zip(fields, colmuns):
-                if 'dateColumn' in column:
-                    values = [d(date) for date in column['dateColumn']['values']]
-                    is_today = False
-                elif 'longColumn' in column:
-                    values = [int(i) for i in column['longColumn']['values']]
-                elif 'stringColumn' in column:
-                    values = column['stringColumn']['values']
-                else:
-                    raise Exception("Unknown column type", column.keys())
                 fieldname = dict(_vaccinated_on_='Date',
                                  _manuf_name_='Vaccine',
                                  datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
+                nullIndex = column['nullIndex']
+                del column['nullIndex']
+                if column:
+                    field_type = next(iter(column.keys()))
+                    conv = dict(dateColumn=d, datetimeColumn=d, longColumn=int, doubleColumn=float, stringColumn=str)[field_type]
+                    values = [conv(i) for i in column[field_type]['values']]
+                    if conv == d:
+                        date_col = fieldname
+                else:
+                    values = []
                 # datastudio_record_count_system_field_id_98323387 = supply?
-
+                for i in nullIndex:  # TODO check we are doing this right
+                    values.insert(i, None)
                 df_cols[fieldname] = values
             df = pd.DataFrame(df_cols)
-            df['Province'] = prov
-            if is_today:
+            if not date_col:
                 df['Date'] = today()
-            all_prov = all_prov.combine_first(df.set_index(["Date", "Province", "Vaccine"]))
-    return all_prov.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
+            else:
+                df['Date'] = df[date_col]
+            if prov:
+                df['Province'] = prov
+                df = df.set_index(["Date", "Province", "Vaccine"])
+            else:
+                df = df.set_index(['Date'])
+            dfall = dfall.combine_first(df)
+    return dfall
 
 # vac given table
 # <p>สรุปการฉดีวัคซีนโควิด 19 ตัง้แตว่ันที่ 7 มิถุนายน 2564
@@ -1951,7 +1968,17 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 
 
 def get_vaccinations():
-    vacct = get_vaccination_coldtraindata("vac_request.json")
+    vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
+    vac_delivered = join_provinces(vac_delivered, '_hospital_province_')
+    # TODO: save delivered by prov somewhere. note some hospitals unknown prov
+    vac_delivered = vac_delivered.reset_index()
+    vac_delivered['Date'] = vac_delivered['Date'].dt.floor('d')
+    vac_delivered = vac_delivered[['Date', '_quantity_']].groupby('Date').sum()
+    vac_delivered = vac_delivered.rename(columns=dict(_quantity_='Vac Delivered'))
+    vac_delivered['Vac Delivered Cum'] = vac_delivered['Vac Delivered'].cumsum()
+
+    vacct = get_vaccination_coldchain("vac_request_givenprov.json", join_prov=True)
+    vacct = vacct.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
@@ -2027,8 +2054,7 @@ def get_vaccinations():
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
-    all_vac = all_vac.combine_first(df)
-    all_vac = all_vac.combine_first(alloc)
+    all_vac = all_vac.combine_first(df).combine_first(alloc)
 
     # Do cross check we got the same number of allocations to vaccination
     counts = all_vac.groupby("Date").count()
@@ -2055,7 +2081,7 @@ def get_vaccinations():
     export(all_vac, "vaccinations", csv_only=True)
 
     thaivac = all_vac.groupby("Date").sum()
-    thaivac = thaivac.combine_first(vac_daily)
+    thaivac = thaivac.combine_first(vac_daily).combine_first(vac_delivered)
     thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     # Get vaccinations by district

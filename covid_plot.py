@@ -705,7 +705,9 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # TODO: adjust allocated for double dose group
     second_dose = [c for c in groups if "2 Cum" in c]
-    vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
+    first_dose = [c for c in groups if "1 Cum" in c]
+    #vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
+    vac_cum['Allocated Vaccines Cum'] = df['Vac Delivered Cum'] - vac_cum[second_dose].sum(axis=1) #*2 - vac_cum[first_dose].sum(axis=1)
 
     #vac_cum['Vac Remaining'] = vac_cum['Allocated Vaccines Cum'] - vac_cum['Vac Given Cum']
     #vac_cum['Vac 2 Week Runway Rate'] = vac_cum['Vac Remaining'] / 14
