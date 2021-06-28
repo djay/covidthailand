@@ -162,15 +162,16 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             areacols = [c for c in cols if c not in between]
             df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked)
             linecols = between + actuals
+            #a0 = a0.twinx() if kind == 'bar' else a0
         else:
             linecols = cols + actuals
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
-            df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind="line")
+            df_plot.plot(ax=a0, y=c, use_index=False, linewidth=width, style=style, kind="line", x_compat=kind == 'bar')
 
         if kind == "bar":
-            set_time_series_labels(df_plot, a0)
+           set_time_series_labels(df_plot, a0)
 
         a0.set_title(label=title)
         leg = a0.legend(labels=legends)
@@ -678,22 +679,21 @@ def save_plots(df: pd.DataFrame) -> None:
     for c in daily_cols:
         vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
+    vac_daily['7d Runway Rate'] = (df['Vac Delivered Cum'] - df_vac_groups['Vac Given Cum']) / 7
+
     daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
         df=vac_daily,
         png_prefix='vac_groups_daily',
         cols_subset=daily_cols,
         title='Thailand Daily Vaccinations by Priority Groups',
-        legends=[clean_vac_leg(c) for c in daily_cols],
+        legends=['7d Runway Rate'] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
         kind='bar',
-#        unknown_total='Vac Given',
         stacked=True,
         percent_fig=False,
-#        between=['Vac Depletion Rate'],
-#        actuals=['Vac Given'],
+        between=['7d Runway Rate'],
         ma_days=None,
         cmap='Paired_r',
-        y_formatter=perc_format
     )
 
     # Now turn daily back to cumulative since we now have estimates for every day without dips
@@ -708,10 +708,6 @@ def save_plots(df: pd.DataFrame) -> None:
     first_dose = [c for c in groups if "1 Cum" in c]
     #vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
     vac_cum['Allocated Vaccines Cum'] = df['Vac Delivered Cum'] - vac_cum[second_dose].sum(axis=1) #*2 - vac_cum[first_dose].sum(axis=1)
-
-    #vac_cum['Vac Remaining'] = vac_cum['Allocated Vaccines Cum'] - vac_cum['Vac Given Cum']
-    #vac_cum['Vac 2 Week Runway Rate'] = vac_cum['Vac Remaining'] / 14
-    # TODO: get delivered from https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC
 
     cols = []
     # We want people vaccinated not total doses

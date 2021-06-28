@@ -1975,7 +1975,7 @@ def get_vaccinations():
     vac_delivered['Date'] = vac_delivered['Date'].dt.floor('d')
     vac_delivered = vac_delivered[['Date', '_quantity_']].groupby('Date').sum()
     vac_delivered = vac_delivered.rename(columns=dict(_quantity_='Vac Delivered'))
-    vac_delivered['Vac Delivered Cum'] = vac_delivered['Vac Delivered'].cumsum()
+    vac_delivered['Vac Delivered Cum'] = vac_delivered['Vac Delivered'].fillna(0).cumsum()
 
     vacct = get_vaccination_coldchain("vac_request_givenprov.json", join_prov=True)
     vacct = vacct.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
