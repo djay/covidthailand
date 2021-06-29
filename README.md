@@ -159,7 +159,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Top Provinces by Vaccination Doses Given](https://github.com/djay/covidthailand/wiki/vac_top5_doses_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
-![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_area_3.png)
+![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 
