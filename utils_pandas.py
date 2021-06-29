@@ -6,6 +6,7 @@ from typing import List, Union
 import matplotlib.cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.pyplot import cycler
+import matplotlib.dates as mdates
 from cycler import Cycler
 import pandas as pd
 import numpy as np
@@ -300,6 +301,7 @@ def line_format(label):
 
 
 def set_time_series_labels(df, ax):
+    # https://stackoverflow.com/questions/30133280/pandas-bar-plot-changes-date-format
     # Create list of monthly timestamps by selecting the first weekly timestamp of each
     # month (in this example, the first Sunday of each month)
     monthly_timestamps = [
@@ -327,4 +329,52 @@ def set_time_series_labels(df, ax):
     ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
 
     # Rotate and center labels
+    ax.figure.autofmt_xdate(rotation=0, ha='center')
+
+
+def set_time_series_labels_2(df, ax):
+
+    # Compute width of bars in matplotlib date units, 'md' (in days) and adjust it if
+    # the bar width in df.plot.bar has been set to something else than the default 0.5
+    bar_width_md_default, = np.diff(mdates.date2num(df.index[:2])) / 2
+    bar_width = ax.patches[0].get_width()
+    bar_width_md = bar_width * bar_width_md_default / 0.5
+
+    # Compute new x values in matplotlib date units for the patches (rectangles) that
+    # make up the stacked bars, adjusting the positions according to the bar width:
+    # if the frequency is in months (or years), the bars may not always be perfectly
+    # centered over the tick marks depending on the number of days difference between
+    # the months (or years) given by df.index[0] and [1] used to compute the bar
+    # width, this should not be noticeable if the bars are wide enough.
+    x_bars_md = mdates.date2num(df.index) - bar_width_md / 2
+    nvar = len(ax.get_legend_handles_labels()[1])
+    x_patches_md = np.ravel(nvar * [x_bars_md])
+
+    # Set bars to new x positions and adjust width: this loop works fine with NaN
+    # values as well because in bar plot NaNs are drawn with a rectangle of 0 height
+    # located at the foot of the bar, you can verify this with patch.get_bbox()
+    for patch, x_md in zip(ax.patches, x_patches_md):
+        patch.set_x(x_md)
+        patch.set_width(bar_width_md)
+
+    # Set major ticks
+    maj_loc = mdates.AutoDateLocator()
+    ax.xaxis.set_major_locator(maj_loc)
+
+    # Show minor tick under each bar (instead of each month) to highlight
+    # discrepancy between major tick locator and bar positions seeing as no tick
+    # locator is available for first-week-of-the-month frequency
+    ax.set_xticks(x_bars_md + bar_width_md / 2, minor=True)
+
+    # Set major tick formatter
+    zfmts = ['', '%b\n%Y', '%b', '%b-%d', '%H:%M', '%H:%M']
+    fmt = mdates.ConciseDateFormatter(maj_loc, zero_formats=zfmts, show_offset=False)
+    ax.xaxis.set_major_formatter(fmt)
+
+    # Shift the plot frame to where the bars are now located
+    xmin = min(x_bars_md) - bar_width_md
+    xmax = max(x_bars_md) + 2 * bar_width_md
+    ax.set_xlim(xmin, xmax)
+
+    # Adjust tick label format last, else it may sometimes not be applied correctly
     ax.figure.autofmt_xdate(rotation=0, ha='center')

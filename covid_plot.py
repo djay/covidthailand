@@ -5,12 +5,13 @@ from typing import Sequence, Union, List, Callable
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, get_cycle, human_format, import_csv, perc_format, rearrange, set_time_series_labels, topprov, trendline
+from utils_pandas import cum2daily, get_cycle, human_format, import_csv, perc_format, rearrange, set_time_series_labels, set_time_series_labels_2, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, get_province, get_provinces, thaipop
@@ -178,6 +179,10 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
         if kind == "bar":
             set_time_series_labels(df_plot, a0)
+            # a0.xaxis.set_major_locator(mdates.MonthLocator())
+            # a0.xaxis.set_major_formatter(mdates.DateFormatter('\n%b'))
+            # a0.xaxis.set_minor_locator(mdates.WeekdayLocator())
+            # a0.xaxis.set_minor_formatter(mdates.DateFormatter('%d'))
 
         a0.set_title(label=title)
         leg = a0.legend(labels=legends)
@@ -215,7 +220,8 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: has a problem if we have local transmission but no proactive
     # TODO: put somewhere else
     walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
-    df = df.combine_first(walkins)
+    # In case XLS is not updated before the pptx
+    df = df.combine_first(walkins).combine_first(df[['Tests', 'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
