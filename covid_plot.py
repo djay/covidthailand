@@ -2,61 +2,18 @@ import os
 import pathlib
 from typing import Sequence, Union, List, Callable
 
-import numpy as np
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-import matplotlib.dates as mdates
 import pandas as pd
 
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, get_cycle, human_format, import_csv, rearrange, topprov, trendline
+from utils_pandas import cum2daily, get_cycle, human_format, import_csv, perc_format, rearrange, set_time_series_labels, topprov, trendline
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, thaipop, thaipop2
-
-
-def line_format(label):
-    """
-    Convert time label to the format of pandas line plot
-    """
-    month = label.month_name()[:3]
-    if month == 'Jan':
-        month += f'\n{label.year}'
-    return month
-
-
-def set_time_series_labels(df, ax):
-    # Create list of monthly timestamps by selecting the first weekly timestamp of each
-    # month (in this example, the first Sunday of each month)
-    monthly_timestamps = [
-        timestamp for idx, timestamp in enumerate(df.index) if (timestamp.month != df.index[idx - 1].month) | (idx == 0)
-    ]
-
-    # Automatically select appropriate number of timestamps so that x-axis does
-    # not get overcrowded with tick labels
-    step = 1
-    while len(monthly_timestamps[::step]) > 10:  # increase number if time range >3 years
-        step += 1
-    timestamps = monthly_timestamps[::step]
-
-    # Create tick labels from timestamps
-    labels = [
-        ts.strftime('%b\n%Y') if ts.year != timestamps[idx - 1].year else ts.strftime('%b')
-        for idx, ts in enumerate(timestamps)
-    ]
-
-    # Set major ticks and labels
-    ax.set_xticks([df.index.get_loc(ts) for ts in timestamps])
-    ax.set_xticklabels(labels)
-
-    # Set minor ticks without labels
-    ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
-
-    # Rotate and center labels
-    ax.figure.autofmt_xdate(rotation=0, ha='center')
+    AREA_LEGEND_ORDERED, FIRST_AREAS, get_province, get_provinces, thaipop
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -210,7 +167,14 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
-            df_plot.plot(ax=a0, y=c, linewidth=width, style=style, kind="line")
+            use_index = kind != 'bar'  # Putting lines on bar plots doesn't work well
+            df_plot.plot(ax=a0,
+                         y=c,
+                         use_index=use_index,
+                         linewidth=width,
+                         style=style,
+                         kind="line",
+                         x_compat=not use_index)
 
         if kind == "bar":
             set_time_series_labels(df_plot, a0)
@@ -417,7 +381,6 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=21,
         cmap="tab10",
     )
-
 
     df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
     df['Cases outside Prison 3rd Cum'] = df['2021-04-01':]['Cases outside Prison'].cumsum()
@@ -696,7 +659,8 @@ def save_plots(df: pd.DataFrame) -> None:
                         ).replace('Vac ', ''
                         ).replace("Group ", ""
                         ).replace('Only 1', '(At least 1 Dose)'
-                        ).replace('2', '(Fully Vaccinated)')
+                        ).replace('2', '(Fully Vaccinated)'
+                        ).replace('Risk: Location', 'Under 60')
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
@@ -722,19 +686,27 @@ def save_plots(df: pd.DataFrame) -> None:
     for c in daily_cols:
         vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
+    vac_daily['7d Runway Rate'] = (df['Vac Delivered Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
+    vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / (pd.Timestamp('2022-01-01')
+                                                                                  - vac_daily.index.to_series()).dt.days
+
+    vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / (pd.Timestamp('2022-01-01')
+                                                                                - vac_daily.index.to_series()).dt.days
+
     daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
         df=vac_daily,
         png_prefix='vac_groups_daily',
         cols_subset=daily_cols,
         title='Thailand Daily Vaccinations by Priority Groups',
-        legends=[clean_vac_leg(c) for c in daily_cols],
+        legends=[
+            'Doses per day - to runout in a week', 'Doses per day - 70% 1st Dose 2021 Target',
+            'Doses per day - 70% Vaccinated 2021 Target'
+        ] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
         kind='bar',
-#        unknown_total='Vac Given',
         stacked=True,
         percent_fig=False,
-#        between=['Vac Depletion Rate'],
-#        actuals=['Vac Given'],
+        between=['7d Runway Rate', 'Target Rate 1', 'Target Rate 2'],
         ma_days=None,
         cmap='Paired_r',
     )
@@ -748,11 +720,9 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # TODO: adjust allocated for double dose group
     second_dose = [c for c in groups if "2 Cum" in c]
-    vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
-
-    #vac_cum['Vac Remaining'] = vac_cum['Allocated Vaccines Cum'] - vac_cum['Vac Given Cum']
-    #vac_cum['Vac 2 Week Runway Rate'] = vac_cum['Vac Remaining'] / 14
-    # TODO: get delivered from https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC
+    first_dose = [c for c in groups if "1 Cum" in c]
+    #vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
+    vac_cum['Available Vaccines Cum'] = df['Vac Delivered Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
 
     cols = []
     # We want people vaccinated not total doses
@@ -762,7 +732,7 @@ def save_plots(df: pd.DataFrame) -> None:
             cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
 
     cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
-    cols_cum = cols_cum + ['Allocated Vaccines Cum']
+    cols_cum = cols_cum + ['Available Vaccines Cum']
 
     # TODO: get paired colour map and use do 5 + 5 pairs
     legends = [clean_vac_leg(c) for c in cols_cum]
@@ -770,43 +740,69 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
               kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
-              between=['Allocated Vaccines Cum'],
+              between=['Available Vaccines Cum'],
               y_formatter=thaipop)
 
-    # cols = rearrange([f'Vac Given 1 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    # df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
-    # plot_area(df=df_vac_areas_s1,
-    #           png_prefix='vac_areas_s1',
-    #           cols_subset=cols,
-    #           title='Thailand Vaccinations (1st Shot) by Health District\n(% per population)',
-    #           legends=AREA_LEGEND_SIMPLE,
-    #           kind='area',
-    #           stacked=True,
-    #           percent_fig=False,
-    #           ma_days=None,
-    #           cmap='tab20',
-    #           y_formatter=thaipop)
+    # Targets for groups
+    # https://www.facebook.com/informationcovid19/photos/a.106455480972785/342985323986465/
 
-    # cols = rearrange([f'Vac Given 2 Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    # df_vac_areas_s2 = df['2021-02-16':][cols].interpolate()
-    # plot_area(df=df_vac_areas_s2, png_prefix='vac_areas_s2', cols_subset=cols,
-    #           title='Thailand Fully Vaccinated (2nd Shot) by Health District\n(% population full vaccinated)',
-    #           legends=AREA_LEGEND_SIMPLE,
-    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab20',
-    #           y_formatter=thaipop)
+    # 712,000 for medical staff
+    # 1,900,000 for frontline staffs
+    # 1,000,000 for village health volunteer
+    # 5,350,000 for risk: disease
+    # 12,500,000 for risk: over 60
+    # 28,538,000 for general population
+    # TODO: put in same order and colours as other groups
+    goals = [
+        ('Medical Staff', (712000 + 1000000)),
+        ('Other Frontline Staff', 1900000),
+        ('Risk: Location', 28538000),
+        ('Risk: Disease', 5350000),
+        ['Over 60', 12500000],
+    ]
+    for group, goal in goals:
+        for d in [2, 1]:
+            vac_cum[f'Vac Group {group} {d} Cum %'] = vac_cum[f'Vac Group {group} {d} Cum'] / goal * 100
+    cols2 = [c for c in vac_cum.columns if f" Cum %" in c and "Vac Group " in c]
+    legends = [clean_vac_leg(c) for c in cols2]
+    plot_area(
+        df=vac_cum,
+        png_prefix='vac_groups_goals',
+        cols_subset=cols2,
+        title='Thailand Vaccination Goal Progress (to 70%)',
+        legends=legends,
+        kind='line',
+        stacked=False,
+        percent_fig=False,
+        ma_days=None,
+        cmap='Paired_r',
+    )
 
-    # # Top 5 vaccine rollouts
-    # vac = import_csv("vaccinations")
-    # vac['Date'] = pd.to_datetime(vac['Date'])
-    # vac = vac.set_index('Date')
-    # vac = vac.join(PROVINCES['Population'], on='Province')
-    # top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Population'] * 100)
+    cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
+    plot_area(df=df_vac_areas_s1,
+              png_prefix='vac_areas',
+              cols_subset=cols,
+              title='Thailand Vaccinations Doses by Health District',
+              legends=AREA_LEGEND_SIMPLE,
+              kind='area',
+              stacked=True,
+              percent_fig=False,
+              ma_days=None,
+              cmap='tab20',)
 
-    # cols = top5.columns.to_list()
-    # plot_area(df=top5, png_prefix='vac_top5_full', cols_subset=cols,
-    #           title='Top 5 Thai Provinces Closest to Fully Vaccinated',
-    #           kind='area', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
-    #           )
+    # Top 5 vaccine rollouts
+    vac = import_csv("vaccinations")
+    vac['Date'] = pd.to_datetime(vac['Date'])
+    vac = vac.set_index('Date')
+    vac = vac.join(get_provinces()['Population'], on='Province')
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100)
+
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_top5_doses', cols_subset=cols,
+              title='Top Provinces for Vaccination Doses per 100 people',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
 
     #######################
     # Cases by provinces

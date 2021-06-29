@@ -32,8 +32,11 @@ def add_data(data, df):
     except ValueError:
         print('detected duplicates; dropping only the duplicate rows')
         idx_names = data.index.names
-        data = data.reset_index().append(df.reset_index()).drop_duplicates()
-        data = data.set_index(idx_names)
+        if [None] != idx_names:
+            data = data.reset_index()
+        data = data.append(df.reset_index()).drop_duplicates()
+        if [None] != idx_names:
+            data = data.set_index(idx_names)
     return data
 
 
@@ -59,6 +62,28 @@ def cum2daily(results):
     return cum
 
 
+def daily2cum(results):
+    cols = [c for c in results.columns if " Cum" not in c]
+    daily = results[cols]
+    names = daily.index.names
+    # bit of a hack.pick first value to fill in the gaps later
+    extra_index = [(n, daily.first_valid_index()[names.index('Province')]) for n in names if n != 'Date']
+
+    daily = daily.reset_index().set_index("Date")
+    all_days = pd.date_range(daily.index.min(), daily.index.max(), name="Date")
+    daily = daily.reindex(all_days)
+    # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
+    cum = daily[cols].fillna(0).cumsum()  # we got cumilitive data
+    renames = dict((c, c + ' Cum') for c in list(cum.columns))
+    cum = cum.rename(columns=renames)
+    # Add back in the extra index.
+    cum = cum.assign(**dict([(n, daily[n].fillna(value)) for n, value in extra_index]) )
+    # what about gaps in province names?
+
+    cum = cum.reset_index().set_index(names)
+    return cum[cum.columns]
+
+
 def human_format(num: float, pos: int) -> str:
     magnitude = 0
     while abs(num) >= 1000:
@@ -67,6 +92,10 @@ def human_format(num: float, pos: int) -> str:
     # add more suffixes if you need them
     suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
     return f'{num:.1f}{suffix}'
+
+
+def perc_format(num: float, pos: int) -> str:
+    return f'{num:.0f}%'
 
 
 def rearrange(lst, *first):
@@ -258,3 +287,44 @@ def get_cycle(cmap, n=None, use_index="auto"):
     else:
         colors = cmap(np.linspace(0, 1, n))
         return cycler("color", colors)
+
+
+def line_format(label):
+    """
+    Convert time label to the format of pandas line plot
+    """
+    month = label.month_name()[:3]
+    if month == 'Jan':
+        month += f'\n{label.year}'
+    return month
+
+
+def set_time_series_labels(df, ax):
+    # Create list of monthly timestamps by selecting the first weekly timestamp of each
+    # month (in this example, the first Sunday of each month)
+    monthly_timestamps = [
+        timestamp for idx, timestamp in enumerate(df.index) if (timestamp.month != df.index[idx - 1].month) | (idx == 0)
+    ]
+
+    # Automatically select appropriate number of timestamps so that x-axis does
+    # not get overcrowded with tick labels
+    step = 1
+    while len(monthly_timestamps[::step]) > 10:  # increase number if time range >3 years
+        step += 1
+    timestamps = monthly_timestamps[::step]
+
+    # Create tick labels from timestamps
+    labels = [
+        ts.strftime('%b\n%Y') if ts.year != timestamps[idx - 1].year else ts.strftime('%b')
+        for idx, ts in enumerate(timestamps)
+    ]
+
+    # Set major ticks and labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in timestamps])
+    ax.set_xticklabels(labels)
+
+    # Set minor ticks without labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
+
+    # Rotate and center labels
+    ax.figure.autofmt_xdate(rotation=0, ha='center')
