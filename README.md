@@ -384,6 +384,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-06-29 - Use coldchain data to plot deliveries and province vac data
 - 2021-06-22 - Add trending provinces for contact cases
 - 2021-06-12 - Add vacination daily and improve cumulative vaccinations
 - 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
