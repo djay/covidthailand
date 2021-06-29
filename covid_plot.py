@@ -162,7 +162,6 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             areacols = [c for c in cols if c not in between]
             df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked)
             linecols = between + actuals
-            #a0 = a0.twinx() if kind == 'bar' else a0
         else:
             linecols = cols + actuals
         for c in linecols:
@@ -171,7 +170,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             df_plot.plot(ax=a0, y=c, use_index=False, linewidth=width, style=style, kind="line", x_compat=kind == 'bar')
 
         if kind == "bar":
-           set_time_series_labels(df_plot, a0)
+            set_time_series_labels(df_plot, a0)
 
         a0.set_title(label=title)
         leg = a0.legend(labels=legends)

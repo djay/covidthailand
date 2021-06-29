@@ -1424,7 +1424,8 @@ def get_cases_by_prov_briefings():
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
         for i, page in enumerate(pages):
             text = page.get_text()
-            vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
+            # Might throw out totals since doesn't include all prov
+            #vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
             types = vac_briefing_totals(types, date, file, page, text)
 
         if not today_types.empty:
@@ -1793,15 +1794,19 @@ def vac_briefing_totals(df, date, file, page, text):
     numbers, _ = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
     if numbers:
         vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum, *_ = numbers
-        row = [date - datetime.timedelta(days=1), vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum]
-    # elif date < d("2021-5-18"):
-    #     vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum = [None] * 4
-    #     return df
+        row = [
+            date - datetime.timedelta(days=1), vac_dose1 + vac_dose2, vac_dose1_cum + vac_dose2_cum, vac_dose1,
+            vac_dose1_cum, vac_dose2, vac_dose2_cum
+        ]
     else:
-        #assert numbers
         return df
 
-    vac = pd.DataFrame([row], columns=["Date", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2", "Vac Given 2 Cum"]).set_index("Date")
+    # We need given totals to ensure we use these over other api given totals
+    vac = pd.DataFrame([row],
+                       columns=[
+                           "Date", "Vac Given", "Vac Given Cum", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2",
+                           "Vac Given 2 Cum"
+                       ]).set_index("Date")
     if not vac.empty:
         print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
     df = df.combine_first(vac)
@@ -1968,6 +1973,7 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 
 
 def get_vaccinations():
+    # Delivered Vac data from coldchain
     vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
     vac_delivered = join_provinces(vac_delivered, '_hospital_province_')
     # TODO: save delivered by prov somewhere. note some hospitals unknown prov
@@ -1977,6 +1983,7 @@ def get_vaccinations():
     vac_delivered = vac_delivered.rename(columns=dict(_quantity_='Vac Delivered'))
     vac_delivered['Vac Delivered Cum'] = vac_delivered['Vac Delivered'].fillna(0).cumsum()
 
+    # per prov given from coldchain
     vacct = get_vaccination_coldchain("vac_request_givenprov.json", join_prov=True)
     vacct = vacct.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
@@ -1984,6 +1991,41 @@ def get_vaccinations():
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
     vaccum = vacct.groupby(level="Province", as_index=False).apply(lambda pdf: daily2cum(pdf))
     vacct = vacct.combine_first(vaccum.droplevel(0))
+
+    vac_reports, vac_reports_prov = vaccination_reports()
+    vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
+
+    vac_prov_sum = vac_reports_prov.groupby("Date").sum()
+
+    vac_prov = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame(
+        columns=["Date", "Province"]).set_index(["Date", "Province"])
+    vac_prov = vac_prov.combine_first(vac_reports_prov).combine_first(vacct)
+    export(vac_prov, "vaccinations", csv_only=True)
+
+    vac_prov = vac_prov.combine_first(vacct)
+    # Get vaccinations by district
+    vac_prov = join_provinces(vac_prov, "Province")
+    given_by_area_1 = area_crosstab(vac_prov, 'Vac Given 1', ' Cum')
+    given_by_area_2 = area_crosstab(vac_prov, 'Vac Given 2', ' Cum')
+    given_by_area_both = area_crosstab(vac_prov, 'Vac Given', ' Cum')
+
+    vac_timeline = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame(
+        columns=["Date"]).set_index(["Date"])
+
+    vac_timeline = vac_timeline.combine_first(
+        vac_reports).combine_first(
+        vac_delivered).combine_first(
+        given_by_area_1).combine_first(
+        given_by_area_2).combine_first(
+        given_by_area_both).combine_first(
+        vac_prov_sum)
+    export(vac_timeline, "vac_timeline")
+
+    return vac_timeline
+
+
+def vaccination_reports():
+    vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
 
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
@@ -2000,10 +2042,6 @@ def get_vaccinations():
     vaccinations = {}
     allocations = {}
     vacnew = {}
-    vac_daily = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame(
-        columns=["Date"]).set_index(["Date"])
-    all_vac = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame(
-        columns=["Date", "Province"]).set_index(["Date", "Province"])
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
@@ -2011,7 +2049,7 @@ def get_vaccinations():
         vaccinations, allocations, vacnew = vaccination_tables(vaccinations, allocations, vacnew, date, page, file)
         vac_daily = vaccination_daily(vac_daily, date, file, page)
         vac_daily = vac_problem(vac_daily, date, file, page)
-    df = pd.DataFrame((list(key) + value for key, value in vaccinations.items()), columns=[
+    vac_prov_reports = pd.DataFrame((list(key) + value for key, value in vaccinations.items()), columns=[
         "Date",
         "Province",
         "Vac Given 1 Cum",
@@ -2029,23 +2067,6 @@ def get_vaccinations():
         "Vac Group Risk: Location 1 Cum",
         "Vac Group Risk: Location 2 Cum",
     ]).set_index(["Date", "Province"])
-    df = df.combine_first(vacct)
-    # df_new = pd.DataFrame((list(key)+value for key,value in vacnew.items()), columns=[
-    #     "Date",
-    #     "Province",
-    #     "Vac Given 1",
-    #     "Vac Given 2",
-    #     "Vac Group Medical Staff 1",
-    #     "Vac Group Medical Staff 2",
-    #     "Vac Group Other Frontline Staff 1",
-    #     "Vac Group Other Frontline Staff 2",
-    #     "Vac Group Over 60 1",
-    #     "Vac Group Over 60 2",
-    #     "Vac Group Risk: Disease 1",
-    #     "Vac Group Risk: Disease 2",
-    #     "Vac Group Risk: Location 1",
-    #     "Vac Group Risk: Location 2",
-    # ]).set_index(["Date", "Province"])
     alloc = pd.DataFrame((list(key) + value for key, value in allocations.items()), columns=[
         "Date",
         "Province",
@@ -2054,56 +2075,24 @@ def get_vaccinations():
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
-    all_vac = all_vac.combine_first(df).combine_first(alloc)
+    vac_prov_reports = vac_prov_reports.combine_first(alloc)
 
     # Do cross check we got the same number of allocations to vaccination
-    counts = all_vac.groupby("Date").count()
-    missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group Risk: Location 2 Cum']]
-    # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
-    missing_data = missing_data["2021-04-09": "2021-05-03"]
-    # 2021-05-02 2021-05-01 - use images for just one table??
-    # We will just remove this days
-    all_vac = all_vac.drop(index=missing_data.index)
-    # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
-    # TODO: only have 76 prov? something going on
-    missing_data = counts[counts['Vac Group Risk: Location 2 Cum'] < 76]["2021-05-04":]
-    all_vac = all_vac.drop(index=missing_data.index)
-    # TODO: parse the daily vaccinations to make up for missing data in cum tables
+    if not vac_prov_reports.empty:
+        counts = vac_prov_reports.groupby("Date").count()
+        missing_data = counts[counts['Vac Allocated AstraZeneca 1'] > counts['Vac Group Risk: Location 2 Cum']]
+        # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
+        missing_data = missing_data["2021-04-09": "2021-05-03"]
+        # 2021-05-02 2021-05-01 - use images for just one table??
+        # We will just remove this days
+        vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
+        # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
+        # TODO: only have 76 prov? something going on
+        missing_data = counts[counts['Vac Group Risk: Location 2 Cum'] < 76]["2021-05-04":]
+        vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
-    # Fix holes in cumulative using any dailys
-    # TODO: below is wrong approach. should add daily to cum -1
-    # df_daily = df.reset_index().set_index("Date").groupby("Province").apply(cum2daily)
-    # df_daily.combine_first(df_new)
-    # df_cum = df_daily.groupby("Province").cumsum()
-    # df_cum.columns = [f"{c} Cum" for c in df_cum.columns]
-    # all_vac = all_vac.combine_first(df_cum)
 
-    export(all_vac, "vaccinations", csv_only=True)
-
-    thaivac = all_vac.groupby("Date").sum()
-    thaivac = thaivac.combine_first(vac_daily).combine_first(vac_delivered)
-    thaivac.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
-
-    # Get vaccinations by district
-    all_vac = join_provinces(all_vac, "Province")
-    given_by_area_1 = area_crosstab(all_vac, 'Vac Given 1', ' Cum')
-    given_by_area_2 = area_crosstab(all_vac, 'Vac Given 2', ' Cum')
-    given_by_area_both = area_crosstab(all_vac, 'Vac Given', ' Cum')
-    thaivac = thaivac.combine_first(given_by_area_1).combine_first(given_by_area_2).combine_first(given_by_area_both)
-    export(thaivac, "vac_timeline")
-
-    # TODO: can get todays from - https://ddc.moph.go.th/vaccine-covid19/ or briefings
-
-    # Need to drop any dates that are incomplete.
-    # TODO: could keep allocations?
-    # thaivac = thaivac.drop(index=missing_data.index)
-
-    # thaivac = thaivac.combine_first(cum2daily(thaivac))
-    # thaivac = thaivac.drop([c for c in thaivac.columns if " Cum" in c], axis=1)
-    # TODO: remove cumlutive and other stats we don't want
-
-    # TODO: only return some daily summary stats
-    return thaivac
+    return vac_daily, vac_prov_reports
 
 ################################
 # Misc
