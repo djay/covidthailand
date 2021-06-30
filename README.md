@@ -147,10 +147,19 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ## Vaccinations by Priority Groups
 
+![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
+- Source: [DDC Daily Vaccination Reports](#dl-vac)
+
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
-![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_3.png)
+![Vaccinations Groups by Progress towards goals](https://github.com/djay/covidthailand/wiki/vac_groups_goals_3.png)
+- Source: [DDC Daily Vaccination Reports](#dl-vac)
+
+![Top Provinces by Vaccination Doses Given](https://github.com/djay/covidthailand/wiki/vac_top5_doses_3.png)
+- Source: [DDC Daily Vaccination Reports](#dl-vac)
+
+![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 
@@ -307,20 +316,23 @@ Bureau, Chaeng Watthana"
   - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
 ## Daily DDC Vaccination Reports<a name="dl-vac">
-- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- Source: 
+   - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+   - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 - [Download CSV](https://github.com/djay/covidthailand/wiki/vac_timeline.csv)
 - e.g.
 ```
       "Date":"2021-04-25",
-      "Vaccinations Allocated Sinovac {1|2}":3840.0,
-      "Vaccinations Allocated AstraZeneca {1|2}":0.0,
-      "Vaccinations Given {1|2} Cum":3189.0,
-      "Vaccinations Given {1|2} %":83.0,
-      "Vaccinations Group Medical Staff {1|2} Cum":1939.0,
-      "Vaccinations Group Other Frontline Staff {1|2} Cum":1081.0,
-      "Vaccinations Group Over 60 {1|2} Cum":0.0,
-      "Vaccinations Group Risk: Disease {1|2} Cum":54.0,
-      "Vaccinations Group Risk: Location {1|2} Cum":115.0,
+      "Vac Allocated Sinovac {1|2}":3840.0,
+      "Vac Allocated AstraZeneca {1|2}":0.0,
+      "Vac Delivered": 200.00
+      "Vac Given {1|2} Cum":3189.0,
+      "Vac Given {1|2} %":83.0,
+      "Vac Group Medical Staff {1|2} Cum":1939.0,
+      "Vac Group Other Frontline Staff {1|2} Cum":1081.0,
+      "Vac Group Over 60 {1|2} Cum":0.0,
+      "Vac Group Risk: Disease {1|2} Cum":54.0,
+      "Vac Group Risk: Location {1|2} Cum":115.0,
 ```
 - Note
    - The previous data per province is no longer updated in the reports so this download has been removed.
@@ -328,6 +340,7 @@ Bureau, Chaeng Watthana"
    - 1/2 refers to shot 1 or shot 2.
    - Some days some tables are images so there is missing data. 
    - Summary vaccination data included in the combine download
+   - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
    - #TODO: put in thai group explanations.
 
 
@@ -371,6 +384,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-06-29 - Use coldchain data to plot deliveries and province vac data
 - 2021-06-22 - Add trending provinces for contact cases
 - 2021-06-12 - Add vacination daily and improve cumulative vaccinations
 - 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
@@ -396,13 +410,13 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
 ## TODO (looking for contributors!)
+- get death age brackets from CFR in situation reports
+  - also has intersection of deaths and disease deaths
 - estimate median age of death from population. 
   - could help show if cases or deaths are underreported or if elderly are more protected in thailand
   - potentially could adjust the IFR to get a better infeciton estimtate.
 - excess deaths adjusted for road accidents and suicides
   - https://github.com/TheEconomist/covid-19-excess-deaths-tracker/blob/master/output-data/excess-deaths/thailand_excess_deaths.csv
-- fix vaccination numbers dropping based on the idea that later reports are corrections
-   - so fill forward with current max? or fill back with current min?
 - plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
 - do some graphs showing north, south, east, central, bangkok.
   - same breakdown as briefing infographic

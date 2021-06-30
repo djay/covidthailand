@@ -6,6 +6,7 @@ from typing import List, Union
 import matplotlib.cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.pyplot import cycler
+import matplotlib.dates as mdates
 from cycler import Cycler
 import pandas as pd
 import numpy as np
@@ -32,8 +33,11 @@ def add_data(data, df):
     except ValueError:
         print('detected duplicates; dropping only the duplicate rows')
         idx_names = data.index.names
-        data = data.reset_index().append(df.reset_index()).drop_duplicates()
-        data = data.set_index(idx_names)
+        if [None] != idx_names:
+            data = data.reset_index()
+        data = data.append(df.reset_index()).drop_duplicates()
+        if [None] != idx_names:
+            data = data.set_index(idx_names)
     return data
 
 
@@ -59,6 +63,28 @@ def cum2daily(results):
     return cum
 
 
+def daily2cum(results):
+    cols = [c for c in results.columns if " Cum" not in c]
+    daily = results[cols]
+    names = daily.index.names
+    # bit of a hack.pick first value to fill in the gaps later
+    extra_index = [(n, daily.first_valid_index()[names.index('Province')]) for n in names if n != 'Date']
+
+    daily = daily.reset_index().set_index("Date")
+    all_days = pd.date_range(daily.index.min(), daily.index.max(), name="Date")
+    daily = daily.reindex(all_days)
+    # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
+    cum = daily[cols].fillna(0).cumsum()  # we got cumilitive data
+    renames = dict((c, c + ' Cum') for c in list(cum.columns))
+    cum = cum.rename(columns=renames)
+    # Add back in the extra index.
+    cum = cum.assign(**dict([(n, daily[n].fillna(value)) for n, value in extra_index]) )
+    # what about gaps in province names?
+
+    cum = cum.reset_index().set_index(names)
+    return cum[cum.columns]
+
+
 def human_format(num: float, pos: int) -> str:
     magnitude = 0
     while abs(num) >= 1000:
@@ -67,6 +93,10 @@ def human_format(num: float, pos: int) -> str:
     # add more suffixes if you need them
     suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
     return f'{num:.1f}{suffix}'
+
+
+def perc_format(num: float, pos: int) -> str:
+    return f'{num:.0f}%'
 
 
 def rearrange(lst, *first):
@@ -185,7 +215,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         0).reset_index().set_index("Date")
 
     # = metricfunc(df)
-    last_day = with_metric.loc[with_metric.last_valid_index()]
+    last_day = with_metric.loc[with_metric.dropna().last_valid_index()]
     top5 = last_day.nlargest(num, 0).reset_index()
     # sort data into top 5 + rest
     top5[name] = top5['Province']
@@ -279,3 +309,93 @@ def get_cycle(cmap, n=None, use_index="auto"):
     else:
         colors = cmap(np.linspace(0, 1, n))
         return cycler("color", colors)
+
+
+def line_format(label):
+    """
+    Convert time label to the format of pandas line plot
+    """
+    month = label.month_name()[:3]
+    if month == 'Jan':
+        month += f'\n{label.year}'
+    return month
+
+
+def set_time_series_labels(df, ax):
+    # https://stackoverflow.com/questions/30133280/pandas-bar-plot-changes-date-format
+    # Create list of monthly timestamps by selecting the first weekly timestamp of each
+    # month (in this example, the first Sunday of each month)
+    monthly_timestamps = [
+        timestamp for idx, timestamp in enumerate(df.index) if (timestamp.month != df.index[idx - 1].month) | (idx == 0)
+    ]
+
+    # Automatically select appropriate number of timestamps so that x-axis does
+    # not get overcrowded with tick labels
+    step = 1
+    while len(monthly_timestamps[::step]) > 10:  # increase number if time range >3 years
+        step += 1
+    timestamps = monthly_timestamps[::step]
+
+    # Create tick labels from timestamps
+    labels = [
+        ts.strftime('%b\n%Y') if ts.year != timestamps[idx - 1].year else ts.strftime('%b')
+        for idx, ts in enumerate(timestamps)
+    ]
+
+    # Set major ticks and labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in timestamps])
+    ax.set_xticklabels(labels)
+
+    # Set minor ticks without labels
+    ax.set_xticks([df.index.get_loc(ts) for ts in monthly_timestamps], minor=True)
+
+    # Rotate and center labels
+    ax.figure.autofmt_xdate(rotation=0, ha='center')
+
+
+def set_time_series_labels_2(df, ax):
+
+    # Compute width of bars in matplotlib date units, 'md' (in days) and adjust it if
+    # the bar width in df.plot.bar has been set to something else than the default 0.5
+    bar_width_md_default, = np.diff(mdates.date2num(df.index[:2])) / 2
+    bar_width = ax.patches[0].get_width()
+    bar_width_md = bar_width * bar_width_md_default / 0.5
+
+    # Compute new x values in matplotlib date units for the patches (rectangles) that
+    # make up the stacked bars, adjusting the positions according to the bar width:
+    # if the frequency is in months (or years), the bars may not always be perfectly
+    # centered over the tick marks depending on the number of days difference between
+    # the months (or years) given by df.index[0] and [1] used to compute the bar
+    # width, this should not be noticeable if the bars are wide enough.
+    x_bars_md = mdates.date2num(df.index) - bar_width_md / 2
+    nvar = len(ax.get_legend_handles_labels()[1])
+    x_patches_md = np.ravel(nvar * [x_bars_md])
+
+    # Set bars to new x positions and adjust width: this loop works fine with NaN
+    # values as well because in bar plot NaNs are drawn with a rectangle of 0 height
+    # located at the foot of the bar, you can verify this with patch.get_bbox()
+    for patch, x_md in zip(ax.patches, x_patches_md):
+        patch.set_x(x_md)
+        patch.set_width(bar_width_md)
+
+    # Set major ticks
+    maj_loc = mdates.AutoDateLocator()
+    ax.xaxis.set_major_locator(maj_loc)
+
+    # Show minor tick under each bar (instead of each month) to highlight
+    # discrepancy between major tick locator and bar positions seeing as no tick
+    # locator is available for first-week-of-the-month frequency
+    ax.set_xticks(x_bars_md + bar_width_md / 2, minor=True)
+
+    # Set major tick formatter
+    zfmts = ['', '%b\n%Y', '%b', '%d\n%b', '%H:%M', '%H:%M']
+    fmt = mdates.ConciseDateFormatter(maj_loc, zero_formats=zfmts, show_offset=False)
+    ax.xaxis.set_major_formatter(fmt)
+
+    # Shift the plot frame to where the bars are now located
+    xmin = min(x_bars_md) - bar_width_md
+    xmax = max(x_bars_md) + 2 * bar_width_md
+    ax.set_xlim(xmin, xmax)
+
+    # Adjust tick label format last, else it may sometimes not be applied correctly
+    ax.figure.autofmt_xdate(rotation=0, ha='center')
