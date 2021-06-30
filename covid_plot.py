@@ -438,7 +438,7 @@ def save_plots(df: pd.DataFrame) -> None:
               unknown_total='Cases',
               kind='area',
               stacked=True,
-              percent_fig=False,
+              percent_fig=True,
               ma_days=7,
               cmap="tab10")
 
@@ -471,7 +471,7 @@ def save_plots(df: pd.DataFrame) -> None:
               unknown_total='Cases',
               kind='area',
               stacked=True,
-              percent_fig=False,
+              percent_fig=True,
               ma_days=7,
               cmap='tab10')
 
@@ -569,7 +569,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cols_subset=cols, legends=AREA_LEGEND + ['Imported Cases'],
               title='Thailand Covid Cases by Health District',
               unknown_name="Unknown District", unknown_total="Cases",
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
