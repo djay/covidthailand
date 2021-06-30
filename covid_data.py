@@ -1189,11 +1189,12 @@ def briefing_deaths_provinces(text, date, total_deaths):
     text = re.sub("(ละ|/จังหวัด|จังหวัด|อย่างละ|ราย)", "", text)
 
     # Provinces are split between bullets with disease and risk.
-    pre, rest = re.split("โควิด *-?19\n\n", text, 1)
+    pre, noheader = re.split("โควิด *-?19\n\n", text, 1)
     bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
-    ptext1, b1, rest = bullets_re.split(rest, 1)
-    *bullets, ptext2 = bullets_re.split(rest)
-    ptext2, age_text = re.split("•", ptext2, 1)
+    ptext1, b1, rest_bullets = bullets_re.split(noheader, 1)
+    rest_bullets2, gender = rest_bullets.split("• ชาย", 1)
+    *bullets, ptext2 = bullets_re.split(rest_bullets2)
+    ptext2, *age_text = re.split("•", ptext2, 1)
     ptext = ptext1 + ptext2
     pcells = pairwise(strip(re.split(r"(\(?\d+\)?)", ptext)))
 
@@ -2241,8 +2242,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
