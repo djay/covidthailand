@@ -367,7 +367,7 @@ def set_time_series_labels_2(df, ax):
     ax.set_xticks(x_bars_md + bar_width_md / 2, minor=True)
 
     # Set major tick formatter
-    zfmts = ['', '%b\n%Y', '%b', '%b-%d', '%H:%M', '%H:%M']
+    zfmts = ['', '%b\n%Y', '%b', '%d\n%b', '%H:%M', '%H:%M']
     fmt = mdates.ConciseDateFormatter(maj_loc, zero_formats=zfmts, show_offset=False)
     ax.xaxis.set_major_formatter(fmt)
 

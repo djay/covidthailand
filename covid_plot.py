@@ -168,21 +168,17 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
-            use_index = kind != 'bar'  # Putting lines on bar plots doesn't work well
             df_plot.plot(ax=a0,
                          y=c,
-                         use_index=use_index,
+                         use_index=True,
                          linewidth=width,
                          style=style,
                          kind="line",
-                         x_compat=not use_index)
+                         x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
+                         )
 
         if kind == "bar":
-            set_time_series_labels(df_plot, a0)
-            # a0.xaxis.set_major_locator(mdates.MonthLocator())
-            # a0.xaxis.set_major_formatter(mdates.DateFormatter('\n%b'))
-            # a0.xaxis.set_minor_locator(mdates.WeekdayLocator())
-            # a0.xaxis.set_minor_formatter(mdates.DateFormatter('%d'))
+            set_time_series_labels_2(df_plot, a0)
 
         a0.set_title(label=title)
         leg = a0.legend(labels=legends)
