@@ -301,7 +301,11 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
         return tweets
     for limit in ([50, 2000, 5000] if tweets else [5000]):
         print(f"Getting {limit} tweets")
-        for tweet in sorted(tw.get_tweets(userid, count=limit).contents, key=lambda t: t['id']):
+        try:
+            resp = tw.get_tweets(userid, count=limit).contents
+        except requests.exceptions.RequestException:
+            resp = []
+        for tweet in sorted(resp, key=lambda t: t['id']):
             date = tweet['created_at'].date()
             text = parse_tweet(tw, tweet, tweets.get(date, []), *matches)
             if text:
