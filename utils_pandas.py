@@ -190,12 +190,15 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     valuefunc = metricfunc if valuefunc is None else valuefunc
 
     # Apply metric on each province by itself
-    with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(
-        0).reset_index().set_index("Date")
+    #with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(0)
+    # with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).unstack()
+    with_metric = df.groupby(level="Province", group_keys=False).apply(metricfunc)
+    with_metric = with_metric.reset_index().set_index("Date")
+    metric_col = [c for c in with_metric.columns if c != 'Province']
 
     # = metricfunc(df)
     last_day = with_metric.loc[with_metric.dropna().last_valid_index()]
-    top5 = last_day.nlargest(num, 0).reset_index()
+    top5 = last_day.nlargest(num, metric_col).reset_index()
     # sort data into top 5 + rest
     top5[name] = top5['Province']
     df = df.join(top5.set_index("Province")[name], on="Province").reset_index()
@@ -204,7 +207,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         # TODO: sum() might have to be configurable?
         df = df.groupby(["Date", name]).sum().reset_index()  # condense all the "other" fields
     # apply the value function to get all the values
-    values = df.set_index(["Date", name]).groupby(name, group_keys=False).apply(valuefunc).rename(0).reset_index()
+    values = df.set_index(["Date", name]).groupby(level=name, group_keys=False).apply(valuefunc).rename(0).reset_index()
     # put the provinces into cols
     series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="sum")
 
