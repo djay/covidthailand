@@ -150,7 +150,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             continue
 
         if percent_fig:
-            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
         # plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
@@ -794,9 +794,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',)
 
     # Top 5 vaccine rollouts
-    vac = import_csv("vaccinations")
-    vac['Date'] = pd.to_datetime(vac['Date'])
-    vac = vac.set_index('Date')
+    vac = import_csv("vaccinations", ['Date', 'Province'])
     vac = vac.join(get_provinces()['Population'], on='Province')
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100)
 
