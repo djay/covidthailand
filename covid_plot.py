@@ -822,13 +822,13 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cases = import_csv("cases_by_province").set_index(["Date", "Province"])
 
-    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    top5 = cases.pipe(topprov, increasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='cases_prov_increasing', cols_subset=cols,
               title='Provinces with Cases Trending Up\nin last 30 days (using 3 days rolling average)',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
-    top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=5)
+    top5 = cases.pipe(topprov, decreasing, cases_ma, name="Province Cases (3d MA)", other_name=None, num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='cases_prov_decreasing', cols_subset=cols,
               title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
@@ -838,7 +838,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='cases_prov_top', cols_subset=cols,
               title='Provinces with Most Cases',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+              kind='line', stacked=False, percent_fig=False, ma_days=3, cmap='tab10')
 
     # def increasing(adf: pd.DataFrame) -> pd.DataFrame:
     #     return adf["Cases Risk: Contact"].rolling(7).mean().rolling(7).apply(trendline)
