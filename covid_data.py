@@ -440,7 +440,7 @@ def get_situation():
     today_situation = get_situation_today()
     en_situation = get_en_situation()
     th_situation = get_thai_situation()
-    situation = th_situation.combine_first(en_situation)
+    situation = import_csv("situation_reports", ["Date"], not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
     cum = cum2daily(situation)
     situation = situation.combine_first(cum)  # any direct non-cum are trusted more
 
@@ -668,7 +668,7 @@ def get_cases_by_demographics_api():
         20210622.26: "2.สัมผัสผู้ติดเชื้อ:Contact",
         20210622.27: "Cluster ระยอง:Community",
         20210622.28: "ตรวจสุขภาพแรงงานต่างด้าว:Work",
-        20210622.29: "สัมผัสในสถานพยาบาล:Work", # contact in hospital
+        20210622.29: "สัมผัสในสถานพยาบาล:Work",  # contact in hospital
         20210622.03: "ไปเที่ยวสถานบันเทิงในอุบลที่พบการระบาดของโรค Ubar:Entertainment",
         20210622.31: "ไปสถานที่เสี่ยง เช่น ตลาด สถานที่ชุมชน:Community",
         20210622.32: "Cluster ทัณฑสถานหญิงกลาง:Prison",
@@ -774,7 +774,7 @@ def parse_moph_tweet(df, date, text):
 
     if any_in([None], deaths, cases):
         raise Exception(f"Can't parse tweet {date} {text}")
-    numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่") # TODO: test len to make sure we didn't miss something
+    numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่")  # TODO: test len to make sure we didn't miss something
 
     if any_in([None], prisons, recovered):
         pass
@@ -866,7 +866,6 @@ def get_cases_by_prov_tweets():
     for date, tweets in sorted(thaimoph.items(), reverse=True):
         for tweet in tweets:
             df = df.pipe(parse_moph_tweet, date, tweet)
-
 
     for date, text in sorted(officials.items(), reverse=True):
         df = df.pipe(parse_official_tweet, date, text)
@@ -1079,7 +1078,6 @@ def briefing_case_types(date, pages):
         assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
         if date > d("2021-04-23"):
             assert not any_in([None], hospital, field, severe, respirator, hospitalised)
-
 
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
@@ -1403,8 +1401,9 @@ def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
+    #deaths = import_csv("deaths", ["Date", "Province"], not USE_CACHE_DATA)
+    deaths = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
-    deaths = pd.DataFrame()
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
     end = today()
@@ -1482,21 +1481,21 @@ def get_cases_by_prov_briefings():
 
 
 def get_cases_by_area_type():
+    dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
+
     cases_demo, risks_prov = get_cases_by_demographics_api()
-    dfprov, twcases = get_cases_by_prov_tweets()
-    briefings, cases = get_cases_by_prov_briefings()
-    cases = cases.combine_first(twcases)
-    dfprov = briefings.combine_first(dfprov)  # TODO: check they aggree
-    # df2.index = df2.index.map(lambda x: difflib.get_close_matches(x, df1.index)[0])
-    # dfprov = dfprov.join(PROVINCES['Health District Number'], on="Province")
+    tweets_prov, twcases = get_cases_by_prov_tweets()
+    briefings_prov, cases = get_cases_by_prov_briefings()
+
+    dfprov = dfprov.combine_first(
+        briefings_prov).combine_first(
+        tweets_prov).combine_first(
+        risks_prov)  # TODO: check they aggree
     dfprov = join_provinces(dfprov, on="Province")
+    export(dfprov, "cases_by_province")
     # Now we can save raw table of provice numbers
 
-    dfprov = dfprov.combine_first(risks_prov)
-    cases = cases.combine_first(cases_demo)
-
-    export(dfprov, "cases_by_province")
-
+    cases = cases.combine_first(twcases).combine_first(cases_demo)
     # Reduce down to health areas
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
@@ -1532,10 +1531,11 @@ def get_cases_by_area_api():
 
 def get_cases_by_area():
     # we will add in the tweet data for the export
+    cases = import_csv("cases_by_area", ["Date"], not USE_CACHE_DATA)
     case_briefings_tweets = get_cases_by_area_type()
     case_api = get_cases_by_area_api()  # can be very wrong for the last days
 
-    case_areas = case_briefings_tweets.combine_first(case_api)
+    case_areas = cases.combine_first(case_briefings_tweets).combine_first(case_api)
 
     export(case_areas, "cases_by_area")
     return case_areas
@@ -1676,8 +1676,8 @@ def get_tests_private_public_pptx(file, title, series, data):
 
 def get_test_reports():
     data = pd.DataFrame()
-    raw = pd.DataFrame()
-    pubpriv = pd.DataFrame()
+    raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
+    pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
     for file in test_dav_files(ext=".pptx"):
         for chart, title, series, pagenum in pptx2chartdata(file):
@@ -2001,8 +2001,7 @@ def get_vaccinations():
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
-    vac_prov = import_csv("vaccinations", ["Date", "Province"]) if USE_CACHE_DATA else pd.DataFrame(
-        columns=["Date", "Province"]).set_index(["Date", "Province"])
+    vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
     vac_prov = vac_prov.combine_first(vac_reports_prov).combine_first(vacct)
     export(vac_prov, "vaccinations", csv_only=True)
 
@@ -2013,8 +2012,7 @@ def get_vaccinations():
     given_by_area_2 = area_crosstab(vac_prov, 'Vac Given 2', ' Cum')
     given_by_area_both = area_crosstab(vac_prov, 'Vac Given', ' Cum')
 
-    vac_timeline = import_csv("vac_timeline", ["Date"]) if USE_CACHE_DATA else pd.DataFrame(
-        columns=["Date"]).set_index(["Date"])
+    vac_timeline = import_csv("vac_timeline", ["Date"], not USE_CACHE_DATA)
 
     vac_timeline = vac_timeline.combine_first(
         vac_reports).combine_first(
