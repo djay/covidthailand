@@ -11,10 +11,10 @@ import pandas as pd
 
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, get_cycle, human_format, import_csv, perc_format, rearrange, set_time_series_labels_2, topprov, trendline
+from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, perc_format, rearrange, set_time_series_labels_2, topprov, trendline, value_ma
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, get_province, get_provinces, thaipop
+    AREA_LEGEND_ORDERED, FIRST_AREAS, get_province, get_provinces, join_provinces, thaipop
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -657,12 +657,13 @@ def save_plots(df: pd.DataFrame) -> None:
     ####################
 
     def clean_vac_leg(c):
-        return c.replace(' Cum', ''
-                        ).replace('Vac ', ''
-                        ).replace("Group ", ""
-                        ).replace('Only 1', '(At least 1 Dose)'
-                        ).replace('2', '(Fully Vaccinated)'
-                        ).replace('Risk: Location', 'Under 60')
+        return c.replace(
+            ' Cum', '').replace(
+            'Vac ', '').replace(
+            "Group ", "").replace(
+            'Only 1', '(At least 1 Dose)').replace(
+            '2', '(Fully Vaccinated)').replace(
+            'Risk: Location', 'Under 60')
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
@@ -808,11 +809,18 @@ def save_plots(df: pd.DataFrame) -> None:
     # Cases by provinces
     #######################
 
-
-    cases = import_csv("cases_by_province").set_index(["Date", "Province"])
+    cases = import_csv("cases_by_province")
+    # fill in missing provinces
+    cases_pivot = cases.fillna(0).pivot_table(index="Date", columns="Province", values="Cases")
+    # fill in missing days
+    all_days = pd.date_range(cases_pivot.index.min(), cases_pivot.index.max(), name="Date")
+    cases_pivot = cases_pivot.reindex(all_days).fillna(0)  # put in missing days with NaN
+    cases = cases.set_index(["Date", "Province"]).combine_first(cases_pivot.unstack().to_frame("Cases"))
+    cases = join_provinces(cases, "Province")  # to fill in missing health districts
+    cases = cases.fillna(0)  # all the other values
 
     top5 = cases.pipe(topprov,
-                      increasing("Cases", 3),
+                      increasing("Cases", 7),
                       value_ma("Cases", None),
                       name="Province Cases (3d MA)",
                       other_name=None,
@@ -821,11 +829,11 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               png_prefix='cases_prov_increasing',
               cols_subset=cols,
-              title='Provinces with Cases Trending Up\nin last 30 days (using 3 days rolling average)',
+              title='Provinces with Cases Trending Up\nin last 30 days',
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=3,
+              ma_days=7,
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
@@ -856,7 +864,6 @@ def save_plots(df: pd.DataFrame) -> None:
               percent_fig=False,
               ma_days=3,
               cmap='tab10')
-
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work']:
         top5 = cases.pipe(topprov,

@@ -171,13 +171,14 @@ def export(df, name, csv_only=False):
     )
 
 
-def import_csv(name, index=None, return_empty=False):
+def import_csv(name, index=None, return_empty=False, date_cols=['Date']):
     path = os.path.join("api", f"{name}.csv")
     if not os.path.exists(path) or return_empty:
         return pd.DataFrame(columns=index).set_index(index)
     print("Importing CSV:", path)
     old = pd.read_csv(path)
-    old['Date'] = pd.to_datetime(old['Date'])
+    for c in date_cols:
+        old[c] = pd.to_datetime(old[c])
     if index:
         return old.set_index(index)
     else:
@@ -186,7 +187,7 @@ def import_csv(name, index=None, return_empty=False):
 
 def increasing(col, ma=3):
     def increasing_func(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf[col].rolling(ma, min_periods=1).mean().rolling(ma, min_periods=1).apply(trendline)
+        return adf[col].rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline)
     return increasing_func
 
 
@@ -199,9 +200,25 @@ def decreasing(col, ma=3):
 
 
 def value_ma(col, ma=3):
-    def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf["Cases"].rolling(3).mean()
+    if ma:
+        def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+            return adf[col].rolling(ma, min_periods=1).mean()
+    else:
+        def cases_ma(adf: pd.DataFrame) -> pd.DataFrame:
+            return adf[col]
     return cases_ma
+
+
+def trendline(data: pd.DataFrame, order: int = 1) -> float:
+    slope = list(data)[-1] - list(data)[0] / len(data.index.values)
+    return float(slope)
+
+
+def trendline_slow(data):
+    # simulate dates with monotonic inc numbers
+    dates = range(0, len(data.index.values))
+    coeffs = np.polyfit(dates, list(data), order)
+    return float(coeffs[-2])
 
 
 def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
@@ -211,7 +228,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     valuefunc = metricfunc if valuefunc is None else valuefunc
 
     # Apply metric on each province by itself
-    #with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(0)
+    # with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(0)
     # with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).unstack()
     with_metric = df.groupby(level="Province", group_keys=False).apply(metricfunc)
     with_metric = with_metric.reset_index().set_index("Date")
@@ -237,14 +254,6 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         return series[cols + [other_name]]
     else:
         return series[cols]
-
-
-def trendline(data: pd.DataFrame, order: int = 1) -> float:
-    # simulate dates with monotonic inc numbers
-    dates = range(0, len(data.index.values))
-    coeffs = np.polyfit(dates, list(data), order)
-    slope = coeffs[-2]
-    return float(slope)
 
 
 #################

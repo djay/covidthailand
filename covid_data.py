@@ -668,7 +668,7 @@ def get_cases_by_demographics_api():
         20210622.26: "2.สัมผัสผู้ติดเชื้อ:Contact",
         20210622.27: "Cluster ระยอง:Community",
         20210622.28: "ตรวจสุขภาพแรงงานต่างด้าว:Work",
-        20210622.29: "สัมผัสในสถานพยาบาล:Work", # contact in hospital
+        20210622.29: "สัมผัสในสถานพยาบาล:Work",  # contact in hospital
         20210622.03: "ไปเที่ยวสถานบันเทิงในอุบลที่พบการระบาดของโรค Ubar:Entertainment",
         20210622.31: "ไปสถานที่เสี่ยง เช่น ตลาด สถานที่ชุมชน:Community",
         20210622.32: "Cluster ทัณฑสถานหญิงกลาง:Prison",
@@ -774,7 +774,7 @@ def parse_moph_tweet(df, date, text):
 
     if any_in([None], deaths, cases):
         raise Exception(f"Can't parse tweet {date} {text}")
-    numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่") # TODO: test len to make sure we didn't miss something
+    numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่")  # TODO: test len to make sure we didn't miss something
 
     if any_in([None], prisons, recovered):
         pass
@@ -866,7 +866,6 @@ def get_cases_by_prov_tweets():
     for date, tweets in sorted(thaimoph.items(), reverse=True):
         for tweet in tweets:
             df = df.pipe(parse_moph_tweet, date, tweet)
-
 
     for date, text in sorted(officials.items(), reverse=True):
         df = df.pipe(parse_official_tweet, date, text)
@@ -1079,7 +1078,6 @@ def briefing_case_types(date, pages):
         assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
         if date > d("2021-04-23"):
             assert not any_in([None], hospital, field, severe, respirator, hospitalised)
-
 
         # cases by region
         # bangkok, _ = get_next_number(text, "กรุงเทพฯ และนนทบุรี")
@@ -1489,7 +1487,10 @@ def get_cases_by_area_type():
     tweets_prov, twcases = get_cases_by_prov_tweets()
     briefings_prov, cases = get_cases_by_prov_briefings()
 
-    dfprov = dfprov.combine_first(briefings_prov).combine_first(tweets_prov).combine_first(risks_prov)  # TODO: check they aggree
+    dfprov = dfprov.combine_first(
+        briefings_prov).combine_first(
+        tweets_prov).combine_first(
+        risks_prov)  # TODO: check they aggree
     dfprov = join_provinces(dfprov, on="Province")
     export(dfprov, "cases_by_province")
     # Now we can save raw table of provice numbers
@@ -1675,7 +1676,7 @@ def get_tests_private_public_pptx(file, title, series, data):
 
 def get_test_reports():
     data = pd.DataFrame()
-    raw = import_csv("tests_by_area", ["Date"], not USE_CACHE_DATA)
+    raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
     for file in test_dav_files(ext=".pptx"):
