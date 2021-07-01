@@ -1733,10 +1733,12 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 if code:
                     set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
                 post['dataRequest'].append(pspec)
-        r = requests.post(url, json=post, timeout=20)
+        r = requests.post(url, json=post, timeout=60)
         _, _, data = r.text.split("\n")
         data = json.loads(data)
         for resp in data['dataResponse']:
+            if 'errorStatus' in resp:
+                raise Exception(resp['errorStatus']['reasonStr'])
             yield resp
     if join_prov:
         dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
@@ -1990,8 +1992,9 @@ def get_vaccinations():
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
-    vaccum = vacct.groupby(level="Province", as_index=False).apply(lambda pdf: daily2cum(pdf))
-    vacct = vacct.combine_first(vaccum.droplevel(0))
+    vacct = vacct.fillna(0)
+    vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(lambda pdf: daily2cum(pdf))
+    vacct = vacct.combine_first(vaccum)
 
     vac_reports, vac_reports_prov = vaccination_reports()
     vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
