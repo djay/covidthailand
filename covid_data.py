@@ -1189,11 +1189,12 @@ def briefing_deaths_provinces(text, date, total_deaths):
     text = re.sub("(ละ|/จังหวัด|จังหวัด|อย่างละ|ราย)", "", text)
 
     # Provinces are split between bullets with disease and risk.
-    pre, rest = re.split("โควิด *-?19\n\n", text, 1)
+    pre, noheader = re.split("โควิด *-?19\n\n", text, 1)
     bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
-    ptext1, b1, rest = bullets_re.split(rest, 1)
-    *bullets, ptext2 = bullets_re.split(rest)
-    ptext2, age_text = re.split("•", ptext2, 1)
+    ptext1, b1, rest_bullets = bullets_re.split(noheader, 1)
+    rest_bullets2, gender = rest_bullets.split("• ชาย", 1)
+    *bullets, ptext2 = bullets_re.split(rest_bullets2)
+    ptext2, *age_text = re.split("•", ptext2, 1)
     ptext = ptext1 + ptext2
     pcells = pairwise(strip(re.split(r"(\(?\d+\)?)", ptext)))
 
@@ -1731,10 +1732,12 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 if code:
                     set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
                 post['dataRequest'].append(pspec)
-        r = requests.post(url, json=post, timeout=20)
+        r = requests.post(url, json=post, timeout=60)
         _, _, data = r.text.split("\n")
         data = json.loads(data)
         for resp in data['dataResponse']:
+            if 'errorStatus' in resp:
+                raise Exception(resp['errorStatus']['reasonStr'])
             yield resp
     if join_prov:
         dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
@@ -1988,8 +1991,9 @@ def get_vaccinations():
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
-    vaccum = vacct.groupby(level="Province", as_index=False).apply(lambda pdf: daily2cum(pdf))
-    vacct = vacct.combine_first(vaccum.droplevel(0))
+    vacct = vacct.fillna(0)
+    vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(lambda pdf: daily2cum(pdf))
+    vacct = vacct.combine_first(vaccum)
 
     vac_reports, vac_reports_prov = vaccination_reports()
     vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
@@ -2238,8 +2242,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()

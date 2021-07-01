@@ -150,7 +150,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             continue
 
         if percent_fig:
-            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 2]}, figsize=[20, 12])
+            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
         # plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
@@ -438,7 +438,7 @@ def save_plots(df: pd.DataFrame) -> None:
               unknown_total='Cases',
               kind='area',
               stacked=True,
-              percent_fig=False,
+              percent_fig=True,
               ma_days=7,
               cmap="tab10")
 
@@ -471,7 +471,7 @@ def save_plots(df: pd.DataFrame) -> None:
               unknown_total='Cases',
               kind='area',
               stacked=True,
-              percent_fig=False,
+              percent_fig=True,
               ma_days=7,
               cmap='tab10')
 
@@ -569,7 +569,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cols_subset=cols, legends=AREA_LEGEND + ['Imported Cases'],
               title='Thailand Covid Cases by Health District',
               unknown_name="Unknown District", unknown_total="Cases",
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='cases_areas_walkins', cols_subset=cols,
@@ -794,9 +794,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',)
 
     # Top 5 vaccine rollouts
-    vac = import_csv("vaccinations")
-    vac['Date'] = pd.to_datetime(vac['Date'])
-    vac = vac.set_index('Date')
+    vac = import_csv("vaccinations", ['Date', 'Province'])
     vac = vac.join(get_provinces()['Population'], on='Province')
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100)
 
@@ -815,10 +813,10 @@ def save_plots(df: pd.DataFrame) -> None:
 
     top5 = cases.pipe(topprov,
                       increasing("Cases", 3),
-                      value_ma("Cases", 3),
+                      value_ma("Cases", None),
                       name="Province Cases (3d MA)",
                       other_name=None,
-                      num=5)
+                      num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               png_prefix='cases_prov_increasing',
@@ -827,15 +825,15 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=None,
+              ma_days=3,
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
                       decreasing("Cases", 3),
-                      value_ma("Cases", 3),
+                      value_ma("Cases", None),
                       name="Province Cases (3d MA)",
                       other_name=None,
-                      num=5)
+                      num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               png_prefix='cases_prov_decreasing',
@@ -844,7 +842,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=None,
+              ma_days=3,
               cmap='tab10')
 
     top5 = cases.pipe(topprov, value_ma("Cases", 7), name="Province Cases", other_name="Other Provinces", num=6)
@@ -856,8 +854,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=None,
+              ma_days=3,
               cmap='tab10')
+
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work']:
         top5 = cases.pipe(topprov,

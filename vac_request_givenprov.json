@@ -5,7 +5,7 @@
                 "reportContext": {
                     "reportId": "731713b6-a3c4-4766-ab9d-a6502a4e7dd6",
                     "pageId": "33037739",
-                    "mode": "VIEW",
+                    "mode": 1,
                     "componentId": "cd-8me2cc9kkc",
                     "displayType": "simple-barchart"
                 }
@@ -64,40 +64,6 @@
                     }
                 ],
                 "includeRowsCount": false,
-                "blendConfig": {
-                    "blockDatasource": {
-                        "datasourceBlock": {
-                            "id": "block_ucs0e4cokc",
-                            "type": 1,
-                            "inputBlockIds": [],
-                            "outputBlockIds": [],
-                            "fields": []
-                        },
-                        "blocks": [
-                            {
-                                "id": "block_vcs0e4cokc",
-                                "type": 5,
-                                "inputBlockIds": [],
-                                "outputBlockIds": [],
-                                "fields": [],
-                                "queryBlockConfig": {
-                                    "joinQueryConfig": {
-                                        "joinKeys": [],
-                                        "queries": [
-                                            {
-                                                "datasourceId": "be20cc44-8f07-40e9-a197-6803fe40ce87",
-                                                "concepts": []
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        ],
-                        "delegatedAccessEnabled": true,
-                        "isUnlocked": true,
-                        "isCacheable": false
-                    }
-                },
                 "filters": [
                     {
                         "filterDefinition": {
@@ -111,7 +77,8 @@
                                 "filterConditionType": "IN",
                                 "stringValues": [
                                     "Sinovac Life Sciences",
-                                    "AstraZeneca"
+                                    "AstraZeneca",
+                                    "Sinopharm"
                                 ],
                                 "numberValues": [],
                                 "queryTimeTransformation": {
@@ -175,7 +142,8 @@
                                 "filterConditionType": "IN",
                                 "stringValues": [
                                     "Sinovac Life Sciences",
-                                    "AstraZeneca"
+                                    "AstraZeneca",
+                                    "Sinopharm"
                                 ]
                             }
                         },
