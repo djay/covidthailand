@@ -656,13 +656,14 @@ def save_plots(df: pd.DataFrame) -> None:
     # Vaccines
     ####################
 
-    def clean_vac_leg(c):
+    def clean_vac_leg(c, first="(Half Vaccinated)", second="(Fully Vaccinated)"):
         return c.replace(
             ' Cum', '').replace(
             'Vac ', '').replace(
             "Group ", "").replace(
-            'Only 1', '(At least 1 Dose)').replace(
-            '2', '(Fully Vaccinated)').replace(
+            'Only 1', first).replace(
+            ' 1', " " + first).replace(
+            ' 2', " " + second).replace(
             'Risk: Location', 'Under 60')
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
@@ -703,9 +704,9 @@ def save_plots(df: pd.DataFrame) -> None:
         cols_subset=daily_cols,
         title='Thailand Daily Vaccinations by Priority Groups',
         legends=[
-            'Doses per day - to runout in a week', 'Doses per day - 70% 1st Dose 2021 Target',
-            'Doses per day - 70% Vaccinated 2021 Target'
-        ] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
+            'Doses per day needed to run out in a week', 'Needed to reach 70% 1st Dose in 2021',
+            'Needed to reach 70% Fully Vaccinated in 2021'
+        ] + [clean_vac_leg(c, "(1st jab)", "(2nd jab)") for c in daily_cols],  # bar puts the line first?
         kind='bar',
         stacked=True,
         percent_fig=False,
@@ -765,14 +766,14 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     for group, goal in goals:
         for d in [2, 1]:
-            vac_cum[f'Vac Group {group} {d} Cum %'] = vac_cum[f'Vac Group {group} {d} Cum'] / goal * 100
+            vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[f'Vac Group {group} {d} Cum'] / goal * 100
     cols2 = [c for c in vac_cum.columns if f" Cum %" in c and "Vac Group " in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
         df=vac_cum,
         png_prefix='vac_groups_goals',
         cols_subset=cols2,
-        title='Thailand Vaccination Goal Progress (to 70%)',
+        title='Thailand Vaccination Goal Progress (to 70% of population)',
         legends=legends,
         kind='line',
         stacked=False,
@@ -833,7 +834,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=3,
+              ma_days=7,
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
@@ -876,7 +877,7 @@ def save_plots(df: pd.DataFrame) -> None:
         plot_area(df=top5,
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing',
                   cols_subset=cols,
-                  title=f'Trending up {risk} Cases (by Province)',
+                  title=f'Trending up {risk} related Cases (by Province)',
                   kind='line',
                   stacked=False,
                   percent_fig=False,

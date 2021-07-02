@@ -1,10 +1,14 @@
 # Thailand COVID-19 Data
 
-Thailand COVID-19 case/test/vaccination data gathered and combined from various government sources for others to view or download. Updated between 11:30-12:30 daily [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml). 
+*Note* Share via https://djay.github.io/covidthailand
+
+Thailand COVID-19 case/test/vaccination data gathered and combined from various government sources for others to view or download. 
+- Updated daily 8-9am summary info, 1-3pm from full briefing. Testing data is updated every 1-3 weeks.
+
+[![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml). 
 
 ## [Active Cases](#active-cases) | [Cases](#cases) |  [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
 
-*Note* Now available full page at https://djay.github.io/covidthailand
 
 # Active Cases Since April 1st <a name="active-cases">
 
@@ -320,7 +324,9 @@ Bureau, Chaeng Watthana"
 - Notes:
   - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
-## Daily DDC Vaccination Reports<a name="dl-vac">
+
+## Vaccination Downloads <a name="dl-vac">
+## Daily DDC Vaccination Reports
 - Source: 
    - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
    - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
@@ -347,6 +353,20 @@ Bureau, Chaeng Watthana"
    - Summary vaccination data included in the combine download
    - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
    - #TODO: put in thai group explanations.
+
+## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety
+- Source: 
+   - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
+- [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
+- e.g.
+```
+      "Date":"2021-04-25",
+      "Province": "Bangkok",
+      "Vac Given Cum":3189.0,
+      "Vac Given ":83.0,
+      "Vac Given {vaccine} Cum":3189.0,
+      "Vac Given {vaccine}":83.0,
+```
 
 
 ## Combined <a name="dl-combined">
