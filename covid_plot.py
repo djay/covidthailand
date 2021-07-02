@@ -743,7 +743,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
-              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='Paired_r',
+              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='Paired_r',
               between=['Available Vaccines Cum'],
               y_formatter=thaipop)
 
@@ -830,7 +830,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               png_prefix='cases_prov_increasing',
               cols_subset=cols,
-              title='Trending Down Confirmed Cases (by Province)',
+              title='Trending Up Confirmed Cases (by Province)',
               kind='line',
               stacked=False,
               percent_fig=False,
@@ -877,7 +877,7 @@ def save_plots(df: pd.DataFrame) -> None:
         plot_area(df=top5,
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing',
                   cols_subset=cols,
-                  title=f'Trending up {risk} related Cases (by Province)',
+                  title=f'Trending Up {risk} related Cases (by Province)',
                   kind='line',
                   stacked=False,
                   percent_fig=False,
