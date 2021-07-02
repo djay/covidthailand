@@ -21,6 +21,58 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 # Cases
 
+## Cases by Where Tested
+![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
+ - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
+- Contact tracing normally counts as a "Walk-in"
+- Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
+- Sources: [CCSA Daily Briefing](#dl-briefings),
+  [MOPH daily situation report](#dl-situation-reports)
+
+## Cases by Risk Group
+
+![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
+
+- Grouped from original data which has over 70 risk categories. Clusters have
+  been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
+- Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to separate out SS cluster cases
+  between those from factories and those from the market. This could change later. 
+- Risk is most likely determined as part of the PUI criteria process?
+- [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+## Provinces with Cases Trending Up
+
+![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_30d.png)
+
+![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
+
+![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
+
+- see also 
+   - [Trending Down Confirmed Cases (by Province)](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png)
+   - [Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
+   - [Trending Up Community Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png)
+   - [Trending Up Work Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png)
+   - [Trending Up Proactive Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
+- Sources: [CCSA Daily Briefing](#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+
+## Cases by Health District
+
+![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+
+- [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
+- [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+- You can also see [Cases by District broken down by walk-in vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
+- Sources: [CCSA Daily Briefing](#dl-briefings)
+
+## Cases by Age
+![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
+
+- see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 ## Unoffcial Estimated Infections based on Deaths/IFR
 
 ![Estimated Infections Thailand](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
@@ -35,53 +87,6 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
    - [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
    - [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
 - Sources: [CCSA Daily Briefing](#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
-
-## Cases by Health District
-
-![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
-
-- [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
-- [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-- You can also see [Cases by District broken down by walk-in vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
-- Sources: [CCSA Daily Briefing](#dl-briefings)
-
-## Provinces with Cases Trending Up (last 3 days)
-
-![Provinces with Cases Trending Up](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_30d.png)
-
-![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
-
-- see also [Provinces with Cases Trending Down](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png)
-- Sources: [CCSA Daily Briefing](#dl-briefings)
-
-## Cases by Where Tested
-![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
- - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
-- Contact tracing normally counts as a "Walk-in"
-- Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
-- Sources: [CCSA Daily Briefing](#dl-briefings),
-  [MOPH daily situation report](#dl-situation-reports)
-
-## Cases by Risk Group
-
-![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
-
-![Cases by Contact](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
-
-- Grouped from original data which has over 70 risk categories. Clusters have
-  been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
-- Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to separate out SS cluster cases
-  between those from factories and those from the market. This could change later. 
-- Risk is most likely determined as part of the PUI criteria process?
-- [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
-
-
-## Cases by Age
-![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
-
-- see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 
 # Deaths

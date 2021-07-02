@@ -187,7 +187,7 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date']):
 
 def increasing(col, ma=3):
     def increasing_func(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf[col].rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline)
+        return adf[col].tail(ma * 2).rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline_slow)
     return increasing_func
 
 
@@ -209,12 +209,12 @@ def value_ma(col, ma=3):
     return cases_ma
 
 
-def trendline(data: pd.DataFrame, order: int = 1) -> float:
+def trendline(data: pd.DataFrame) -> float:
     slope = list(data)[-1] - list(data)[0] / len(data.index.values)
     return float(slope)
 
 
-def trendline_slow(data):
+def trendline_slow(data: pd.DataFrame, order: int = 1) -> float:
     # simulate dates with monotonic inc numbers
     dates = range(0, len(data.index.values))
     coeffs = np.polyfit(dates, list(data), order)
@@ -228,8 +228,6 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     valuefunc = metricfunc if valuefunc is None else valuefunc
 
     # Apply metric on each province by itself
-    # with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).rename(0)
-    # with_metric = df.reset_index().set_index("Date").groupby("Province").apply(metricfunc).unstack()
     with_metric = df.groupby(level="Province", group_keys=False).apply(metricfunc)
     with_metric = with_metric.reset_index().set_index("Date")
     metric_col = [c for c in with_metric.columns if c != 'Province']
@@ -237,6 +235,9 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     # = metricfunc(df)
     last_day = with_metric.loc[with_metric.dropna().last_valid_index()]
     top5 = last_day.nlargest(num, metric_col).reset_index()
+
+    # top5 = df.groupby(level="Province", group_keys=False).agg({metric_col:metricfunc}).nlargest(num, metric_col)
+
     # sort data into top 5 + rest
     top5[name] = top5['Province']
     df = df.join(top5.set_index("Province")[name], on="Province").reset_index()

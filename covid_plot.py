@@ -820,7 +820,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cases = cases.fillna(0)  # all the other values
 
     top5 = cases.pipe(topprov,
-                      increasing("Cases", 7),
+                      increasing("Cases", 3),
                       value_ma("Cases", None),
                       name="Province Cases (3d MA)",
                       other_name=None,
@@ -829,11 +829,11 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               png_prefix='cases_prov_increasing',
               cols_subset=cols,
-              title='Provinces with Cases Trending Up\nin last 30 days',
+              title='Trending Down Confirmed Cases (by Province)',
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=7,
+              ma_days=3,
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
@@ -846,11 +846,11 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               png_prefix='cases_prov_decreasing',
               cols_subset=cols,
-              title='Provinces with Cases Trending Down\nin last 30 days (using 3 days rolling average)',
+              title='Trending Down Confirmed Cases (by Province)',
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=3,
+              ma_days=7,
               cmap='tab10')
 
     top5 = cases.pipe(topprov, value_ma("Cases", 7), name="Province Cases", other_name="Other Provinces", num=6)
@@ -858,11 +858,11 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               png_prefix='cases_prov_top',
               cols_subset=cols,
-              title='Provinces with Most Cases',
+              title='Top Confirmed Cases (by Province)',
               kind='line',
               stacked=False,
               percent_fig=False,
-              ma_days=3,
+              ma_days=7,
               cmap='tab10')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work']:
@@ -876,7 +876,7 @@ def save_plots(df: pd.DataFrame) -> None:
         plot_area(df=top5,
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing',
                   cols_subset=cols,
-                  title=f'{risk} Case Provinces Trending up\n (using 7 days rolling average)',
+                  title=f'Trending up {risk} Cases (by Province)',
                   kind='line',
                   stacked=False,
                   percent_fig=False,
