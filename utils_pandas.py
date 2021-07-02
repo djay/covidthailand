@@ -131,7 +131,6 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=
         unmatched2 = second[second[test].isnull() & second[on].notna()]
         if assert_perfect_match:
             assert unmatched2.empty, f"Still some values left unmatched {list(unmatched2[on])}"
-
     unmatched_counts = pd.DataFrame()
     if return_unmatched and not unmatched.empty:
         to_keep = [test, replace_on_with] if replace_on_with is not None else [test]

@@ -1976,6 +1976,14 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 
 
 def get_vaccinations():
+
+    vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
+    vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_", values="_quantity_")
+    #vac_import.columns = [f"Vac Imported {r}" for c in vac_import.columns for r in ["Astrazeneca", "Sinovac"] if r.lower() in c.lower()]
+    vac_import = vac_import.fillna(0)
+    vac_import['Vac Imported'] = vac_import.sum(axis=1)
+    vac_import = vac_import.combine_first(daily2cum(vac_import))
+
     # Delivered Vac data from coldchain
     vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
     vac_delivered = join_provinces(vac_delivered, '_hospital_province_')
@@ -2017,6 +2025,7 @@ def get_vaccinations():
     vac_timeline = vac_timeline.combine_first(
         vac_reports).combine_first(
         vac_delivered).combine_first(
+        vac_import).combine_first(
         given_by_area_1).combine_first(
         given_by_area_2).combine_first(
         given_by_area_both).combine_first(
