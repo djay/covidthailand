@@ -1,0 +1,166 @@
+{
+    "dataRequest": [
+        {
+            "requestContext": {
+                "reportContext": {
+                    "reportId": "731713b6-a3c4-4766-ab9d-a6502a4e7dd6",
+                    "pageId": "31081294",
+                    "mode": 1,
+                    "componentId": "cd-l51h0v0bjc",
+                    "displayType": "simple-barchart"
+                }
+            },
+            "datasetSpec": {
+                "dataset": [
+                    {
+                        "datasourceId": "05bbf5e6-7c84-45c4-9028-e8fe8de09357",
+                        "revisionNumber": 0,
+                        "parameterOverrides": []
+                    }
+                ],
+                "queryFields": [
+                    {
+                        "name": "qt_zl0h0v0bjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_arrive_at_transporter_",
+                            "transformationConfig": {
+                                "transformationType": 5
+                            }
+                        }
+                    },
+                    {
+                        "name": "qt_odjf1y0bjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_vaccine_name_"
+                        }
+                    },
+                    {
+                        "name": "qt_sd1h0v0bjc",
+                        "datasetNs": "d0",
+                        "tableNs": "t0",
+                        "dataTransformation": {
+                            "sourceFieldName": "_quantity_",
+                            "aggregation": 6
+                        }
+                    }
+                ],
+                "sortData": [
+                    {
+                        "sortColumn": {
+                            "name": "qt_zl0h0v0bjc",
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "dataTransformation": {
+                                "sourceFieldName": "_arrive_at_transporter_",
+                                "transformationConfig": {
+                                    "transformationType": 5
+                                }
+                            }
+                        },
+                        "sortDir": 0
+                    }
+                ],
+                "includeRowsCount": false,
+                "filters": [
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": true,
+                                "conceptType": 0,
+                                "concept": {
+                                    "name": "qt_zl0h0v0bjc",
+                                    "ns": "t0"
+                                },
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_arrive_at_transporter_",
+                                        "transformationConfig": {
+                                            "transformationType": 5
+                                        }
+                                    }
+                                },
+                                "filterConditionType": "IN",
+                                "stringValues": [
+                                    "20210224",
+                                    "20210226",
+                                    "20210317",
+                                    "20210321",
+                                    "20210410",
+                                    "20210411",
+                                    "20210412",
+                                    "20210424",
+                                    "20210425",
+                                    "20210506",
+                                    "20210511",
+                                    "20210512",
+                                    "20210515",
+                                    "20210520",
+                                    "20210521",
+                                    "20210529",
+                                    "20210601",
+                                    "20210604",
+                                    "20210608",
+                                    "20210610",
+                                    "20210615",
+                                    "20210616",
+                                    "20210618",
+                                    "20210624",
+                                    "20210626",
+                                    "20210629",
+                                    "20210630"
+                                ]
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    },
+                    {
+                        "filterDefinition": {
+                            "filterExpression": {
+                                "include": true,
+                                "conceptType": 0,
+                                "concept": {
+                                    "name": "qt_odjf1y0bjc",
+                                    "ns": "t0"
+                                },
+                                "queryTimeTransformation": {
+                                    "dataTransformation": {
+                                        "sourceFieldName": "_vaccine_name_"
+                                    }
+                                },
+                                "filterConditionType": "IN",
+                                "stringValues": [
+                                    "CORONAVAC (SINOVAC LIFE SCIENCES, CHINA)",
+                                    "COVID-19 VACCINE ASTRAZENECA (สยามไบโอไซเอนซ์)",
+                                    "COVID-19 VACCINE ASTRAZENECA (SK BIOSCIENCE, KOREA)"
+                                ]
+                            }
+                        },
+                        "dataSubsetNs": {
+                            "datasetNs": "d0",
+                            "tableNs": "t0",
+                            "contextNs": "c0"
+                        },
+                        "version": 3
+                    }
+                ],
+                "features": [],
+                "dateRanges": [],
+                "contextNsCount": 1,
+                "calculatedField": [],
+                "needGeocoding": false,
+                "geoFieldMask": [],
+                "geoVertices": 100000
+            },
+            "useDataColumn": true
+        }
+    ]
+}
