@@ -99,12 +99,16 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             cols = cols + [unknown_col]
 
     if percent_fig:
-        perccols = [c for c in cols if not unknown_total or unknown_percent or c != f'{unknown_name}{ma_suffix}']
+        perccols = [
+            c for c in cols
+            if (not unknown_total or unknown_percent or c != f'{unknown_name}{ma_suffix}') and c not in between +
+            actuals
+        ]
         for c in perccols:
             df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
         if unknown_total and not unknown_percent:
             df[f'{unknown_name}{ma_suffix} (%)'] = 0
-        perccols = [f'{c} (%)' for c in cols]
+        perccols = [f'{c} (%)' for c in perccols]
 
     title = f'{title}\n'
 
@@ -678,6 +682,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Vac Given'] = df['Vac Given 1'] + df['Vac Given 2']
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
+    df_vac_groups['Vac Imported Cum'] = df_vac_groups[[c for c in df_vac_groups.columns if "Vac Imported" in c]].sum()
 
     # now convert to daily and interpolate and then normalise to real daily total.
     vac_daily = cum2daily(df_vac_groups)
@@ -690,7 +695,7 @@ def save_plots(df: pd.DataFrame) -> None:
     for c in daily_cols:
         vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
-    vac_daily['7d Runway Rate'] = (df['Vac Delivered Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
+    vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
     vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / (pd.Timestamp('2022-01-01')
                                                                                   - vac_daily.index.to_series()).dt.days
 
@@ -726,7 +731,7 @@ def save_plots(df: pd.DataFrame) -> None:
     second_dose = [c for c in groups if "2 Cum" in c]
     first_dose = [c for c in groups if "1 Cum" in c]
     #vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
-    vac_cum['Available Vaccines Cum'] = df['Vac Delivered Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
+    vac_cum['Available Vaccines Cum'] = df['Vac Imported Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
 
     cols = []
     # We want people vaccinated not total doses
