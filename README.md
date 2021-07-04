@@ -40,7 +40,8 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
 
-- see also 
+- see also
+   - [Map of all province cases: The Researcher Covid Tracker](https://covid-19.researcherth.co/) 
    - [Trending Down Confirmed Cases (by Province)](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png)
    - [Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
    - [Trending Up Community Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png)
@@ -171,6 +172,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
+- see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Downloads
 
@@ -275,6 +277,33 @@ Bureau, Chaeng Watthana"
 <img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
 <img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
 
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_briefings), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
+  - Date: e.g "2021-04-06"
+  - Cases: Total cases that day. Cases Imported + Cases Local Transmission
+  - Cases In Quarantine: "Cases found in quarantine facilities/centers"
+  - Cases Imported: Cases In Quarantine + Cases outside quarantine
+  - Cases Proactive: Local transmissions that aren't walk-ins
+  - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
+  - Cases Area Prison: Cases reported in prison that day,
+  - Hospitalized: Total currently in isolation in hospital or field hospital,
+  - Hospitalized Field:8558.0,
+  - Hospitalized Hospital":21453.0, - total current active cases - anyone confirmed is considered hospitalized
+  - Hospitalized Respirator":311.0,
+  - Hospitalized Severe":1009.0  
+  - Recovered: 
+  - Deaths": Number of deaths confirmed that day,
+  - Deaths Age (Min|Max)":92.0,
+  - Deaths Age Median":66.0,
+  - Deaths Comorbidity None: Deaths where there wasn't a disease that increased risk,
+  - Deaths Female: 
+  - Deaths Male: 
+  - Deaths Risk Family: Deaths who likely cause of transmission was via family member
+  - Source Cases:  Tweet, api or briefing the primary information came from,
+  - Fields no longer updated
+    - Cases Asymptomatic:null,
+    - Cases Symptomatic:null,
+    - "Cases (Asymptomatic|Symptomatic)":null, - No longer reported in briefing reports
+
 ### Cases/Deaths per province
 - Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
   - "Date": e.g "2021-04-06"
@@ -290,19 +319,10 @@ Bureau, Chaeng Watthana"
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - "Date": e.g "2021-04-06"
   - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - "Deaths":27.0,
-  - "Deaths Age (Min|Max)":92.0,
-  - "Deaths Age Median":66.0,
   - "Deaths Area {1-13}":3.0,  
-  - "Hospitalized":30011.0,
-  - "Hospitalized Field":8558.0,
-  - "Hospitalized Hospital":21453.0, - total current active cases - anyone confirmed is considered hospitalized
-  - "Hospitalized Respirator":311.0,
-  - "Hospitalized Severe":1009.0  
   - The following are no longer updated but have some historical data
     - "Cases Proactive Area {1-13}": Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
     - "Cases Walkin Area {1-13}": Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-    - "Cases (Asymptomatic|Symptomatic)":null, - No longer reported in briefing reports
 
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  

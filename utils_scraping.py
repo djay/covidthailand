@@ -181,7 +181,7 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
     for index_url in index_urls:
-        for file, index in web_files(index_url, dir=dir, check=True):
+        for file, index, _ in web_files(index_url, dir=dir, check=True):
             soup = parse_file(file, html=True, paged=False)
             links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
             for link in links:
@@ -223,7 +223,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         with open(file, "rb") as f:
             content = f.read()
         i += 1
-        yield file, content
+        yield file, content, url
 
 
 def sanitize_filename(filename):
@@ -293,13 +293,13 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     try:
         with open(filename, "rb") as fp:
             tweets = pickle.load(fp)
-    except (IOError, OSError, pickle.PickleError, pickle.UnpicklingError) as e:
+    except (IOError, EOFError, OSError, pickle.PickleError, pickle.UnpicklingError) as e:
         print(f'Error detected when attempting to load the pickle file: {e}, setting an empty \'tweets\' dictionary')
         tweets = {}
     latest = max(tweets.keys()) if tweets else None
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
-    for limit in ([50, 2000, 5000] if tweets else [5000]):
+    for limit in [50, 2000, 20000]:
         print(f"Getting {limit} tweets")
         try:
             resp = tw.get_tweets(userid, count=limit).contents
@@ -307,9 +307,10 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
             resp = []
         for tweet in sorted(resp, key=lambda t: t['id']):
             date = tweet['created_at'].date()
+            url = tweet['urls'][0]['url'] if tweet['urls'] else f"https://twitter.com/{userid}/status/{tweet['id']}"
             text = parse_tweet(tw, tweet, tweets.get(date, []), *matches)
             if text:
-                tweets[date] = tweets.get(date, []) + [text]
+                tweets[date] = tweets.get(date, []) + [(text, url)]
 
         earliest = min(tweets.keys())
         latest = max(tweets.keys())
@@ -402,3 +403,15 @@ def unique_values(iterable):
             continue
         seen.add(item)
         yield item
+
+
+def replace_matcher(matches, replacements=None):
+    if replacements is None:
+        replacements = matches
+
+    def replace_match(item):
+        for m, r in zip(matches, replacements):
+            if re.search(m, item, re.IGNORECASE):
+                return r
+        return item
+    return replace_match

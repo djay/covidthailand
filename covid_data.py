@@ -17,7 +17,7 @@ from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, seperate, split, strip, toint, unique_values,\
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
@@ -257,7 +257,7 @@ def situation_pui(parsed_pdf, date):
 def get_en_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
-    for file, _ in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en"):
+    for file, _, _ in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en"):
         parsed_pdf = parse_file(file, html=False, paged=False).replace("\u200b", "")
         if "situation" not in os.path.basename(file):
             continue
@@ -394,7 +394,7 @@ def get_thai_situation():
         ext=".pdf",
         dir="situation_th"
     )
-    for file, _ in web_files(*links, dir="situation_th"):
+    for file, _, _ in web_files(*links, dir="situation_th"):
         parsed_pdf = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
             continue
@@ -417,7 +417,7 @@ def get_thai_situation():
 
 
 def get_situation_today():
-    _, page = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="situation_th", check=True))
+    _, page, _ = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="situation_th", check=True))
     text = BeautifulSoup(page, 'html.parser').get_text()
     numbers, rest = get_next_numbers(text, "ผู้ป่วยเข้าเกณฑ์เฝ้าระวัง")
     pui_cum, pui = numbers[:2]
@@ -466,7 +466,7 @@ def get_situation():
 def get_cases():
     print("========Covid19 Timeline==========")
     try:
-        file, text = next(
+        file, text, url = next(
             web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="json", check=True))
     except ConnectionError:
         # I think we have all this data covered by other sources. It's a little unreliable.
@@ -476,19 +476,20 @@ def get_cases():
     data = data.set_index("Date")
     cases = data[["NewConfirmed", "NewDeaths", "NewRecovered", "Hospitalized"]]
     cases = cases.rename(columns=dict(NewConfirmed="Cases", NewDeaths="Deaths", NewRecovered="Recovered"))
+    cases["Source Cases"] = url
     return cases
 
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_case_details_csv():
     url = "https://data.go.th/dataset/covid-19-daily"
-    file, text = next(web_files(url, dir="json", check=True))
+    file, text, _ = next(web_files(url, dir="json", check=True))
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     # ensure csv is first pick but we can handle either if one is missing
     links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
-    file, _ = next(web_files(next(iter(links)), dir="json", check=True))
+    file, _, _ = next(web_files(next(iter(links)), dir="json", check=True))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
@@ -510,7 +511,7 @@ def get_case_details_api():
     records = []
 
     def get_page(i, check=False):
-        _, cases = next(web_files(f"{url}{i}", dir="json", check=check))
+        _, cases, _ = next(web_files(f"{url}{i}", dir="json", check=check))
         return json.loads(cases)['result']['records']
 
     for i in range(0, 100000, 1000):
@@ -718,7 +719,7 @@ OFFICIAL_TWEET = re.compile("#COVID19 update")
 MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19 📆")
 
 
-def parse_official_tweet(df, date, text):
+def parse_official_tweet(df, date, text, url):
     imported, _ = get_next_number(text, "imported", before=True, default=0)
     local, _ = get_next_number(text, "local", before=True, default=0)
     cases = imported + local
@@ -738,6 +739,7 @@ def parse_official_tweet(df, date, text):
         "Recovered",
         "Hospitalized Severe",
         "Hospitalized Respirator",
+        "Source Cases"
     ]
     row = [date, imported, local, cases, deaths]
     row2 = row + [hospitalised, recovered]
@@ -745,13 +747,13 @@ def parse_official_tweet(df, date, text):
         assert not any_in(row, None), f"{date} Missing data in Official Tweet {row}"
     else:
         assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
-    row_opt = row2 + [serious, vent]
+    row_opt = row2 + [serious, vent, url]
     tdf = pd.DataFrame([row_opt], columns=cols).set_index("Date")
     print(date, "Official:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
-def parse_unofficial_tweet(df, date, text):
+def parse_unofficial_tweet(df, date, text, url):
     if not MOPH_TWEET.search(text):
         return df
     deaths, _ = get_next_number(text, "deaths", before=True)
@@ -759,14 +761,14 @@ def parse_unofficial_tweet(df, date, text):
     prisons, _ = get_next_number(text, "prisons", before=True)
     if any_in([None], deaths, cases):
         raise Exception(f"Can't parse tweet {date} {text}")
-    cols = ["Date", "Deaths", "Cases", "Cases Area Prison"]
-    row = [date, deaths, cases, prisons]
+    cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Source Cases"]
+    row = [date, deaths, cases, prisons, url]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
     print(date, "Breaking:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
-def parse_moph_tweet(df, date, text):
+def parse_moph_tweet(df, date, text, url):
     cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
     prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
@@ -778,14 +780,14 @@ def parse_moph_tweet(df, date, text):
 
     if any_in([None], prisons, recovered):
         pass
-    cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Recovered"]
-    row = [date, deaths, cases, prisons, recovered]
+    cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Recovered", "Source Cases"]
+    row = [date, deaths, cases, prisons, recovered, url]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
     print(date, "Moph:", tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
-def parse_case_prov_tweet(walkins, proactive, date, text):
+def parse_case_prov_tweet(walkins, proactive, date, text, url):
     if "📍" not in text:
         return walkins, proactive
     if "ventilators" in text:  # after 2021-05-11 start using "👉" for hospitalisation
@@ -837,44 +839,49 @@ def get_cases_by_prov_tweets():
 
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
-    new = get_tweets_from(531202184, d("2021-04-03"), None, OFFICIAL_TWEET, "📍")
+    #new = get_tweets_from(531202184, d("2021-04-03"), None, OFFICIAL_TWEET, "📍")
+    new = get_tweets_from(531202184, d("2021-06-06"), None, OFFICIAL_TWEET, "📍")
     # old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
-    old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
-    unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
+    #old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
+    old = get_tweets_from(72888855, d("2021-05-21"), None, OFFICIAL_TWEET, "📍")
+    #unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
+    unofficial = get_tweets_from(531202184, d("2021-06-06"), None, UNOFFICIAL_TWEET)
     thaimoph = get_tweets_from(2789900497, d("2021-06-18"), None, MOPH_TWEET)
     officials = {}
     provs = {}
     breaking = {}
     for date, tweets in list(new.items()) + list(old.items()):
-        for tweet in tweets:
+        for tweet, url in tweets:
             if "RT @RichardBarrow" in tweet:
                 continue
             if OFFICIAL_TWEET.search(tweet):
-                officials[date] = tweet
+                officials[date] = tweet, url
             elif "👉" in tweet and "📍" in tweet:
                 if tweet in provs.get(date, ""):
                     continue
                 provs[date] = provs.get(date, "") + " " + tweet
     for date, tweets in unofficial.items():
-        for tweet in tweets:
+        for tweet, url in tweets:
             if UNOFFICIAL_TWEET.search(tweet):
-                breaking[date] = tweet
+                breaking[date] = tweet, url
 
     # Get imported vs walkin totals
     df = pd.DataFrame()
 
     for date, tweets in sorted(thaimoph.items(), reverse=True):
-        for tweet in tweets:
-            df = df.pipe(parse_moph_tweet, date, tweet)
+        for tweet, url in tweets:
+            df = df.pipe(parse_moph_tweet, date, tweet, url)
 
-    for date, text in sorted(officials.items(), reverse=True):
-        df = df.pipe(parse_official_tweet, date, text)
+    for date, tweet in sorted(officials.items(), reverse=True):
+        text, url = tweet
+        df = df.pipe(parse_official_tweet, date, text, url)
 
-    for date, text in sorted(breaking.items(), reverse=True):
+    for date, tweet in sorted(breaking.items(), reverse=True):
+        text, url = tweet
         if date in officials:
             # do unoffical tweets if no official tweet
             continue
-        df = df.pipe(parse_unofficial_tweet, date, text)
+        df = df.pipe(parse_unofficial_tweet, date, text, url)
 
     # get walkin vs proactive by area
     walkins = {}
@@ -1016,7 +1023,7 @@ def briefing_case_detail(date, pages):
     return df
 
 
-def briefing_case_types(date, pages):
+def briefing_case_types(date, pages, url):
     rows = []
     vac_rows = []
     if date < d("2021-02-01"):
@@ -1102,6 +1109,7 @@ def briefing_case_types(date, pages):
             hospitalised,
             recovered,
             deaths,
+            url,
         ])
         break
     df = pd.DataFrame(rows, columns=[
@@ -1118,6 +1126,7 @@ def briefing_case_types(date, pages):
         "Hospitalized",
         "Recovered",
         "Deaths",
+        "Source Cases",
     ]).set_index(['Date'])
     if not df.empty:
         print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
@@ -1408,12 +1417,12 @@ def get_cases_by_prov_briefings():
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
     end = today()
     links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1))
-    for file, text in web_files(*reversed(list(links)), dir="briefings"):
+    for file, text, briefing_url in web_files(*reversed(list(links)), dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
         date = file2date(file)
 
-        today_types = briefing_case_types(date, pages)
+        today_types = briefing_case_types(date, pages, briefing_url)
         types = types.combine_first(today_types)
 
         case_detail = briefing_case_detail(date, pages)
@@ -1485,7 +1494,14 @@ def get_cases_by_area_type():
 
     cases_demo, risks_prov = get_cases_by_demographics_api()
     tweets_prov, twcases = get_cases_by_prov_tweets()
-    briefings_prov, cases = get_cases_by_prov_briefings()
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
+
+    cases = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
+    timelineapi = get_cases()
+    cases = cases.combine_first(cases_briefings).combine_first(twcases).combine_first(timelineapi)
+    export(cases, "cases_briefings")
+
+    cases = cases.combine_first(cases_demo)
 
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
@@ -1495,7 +1511,6 @@ def get_cases_by_area_type():
     export(dfprov, "cases_by_province")
     # Now we can save raw table of provice numbers
 
-    cases = cases.combine_first(twcases).combine_first(cases_demo)
     # Reduce down to health areas
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
@@ -1507,7 +1522,6 @@ def get_cases_by_area_type():
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
     by_area = dfprov_grouped.combine_first(by_type)
-    by_area = by_area.combine_first(cases)  # imported, proactive total etc
 
     # Ensure we have all areas
     for i in DISTRICT_RANGE:
@@ -1517,7 +1531,7 @@ def get_cases_by_area_type():
         col = f"Cases Proactive Area {i}"
         if col not in by_area:
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
-    return by_area
+    return cases, by_area
 
 
 def get_cases_by_area_api():
@@ -1532,13 +1546,13 @@ def get_cases_by_area_api():
 def get_cases_by_area():
     # we will add in the tweet data for the export
     cases = import_csv("cases_by_area", ["Date"], not USE_CACHE_DATA)
-    case_briefings_tweets = get_cases_by_area_type()
+    case_briefings_tweets, briefings_area = get_cases_by_area_type()
     case_api = get_cases_by_area_api()  # can be very wrong for the last days
 
-    case_areas = cases.combine_first(case_briefings_tweets).combine_first(case_api)
+    case_areas = cases.combine_first(briefings_area).combine_first(case_api)
 
     export(case_areas, "cases_by_area")
-    return case_areas
+    return case_briefings_tweets.combine_first(case_areas)
 
 
 ##########################################
@@ -1978,8 +1992,9 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 def get_vaccinations():
 
     vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
+    vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
     vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_", values="_quantity_")
-    #vac_import.columns = [f"Vac Imported {r}" for c in vac_import.columns for r in ["Astrazeneca", "Sinovac"] if r.lower() in c.lower()]
+    vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
     vac_import = vac_import.fillna(0)
     vac_import['Vac Imported'] = vac_import.sum(axis=1)
     vac_import = vac_import.combine_first(daily2cum(vac_import))
@@ -2048,7 +2063,7 @@ def vaccination_reports():
     links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
-    pages = ((page, file2date(f), f) for f, _ in web_files(
+    pages = ((page, file2date(f), f) for f, _, _ in web_files(
         *links, dir="vaccinations") for page in parse_file(f) if file2date(f))
     vaccinations = {}
     allocations = {}
@@ -2112,7 +2127,7 @@ def vaccination_reports():
 
 def get_ifr():
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _ = next(web_files(url, dir="json", check=False))
+    file, _, _ = next(web_files(url, dir="json", check=False))
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):
@@ -2228,7 +2243,7 @@ def get_hospital_resources():
     rows = []
     for page in range(0, 2000, 1000):
         every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"  # noqa: E501
-        file, content = next(web_files(every_district, dir="json", check=True))
+        file, content, _ = next(web_files(every_district, dir="json", check=True))
         jcontent = json.loads(content)
         rows.extend([x['attributes'] for x in jcontent['features']])
 
@@ -2257,7 +2272,6 @@ def scrape_and_combine():
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
-        cases = get_cases()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
@@ -2267,11 +2281,10 @@ def scrape_and_combine():
         vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
-        cases = get_cases()
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'cases', 'situation', 'tests_reports', 'tests', 'vac']:
+    for f in ['cases_by_area', 'situation', 'tests_reports', 'tests', 'vac']:
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
