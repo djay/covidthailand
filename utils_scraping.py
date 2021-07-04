@@ -299,7 +299,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     for date, tweet_list in tweets.items():
         fixed = []
         for tweet in tweet_list:
-            text, *url = tweet
+            text, url = (tweet, None) if type(tweet) == str else tweet
             fixed.append((text, (url[0] if url else None)))
         tweets[date] = fixed
     latest = max(tweets.keys()) if tweets else None
