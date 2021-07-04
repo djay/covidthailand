@@ -182,44 +182,82 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 - Some are translations where mistypings have happened. Some manual corrections are included
 - I take no responsibility for the accuracy of this data.
 
-## Testing Data <a name="dl-testing"> 
 
-- Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sporadic)
+## Daily CCSA Briefings <a name="dl-briefings">
+- Sources 
+   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
-<img src="https://github.com/djay/covidthailand/wiki/cases_all.png" width=200 alt="Private and Public Positive Test Results">
-<img alt="Private and Public Positive Tests" src="https://github.com/djay/covidthailand/wiki/tests_all.png" width=200>
-<img alt="Positive Test Results by health area" src="https://github.com/djay/covidthailand/wiki/pos_area_daily_all.png" width=200>
-<img alt="PCR Tests by health area" src="https://github.com/djay/covidthailand/wiki/tests_area_daily_all.png" width=200>
-<img alt="Positive Rate by Health District in overall positive rate (ex. some proactive tests)" src="https://github.com/djay/covidthailand/wiki/positivity_area_all.png" width=200>
+<img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
+<img alt="Walk-in Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
+<img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
+<img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
 
-### Daily Tests Private+Public
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
-   - Date: e.g "2021-04-06"
-   - Tests: PCR tests
-   - Tests Private: PCR tests from private labs
-   - Pos: Positive result
-   - Pos Private: Positive result from private labs
-   - Pos XLS: Tests positive results (includes corrected date-less data)
-   - Tests XLS: Tests conducted (includes corrected date-less data)
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_briefings), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
+  - Date: e.g "2021-04-06"
+  - Cases: Total cases that day. (Cases Imported + Cases Local Transmission)
+  - Cases In Quarantine: "Cases found in quarantine facilities/centers"
+  - Cases Imported: Cases In Quarantine + Cases outside quarantine
+  - Cases Proactive: Local transmissions that aren't walk-ins
+  - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
+  - Cases Area Prison: Cases reported in prison on this date
+  - Hospitalized: Total currently in isolation in hospital or field hospital
+  - Hospitalized Field: Total currently in isolation in field hospitals
+  - Hospitalized Hospital: total current active cases - anyone confirmed is considered hospitalized currently
+  - Hospitalized Severe": Currently hospitalised in a severe condition. Unclear what kind of beds this entails.
+  - Hospitalized Respirator: Current number in severe condition requiring ICU and mechanical ventilator
+  - Recovered: Number released from hospital/field hospital on this date
+  - Deaths: Number of deaths annouced that day
+  - Deaths Age (Min|Max): Range of ages of those who died
+  - Deaths Age Median": Median age of those who died
+  - Deaths Comorbidity None: Deaths where there wasn't a disease that increased risk
+  - Deaths {Female|Male}: Deaths for 2 of the genders
+  - Deaths Risk Family: Deaths who likely cause of transmission was via family member
+  - Source Cases:  Tweet, api or briefing the primary information came from
+  - Fields no longer updated
+    - Cases (Asymptomatic|Symptomatic): - No longer reported in briefing reports
+
+### Cases/Deaths per province
+- Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+  - "Date": e.g "2021-04-06"
+  - "Province": e.g "Samut Sakhon"
+  - "Cases": Confirmed cases in this province
+  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - The following is no longer updated
+     - "Cases Walkin": Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
+     - "Cases Proactive": Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. *No longer updated*
+     - "Deaths": 31.0
+
+### Cases/Deaths per Health District
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
+  - "Date": e.g "2021-04-06"
+  - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - "Deaths Area {1-13}":3.0,  
+  - The following are no longer updated but have some historical data
+    - "Cases Proactive Area {1-13}": Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+    - "Cases Walkin Area {1-13}": Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+
 - Notes:
-  - Uses case history graphs from the latest PPTX
-  - data seems to exclude some non-PCR tests (likely used in some proactive testing)
-  - The Test XLS data includes a number of tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
-  should be the same numbers as ```Pos``` and ```Tests```. 
+  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
-### Tests by Health District  
-
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
-   - Start: e.g "2021-04-06"
-   - End: e.g "2021-04-13"
-   - Pos Area {1-13} - Positive test results
-   - Tests Area {1-13} - Total tests (PCR)
+### Deaths by Province
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/deaths), [Download CSV](https://github.com/djay/covidthailand/wiki/deaths.csv)
+   - e.g
+      - "Date":"2021-04-27"
+      - "death_num":149.0,
+      - "gender":"Male",
+      - "nationality":"ไทย",
+      - "age":47.0,
+      - "Province":"Bangkok"
+    - Following information is extracted by not properly parsed yet
+      - "congenital_disease":
+      - "case_history":
+      - "risk_factor_sickness":
+      - "risk_factor_death":
 - Notes:
-  - not all periods are a week
-  - data seems to exclude non-PCR tests (likely used in some proactive testing)
-  - There are missing files, so some weeks' data are not shown
-  - The example graphs shown have been extrapolated using daily totals from the test daily data
+  - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
+
 
 ## Daily Situation Reports <a name="dl-situation-reports">
 Case Types and PUI counts
@@ -266,84 +304,44 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitalized
 
-## Daily CCSA Briefings <a name="dl-briefings">
-- Sources 
-   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
-   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
-   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
+## Testing Data <a name="dl-testing"> 
 
-<img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
-<img alt="Walk-in Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
-<img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
-<img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
+- Source: 
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sporadic)
 
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_briefings), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
-  - Date: e.g "2021-04-06"
-  - Cases: Total cases that day. Cases Imported + Cases Local Transmission
-  - Cases In Quarantine: "Cases found in quarantine facilities/centers"
-  - Cases Imported: Cases In Quarantine + Cases outside quarantine
-  - Cases Proactive: Local transmissions that aren't walk-ins
-  - Cases Local Transmission: "Cases infected in Thailand". Cases Walkins + Cases Proactive
-  - Cases Area Prison: Cases reported in prison that day,
-  - Hospitalized: Total currently in isolation in hospital or field hospital,
-  - Hospitalized Field:8558.0,
-  - Hospitalized Hospital":21453.0, - total current active cases - anyone confirmed is considered hospitalized
-  - Hospitalized Respirator":311.0,
-  - Hospitalized Severe":1009.0  
-  - Recovered: 
-  - Deaths": Number of deaths confirmed that day,
-  - Deaths Age (Min|Max)":92.0,
-  - Deaths Age Median":66.0,
-  - Deaths Comorbidity None: Deaths where there wasn't a disease that increased risk,
-  - Deaths Female: 
-  - Deaths Male: 
-  - Deaths Risk Family: Deaths who likely cause of transmission was via family member
-  - Source Cases:  Tweet, api or briefing the primary information came from,
-  - Fields no longer updated
-    - Cases Asymptomatic:null,
-    - Cases Symptomatic:null,
-    - "Cases (Asymptomatic|Symptomatic)":null, - No longer reported in briefing reports
+<img src="https://github.com/djay/covidthailand/wiki/cases_all.png" width=200 alt="Private and Public Positive Test Results">
+<img alt="Private and Public Positive Tests" src="https://github.com/djay/covidthailand/wiki/tests_all.png" width=200>
+<img alt="Positive Test Results by health area" src="https://github.com/djay/covidthailand/wiki/pos_area_daily_all.png" width=200>
+<img alt="PCR Tests by health area" src="https://github.com/djay/covidthailand/wiki/tests_area_daily_all.png" width=200>
+<img alt="Positive Rate by Health District in overall positive rate (ex. some proactive tests)" src="https://github.com/djay/covidthailand/wiki/positivity_area_all.png" width=200>
 
-### Cases/Deaths per province
-- Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
-  - "Date": e.g "2021-04-06"
-  - "Province": e.g "Samut Sakhon"
-  - "Cases": Confirmed cases in this province
-  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - The following is no longer updated
-     - "Cases Walkin": Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
-     - "Cases Proactive": Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. *No longer updated*
-     - "Deaths": 31.0
-
-### Cases/Deaths per Health District
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
-  - "Date": e.g "2021-04-06"
-  - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - "Deaths Area {1-13}":3.0,  
-  - The following are no longer updated but have some historical data
-    - "Cases Proactive Area {1-13}": Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-    - "Cases Walkin Area {1-13}": Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-
+### Daily Tests Private+Public
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
+   - Date: e.g "2021-04-06"
+   - Tests: PCR tests
+   - Tests Private: PCR tests from private labs
+   - Pos: Positive result
+   - Pos Private: Positive result from private labs
+   - Pos XLS: Tests positive results (includes corrected date-less data)
+   - Tests XLS: Tests conducted (includes corrected date-less data)
 - Notes:
-  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - Uses case history graphs from the latest PPTX
+  - data seems to exclude some non-PCR tests (likely used in some proactive testing)
+  - The Test XLS data includes a number of tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
+  should be the same numbers as ```Pos``` and ```Tests```. 
 
-### Deaths by Province
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/deaths), [Download CSV](https://github.com/djay/covidthailand/wiki/deaths.csv)
-   - e.g
-      - "Date":"2021-04-27"
-      - "death_num":149.0,
-      - "gender":"Male",
-      - "nationality":"ไทย",
-      - "age":47.0,
-      - "Province":"Bangkok"
-    - Following information is extracted by not properly parsed yet
-      - "congenital_disease":
-      - "case_history":
-      - "risk_factor_sickness":
-      - "risk_factor_death":
+### Tests by Health District  
+
+- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
+   - Start: e.g "2021-04-06"
+   - End: e.g "2021-04-13"
+   - Pos Area {1-13} - Positive test results
+   - Tests Area {1-13} - Total tests (PCR)
 - Notes:
-  - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
-
+  - not all periods are a week
+  - data seems to exclude non-PCR tests (likely used in some proactive testing)
+  - There are missing files, so some weeks' data are not shown
+  - The example graphs shown have been extrapolated using daily totals from the test daily data
 
 ## Vaccination Downloads <a name="dl-vac">
 ## Daily DDC Vaccination Reports
