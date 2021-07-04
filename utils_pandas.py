@@ -78,7 +78,7 @@ def daily2cum(results):
     renames = dict((c, c + ' Cum') for c in list(cum.columns))
     cum = cum.rename(columns=renames)
     # Add back in the extra index.
-    cum = cum.assign(**dict([(n, daily[n].fillna(value)) for n, value in extra_index]) )
+    cum = cum.assign(**dict([(n, daily[n].fillna(value)) for n, value in extra_index]))
     # what about gaps in province names?
 
     cum = cum.reset_index().set_index(names)

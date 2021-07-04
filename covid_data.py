@@ -1747,7 +1747,7 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 if code:
                     set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
                 post['dataRequest'].append(pspec)
-        r = requests.post(url, json=post, timeout=60)
+        r = requests.post(url, json=post, timeout=120)
         _, _, data = r.text.split("\n")
         data = json.loads(data)
         for resp in data['dataResponse']:
@@ -2015,8 +2015,9 @@ def get_vaccinations():
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
+    vacct = vacct.loc[:today() - datetime.timedelta(days=1)]  # Todays data is incomplete
     vacct = vacct.fillna(0)
-    vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(lambda pdf: daily2cum(pdf))
+    vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
     vacct = vacct.combine_first(vaccum)
 
     vac_reports, vac_reports_prov = vaccination_reports()
@@ -2029,6 +2030,14 @@ def get_vaccinations():
     export(vac_prov, "vaccinations", csv_only=True)
 
     vac_prov = vac_prov.combine_first(vacct)
+
+    # Need the last day we have a full set of data since some provinces can come in late
+    # TODO: could add unknowns
+    crossed = vac_prov.reset_index()
+    crossed = pd.crosstab(crossed['Date'], crossed['Province'], values="Vac Given", aggfunc='sum')
+    last_valid = crossed.apply(pd.Series.last_valid_index).min()
+    vac_prov = vac_prov.loc[:last_valid]
+
     # Get vaccinations by district
     vac_prov = join_provinces(vac_prov, "Province")
     given_by_area_1 = area_crosstab(vac_prov, 'Vac Given 1', ' Cum')

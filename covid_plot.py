@@ -200,7 +200,9 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             a1.xaxis.label.set_visible(False)
 
         plt.tight_layout()
-        plt.savefig(os.path.join("outputs", f'{png_prefix}_{suffix}.png'))
+        path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
+        plt.savefig(path)
+        print("Plot:", path)
         plt.close()
 
     return None
@@ -688,7 +690,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_daily = cum2daily(df_vac_groups)
     # bring in any daily figures we might have collected first
     vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2']].combine_first(vac_daily)
-    daily_cols = [c for c in vac_daily.columns if not c.startswith('Vac Given')]  # Keep for unknown
+    daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group')]  # Keep for unknown
     # interpolate to fill gaps and get some values for each group
     vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
     # now normalise the filled in days so they add to their real total
@@ -700,7 +702,7 @@ def save_plots(df: pd.DataFrame) -> None:
                                                                                   - vac_daily.index.to_series()).dt.days
 
     vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / (pd.Timestamp('2022-01-01')
-                                                                                - vac_daily.index.to_series()).dt.days
+                                                                                    - vac_daily.index.to_series()).dt.days
 
     daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
@@ -721,7 +723,7 @@ def save_plots(df: pd.DataFrame) -> None:
     )
 
     # Now turn daily back to cumulative since we now have estimates for every day without dips
-    vac_cum = vac_daily.fillna(0).cumsum()
+    vac_cum = vac_daily.cumsum().combine_first(vac_daily[daily_cols].fillna(0).cumsum())
     vac_cum.columns = [f"{c} Cum" for c in vac_cum.columns]
     # Not sure why but we end up with large cumalitive than originally so normalise
     for c in groups:

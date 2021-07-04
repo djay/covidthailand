@@ -185,7 +185,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ## Daily CCSA Briefings <a name="dl-briefings">
 - Sources 
-   - [CCSA Daily Briefing ](https://www.facebook.com/informationcovid19) - 12pm each day
+   - [CCSA Daily Briefing ](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
    - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 

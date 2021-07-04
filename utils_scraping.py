@@ -300,7 +300,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
         fixed = []
         for tweet in tweet_list:
             text, *url = tweet
-            fixed.append((text, url[0] if url else None))
+            fixed.append((text, (url[0] if url else None)))
         tweets[date] = fixed
     latest = max(tweets.keys()) if tweets else None
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
