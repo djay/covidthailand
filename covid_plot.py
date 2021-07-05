@@ -790,7 +790,7 @@ def save_plots(df: pd.DataFrame) -> None:
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    df_vac_areas_s1 = df['2021-02-16':][cols].interpolate()
+    df_vac_areas_s1 = df['2021-02-28':][cols].interpolate(limit_area="inside")
     plot_area(df=df_vac_areas_s1,
               png_prefix='vac_areas',
               cols_subset=cols,
