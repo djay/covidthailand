@@ -315,11 +315,17 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
         r15, r39, a2_w1, a2_w2, a2_w3 = get_next_numbers(lines[1], ints=False, return_rest=False)
         r60, a3_w1, a3_w2, a3_w3 = get_next_numbers(lines[2], ints=False, return_rest=False)
     else:
-        a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text, "วหรือภำวะเส่ียง", before=True, ints=False, return_rest=False)
+        a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text,
+                                                   "วหรือภำวะเส่ียง",
+                                                   "หรือสูงอำยุ",
+                                                   "มีโรคประจ",
+                                                   before=True,
+                                                   ints=False,
+                                                   return_rest=False)
 
     # time to treatment
     w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
-        text, "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย", ints=False, return_rest=False)
+        text, "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย", "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม", ints=False, return_rest=False)
 
     df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]],
                       columns=[
@@ -858,12 +864,12 @@ def get_cases_by_prov_tweets():
 
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
-    #new = get_tweets_from(531202184, d("2021-04-03"), None, OFFICIAL_TWEET, "📍")
+    # new = get_tweets_from(531202184, d("2021-04-03"), None, OFFICIAL_TWEET, "📍")
     new = get_tweets_from(531202184, d("2021-06-06"), None, OFFICIAL_TWEET, "📍")
     # old = get_tweets_from(72888855, d("2021-01-14"), d("2021-04-02"), "Official #COVID19 update", "📍")
-    #old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
+    # old = get_tweets_from(72888855, d("2021-02-21"), None, OFFICIAL_TWEET, "📍")
     old = get_tweets_from(72888855, d("2021-05-21"), None, OFFICIAL_TWEET, "📍")
-    #unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
+    # unofficial = get_tweets_from(531202184, d("2021-04-03"), None, UNOFFICIAL_TWEET)
     unofficial = get_tweets_from(531202184, d("2021-06-06"), None, UNOFFICIAL_TWEET)
     thaimoph = get_tweets_from(2789900497, d("2021-06-18"), None, MOPH_TWEET)
     officials = {}
@@ -1162,7 +1168,7 @@ def briefing_province_cases(date, pages):
         text = str(soup)
         if "อโควิดในประเทศรายใหม่" not in text or "รวมท ัง้ประเทศ" in text:
             continue
-        if not re.search("ที่\s*จังหวัด", text):
+        if not re.search(r"ที่\s*จังหวัด", text):
             continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
@@ -1429,7 +1435,7 @@ def get_cases_by_prov_briefings():
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
-    #deaths = import_csv("deaths", ["Date", "Province"], not USE_CACHE_DATA)
+    # deaths = import_csv("deaths", ["Date", "Province"], not USE_CACHE_DATA)
     deaths = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
@@ -1453,7 +1459,7 @@ def get_cases_by_prov_briefings():
         for i, page in enumerate(pages):
             text = page.get_text()
             # Might throw out totals since doesn't include all prov
-            #vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
+            # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
             types = vac_briefing_totals(types, date, file, page, text)
 
         if not today_types.empty:
@@ -1742,7 +1748,9 @@ def get_vaccination_coldchain(request_json, join_prov=False):
     if join_prov:
         df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
         codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
-        provinces = [prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+        provinces = [
+            prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype
+        ]
         provinces = [get_province(prov) for prov in provinces]
     else:
         provinces = codes = [None]
@@ -1755,7 +1763,8 @@ def get_vaccination_coldchain(request_json, join_prov=False):
 
     def set_filter(filters, field, value):
         for filter in filters:
-            if filter['filterDefinition']['filterExpression']['queryTimeTransformation']['dataTransformation']['sourceFieldName'] == field:
+            if filter['filterDefinition']['filterExpression']['queryTimeTransformation']['dataTransformation'][
+                    'sourceFieldName'] == field:
                 filter['filterDefinition']['filterExpression']['stringValues'] = value
         return filters
 
@@ -2144,7 +2153,6 @@ def vaccination_reports():
         # TODO: only have 76 prov? something going on
         missing_data = counts[counts['Vac Group Risk: Location 2 Cum'] < 76]["2021-05-04":]
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
-
 
     return vac_daily, vac_prov_reports
 
