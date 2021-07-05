@@ -75,7 +75,7 @@ def parse_file(filename, html=False, paged=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -98,11 +98,17 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
             behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
-        return numbers, matched + " " + rest + behind
+        if return_rest:
+            return numbers, matched + " " + rest + behind
+        else:
+            return numbers
     if debug and matches:
         print("Couldn't find '{}'".format(match))
         print(content)
-    return [], content
+    if return_rest:
+        return [], content
+    else:
+        return []
 
 
 def get_next_number(content, *matches, default=None, remove=False, before=False, until=None):

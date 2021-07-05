@@ -41,12 +41,12 @@ def add_data(data, df):
     return data
 
 
-def check_cum(df, results):
+def check_cum(df, results, cols):
     if results.empty:
         return True
     next_day = results.loc[results.index[0]][[c for c in results.columns if " Cum" in c]]
     last = df.loc[df.index[-1]][[c for c in df.columns if " Cum" in c]]
-    if (next_day.fillna(0) >= last.fillna(0)).all():
+    if (next_day.fillna(0)[cols] >= last.fillna(0)[cols]).all():
         return True
     else:
         raise Exception(str(next_day - last))

@@ -303,7 +303,33 @@ def get_en_situation():
     return results
 
 
-def situation_pui_th(parsed_pdf, date, results):
+def situation_pui_th_death(dfsit, parsed_pdf, date, file):
+    if "อัตรำป่วยตำยตำมกลุ่มอำยุ" not in parsed_pdf:
+        return dfsit
+    _, text = parsed_pdf.split("อัตรำป่วยตำยตำมกลุ่มอำยุ", 1)
+    lines = text.split('\n')
+    lines = [line for line in lines if line.strip()]
+    numbers = get_next_numbers(lines[0], ints=False, return_rest=False)
+    if len(numbers) >= 5:
+        r15, r39, a1_w1, a1_w2, a1_w3 = get_next_numbers(lines[0], ints=False, return_rest=False)
+        r15, r39, a2_w1, a2_w2, a2_w3 = get_next_numbers(lines[1], ints=False, return_rest=False)
+        r60, a3_w1, a3_w2, a3_w3 = get_next_numbers(lines[2], ints=False, return_rest=False)
+    else:
+        a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text, "วหรือภำวะเส่ียง", before=True, ints=False, return_rest=False)
+
+    # time to treatment
+    w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
+        text, "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย", ints=False, return_rest=False)
+
+    df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]],
+                      columns=[
+                          "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg",
+                          "W3 Time To Treatment Min", "W3 Time To Treatment Max"
+                      ]).set_index("Date")
+    return dfsit.combine_first(df)
+
+
+def situation_pui_th(dfpui, parsed_pdf, date, file):
     tests_total, active_finding, asq, not_pui = [None] * 4
     numbers, content = get_next_numbers(
         parsed_pdf,
@@ -342,7 +368,7 @@ def situation_pui_th(parsed_pdf, date, results):
     if date > dateutil.parser.parse("2020-03-26") and not numbers:
         raise Exception(f"Problem finding PUI numbers for date {date}")
     elif not numbers:
-        return
+        return dfpui
     if tests_total == 167515:  # situation-no447-250364.pdf
         tests_total = 1675125
     if date in [d("2020-12-23")]:  # 1024567
@@ -370,20 +396,21 @@ def situation_pui_th(parsed_pdf, date, results):
     row = (tests_total, pui, active_finding, asq, pui_walkin_private, pui_walkin_public, pui_walkin)
     if None in row and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
-    df = pd.DataFrame(
-        [(date,) + row],
-        columns=[
-            "Date",
-            "Tested Cum",
+    cols = ["Tested Cum",
             "Tested PUI Cum",
             "Tested Proactive Cum",
             "Tested Quarantine Cum",
             "Tested PUI Walkin Private Cum",
             "Tested PUI Walkin Public Cum",
             "Tested PUI Walkin Cum"]
+    df = pd.DataFrame(
+        [(date,) + row],
+        columns=["Date"] + cols
     ).set_index("Date")
-    assert check_cum(df, results)
-    return df
+    assert check_cum(df, dfpui, cols)
+    dfpui = dfpui.combine_first(df)
+    print(date.date(), file, df.to_string(header=False, index=False))
+    return dfpui
 
 
 def get_thai_situation():
@@ -402,17 +429,9 @@ def get_thai_situation():
             # english report mixed up? - situation-no171-220663.pdf
             continue
         date = file2date(file)
-        df = situation_pui_th(parsed_pdf, date, results)
-        if df is not None:
-            results = results.combine_first(df)
-            print(date.date(), file, df.to_string(header=False, index=False))
-            # file,
-            # "p{Tested PUI Cum:.0f}\t"
-            # "t{Tested Cum:.0f}\t"
-            # "{Tested Proactive Cum:.0f}\t"
-            # "{Tested Quarantine Cum:.0f}\t"
-            # "{Tested Not PUI Cum:.0f}\t"
-            # "".format(**results.iloc[0].to_dict()))
+        results = situation_pui_th(results, parsed_pdf, date, file)
+        results = situation_pui_th_death(results, parsed_pdf, date, file)
+
     return results
 
 
@@ -2276,9 +2295,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        situation = get_situation()
         cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
-        situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
