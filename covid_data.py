@@ -1281,7 +1281,7 @@ def briefing_deaths_provinces(text, date, total_deaths):
 
 
 def briefing_deaths_summary(text, date):
-    title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19)")
+    title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")
     if not title_re.search(text):
         return pd.DataFrame(), pd.DataFrame()
     # Summary of locations, reasons, medium age, etc
@@ -2329,8 +2329,8 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        situation = get_situation()
         cases_by_area = get_cases_by_area()
+        situation = get_situation()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
