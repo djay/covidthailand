@@ -237,6 +237,7 @@ def situation_pui(parsed_pdf, date):
         pui_walkin = {853189: 85191}.get(pui_walkin, pui_walkin)  # by taking away other numbers
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and 5000000 > pui_walkin > 0)
     assert pui_walkin_public is None or (5000000 > pui_walkin_public > 10000)
+    assert pui is None or pui > 0, f"Invalid pui situation_en {date}"
 
     if not_pui is not None:
         active_finding += not_pui
@@ -403,6 +404,8 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
     row = (tests_total, pui, active_finding, asq, pui_walkin_private, pui_walkin_public, pui_walkin)
     if None in row and date > d("2020-06-30"):
         raise Exception(f"Missing data at {date}")
+    assert pui is None or pui > 0, f"Invalid pui situation_th {date}"
+
     cols = ["Tested Cum",
             "Tested PUI Cum",
             "Tested Proactive Cum",
@@ -454,6 +457,8 @@ def get_situation_today():
     numbers, rest = get_next_numbers(text, "สถานการณ์ในประเทศไทย")
     date = find_thai_date(rest).date()
     row = [cases_cum, cases, pui_cum, pui, imported_cum, imported]
+    assert not any_in(row, None)
+    assert pui > 0
     return pd.DataFrame(
         [[date, ] + row],
         columns=["Date", "Cases Cum", "Cases", "Tested PUI Cum", "Tested PUI", "Cases Imported Cum", "Cases Imported"]
@@ -469,6 +474,15 @@ def get_situation():
     situation = import_csv("situation_reports", ["Date"],
                            not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
     cum = cum2daily(situation)
+    # TODO: Not sure but 5 days have 0 PUI. Take them out for now
+    # Date
+    # 2020-02-12    0.0
+    # 2020-02-14    0.0
+    # 2020-10-13    0.0
+    # 2020-12-29    0.0
+    # 2021-05-02    0.0    
+    cum[(cum['Tested PUI'] == 0)]['Tested PUI'] = None
+
     situation = situation.combine_first(cum)  # any direct non-cum are trusted more
 
     # Only add in the live stats if they have been updated with new info
@@ -2315,8 +2329,8 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        cases_by_area = get_cases_by_area()
         situation = get_situation()
+        cases_by_area = get_cases_by_area()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
