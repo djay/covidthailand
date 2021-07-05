@@ -186,7 +186,8 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ## Daily CCSA Briefings <a name="dl-briefings">
 - Sources 
    - [CCSA Daily Briefing ](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
-   - [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [API: Details of all confirmed COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+   - [API: Daily Summary of Cases/Deaths/Recovered](https://covid19.th-stat.com/json/covid19v2/getTimeline.json)
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
 <img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
@@ -233,10 +234,10 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 - Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
   - "Date": e.g "2021-04-06"
   - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-  - "Deaths Area {1-13}":3.0,  
+  - "Deaths Area {1-13}": Deaths that day in the health district
+  - "Cases Risk: {Group} Area {1-13}": Categorisation of Risk field from the covid-19-daily dataset  
   - The following are no longer updated but have some historical data
-    - "Cases Proactive Area {1-13}": Cases found by people requesting tests in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
-    - "Cases Walkin Area {1-13}": Cases found by government testing in specific location with in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+    - "Cases {Proactive|Walkin} Area {1-13}": Cases found by people where tested
 
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
