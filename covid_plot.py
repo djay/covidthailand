@@ -5,16 +5,15 @@ from typing import Sequence, Union, List, Callable
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
-
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, perc_format, rearrange, set_time_series_labels_2, topprov, trendline, value_ma
+from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, rearrange, \
+    set_time_series_labels_2, topprov, value_ma
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, get_province, get_provinces, join_provinces, thaipop
+    AREA_LEGEND_ORDERED, FIRST_AREAS, get_provinces, join_provinces, thaipop
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -101,8 +100,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     if percent_fig:
         perccols = [
             c for c in cols
-            if (not unknown_total or unknown_percent or c != f'{unknown_name}{ma_suffix}') and c not in between +
-            actuals
+            if (not unknown_total or unknown_percent or c != unknown_col) and c not in (between + actuals)
         ]
         for c in perccols:
             df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
@@ -223,7 +221,8 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: put somewhere else
     walkins = pd.DataFrame(df["Cases Local Transmission"] - df["Cases Proactive"], columns=['Cases Walkin'])
     # In case XLS is not updated before the pptx
-    df = df.combine_first(walkins).combine_first(df[['Tests', 'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
+    df = df.combine_first(walkins).combine_first(df[['Tests',
+                                                     'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
@@ -698,11 +697,9 @@ def save_plots(df: pd.DataFrame) -> None:
         vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
     vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
-    vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / (pd.Timestamp('2022-01-01')
-                                                                                  - vac_daily.index.to_series()).dt.days
-
-    vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / (pd.Timestamp('2022-01-01')
-                                                                                    - vac_daily.index.to_series()).dt.days
+    days_to_target = (pd.Timestamp('2022-01-01') - vac_daily.index.to_series()).dt.days
+    vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / days_to_target
+    vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / days_to_target
 
     daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
@@ -732,7 +729,6 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: adjust allocated for double dose group
     second_dose = [c for c in groups if "2 Cum" in c]
     first_dose = [c for c in groups if "1 Cum" in c]
-    #vac_cum['Allocated Vaccines Cum'] = df[['Vac Allocated AstraZeneca', 'Vac Allocated Sinovac']].sum(axis=1, skipna=False) - vac_cum[second_dose].sum(axis=1)
     vac_cum['Available Vaccines Cum'] = df['Vac Imported Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
 
     cols = []
@@ -773,8 +769,9 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     for group, goal in goals:
         for d in [2, 1]:
-            vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[f'Vac Group {group} {d} Cum'] / goal * 100
-    cols2 = [c for c in vac_cum.columns if f" Cum %" in c and "Vac Group " in c]
+            vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
+                f'Vac Group {group} {d} Cum'] / goal * 100
+    cols2 = [c for c in vac_cum.columns if " Cum %" in c and "Vac Group " in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
         df=vac_cum,

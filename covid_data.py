@@ -15,9 +15,11 @@ import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
 
-from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, spread_date_range
+from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
+    spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, strip, toint, unique_values,\
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
+    strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
@@ -326,12 +328,11 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
     # time to treatment
     w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
         text, "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย", "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม", ints=False, return_rest=False)
-
-    df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]],
-                      columns=[
-                          "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg",
-                          "W3 Time To Treatment Min", "W3 Time To Treatment Max"
-                      ]).set_index("Date")
+    columns = [
+        "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg",
+        "W3 Time To Treatment Min", "W3 Time To Treatment Max"
+    ]
+    df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]], columns=columns).set_index("Date")
     return dfsit.combine_first(df)
 
 
@@ -465,7 +466,8 @@ def get_situation():
     today_situation = get_situation_today()
     en_situation = get_en_situation()
     th_situation = get_thai_situation()
-    situation = import_csv("situation_reports", ["Date"], not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
+    situation = import_csv("situation_reports", ["Date"],
+                           not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
     cum = cum2daily(situation)
     situation = situation.combine_first(cum)  # any direct non-cum are trusted more
 
@@ -1802,7 +1804,8 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 del column['nullIndex']
                 if column:
                     field_type = next(iter(column.keys()))
-                    conv = dict(dateColumn=d, datetimeColumn=d, longColumn=int, doubleColumn=float, stringColumn=str)[field_type]
+                    conv = dict(dateColumn=d, datetimeColumn=d, longColumn=int, doubleColumn=float,
+                                stringColumn=str)[field_type]
                     values = [conv(i) for i in column[field_type]['values']]
                     if conv == d:
                         date_col = fieldname
@@ -1847,11 +1850,11 @@ def vac_briefing_totals(df, date, file, page, text):
         return df
 
     # We need given totals to ensure we use these over other api given totals
-    vac = pd.DataFrame([row],
-                       columns=[
-                           "Date", "Vac Given", "Vac Given Cum", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2",
-                           "Vac Given 2 Cum"
-                       ]).set_index("Date")
+    columns = [
+        "Date", "Vac Given", "Vac Given Cum", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2",
+        "Vac Given 2 Cum"
+    ]
+    vac = pd.DataFrame([row], columns=columns).set_index("Date")
     if not vac.empty:
         print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
     df = df.combine_first(vac)
@@ -2021,7 +2024,8 @@ def get_vaccinations():
 
     vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
     vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
-    vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_", values="_quantity_")
+    vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
+                                                                            values="_quantity_")
     vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
     vac_import = vac_import.fillna(0)
     vac_import['Vac Imported'] = vac_import.sum(axis=1)
