@@ -888,6 +888,7 @@ def save_plots(df: pd.DataFrame) -> None:
                   ma_days=7,
                   cmap='tab10')
 
+
     # TODO: work out based on districts of deaths / IFR for that district
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")

@@ -307,16 +307,11 @@ def get_en_situation():
 
 
 def situation_pui_th_death(dfsit, parsed_pdf, date, file):
-    if "อัตรำป่วยตำยตำมกลุ่มอำยุ" not in parsed_pdf:
+    numbers, text = get_next_numbers(parsed_pdf, "อัตรำป่วยตำยตำมกลุ่มอำยุ", "อัตราป่วยตายตามกลุ่มอายุ", ints=False)
+    if not numbers:
         return dfsit
-    _, text = parsed_pdf.split("อัตรำป่วยตำยตำมกลุ่มอำยุ", 1)
-    lines = text.split('\n')
-    lines = [line for line in lines if line.strip()]
-    numbers = get_next_numbers(lines[0], ints=False, return_rest=False)
     if len(numbers) >= 5:
-        r15, r39, a1_w1, a1_w2, a1_w3 = get_next_numbers(lines[0], ints=False, return_rest=False)
-        r15, r39, a2_w1, a2_w2, a2_w3 = get_next_numbers(lines[1], ints=False, return_rest=False)
-        r60, a3_w1, a3_w2, a3_w3 = get_next_numbers(lines[2], ints=False, return_rest=False)
+        r15, r39, a1_w1, a1_w2, a1_w3, r15, r39, a2_w1, a2_w2, a2_w3, r60, a3_w1, a3_w2, a3_w3, *_ = numbers
     else:
         a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text,
                                                    "วหรือภำวะเส่ียง",
@@ -328,10 +323,15 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
 
     # time to treatment
     w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
-        text, "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย", "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม", ints=False, return_rest=False)
+        text,
+        "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย",
+        "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม",
+        "ถึงวันได้รับรักษา",
+        ints=False,
+        return_rest=False)
     columns = [
-        "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg",
-        "W3 Time To Treatment Min", "W3 Time To Treatment Max"
+        "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg", "W3 Time To Treatment Min",
+        "W3 Time To Treatment Max"
     ]
     df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]], columns=columns).set_index("Date")
     return dfsit.combine_first(df)
@@ -469,10 +469,31 @@ def get_situation():
     print("========Situation Reports==========")
 
     today_situation = get_situation_today()
-    en_situation = get_en_situation()
     th_situation = get_thai_situation()
+    en_situation = get_en_situation()
     situation = import_csv("situation_reports", ["Date"],
                            not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
+
+    cases = get_case_details_csv().reset_index()
+    labels = ["Age2 0-14", "Age2 15-39", "Age2 40-59", "Age2 60-"]
+    age_groups = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels)
+    case_ages = pd.crosstab(cases['Date'], age_groups)
+    case_ages_cum = case_ages["2021-04-01":].cumsum()
+    # TODO: maybe redistribute unknowns into the above buckets?
+    # case_ages.sum(axis=1).to_frame("Sum").combine_first(situation[['Cases']]).loc["2021-06-20":]
+
+    # work out ages of deaths from cfr
+    # get cum cases per age since 1st april
+    # CFR * cases = deaths
+    # for ages in ["15-39", "40-59", "60-"]:
+    #     case_ages_cum[f"Deaths Age {ages} Cum"] = situation[f"W3 CFR {ages}"] / 100 * case_ages_cum[f"Age2 {ages}"]
+    # case_ages_cum = case_ages_cum.combine_first(cum2daily(case_ages_cum))
+    # TODO: Getting some negative daily deaths, esp for 15-39.  
+    # There are too many unknown case ages each day I think it throws it off and end up getting spikes
+    # 
+    # either that or the precision of the CFR is just not enough? 
+    # 28 and 30 it jumps to 0.12, then down to 0.11 again.
+
     cum = cum2daily(situation)
     # TODO: Not sure but 5 days have 0 PUI. Take them out for now
     # Date
@@ -480,7 +501,7 @@ def get_situation():
     # 2020-02-14    0.0
     # 2020-10-13    0.0
     # 2020-12-29    0.0
-    # 2021-05-02    0.0    
+    # 2021-05-02    0.0
     cum[(cum['Tested PUI'] == 0)]['Tested PUI'] = None
 
     situation = situation.combine_first(cum)  # any direct non-cum are trusted more
@@ -580,8 +601,9 @@ def get_cases_by_demographics_api():
     # age_groups = pd.cut(cases['age'], bins=np.arange(0, 100, 10))
     # cases = get_case_details_csv().reset_index()
     labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
-    age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], labels=labels)
+    age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], right=True, labels=labels)
     case_ages = pd.crosstab(cases['Date'], age_groups)
+
     # case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in DISTRICT_RANGE))
 
     cases['risk'].value_counts()
@@ -2329,8 +2351,8 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        cases_by_area = get_cases_by_area()
         situation = get_situation()
+        cases_by_area = get_cases_by_area()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
