@@ -2005,11 +2005,11 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     lines = [line.strip() for line in page.split('\n') if line.strip()]
-    preamble, *rest = split(lines, lambda x: shots.search(x) or oldhead.search(x))
+    preamble, *rest = split(lines, lambda x: (shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = max(len(shots.findall(h)) for h in headings)
         oh_count = max(len(oldhead.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count, "old_given" if oh_count else None)
+        table = {12: "new_given", 10: "given", 6: "alloc" }.get(shot_count, "old_given" if oh_count else None)
         if not table:
             continue
         added = 0
@@ -2051,6 +2051,9 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
                 vaccinations[(date, prov)] = [given, perc, 0, 0] + \
                     [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                 allocations[(date, prov)] = [alloc, 0, 0, 0]
+            elif table == "july":
+                registration, given1, perc1, given2, perc2, = numbers
+                vaccinations[(date, prov)] = [given1, perc1, given2, perc2] + [None] * 10
         assert added > 7
         print(f"{date.date()}: {table} Vaccinations: {added}", file)
     return vaccinations, allocations, vacnew
@@ -2343,16 +2346,16 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        situation = get_situation()
-        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
+        situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        situation = get_situation()
         cases_by_area = get_cases_by_area()
+        situation = get_situation()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
