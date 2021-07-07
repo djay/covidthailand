@@ -17,10 +17,10 @@ Kamphaeng Phet,กำแพงเพชร,725867,8512,86,Kamphaeng Phet,KPT,TH-
 Kanchanaburi,กาญจนบุรี,895525,19385,46,Kanchanaburi,KRI,TH-71,TH50,"['KRI', 'Kanchanaburi', 'กจ', 'กาญจนบรุ', 'กาญจนบุร', 'กาญจนบุรี', 'กำญจนบรุ']",5
 Khon Kaen,ขอนแก่น,1802872,10659,169,Khon Kaen,KKN,TH-40,TH22,"['KKN', 'Khon Kaen', 'KhonKaen', 'ขก', 'ขอนแกน่', 'ขอนแก่น']",7
 Krabi,กระบี่,476739,5323,90,Krabi,KBI,TH-81,TH63,"['KBI', 'Krabi', 'กบ', 'กระบี่', 'กระบ่ี']",11
-Lampang,ลำปาง,738316,12488,59,Lampang,LPG,TH-52,TH06,"['LPG', 'Lampang', 'ล าปาง', 'ล ำปำง', 'ลป', 'ลาปาง', 'ลำปาง', ]",1
+Lampang,ลำปาง,738316,12488,59,Lampang,LPG,TH-52,TH06,"['LPG', 'Lampang', 'ล าปาง', 'ล ำปำง', 'ลป', 'ลาปาง', 'ลำปาง', 'ลําปาง']",1
 Lamphun,ลำพูน,405075,4478,92,Lamphun,LPN,TH-51,TH05,"['LPN', 'Lamphun', 'ล าพนู', 'ล าพูน', 'ล ำพนู', 'ลพ', 'ลาพนู', 'ลำพูน', 'ลาพูน']",1
 Loei,เลย,642950,10500,61,Loei,LEI,TH-42,TH18,"['LEI', 'Loei', 'ลย', 'เลย']",8
-Lopburi,ลพบุรี,755556,6493,116,Lopburi,LRI,TH-16,TH34,"['LRI', 'LopBuri', 'Lopburi', 'ลบ', 'ลพบรุ', 'ลพบุร', 'ลพบุรี']",4
+Lopburi,ลพบุรี,755556,6493,116,Lopburi,LRI,TH-16,TH34,"['LRI', 'LopBuri', 'Lopburi', 'ลบ', 'ลพบรุ', 'ลพบุร', 'ลพบุรี', 'ลพบรี']",4
 Mae Hong Son,แม่ฮ่องสอน,284138,12765,23,Mae Hong Son,MSN,TH-58,TH01,"['MSN', 'Mae Hong Son', 'MaeHongSon', 'มส', 'แมฮ่อ่งสอน', 'แม่ฮ่องสอน']",1
 Maha Sarakham,มหาสารคาม,962665,5607,172,Maha Sarakham,MKM,TH-44,TH24,"['MKM', 'Maha Sarakham', 'MahaSarakham', 'Mahasarakham', 'มค', 'มหาสารคาม', 'มหำสำรคำม']",7
 Mukdahan,มุกดาหาร,353174,4126,87,Mukdahan,MDH,TH-49,TH78,"['MDH', 'Mukdahan', 'มกุดาหาร', 'มห', 'มุกดาหาร']",8
@@ -62,7 +62,7 @@ Saraburi,สระบุรี,645911,3499,185,Saraburi,SRI,TH-19,TH37,"['SRI', 
 Satun,สตูล,323586,3019,107,Satun,STN,TH-91,TH67,"['STN', 'Satun', 'สต', 'สตลู', 'สตูล']",12
 Sing Buri,สิงห์บุรี,208446,817,255,Sing Buri,SBR,TH-17,TH33,"['SBR', 'Sing Buri', 'SingBuri', 'สงิหบ์รุ', 'สงิหบ์ุร', 'สห', 'สิงห์บุร', 'สิงห์บุรี']",4
 Sisaket,ศรีสะเกษ,1472859,8936,165,Sisaket,SSK,TH-33,TH30,"['SSK', 'Si Sa Ket', 'SiSaKet', 'Sisaket', 'ศก', 'ศรสีะเกษ', 'ศรีสะเกษ']",10
-Songkhla,สงขลา,1435968,7741,186,Songkhla,SKA,TH-90,TH68,"['SKA', 'Songkhla', 'สข', 'สงขลา', 'สงขลำ']",12
+Songkhla,สงขลา,1435968,7741,186,Songkhla,SKA,TH-90,TH68,"['SKA', 'Songkhla', 'สข', 'สงขลา', 'สงขลำ', 'สงขลา']",12
 Sukhothai,สุโขทัย,595072,6671,89,Sukhothai (Sukhothai Thani),STI,TH-64,TH09,"['STI', 'Sukhothai', 'สท', 'สุโขทัย', 'สโุขทยั', 'สโุขทัย']",2
 Suphan Buri,สุพรรณบุรี,846334,5410,156,Suphan Buri,SPB,TH-72,TH51,"['SPB', 'Suphan Buri', 'SuphanBuri', 'Suphanburi', 'สพ', 'สพุรรณบรุ', 'สพุรรณบรุี', 'สพุรรณบุร', 'สุพรรณบุร', 'สุพรรณบุรี']",5
 Surat Thani,สุราษฎร์ธานี,1068010,13079,81,Surat Thani,SNI,TH-84,TH60,"['SNI', 'Surat Thani', 'SuratThani', 'สฎ', 'สรุาษฎรธ์าน', 'สรุาษฎรธ์านี', 'สรุำษฎรธ์ำน', 'สุราษฎร์ธาน', 'สุราษฎร์ธานี', 'สุุราษฎร์ธานี', 'สรุาษฎร์ธานี', 'สุราษฎรธ์านี']",11
@@ -77,4 +77,4 @@ Uttaradit,อุตรดิตถ์,453103,7906,58,Uttaradit,UTD,TH-53,TH10,"[
 Yala,ยะลา,536330,4476,119,Yala,YLA,TH-95,TH70,"['YLA', 'Yala', 'ยล', 'ยะลา']",12
 Yasothon,ยโสธร,537299,4131,130,Yasothon,YST,TH-35,TH72,"['YST', 'Yasothon', 'ยส', 'ยโสธร']",10
 Prison,เรือนจำฯ,,,,,,,,"['Prison', 'เรอืนจา/ทีต่อ้งขงั', 'เรอืนจาฯ', 'เรอืนจาและทีต่อ้งขงั', 'เรือนจ า']",Prison
-Unknown,ไม่ระบุ,,,,,,,,"['Unknown', 'กัมพูชา', 'พม่า', 'มาเลเซีย', 'เวียงจันทร์', 'ไม่ระบุ', 'สถานที่ทำงาน', 'เมือง']",Unknown
+Unknown,ไม่ระบุ,,,,,,,,"['Unknown', 'กัมพูชา', 'พม่า', 'มาเลเซีย', 'เวียงจันทร์', 'ไม่ระบุ', 'สถานที่ทำงาน', 'เมือง', 'เรือ']",Unknown

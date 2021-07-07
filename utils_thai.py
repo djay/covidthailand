@@ -309,7 +309,7 @@ def get_province(prov, ignore_error=False, cutoff=0.74):
 
 
 def prov_trim(p):
-    return remove_suffix(remove_prefix(p, "จ.").strip(' .'), " Province")
+    return remove_suffix(remove_prefix(p, "จ.", "จังหวัด").strip(' .'), " Province")
 
 
 def join_provinces(df, on):

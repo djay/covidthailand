@@ -339,20 +339,20 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
 #################
 # String helpers
 #################
-def remove_prefix(text: str, prefix: str) -> str:
+def remove_prefix(text: str, *prefixes: str) -> str:
     """Removes the prefix of a string"""
-    if text.startswith(prefix):
-        return text[len(prefix):]
-    else:
-        return text
+    for prefix in prefixes:
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+    return text
 
 
-def remove_suffix(text: str, suffix: str) -> str:
+def remove_suffix(text: str, *suffixes: str) -> str:
     """Removes the suffix of a string"""
-    if suffix and text.endswith(suffix):
-        return text[:-len(suffix)]
-    else:
-        return text
+    for suffix in suffixes:
+        if suffix and text.endswith(suffix):
+            text = text[:-len(suffix)]
+    return text
 
 
 def seperate(seq, condition):

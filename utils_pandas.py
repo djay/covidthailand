@@ -111,7 +111,14 @@ def rearrange(lst, *first):
     return result + [i for i in lst if i is not None]
 
 
-def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=None, return_unmatched=False):
+def fuzzy_join(a,
+               b,
+               on,
+               assert_perfect_match=False,
+               trim=None,
+               replace_on_with=None,
+               return_unmatched=False,
+               cutoff=0.74):
     "does a pandas join but matching very similar entries"
     trim = trim if trim is not None else lambda x: x
     old_index = None
@@ -124,8 +131,9 @@ def fuzzy_join(a, b, on, assert_perfect_match=False, trim=None, replace_on_with=
     if unmatched.empty:
         second = first
     else:
-        a["fuzzy_match"] = unmatched[on].map(lambda x: next(iter(difflib.get_close_matches(trim(x), b.index, 1)), None),
-                                             na_action="ignore")
+        a["fuzzy_match"] = unmatched[on].map(
+            lambda x: next(iter(difflib.get_close_matches(trim(x), b.index, 1, cutoff=cutoff)), None),
+            na_action="ignore")
         second = first.combine_first(a.join(b, on="fuzzy_match"))
         del second["fuzzy_match"]
         unmatched2 = second[second[test].isnull() & second[on].notna()]
