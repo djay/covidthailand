@@ -290,14 +290,14 @@ def prov_mapping_from_kristw(provinces):
     return provinces
 
 
-def get_province(prov, ignore_error=False):
+def get_province(prov, ignore_error=False, cutoff=0.74):
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     provinces = get_provinces()
     try:
         return provinces.loc[prov]['ProvinceEn']
     except KeyError:
         try:
-            close = difflib.get_close_matches(prov, provinces.index)[0]
+            close = difflib.get_close_matches(prov, provinces.index, 1, cutoff=cutoff)[0]
         except IndexError:
             if ignore_error:
                 return None

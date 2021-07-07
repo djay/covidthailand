@@ -7,6 +7,7 @@ import json
 import os
 import re
 import copy
+import math
 
 from bs4 import BeautifulSoup
 import camelot
@@ -1256,7 +1257,7 @@ def briefing_province_cases(date, pages):
 def briefing_deaths_provinces(text, date, total_deaths):
 
     # get rid of extra words in brakets to make easier
-    text = re.sub("(ละ|/จังหวัด|จังหวัด|อย่างละ|ราย)", "", text)
+    text = re.sub("(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)", "", text)
 
     # Provinces are split between bullets with disease and risk.
     pre, noheader = re.split("โควิด *-?19\n\n", text, 1)
@@ -1272,17 +1273,28 @@ def briefing_deaths_provinces(text, date, total_deaths):
     last_provs = None
 
     def add_deaths(provinces, num):
-        provs = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
-        provs = [get_province(p, ignore_error=True) for p in provs]
+        provs_thai = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
+        provs = [get_province(p, ignore_error=True) for p in provs_thai]
+        # Might be that we have no spaces. Try divide up and see if we get a result? Giant hack.
+        # HACK
+        if provs == [None]:
+            for i in range(2, 4):
+                n = math.ceil(len(provs_thai[0]) / i)
+                split_provs = [provs_thai[0][i:i + n] for i in range(0, len(provs_thai[0]), n)]
+                try_provs = [get_province(p, ignore_error=True) for p in split_provs]
+                if None not in try_provs:
+                    provs = try_provs
+                    break
+
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
         provs = [p for p in provs if p and p != "Unknown"]
         for p in provs:
             province_count[p] = province_count.get(p, 0) + num
 
-    for provinces, num in pcells:
+    for provinces, num_text in pcells:
         # len() < 2 because some stray modifier?
         text_num, rest = get_next_number(provinces, remove=True)
-        num, _ = get_next_number(num)
+        num, _ = get_next_number(num_text)
         if num is None and text_num is not None:
             num = text_num
         elif num is None:
@@ -1380,7 +1392,8 @@ def briefing_deaths_cells(cells, date, all):
             if p:
                 province = p[0]
             else:
-                raise Exception(f"no province found for death in: {cell}")
+                #raise Exception(f"no province found for death in: {cell}")
+                province = "Unknown"
         rows.append([float(death_num), date, gender, age, province, None, None, None, None, None])
     df = \
         pd.DataFrame(rows, columns=['death_num', "Date", "gender", "age", "Province", "nationality",
@@ -2346,8 +2359,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
