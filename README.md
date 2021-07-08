@@ -118,12 +118,13 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
 
-- [Enough testing is happening if positive rate is < %3](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) (not tests per population), however this works only if everyone who might have COVID-19 is equally likely to get tested. This has changed over time in thailand.
-- *NOTE* Cases/3*PUI seems to give an estimate of positive rate (when proactive testing is low), so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
-- [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png) 
+- *NOTE* Walkin Cases/3*PUI seems to give an estimate of positive rate (when cases are high), so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
+- Positive rate is little like fishing in a lake. If you get few nibbles each time you put your line in you can guess that there is few fish in the lake. Less positives per test, less infections likely in the population.
+- [WHO considers enough testing is happening if positive rate is < %4](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) rather than tests per population. Note this works only if everyone who might have COVID-19 is equally likely to get tested and there are reasons why this might not be the case in Thailand.
+- It's likely [Thailand excludes some proactive test data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results) so there could be more tests than this data shows. Excluding
+proactive tests from positive rate is perhaps better for [comparison with other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) they are less random and more likely to be positive as its testing known clusters.
 - This positive rate is based on [DMSC: Thailand Laboratory testing data](#dl-testing). In the [Daily MOPH Situation Reports](#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). 
-- [In appears not all proactive cases have been confirmed with PCR tests in the past](https://github.com/djay/covidthailand/wiki) which has previously made Thailand positive rate lower [compared to other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) during times of high proactive testing. However, excluding proactive testing maybe give a better indication of how many more cases might be found if you tested more since proactive testing is normally done in a high risk specific area, ie it's less of a random sampling of the general population.
-- [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inverted) could be easier to understand.
+- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inverted) could be easier to understand.
 - Sources: [DMSC: Thailand Laboratory testing data](#dl-testing), [Daily situation Reports](#dl-situation-reports)
 
 ## PCR Tests in Thailand by day
@@ -210,14 +211,14 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
   - Hospitalized Respirator: Current number in severe condition requiring ICU and mechanical ventilator
   - Recovered: Number released from hospital/field hospital on this date
   - Deaths: Number of deaths annouced that day
-  - Deaths Age (Min|Max): Range of ages of those who died
+  - Deaths Age (Min,Max): Range of ages of those who died
   - Deaths Age Median": Median age of those who died
   - Deaths Comorbidity None: Deaths where there wasn't a disease that increased risk
-  - Deaths {Female|Male}: Deaths for 2 of the genders
+  - Deaths {Female,Male}: Deaths for 2 of the genders
   - Deaths Risk Family: Deaths who likely cause of transmission was via family member
   - Source Cases:  Tweet, api or briefing the primary information came from
   - Fields no longer updated
-    - Cases (Asymptomatic|Symptomatic): - No longer reported in briefing reports
+    - Cases (Asymptomatic,Symptomatic): - No longer reported in briefing reports
 
 ### Cases/Deaths per province
 - Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
@@ -237,7 +238,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
   - "Deaths Area {1-13}": Deaths that day in the health district
   - "Cases Risk: {Group} Area {1-13}": Categorisation of Risk field from the covid-19-daily dataset  
   - The following are no longer updated but have some historical data
-    - "Cases {Proactive|Walkin} Area {1-13}": Cases found by people where tested
+    - "Cases {Proactive,Walkin} Area {1-13}": Cases found by people where tested
 
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
@@ -353,16 +354,16 @@ Bureau, Chaeng Watthana"
 - e.g.
 ```
       "Date":"2021-04-25",
-      "Vac Allocated Sinovac {1|2}":3840.0,
-      "Vac Allocated AstraZeneca {1|2}":0.0,
+      "Vac Allocated Sinovac {1,2}":3840.0,
+      "Vac Allocated AstraZeneca {1,2}":0.0,
       "Vac Delivered": 200.00
-      "Vac Given {1|2} Cum":3189.0,
-      "Vac Given {1|2} %":83.0,
-      "Vac Group Medical Staff {1|2} Cum":1939.0,
-      "Vac Group Other Frontline Staff {1|2} Cum":1081.0,
-      "Vac Group Over 60 {1|2} Cum":0.0,
-      "Vac Group Risk: Disease {1|2} Cum":54.0,
-      "Vac Group Risk: Location {1|2} Cum":115.0,
+      "Vac Given {1,2} Cum":3189.0,
+      "Vac Given {1,2} %":83.0,
+      "Vac Group Medical Staff {1,2} Cum":1939.0,
+      "Vac Group Other Frontline Staff {1,2} Cum":1081.0,
+      "Vac Group Over 60 {1,2} Cum":0.0,
+      "Vac Group Risk: Disease {1,2} Cum":54.0,
+      "Vac Group Risk: Location {1,2} Cum":115.0,
 ```
 - Note
    - The previous data per province is no longer updated in the reports so this download has been removed.
