@@ -11,5 +11,5 @@ author:
    github: djay
 show_downloads: true
 github:
-  zip_url: #downloads
-  tar_url: #downloads
+  zip_url: https://djay.github.io/covidthailand/#downloads
+  tar_url: https://djay.github.io/covidthailand/#downloads
