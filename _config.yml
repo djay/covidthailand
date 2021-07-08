@@ -1,8 +1,8 @@
 theme: jekyll-theme-cayman
 title: Covid Thailand Trends
 description: Thailand Covid testing and case data gathered and combined from various sources for others to download or view
-google_analytics: G-LX56HGXQF9
-show_downloads: true
+google_analytics: UA-167358587-2
+show_downloads: false
 social-network-links:
    github: djay
    twitter: djay75
