@@ -12,3 +12,4 @@ camelot-py[cv,plot] == 0.8.2
 pandas < 1.3.0 # div bt zero?
 numpy
 matplotlib
+pythainlp

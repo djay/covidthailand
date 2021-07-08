@@ -1274,17 +1274,7 @@ def briefing_deaths_provinces(text, date, total_deaths):
 
     def add_deaths(provinces, num):
         provs_thai = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
-        provs = [get_province(p, ignore_error=True) for p in provs_thai]
-        # Might be that we have no spaces. Try divide up and see if we get a result? Giant hack.
-        # HACK
-        if provs == [None]:
-            for i in range(2, 4):
-                n = math.ceil(len(provs_thai[0]) / i)
-                split_provs = [provs_thai[0][i:i + n] for i in range(0, len(provs_thai[0]), n)]
-                try_provs = [get_province(p, ignore_error=True) for p in split_provs]
-                if None not in try_provs:
-                    provs = try_provs
-                    break
+        provs = [pr for p in provs_thai for pr in get_province(p, ignore_error=True, cutoff=0.76, split=True)]
 
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
         provs = [p for p in provs if p and p != "Unknown"]

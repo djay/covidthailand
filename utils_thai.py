@@ -5,6 +5,8 @@ import difflib
 import json
 import os
 import re
+import math
+import pythainlp.tokenize
 
 import pandas as pd
 
@@ -290,22 +292,42 @@ def prov_mapping_from_kristw(provinces):
     return provinces
 
 
-def get_province(prov, ignore_error=False, cutoff=0.74):
+def get_province(prov, ignore_error=False, cutoff=0.74, split=False):
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     provinces = get_provinces()
     try:
-        return provinces.loc[prov]['ProvinceEn']
+        match = provinces.loc[prov]['ProvinceEn']
+        return match if not split else [match]
     except KeyError:
         try:
             close = difflib.get_close_matches(prov, provinces.index, 1, cutoff=cutoff)[0]
         except IndexError:
+            if split:
+                # Might be that we have no spaces. Try divide up and see if we get a result? Giant hack.
+                try_provs = [
+                    get_province(p, ignore_error=True, cutoff=cutoff) for p in pythainlp.tokenize.word_tokenize(prov)
+                ]
+                if None in try_provs:
+                    return []
+                else:
+                    return try_provs
+                # hack way to split. just divide up
+                # for i in range(2, 4):
+                #     n = math.ceil(len(prov) / i)
+                #     split_provs = [prov[i:i + n] for i in range(0, len(prov), n)]
+                #     try_provs = [get_province(p, ignore_error=True, cutoff=cutoff) for p in split_provs]
+                #     if None in try_provs:
+                #         return []
+                #     else:
+                #         try_provs
+
             if ignore_error:
                 return None
             else:
                 raise KeyError(f"Province {prov} can't be guessed")
         proven = provinces.loc[close]['ProvinceEn']  # get english name here so we know we got it
         prov_guesses.loc[(prov_guesses.last_valid_index() or 0) + 1] = dict(Province=prov, ProvinceEn=proven, count=1)
-        return proven
+        return proven if not split else [proven]
 
 
 def prov_trim(p):
