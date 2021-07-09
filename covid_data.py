@@ -780,7 +780,7 @@ def get_cases_by_demographics_api():
 
 UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)|Full details at 12:30pm")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
-MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19 📆")
+MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19")
 
 
 def parse_official_tweet(df, date, text, url):
