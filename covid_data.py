@@ -778,7 +778,7 @@ def get_cases_by_demographics_api():
 ##################################
 
 
-UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)")
+UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)|Full details at 12:30pm")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
 MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19 📆")
 
@@ -818,7 +818,7 @@ def parse_official_tweet(df, date, text, url):
 
 
 def parse_unofficial_tweet(df, date, text, url):
-    if not MOPH_TWEET.search(text):
+    if not UNOFFICIAL_TWEET.search(text):
         return df
     deaths, _ = get_next_number(text, "deaths", before=True)
     cases, _ = get_next_number(text, "cases", before=True)
