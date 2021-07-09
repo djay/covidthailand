@@ -32,7 +32,7 @@ Nakhon Sawan,นครสวรรค์,1059887,9526,111,Nakhon Sawan,NSN,TH-60
 Nakhon Si Thammarat,นครศรีธรรมราช,1561927,9885,158,Nakhon Si Thammarat,NRT,TH-80,TH64,"['NRT', 'Nakhon Si Thammarat', 'NakhonSiThammarat', 'นครศรธีรรมราช', 'นครศรธีรรมรำช', 'นครศรีธรรมราช', 'นศ']",11
 Nan,น่าน,478227,12130,40,Nan,NAN,TH-55,TH04,"['NAN', 'Nan', 'นน', 'นา่น', 'นำ่น', 'น่าน']",1
 Narathiwat,นราธิวาส,808020,4491,180,Narathiwat,NWT,TH-96,TH31,"['NWT', 'Narathiwat', 'นธ', 'นราธวิาส', 'นราธิวาส', 'นรำธวิำส']",12
-Nong Bua Lamphu,หนองบัวลำภู,512780,4099,125,Nong Bua Lam Phu,NBP,TH-39,TH79,"['Lam Phu', 'NBP', 'Nong Bua Lam Phu', 'Nong Bua Lamphu', 'NongBuaLamPhu', 'นภ', 'หนองบวัล', 'หนองบวัล าภู', 'หนองบวัล ำภู', 'หนองบวัลาภู', 'หนองบัวล าภู', 'หนองบัวลาภู', 'หนองบัวลำภู']",8
+Nong Bua Lamphu,หนองบัวลำภู,512780,4099,125,Nong Bua Lam Phu,NBP,TH-39,TH79,"['Lam Phu', 'NBP', 'Nong Bua Lam Phu', 'Nong Bua Lamphu', 'NongBuaLamPhu', 'นภ', 'หนองบวัล', 'หนองบวัล าภู', 'หนองบวัล ำภู', 'หนองบวัลาภู', 'หนองบัวล าภู', 'หนองบัวลาภู', 'หนองบัวลำภู', 'นาวัง']",8
 Nong Khai,หนองคาย,522311,3275,160,Nong Khai,NKI,TH-43,TH17,"['NKI', 'Nong Khai', 'NongKhai', 'นค', 'หนองคาย', 'หนองคำย']",8
 Nonthaburi,นนทบุรี,1265387,637,1986,Nonthaburi,NBI,TH-12,TH38,"['NBI', 'Nonthaburi', 'นนทบรุ', 'นนทบุร', 'นนทบุรี', 'นนทบุุรี', 'นบ']",4
 Pathum Thani,ปทุมธานี,1163604,1520,766,Pathum Thani,PTE,TH-13,TH39,"['PTE', 'Pathom Thani', 'Pathum Thani', 'PathumThani', 'Phathum Thani', 'ปท', 'ปทมุธาน', 'ปทมุธานี', 'ปทมุธำน', 'ปทุมธาน', 'ปทุมธานี', 'ปทุุมธานี']",4
@@ -62,7 +62,7 @@ Saraburi,สระบุรี,645911,3499,185,Saraburi,SRI,TH-19,TH37,"['SRI', 
 Satun,สตูล,323586,3019,107,Satun,STN,TH-91,TH67,"['STN', 'Satun', 'สต', 'สตลู', 'สตูล']",12
 Sing Buri,สิงห์บุรี,208446,817,255,Sing Buri,SBR,TH-17,TH33,"['SBR', 'Sing Buri', 'SingBuri', 'สงิหบ์รุ', 'สงิหบ์ุร', 'สห', 'สิงห์บุร', 'สิงห์บุรี']",4
 Sisaket,ศรีสะเกษ,1472859,8936,165,Sisaket,SSK,TH-33,TH30,"['SSK', 'Si Sa Ket', 'SiSaKet', 'Sisaket', 'ศก', 'ศรสีะเกษ', 'ศรีสะเกษ']",10
-Songkhla,สงขลา,1435968,7741,186,Songkhla,SKA,TH-90,TH68,"['SKA', 'Songkhla', 'สข', 'สงขลา', 'สงขลำ', 'สงขลา']",12
+Songkhla,สงขลา,1435968,7741,186,Songkhla,SKA,TH-90,TH68,"['SKA', 'Songkhla', 'สข', 'สงขลา', 'สงขลำ']",12
 Sukhothai,สุโขทัย,595072,6671,89,Sukhothai (Sukhothai Thani),STI,TH-64,TH09,"['STI', 'Sukhothai', 'สท', 'สุโขทัย', 'สโุขทยั', 'สโุขทัย']",2
 Suphan Buri,สุพรรณบุรี,846334,5410,156,Suphan Buri,SPB,TH-72,TH51,"['SPB', 'Suphan Buri', 'SuphanBuri', 'Suphanburi', 'สพ', 'สพุรรณบรุ', 'สพุรรณบรุี', 'สพุรรณบุร', 'สุพรรณบุร', 'สุพรรณบุรี']",5
 Surat Thani,สุราษฎร์ธานี,1068010,13079,81,Surat Thani,SNI,TH-84,TH60,"['SNI', 'Surat Thani', 'SuratThani', 'สฎ', 'สรุาษฎรธ์าน', 'สรุาษฎรธ์านี', 'สรุำษฎรธ์ำน', 'สุราษฎร์ธาน', 'สุราษฎร์ธานี', 'สุุราษฎร์ธานี', 'สรุาษฎร์ธานี', 'สุราษฎรธ์านี']",11
