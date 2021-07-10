@@ -778,7 +778,7 @@ def get_cases_by_demographics_api():
 ##################################
 
 
-UNOFFICIAL_TWEET = re.compile("(?:🔴 BREAKING: |🔴 #COVID19)|Full details at 12:30pm")
+UNOFFICIAL_TWEET = re.compile("Full details at 12:30pm.*#COVID19")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
 MOPH_TWEET = re.compile("🇹🇭 ยอดผู้ติดเชื้อโควิด-19")
 
@@ -824,7 +824,8 @@ def parse_unofficial_tweet(df, date, text, url):
     cases, _ = get_next_number(text, "cases", before=True)
     prisons, _ = get_next_number(text, "prisons", before=True)
     if any_in([None], deaths, cases):
-        raise Exception(f"Can't parse tweet {date} {text}")
+        #raise Exception(f"Can't parse tweet {date} {text}")
+        return df
     cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Source Cases"]
     row = [date, deaths, cases, prisons, url]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
@@ -2357,8 +2358,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
