@@ -828,12 +828,14 @@ def save_plots(df: pd.DataFrame) -> None:
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
 
-    def cases_per_capita(adf):
-        return adf['Cases'] / adf['Population'] * 100000
+    def cases_per_capita(col):
+        def func(adf):
+            return adf[col] / adf['Population'] * 100000
+        return func
 
     top5 = cases.pipe(topprov,
-                      increasing(cases_per_capita, 3),
-                      cases_per_capita,
+                      increasing(cases_per_capita("Cases"), 3),
+                      cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
                       num=7)
@@ -849,8 +851,8 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
-                      decreasing(cases_per_capita, 3),
-                      cases_per_capita,
+                      decreasing(cases_per_capita("Cases"), 3),
+                      cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
                       num=7)
@@ -866,9 +868,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
-                      #value_ma("Cases", 7),
-                      #value_ma("Cases", None),
-                      cases_per_capita,
+                      cases_per_capita("Cases"),
                       name="Province Cases",
                       other_name="Other Provinces",
                       num=6)
@@ -885,16 +885,16 @@ def save_plots(df: pd.DataFrame) -> None:
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work']:
         top5 = cases.pipe(topprov,
-                          increasing(f"Cases Risk: {risk}", 5),
-                          value_ma(f"Cases Risk: {risk}", 0),
+                          increasing(cases_per_capita(f"Cases Risk: {risk}"), 5),
+                          cases_per_capita(f"Cases Risk: {risk}"),
                           name=f"Province Cases {risk} (7d MA)",
-                          other_name=None,
-                          num=7)
+                          other_name="Other Provinces",
+                          num=6)
         cols = top5.columns.to_list()
         plot_area(df=top5,
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing',
                   cols_subset=cols,
-                  title=f'Trending Up {risk} related Cases (by Province)',
+                  title=f'Trending Up {risk} related Cases per 100,000',
                   kind='line',
                   stacked=False,
                   percent_fig=False,
