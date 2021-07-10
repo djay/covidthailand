@@ -334,11 +334,11 @@ def prov_trim(p):
     return remove_suffix(remove_prefix(p, "จ.", "จังหวัด").strip(' .'), " Province")
 
 
-def join_provinces(df, on):
+def join_provinces(df, on, extra=["Health District Number"]):
     global prov_guesses
     joined, guess = fuzzy_join(
-        df.drop(columns="Health District Number", errors="ignore"),
-        get_provinces()[["Health District Number", "ProvinceEn"]],
+        df.drop(columns=extra, errors="ignore"),
+        get_provinces()[extra + ["ProvinceEn"]],
         on,
         True,
         prov_trim,

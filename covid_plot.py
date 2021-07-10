@@ -823,20 +823,25 @@ def save_plots(df: pd.DataFrame) -> None:
     all_days = pd.date_range(cases_pivot.index.min(), cases_pivot.index.max(), name="Date")
     cases_pivot = cases_pivot.reindex(all_days).fillna(0)  # put in missing days with NaN
     cases = cases.set_index(["Date", "Province"]).combine_first(cases_pivot.unstack().to_frame("Cases"))
-    cases = join_provinces(cases, "Province")  # to fill in missing health districts
+    cases = join_provinces(cases, "Province", ["Health District Number"])  # to fill in missing health districts
     cases = cases.fillna(0)  # all the other values
+    ifr = get_ifr()
+    cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
+
+    def cases_per_capita(adf):
+        return adf['Cases'] / adf['Population'] * 100000
 
     top5 = cases.pipe(topprov,
-                      increasing("Cases", 3),
-                      value_ma("Cases", None),
+                      increasing(cases_per_capita, 3),
+                      cases_per_capita,
                       name="Province Cases (3d MA)",
-                      other_name=None,
+                      other_name="Other Provinces",
                       num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               png_prefix='cases_prov_increasing',
               cols_subset=cols,
-              title='Trending Up Confirmed Cases (by Province)',
+              title='Trending Up Confirmed Cases per 100,000',
               kind='line',
               stacked=False,
               percent_fig=False,
@@ -844,16 +849,16 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
-                      decreasing("Cases", 3),
-                      value_ma("Cases", None),
+                      decreasing(cases_per_capita, 3),
+                      cases_per_capita,
                       name="Province Cases (3d MA)",
-                      other_name=None,
+                      other_name="Other Provinces",
                       num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               png_prefix='cases_prov_decreasing',
               cols_subset=cols,
-              title='Trending Down Confirmed Cases (by Province)',
+              title='Trending Down Confirmed Cases per 100,000',
               kind='line',
               stacked=False,
               percent_fig=False,
@@ -861,8 +866,9 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10')
 
     top5 = cases.pipe(topprov,
-                      value_ma("Cases", 7),
-                      value_ma("Cases", None),
+                      #value_ma("Cases", 7),
+                      #value_ma("Cases", None),
+                      cases_per_capita,
                       name="Province Cases",
                       other_name="Other Provinces",
                       num=6)
@@ -870,7 +876,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               png_prefix='cases_prov_top',
               cols_subset=cols,
-              title='Top Confirmed Cases (by Province)',
+              title='Top Confirmed Cases per 100,000',
               kind='line',
               stacked=False,
               percent_fig=False,
@@ -897,8 +903,6 @@ def save_plots(df: pd.DataFrame) -> None:
 
 
     # TODO: work out based on districts of deaths / IFR for that district
-    ifr = get_ifr()
-    cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
     cases['Deaths'] = cases['Deaths'].fillna(0)
     cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df[
         "Deaths"].rolling(7, min_periods=1).mean()))

@@ -194,7 +194,11 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date']):
 
 def increasing(col, ma=3):
     def increasing_func(adf: pd.DataFrame) -> pd.DataFrame:
-        return adf[col].tail(ma * 2).rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline_slow)
+        if callable(col):
+            series = col(adf)
+        else:
+            series = adf[col]
+        return series.tail(ma * 2).rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline_slow)
     return increasing_func
 
 
