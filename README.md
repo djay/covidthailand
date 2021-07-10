@@ -168,10 +168,10 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
 ![Top Provinces by Vaccination Doses Given](https://github.com/djay/covidthailand/wiki/vac_top5_doses_3.png)
-- Source: [DDC Daily Vaccination Reports](#dl-vac)
+- Source: [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
 
 ![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
-- Source: [DDC Daily Vaccination Reports](#dl-vac)
+- Source: [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
 
 - see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
@@ -374,7 +374,7 @@ Bureau, Chaeng Watthana"
    - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
    - #TODO: put in thai group explanations.
 
-## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety
+## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety <a name="dl-vac-prov">
 - Source: 
    - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 - [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
