@@ -2358,8 +2358,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
