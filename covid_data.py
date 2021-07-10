@@ -1816,8 +1816,16 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 if code:
                     set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
                 post['dataRequest'].append(pspec)
-        r = requests.post(url, json=post, timeout=120)
-        _, _, data = r.text.split("\n")
+        try:
+            r = requests.post(url, json=post, timeout=120)
+        except requests.exceptions.ReadTimeout:
+            print("Timeout so using cached", request_json)
+            with open(os.path.join("json", request_json), ) as fp:
+                data = fp.read()
+        else:
+            _, _, data = r.text.split("\n")
+            with open(os.path.join("json", request_json), "w") as fp:
+                fp.write(data)
         data = json.loads(data)
         for resp in data['dataResponse']:
             if 'errorStatus' in resp:
@@ -2349,8 +2357,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
