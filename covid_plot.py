@@ -444,6 +444,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area',
               stacked=True,
               percent_fig=True,
+              actuals=["Cases"],
               ma_days=7,
               cmap="tab10")
 
@@ -476,6 +477,7 @@ def save_plots(df: pd.DataFrame) -> None:
               unknown_total='Cases',
               kind='area',
               stacked=True,
+              actuals=['Cases'],
               percent_fig=True,
               ma_days=7,
               cmap='tab10')
@@ -858,7 +860,12 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               cmap='tab10')
 
-    top5 = cases.pipe(topprov, value_ma("Cases", 7), name="Province Cases", other_name="Other Provinces", num=6)
+    top5 = cases.pipe(topprov,
+                      value_ma("Cases", 7),
+                      value_ma("Cases", None),
+                      name="Province Cases",
+                      other_name="Other Provinces",
+                      num=6)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               png_prefix='cases_prov_top',
