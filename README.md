@@ -34,26 +34,29 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ## Provinces with Cases Trending Up
 
+To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/) 
+
 ![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_30d.png)
 
 ![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
 
 ![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
 
-- see also
-   - [Map of all province cases: The Researcher Covid Tracker](https://covid-19.researcherth.co/) 
-   - [Trending Down Confirmed Cases (by Province)](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png)
-   - [Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
-   - [Trending Up Community Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png)
-   - [Trending Up Work Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png)
-   - [Trending Up Proactive Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
 - Sources: [CCSA Daily Briefing](#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+- see also
+   [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png), 
+   [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
+   [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png),
+   [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png) and
+   [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
 
 
 ## Cases by Health District
 
 ![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
 
+- To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/)
 - [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
 - [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 - You can also see [Cases by District broken down by walk-in vs proactive](#dl-situation-reports) but there is no longer a data source to keep this updated.
