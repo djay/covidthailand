@@ -10,7 +10,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 ## [Cases](#cases) |  [Active Cases](#active-cases) |  [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
 
 
-# Cases
+# Cases <a name="cases">
 
 ## Cases by Where Tested
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
@@ -97,7 +97,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - Source: [CCSA Daily Briefing ](#dl-briefings)
 
 
-# Deaths
+# Deaths <a name="deaths">
 
 ## COVID-19 Deaths
 
@@ -115,7 +115,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
 - Source: [CCSA Daily Briefing ](#dl-briefings) 
 
-# Testing
+# Testing <a name="testing">
 
 ## Positive Rate
 
@@ -157,7 +157,7 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#dl-testing)
 
-# Vaccinations
+# Vaccinations <a name="vaccinations">
 
 ## Vaccinations by Priority Groups
 

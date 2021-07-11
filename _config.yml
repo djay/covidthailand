@@ -2,6 +2,8 @@ theme: jekyll-theme-cayman
 title: Covid Thailand Trends
 description: Thailand Covid testing and case data gathered and combined from various sources for others to download or view
 image: https://github.com/djay/covidthailand/wiki/tests_all.png
+page:
+   image: https://github.com/djay/covidthailand/wiki/tests_all.png
 google_analytics: UA-167358587-2
 social-network-links:
    github: djay
@@ -14,7 +16,7 @@ author:
 twitter:
   username: djay75
   image: https://github.com/djay/covidthailand/wiki/tests_all.png
-  card: summary
+  card: summary_large_image
 show_downloads: true
 github:
   zip_url: https://djay.github.io/covidthailand/#downloads
