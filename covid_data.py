@@ -2015,34 +2015,40 @@ def vaccination_daily(daily, date, file, page):
     return daily
 
 
-def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
+def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file):
     def assert_no_repeat(d, prov, thaiprov, numbers):
         prev = d.get((date, prov))
         msg = f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {prev}"
         assert prev in [None, numbers], msg
 
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-    oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+    july = re.compile(r"\( ร้อยละ \)", re.DOTALL)
+    oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     lines = [line.strip() for line in page.split('\n') if line.strip()]
-    preamble, *rest = split(lines, lambda x: (shots.search(x) or oldhead.search(x)) and '2564' not in x)
+    preamble, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = max(len(shots.findall(h)) for h in headings)
-        oh_count = max(len(oldhead.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc" }.get(shot_count, "old_given" if oh_count else None)
-        if not table:
+        table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count)
+        if not table and max(len(oldhead.findall(h)) for h in headings):
+            table = "old_given"
+        elif not table and max(len(july.findall(h)) for h in headings):
+            table = "july"
+        elif not table:
             continue
-        added = 0
+        added = None
         for line in lines:
             # fix some number broken in the middle
             line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
             area, *rest = line.split(' ', 1)
+            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม"]:  # Extra heading
+                continue
             if area == "รวม" or not rest:
                 break
-            if area in ["เข็มที่", "และ"]:  # Extra heading
-                continue
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
+            if added is None:
+                added = 0
             if NUM_OR_DASH.match(area):
                 thaiprov, *cols = cols
             else:
@@ -2073,7 +2079,8 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
             elif table == "july":
                 registration, given1, perc1, given2, perc2, = numbers
                 vaccinations[(date, prov)] = [given1, perc1, given2, perc2] + [None] * 10
-        assert added > 7
+                reg[(date, prov)] = registration
+        assert added is None or added > 7
         print(f"{date.date()}: {table} Vaccinations: {added}", file)
     return vaccinations, allocations, vacnew
 
@@ -2167,11 +2174,12 @@ def vaccination_reports():
     vaccinations = {}
     allocations = {}
     vacnew = {}
+    reg = {}
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-        vaccinations, allocations, vacnew = vaccination_tables(vaccinations, allocations, vacnew, date, page, file)
+        vaccinations, allocations, vacnew = vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
         vac_daily = vaccination_daily(vac_daily, date, file, page)
         vac_daily = vac_problem(vac_daily, date, file, page)
     vac_prov_reports = pd.DataFrame((list(key) + value for key, value in vaccinations.items()), columns=[
@@ -2200,7 +2208,12 @@ def vaccination_reports():
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
-    vac_prov_reports = vac_prov_reports.combine_first(alloc)
+    regdf = pd.DataFrame((list(key) + [value] for key, value in reg.items()), columns=[
+        "Date",
+        "Province",
+        "Vac Registered",
+    ]).set_index(["Date", "Province"])
+    vac_prov_reports = vac_prov_reports.combine_first(alloc).combine_first(regdf)
 
     # Do cross check we got the same number of allocations to vaccination
     if not vac_prov_reports.empty:
