@@ -1949,17 +1949,24 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search("(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19)", page):
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|บุคคลที่มีโรคประจ)", page):
         return daily
+    # fix numbers with spaces in them
+    page = re.sub(r"(\d) (,\d)", r"\1\2", page)
     # dose1_total, rest1 = get_next_number(page, "ได้รับวัคซีนเข็มที่ 1", until="โดส")
     # dose2_total, rest2 = get_next_number(page, "ได้รับวัคซีน 2 เข็ม", until="โดส")
 
     alloc_sv, rest = get_next_number(page, "Sinovac", until="โดส")
     alloc_az, rest = get_next_number(page, "AstraZeneca", until="โดส")
+
+    # numbers, _ = get_next_numbers(page, "2 (รำย) รวม (โดส)")
+    # if numbers:
+    #     given1, given2, given_total, *_ = numbers
+
     # alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
     # assert alloc_total == alloc_sv + alloc_az
     row = [date, alloc_sv, alloc_az]
-    assert not any_in(['None'], row)
+    # assert not any_in(row, None)
     df = pd.DataFrame([row], columns=[
         "Date",
         "Vac Allocated Sinovac",
