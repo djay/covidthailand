@@ -956,6 +956,11 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
 
+    cols = ['Deaths Age 15-39', 'Deaths Age 40-59', 'Deaths Age 60-']
+    plot_area(df=df, png_prefix='deaths_age_bins', cols_subset=cols, title='Thailand Covid Death Age Range',
+              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer',
+              actuals=['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min'])
+
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,

@@ -308,23 +308,36 @@ def get_en_situation():
 
 
 def situation_pui_th_death(dfsit, parsed_pdf, date, file):
-    numbers, text = get_next_numbers(parsed_pdf, "อัตรำป่วยตำยตำมกลุ่มอำยุ", "อัตราป่วยตายตามกลุ่มอายุ", ints=False)
-    if not numbers:
+    # numbers, text = get_next_numbers(parsed_pdf, "อัตรำป่วยตำยตำมกลุ่มอำยุ", "อัตราป่วยตายตามกลุ่มอายุ", ints=False, until="รคประจ")
+    # if not numbers:
+    if "40 – 59" not in parsed_pdf:
         return dfsit
-    if len(numbers) >= 5:
-        r15, r39, a1_w1, a1_w2, a1_w3, r15, r39, a2_w1, a2_w2, a2_w3, r60, a3_w1, a3_w2, a3_w3, *_ = numbers
+    numbers, rest = get_next_numbers(parsed_pdf, "15 – 39", until="40 – 59", ints=False)
+    if len(numbers) == 3:
+        a1_w1, a1_w2, a1_w3 = numbers
+        a2_w1, a2_w2, a2_w3 = get_next_numbers(rest, "40 – 59", until=" 60 ", ints=False, return_rest=False)
+        a3_w1, a3_w2, a3_w3, *_ = get_next_numbers(rest, " 60 ", ints=False, return_rest=False)
     else:
-        a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text,
-                                                   "วหรือภำวะเส่ียง",
-                                                   "หรือสูงอำยุ",
-                                                   "มีโรคประจ",
-                                                   before=True,
-                                                   ints=False,
-                                                   return_rest=False)
+        # Actually uses 20-39 here but we will assume no one 15-20 died before this changed
+        _, rest = get_next_numbers(parsed_pdf, "40 – 59", until=" 60 ", ints=False)
+        numbers = get_next_numbers(rest, "2 เดือน 1", " 60 ปีขึ้นไป", ints=False, return_rest=False)
+        a1_w1, a2_w1, a3_w1, a1_w2, a2_w2, a3_w2, a1_w3, a2_w3, a3_w3, *_ = numbers
+    # else:
+        # a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text,
+        #                                            "วหรือภำวะเส่ียง",
+        #                                            "หรือสูงอำยุ",
+        #                                            "มีโรคประจ",
+        #                                            "หรือภำวะเส่ียง",
+        #                                            before=True,
+        #                                            ints=False,
+        #                                            return_rest=False)
+    assert 0 <= a3_w3 <= 25
+    assert 0 <= a2_w3 <= 25
+    assert 0 <= a1_w3 <= 25
 
     # time to treatment
     w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
-        text,
+        parsed_pdf,
         "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย",
         "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม",
         "ถึงวันได้รับรักษา",
@@ -335,6 +348,7 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
         "W3 Time To Treatment Max"
     ]
     df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]], columns=columns).set_index("Date")
+    print(date.date(), "Death Ages", df.to_string(header=False, index=False))
     return dfsit.combine_first(df)
 
 
@@ -479,6 +493,7 @@ def get_situation():
     labels = ["Age2 0-14", "Age2 15-39", "Age2 40-59", "Age2 60-"]
     age_groups = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels)
     case_ages = pd.crosstab(cases['Date'], age_groups)
+    case_ages.columns = case_ages.columns.tolist()
     case_ages_cum = case_ages["2021-04-01":].cumsum()
     # TODO: maybe redistribute unknowns into the above buckets?
     # case_ages.sum(axis=1).to_frame("Sum").combine_first(situation[['Cases']]).loc["2021-06-20":]
@@ -486,13 +501,16 @@ def get_situation():
     # work out ages of deaths from cfr
     # get cum cases per age since 1st april
     # CFR * cases = deaths
-    # for ages in ["15-39", "40-59", "60-"]:
-    #     case_ages_cum[f"Deaths Age {ages} Cum"] = situation[f"W3 CFR {ages}"] / 100 * case_ages_cum[f"Age2 {ages}"]
-    # case_ages_cum = case_ages_cum.combine_first(cum2daily(case_ages_cum))
-    # TODO: Getting some negative daily deaths, esp for 15-39.  
+    for ages in ["15-39", "40-59", "60-"]:
+        case_ages_cum[f"Deaths Age {ages} Cum"] = situation[f"W3 CFR {ages}"].rolling(
+            7).mean() / 100 * case_ages_cum[f"Age2 {ages}"].rolling(7).mean()
+    daily_ages = cum2daily(case_ages_cum)
+    # daily_ages['tot_deaths'] = daily_ages.sum(axis=1)
+    # daily_ages['Deaths'] = df['Deaths'].rolling(7).mean()
+    # TODO: Getting some negative daily deaths, esp for 15-39.
     # There are too many unknown case ages each day I think it throws it off and end up getting spikes
-    # 
-    # either that or the precision of the CFR is just not enough? 
+    #
+    # either that or the precision of the CFR is just not enough?
     # 28 and 30 it jumps to 0.12, then down to 0.11 again.
 
     cum = cum2daily(situation)
@@ -505,7 +523,7 @@ def get_situation():
     # 2021-05-02    0.0
     cum[(cum['Tested PUI'] == 0)]['Tested PUI'] = None
 
-    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
+    situation = situation.combine_first(cum).combine_first(daily_ages)  # any direct non-cum are trusted more
 
     # Only add in the live stats if they have been updated with new info
     today = today_situation.index.max()
@@ -2366,8 +2384,8 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        cases_by_area = get_cases_by_area()
         situation = get_situation()
+        cases_by_area = get_cases_by_area()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()
