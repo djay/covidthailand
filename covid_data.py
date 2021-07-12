@@ -1840,12 +1840,19 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 data = fp.read()
         else:
             _, _, data = r.text.split("\n")
+        data = json.loads(data)
+        if any(resp for resp in data['dataResponse'] if 'errorStatus' in resp):
+            # raise Exception(resp['errorStatus']['reasonStr'])
+            # read from cache if possible
+            with open(os.path.join("json", request_json)) as fp:
+                data = json.load(fp)
+        else:
             with open(os.path.join("json", request_json), "w") as fp:
                 fp.write(data)
-        data = json.loads(data)
-        for resp in data['dataResponse']:
-            if 'errorStatus' in resp:
-                raise Exception(resp['errorStatus']['reasonStr'])
+        for resp in (resp for resp in data['dataResponse'] if 'errorStatus' in resp):
+            # raise Exception(resp['errorStatus']['reasonStr'])
+            pass
+        for resp in (resp for resp in data['dataResponse'] if 'errorStatus' not in resp):
             yield resp
     if join_prov:
         dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
@@ -2092,9 +2099,9 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
                     [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                 allocations[(date, prov)] = [alloc, 0, 0, 0]
             elif table == "july":
-                registration, given1, perc1, given2, perc2, = numbers
+                pop, given1, perc1, given2, perc2, = numbers
                 vaccinations[(date, prov)] = [given1, perc1, given2, perc2] + [None] * 10
-                reg[(date, prov)] = registration
+                reg[(date, prov)] = pop
         assert added is None or added > 7
         print(f"{date.date()}: {table} Vaccinations: {added}", file)
     return vaccinations, allocations, vacnew
@@ -2103,13 +2110,14 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
 def get_vaccinations():
 
     vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
-    vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
-    vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
-                                                                            values="_quantity_")
-    vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
-    vac_import = vac_import.fillna(0)
-    vac_import['Vac Imported'] = vac_import.sum(axis=1)
-    vac_import = vac_import.combine_first(daily2cum(vac_import))
+    if not vac_import.empty:
+        vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
+        vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
+                                                                                values="_quantity_")
+        vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
+        vac_import = vac_import.fillna(0)
+        vac_import['Vac Imported'] = vac_import.sum(axis=1)
+        vac_import = vac_import.combine_first(daily2cum(vac_import))
 
     # Delivered Vac data from coldchain
     vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
@@ -2223,12 +2231,12 @@ def vaccination_reports():
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
-    regdf = pd.DataFrame((list(key) + [value] for key, value in reg.items()), columns=[
-        "Date",
-        "Province",
-        "Vac Registered",
-    ]).set_index(["Date", "Province"])
-    vac_prov_reports = vac_prov_reports.combine_first(alloc).combine_first(regdf)
+    # regdf = pd.DataFrame((list(key) + [value] for key, value in reg.items()), columns=[
+    #     "Date",
+    #     "Province",
+    #     "Vac Registered",
+    # ]).set_index(["Date", "Province"])
+    vac_prov_reports = vac_prov_reports.combine_first(alloc)
 
     # Do cross check we got the same number of allocations to vaccination
     if not vac_prov_reports.empty:
@@ -2396,8 +2404,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
