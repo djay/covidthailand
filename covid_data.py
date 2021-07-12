@@ -2241,8 +2241,11 @@ def vaccination_reports():
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
         # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
         # TODO: only have 76 prov? something going on
-        missing_data = counts[counts['Vac Group Risk: Location 2 Cum'] < 76]["2021-05-04":]
+        missing_data = counts[counts['Vac Given 1 Cum'] < 76]["2021-05-04":]
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
+
+        # Just in case coldchain data not working
+        vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum'] 
 
     return vac_daily, vac_prov_reports
 
