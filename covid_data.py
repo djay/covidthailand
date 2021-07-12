@@ -7,7 +7,7 @@ import json
 import os
 import re
 import copy
-import math
+import codecs
 
 from bs4 import BeautifulSoup
 import camelot
@@ -21,7 +21,7 @@ from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, e
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH
+    web_files, web_links, all_in, NUM_OR_DASH, s
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -545,6 +545,8 @@ def get_cases():
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_case_details_csv():
+    if False:
+        return get_case_details_api()
     url = "https://data.go.th/dataset/covid-19-daily"
     file, text, _ = next(web_files(url, dir="json", check=True))
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
@@ -557,6 +559,10 @@ def get_case_details_csv():
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
         cases = pd.read_csv(file)
+        if '�' in cases.loc[0]['risk']:
+            # bad encoding
+            with codecs.open(file, encoding="tis-620") as fp:
+                cases = pd.read_csv(fp)
     else:
         raise Exception(f"Unknown filetype for covid19daily {file}")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
@@ -568,28 +574,37 @@ def get_case_details_csv():
 
 
 def get_case_details_api():
+    # TODO: use api - https://data.go.th/api/3/action/datastore_search?resource_id=67d43695-8626-45ad-9094-dabc374925ab&limit=100&offset=100&q=
     # _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
-    rid = "329f684b-994d-476b-91a4-62b2ea00f29f"
-    url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit=1000&offset="
+    rid = "67d43695-8626-45ad-9094-dabc374925ab"
+    #rid = "be19a8ad-ab48-4081-b04a-8035b5b2b8d6"
+    chunk = 10000
+    url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit={chunk}&q=&offset="
     records = []
 
-    def get_page(i, check=False):
-        _, cases, _ = next(web_files(f"{url}{i}", dir="json", check=check))
-        return json.loads(cases)['result']['records']
-
-    for i in range(0, 100000, 1000):
-        data = get_page(i, False)
-        if len(data) < 1000:
-            data = get_page(i, True)
-            if len(data) < 1000:
-                break
-        records.extend(data)
-    # they screwed up the date conversion. d and m switched sometimes
-    # TODO: bit slow. is there way to do this in pandas?
-    for record in records:
-        record['announce_date'] = to_switching_date(record['announce_date'])
-        record['Notified date'] = to_switching_date(record['Notified date'])
-    cases = pd.DataFrame(records)
+    cases = import_csv("covid-19", ["_id"], dir="json")
+    lastid = cases.last_valid_index() if cases.last_valid_index() else 0
+    data = None
+    while data is None or len(data) == chunk:
+        r = s.get(f"{url}{lastid}")
+        data = json.loads(r.content)['result']['records']
+        df = pd.DataFrame(data)
+        df['announce_date'] = pd.to_datetime(df['announce_date'], dayfirst=True)
+        df['Notified date'] = pd.to_datetime(df['Notified date'], dayfirst=True, errors="coerce")
+        df = df.rename(columns=dict(announce_date="Date"))
+        # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
+        cases = cases.combine_first(df.set_index("_id"))
+        lastid += chunk - 1
+    export(cases, "covid-19", csv_only=True, dir="json")
+    cases = cases.set_index("Date")
+    print("Covid19daily: ", "covid-19", cases.last_valid_index())
+    
+    # # they screwed up the date conversion. d and m switched sometimes
+    # # TODO: bit slow. is there way to do this in pandas?
+    # for record in records:
+    #     record['announce_date'] = to_switching_date(record['announce_date'])
+    #     record['Notified date'] = to_switching_date(record['Notified date'])
+    # cases = pd.DataFrame(records)
     return cases
 
 
@@ -2378,8 +2393,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()

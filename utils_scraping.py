@@ -213,7 +213,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
             except (Timeout, ConnectionError):
                 r = None
             if r is not None and r.status_code == 200:
-                print(f"Download: {file}", end="")
+                print(f"Download: {file} {modified}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 with open(file, "wb") as f:
                     for chunk in r.iter_content(chunk_size=512 * 1024):
