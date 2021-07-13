@@ -7,7 +7,7 @@ import json
 import os
 import re
 import copy
-import math
+import codecs
 
 from bs4 import BeautifulSoup
 import camelot
@@ -21,7 +21,7 @@ from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, e
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH
+    web_files, web_links, all_in, NUM_OR_DASH, s
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -563,6 +563,8 @@ def get_cases():
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_case_details_csv():
+    if False:
+        return get_case_details_api()
     url = "https://data.go.th/dataset/covid-19-daily"
     file, text, _ = next(web_files(url, dir="json", check=True))
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
@@ -575,6 +577,10 @@ def get_case_details_csv():
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
         cases = pd.read_csv(file)
+        if '�' in cases.loc[0]['risk']:
+            # bad encoding
+            with codecs.open(file, encoding="tis-620") as fp:
+                cases = pd.read_csv(fp)
     else:
         raise Exception(f"Unknown filetype for covid19daily {file}")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
@@ -586,28 +592,37 @@ def get_case_details_csv():
 
 
 def get_case_details_api():
+    # TODO: use api - https://data.go.th/api/3/action/datastore_search?resource_id=67d43695-8626-45ad-9094-dabc374925ab&limit=100&offset=100&q=
     # _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
-    rid = "329f684b-994d-476b-91a4-62b2ea00f29f"
-    url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit=1000&offset="
+    rid = "67d43695-8626-45ad-9094-dabc374925ab"
+    #rid = "be19a8ad-ab48-4081-b04a-8035b5b2b8d6"
+    chunk = 10000
+    url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit={chunk}&q=&offset="
     records = []
 
-    def get_page(i, check=False):
-        _, cases, _ = next(web_files(f"{url}{i}", dir="json", check=check))
-        return json.loads(cases)['result']['records']
-
-    for i in range(0, 100000, 1000):
-        data = get_page(i, False)
-        if len(data) < 1000:
-            data = get_page(i, True)
-            if len(data) < 1000:
-                break
-        records.extend(data)
-    # they screwed up the date conversion. d and m switched sometimes
-    # TODO: bit slow. is there way to do this in pandas?
-    for record in records:
-        record['announce_date'] = to_switching_date(record['announce_date'])
-        record['Notified date'] = to_switching_date(record['Notified date'])
-    cases = pd.DataFrame(records)
+    cases = import_csv("covid-19", ["_id"], dir="json")
+    lastid = cases.last_valid_index() if cases.last_valid_index() else 0
+    data = None
+    while data is None or len(data) == chunk:
+        r = s.get(f"{url}{lastid}")
+        data = json.loads(r.content)['result']['records']
+        df = pd.DataFrame(data)
+        df['announce_date'] = pd.to_datetime(df['announce_date'], dayfirst=True)
+        df['Notified date'] = pd.to_datetime(df['Notified date'], dayfirst=True, errors="coerce")
+        df = df.rename(columns=dict(announce_date="Date"))
+        # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
+        cases = cases.combine_first(df.set_index("_id"))
+        lastid += chunk - 1
+    export(cases, "covid-19", csv_only=True, dir="json")
+    cases = cases.set_index("Date")
+    print("Covid19daily: ", "covid-19", cases.last_valid_index())
+    
+    # # they screwed up the date conversion. d and m switched sometimes
+    # # TODO: bit slow. is there way to do this in pandas?
+    # for record in records:
+    #     record['announce_date'] = to_switching_date(record['announce_date'])
+    #     record['Notified date'] = to_switching_date(record['Notified date'])
+    # cases = pd.DataFrame(records)
     return cases
 
 
@@ -1843,12 +1858,19 @@ def get_vaccination_coldchain(request_json, join_prov=False):
                 data = fp.read()
         else:
             _, _, data = r.text.split("\n")
+        data = json.loads(data)
+        if any(resp for resp in data['dataResponse'] if 'errorStatus' in resp):
+            # raise Exception(resp['errorStatus']['reasonStr'])
+            # read from cache if possible
+            with open(os.path.join("json", request_json)) as fp:
+                data = json.load(fp)
+        else:
             with open(os.path.join("json", request_json), "w") as fp:
                 fp.write(data)
-        data = json.loads(data)
-        for resp in data['dataResponse']:
-            if 'errorStatus' in resp:
-                raise Exception(resp['errorStatus']['reasonStr'])
+        for resp in (resp for resp in data['dataResponse'] if 'errorStatus' in resp):
+            # raise Exception(resp['errorStatus']['reasonStr'])
+            pass
+        for resp in (resp for resp in data['dataResponse'] if 'errorStatus' not in resp):
             yield resp
     if join_prov:
         dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
@@ -1967,17 +1989,24 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search("(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19)", page):
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|บุคคลที่มีโรคประจ)", page):
         return daily
+    # fix numbers with spaces in them
+    page = re.sub(r"(\d) (,\d)", r"\1\2", page)
     # dose1_total, rest1 = get_next_number(page, "ได้รับวัคซีนเข็มที่ 1", until="โดส")
     # dose2_total, rest2 = get_next_number(page, "ได้รับวัคซีน 2 เข็ม", until="โดส")
 
     alloc_sv, rest = get_next_number(page, "Sinovac", until="โดส")
     alloc_az, rest = get_next_number(page, "AstraZeneca", until="โดส")
+
+    # numbers, _ = get_next_numbers(page, "2 (รำย) รวม (โดส)")
+    # if numbers:
+    #     given1, given2, given_total, *_ = numbers
+
     # alloc_total, rest = get_next_number(page, "รวมกำรจัดสรรวัคซีนทั้งหมด", "รวมกำรจดัสรรวคัซนีทัง้หมด", until="โดส")
     # assert alloc_total == alloc_sv + alloc_az
     row = [date, alloc_sv, alloc_az]
-    assert not any_in(['None'], row)
+    # assert not any_in(row, None)
     df = pd.DataFrame([row], columns=[
         "Date",
         "Vac Allocated Sinovac",
@@ -2026,34 +2055,40 @@ def vaccination_daily(daily, date, file, page):
     return daily
 
 
-def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
+def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file):
     def assert_no_repeat(d, prov, thaiprov, numbers):
         prev = d.get((date, prov))
         msg = f"Vac {date} {prov}|{thaiprov} repeated: {numbers} != {prev}"
         assert prev in [None, numbers], msg
 
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-    oldhead = re.compile("(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+    july = re.compile(r"\( ร้อยละ \)", re.DOTALL)
+    oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     lines = [line.strip() for line in page.split('\n') if line.strip()]
-    preamble, *rest = split(lines, lambda x: (shots.search(x) or oldhead.search(x)) and '2564' not in x)
+    preamble, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = max(len(shots.findall(h)) for h in headings)
-        oh_count = max(len(oldhead.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc" }.get(shot_count, "old_given" if oh_count else None)
-        if not table:
+        table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count)
+        if not table and max(len(oldhead.findall(h)) for h in headings):
+            table = "old_given"
+        elif not table and max(len(july.findall(h)) for h in headings):
+            table = "july"
+        elif not table:
             continue
-        added = 0
+        added = None
         for line in lines:
             # fix some number broken in the middle
             line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
             area, *rest = line.split(' ', 1)
+            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม"]:  # Extra heading
+                continue
             if area == "รวม" or not rest:
                 break
-            if area in ["เข็มที่", "และ"]:  # Extra heading
-                continue
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
+            if added is None:
+                added = 0
             if NUM_OR_DASH.match(area):
                 thaiprov, *cols = cols
             else:
@@ -2082,9 +2117,10 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
                     [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                 allocations[(date, prov)] = [alloc, 0, 0, 0]
             elif table == "july":
-                registration, given1, perc1, given2, perc2, = numbers
+                pop, given1, perc1, given2, perc2, = numbers
                 vaccinations[(date, prov)] = [given1, perc1, given2, perc2] + [None] * 10
-        assert added > 7
+                reg[(date, prov)] = pop
+        assert added is None or added > 7
         print(f"{date.date()}: {table} Vaccinations: {added}", file)
     return vaccinations, allocations, vacnew
 
@@ -2092,13 +2128,14 @@ def vaccination_tables(vaccinations, allocations, vacnew, date, page, file):
 def get_vaccinations():
 
     vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
-    vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
-    vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
-                                                                            values="_quantity_")
-    vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
-    vac_import = vac_import.fillna(0)
-    vac_import['Vac Imported'] = vac_import.sum(axis=1)
-    vac_import = vac_import.combine_first(daily2cum(vac_import))
+    if not vac_import.empty:
+        vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
+        vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
+                                                                                values="_quantity_")
+        vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
+        vac_import = vac_import.fillna(0)
+        vac_import['Vac Imported'] = vac_import.sum(axis=1)
+        vac_import = vac_import.combine_first(daily2cum(vac_import))
 
     # Delivered Vac data from coldchain
     vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
@@ -2178,11 +2215,12 @@ def vaccination_reports():
     vaccinations = {}
     allocations = {}
     vacnew = {}
+    reg = {}
     for page, date, file in pages:  # TODO: vaccinations are the day before I think
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-        vaccinations, allocations, vacnew = vaccination_tables(vaccinations, allocations, vacnew, date, page, file)
+        vaccinations, allocations, vacnew = vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
         vac_daily = vaccination_daily(vac_daily, date, file, page)
         vac_daily = vac_problem(vac_daily, date, file, page)
     vac_prov_reports = pd.DataFrame((list(key) + value for key, value in vaccinations.items()), columns=[
@@ -2211,6 +2249,11 @@ def vaccination_reports():
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
     ]).set_index(["Date", "Province"])
+    # regdf = pd.DataFrame((list(key) + [value] for key, value in reg.items()), columns=[
+    #     "Date",
+    #     "Province",
+    #     "Vac Registered",
+    # ]).set_index(["Date", "Province"])
     vac_prov_reports = vac_prov_reports.combine_first(alloc)
 
     # Do cross check we got the same number of allocations to vaccination
@@ -2224,8 +2267,11 @@ def vaccination_reports():
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
         # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
         # TODO: only have 76 prov? something going on
-        missing_data = counts[counts['Vac Group Risk: Location 2 Cum'] < 76]["2021-05-04":]
+        missing_data = counts[counts['Vac Given 1 Cum'] < 76]["2021-05-04":]
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
+
+        # Just in case coldchain data not working
+        vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum'] 
 
     return vac_daily, vac_prov_reports
 

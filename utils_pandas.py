@@ -157,29 +157,29 @@ def fuzzy_join(a,
         return second
 
 
-def export(df, name, csv_only=False):
+def export(df, name, csv_only=False, dir="api"):
     print(f"Exporting: {name}")
     df = df.reset_index()
     for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
         df[c] = df[c].dt.strftime('%Y-%m-%d')
-    os.makedirs("api", exist_ok=True)
+    os.makedirs(dir, exist_ok=True)
     # TODO: save space by dropping nan
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
     if not csv_only:
         df.to_json(
-            os.path.join("api", name),
+            os.path.join(dir, name),
             date_format="iso",
             indent=3,
             orient="records",
         )
     df.to_csv(
-        os.path.join("api", f"{name}.csv"),
+        os.path.join(dir, f"{name}.csv"),
         index=False
     )
 
 
-def import_csv(name, index=None, return_empty=False, date_cols=['Date']):
-    path = os.path.join("api", f"{name}.csv")
+def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="api"):
+    path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
         return pd.DataFrame(columns=index).set_index(index)
     print("Importing CSV:", path)
