@@ -399,15 +399,17 @@ Bureau, Chaeng Watthana"
 - Downloads: [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
   - See all the above for data definitions
 
-# License
-
-<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 # About
 
 Made with python/pandas/matplotlib. Dylan Jay gave a talk on how easy it is to extract data from PDFs
 and powerpoints and plot data at [Bangkok's Monthly ThaiPy Event](https://www.meetup.com/en-AU/ThaiPy-Bangkok-Python-Meetup) [Video: "How I scraped Thailand's covid data" (1h mark)](https://www.facebook.com/watch/live/?v=2890282134582879)
 
-Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and others. Shorter answer: to slow down jumping to conclusions.
+Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and because ![Someone was wrong on the internet](https://imgs.xkcd.com/comics/duty_calls.png).
+
+## License
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+
 
 ## Contributors
 - [Dylan Jay](https://github.com/djay)
@@ -457,43 +459,5 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-04-12 - Put in "unknown area" for tests and cases by district so totals are correct
 - 2021-04-05 - add tweets with province/type break down to get more up to date stats
 
-## TODO (looking for contributors!)
-- get death age brackets from CFR in situation reports
-  - also has intersection of deaths and disease deaths
-- estimate median age of death from population. 
-  - could help show if cases or deaths are underreported or if elderly are more protected in thailand
-  - potentially could adjust the IFR to get a better infeciton estimtate.
-- excess deaths adjusted for road accidents and suicides
-  - https://github.com/TheEconomist/covid-19-excess-deaths-tracker/blob/master/output-data/excess-deaths/thailand_excess_deaths.csv
-- plot nationality of cases over time, thai, neighbours, others. Perhaps compare against known populations?
-- do some graphs showing north, south, east, central, bangkok.
-  - same breakdown as briefing infographic
-  - these? https://www.facebook.com/informationcovid19/posts/322313232720341
-- think of a metric that shows test capacity bottleneck or reluctance to test
-- Fix unknowns to make more clear
-  - active cases looks like severe etc disappear for a day. Maybe need "unknown condition" category? or just don't show the data?
-- export csv of dated sources
-- find historical source for mild vs severe hospitalisations
-- get source for sym/asym for latest cases
-  - stopped being put in briefings
-- plot % subplots to get closer detail
-  - esp for the by district plots
-- switch to plotly to interactively inspect values
-  - https://towardsdatascience.com/how-to-create-a-plotly-visualization-and-embed-it-on-websites-517c1a78568b
-  - or another way to show values at an x position. such as SVG, or css imgmap?
-- Extract from briefings
-  - State Quarantine vs ASQ
-- get data source for antigen and antibody tests
-- get data source 
-  - PUIs that didn't make the criteria - rejected. screened number?
-  - proactive screened
-- put in for date of last record in graph titles
-  - and more detail of start and end dates for data in data source descriptions
-- fix briefings parser to get more historical data 
-   - for sym/asym
-   - more province data
-- work out if can incorporate province wealth
-  - https://data.go.th/dataset/http-mis-m-society-go-th-tab030104-php
-  - maybe for vaccinations or positive rate?
 
 <a href="https://github.com/djay/covidthailand" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
