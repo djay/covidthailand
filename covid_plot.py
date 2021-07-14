@@ -698,7 +698,7 @@ def save_plots(df: pd.DataFrame) -> None:
     for c in daily_cols:
         vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
-    #vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
+    # vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
     days_to_target = (pd.Timestamp('2022-01-01') - vac_daily.index.to_series()).dt.days
     vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / days_to_target
     vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / days_to_target

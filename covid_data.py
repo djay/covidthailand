@@ -2045,7 +2045,7 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
         assert prev in [None, numbers], msg
 
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
-    july = re.compile(r"\( ร้อยละ \)", re.DOTALL)
+    july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
     oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     preamble, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
@@ -2405,9 +2405,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        vac = get_vaccinations()
         situation = get_situation()
         cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
