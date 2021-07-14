@@ -16,7 +16,7 @@ import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
 
-from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
+from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, normalise_to_total, \
     spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
@@ -489,30 +489,6 @@ def get_situation():
     situation = import_csv("situation_reports", ["Date"],
                            not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
 
-    cases = get_case_details_csv().reset_index()
-    labels = ["Age2 0-14", "Age2 15-39", "Age2 40-59", "Age2 60-"]
-    age_groups = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels)
-    case_ages = pd.crosstab(cases['Date'], age_groups)
-    case_ages.columns = case_ages.columns.tolist()
-    case_ages_cum = case_ages["2021-04-01":].cumsum()
-    # TODO: maybe redistribute unknowns into the above buckets?
-    # case_ages.sum(axis=1).to_frame("Sum").combine_first(situation[['Cases']]).loc["2021-06-20":]
-
-    # work out ages of deaths from cfr
-    # get cum cases per age since 1st april
-    # CFR * cases = deaths
-    for ages in ["15-39", "40-59", "60-"]:
-        case_ages_cum[f"Deaths Age {ages} Cum"] = situation[f"W3 CFR {ages}"].rolling(
-            7).mean() / 100 * case_ages_cum[f"Age2 {ages}"].rolling(7).mean()
-    daily_ages = cum2daily(case_ages_cum)
-    # daily_ages['tot_deaths'] = daily_ages.sum(axis=1)
-    # daily_ages['Deaths'] = df['Deaths'].rolling(7).mean()
-    # TODO: Getting some negative daily deaths, esp for 15-39.
-    # There are too many unknown case ages each day I think it throws it off and end up getting spikes
-    #
-    # either that or the precision of the CFR is just not enough?
-    # 28 and 30 it jumps to 0.12, then down to 0.11 again.
-
     cum = cum2daily(situation)
     # TODO: Not sure but 5 days have 0 PUI. Take them out for now
     # Date
@@ -523,7 +499,7 @@ def get_situation():
     # 2021-05-02    0.0
     cum[(cum['Tested PUI'] == 0)]['Tested PUI'] = None
 
-    situation = situation.combine_first(cum).combine_first(daily_ages)  # any direct non-cum are trusted more
+    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
 
     # Only add in the live stats if they have been updated with new info
     today = today_situation.index.max()
@@ -572,6 +548,7 @@ def get_case_details_csv():
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
     # ensure csv is first pick but we can handle either if one is missing
     links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
+    # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
     file, _, _ = next(web_files(next(iter(links)), dir="json", check=True))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
@@ -625,7 +602,7 @@ def get_case_details_api():
     # cases = pd.DataFrame(records)
     return cases
 
-
+@functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
     print("========Covid19Daily Demographics==========")
 
@@ -637,6 +614,12 @@ def get_cases_by_demographics_api():
     labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
     age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], right=True, labels=labels)
     case_ages = pd.crosstab(cases['Date'], age_groups)
+
+    labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+    age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
+    case_ages2 = pd.crosstab(cases['Date'], age_groups2)
+    case_ages2.columns = case_ages2.columns.tolist()
+
 
     # case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in DISTRICT_RANGE))
 
@@ -803,7 +786,7 @@ def get_cases_by_demographics_api():
                              aggfunc="sum")
     risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
 
-    return case_risks_daily.combine_first(case_ages), risks_prov
+    return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
 
 ##################################
@@ -2422,9 +2405,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
-        cases_by_area = get_cases_by_area()
         situation = get_situation()
+        cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings

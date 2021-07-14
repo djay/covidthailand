@@ -9,7 +9,7 @@ from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, rearrange, \
+from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, rearrange, \
     set_time_series_labels_2, topprov, value_ma
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
@@ -458,7 +458,7 @@ def save_plots(df: pd.DataFrame) -> None:
     #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # Thailand Covid Cases by Age
-    cols = [c for c in df.columns if str(c).startswith('Age')]
+    cols = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
     plot_area(df=df, png_prefix='cases_ages', cols_subset=cols, title='Thailand Covid Cases by Age',
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
               kind='area', stacked=True, percent_fig=True, ma_days=7, cmap=get_cycle('summer_r', len(cols) + 1))
@@ -698,7 +698,7 @@ def save_plots(df: pd.DataFrame) -> None:
     for c in daily_cols:
         vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
-    vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
+    #vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
     days_to_target = (pd.Timestamp('2022-01-01') - vac_daily.index.to_series()).dt.days
     vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / days_to_target
     vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / days_to_target
@@ -716,7 +716,10 @@ def save_plots(df: pd.DataFrame) -> None:
         kind='bar',
         stacked=True,
         percent_fig=False,
-        between=['7d Runway Rate', 'Target Rate 1', 'Target Rate 2'],
+        between=[
+            #'7d Runway Rate',
+            'Target Rate 1',
+            'Target Rate 2'],
         ma_days=None,
         cmap='Paired_r',
     )
@@ -731,7 +734,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: adjust allocated for double dose group
     second_dose = [c for c in groups if "2 Cum" in c]
     first_dose = [c for c in groups if "1 Cum" in c]
-    vac_cum['Available Vaccines Cum'] = df['Vac Imported Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
+    # vac_cum['Available Vaccines Cum'] = df['Vac Imported Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
 
     cols = []
     # We want people vaccinated not total doses
@@ -741,7 +744,7 @@ def save_plots(df: pd.DataFrame) -> None:
             cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
 
     cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
-    cols_cum = cols_cum + ['Available Vaccines Cum']
+    cols_cum = cols_cum  # + ['Available Vaccines Cum']
 
     # TODO: get paired colour map and use do 5 + 5 pairs
     legends = [clean_vac_leg(c) for c in cols_cum]
@@ -749,7 +752,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
               kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='Paired_r',
-              between=['Available Vaccines Cum'],
+              # between=['Available Vaccines Cum'],
               y_formatter=thaipop)
 
     # Targets for groups
@@ -902,6 +905,7 @@ def save_plots(df: pd.DataFrame) -> None:
                   cmap='tab10')
 
 
+
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
     cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df[
@@ -942,7 +946,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # Deaths
     ####################
 
-    # predict median age of death based on population demographics
+    # TODO: predict median age of death based on population demographics
 
     cols = ['Deaths', 'Deaths Risk Family', 'Deaths Comorbidity None']
     plot_area(df=df, png_prefix='deaths_reason', cols_subset=cols, title='Thailand Covid Deaths',
@@ -956,15 +960,50 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               highlight=['Deaths Age Median (MA)'], between=['Deaths Age Max', 'Deaths Age Min'])
 
-    cols = ['Deaths Age 15-39', 'Deaths Age 40-59', 'Deaths Age 60-']
-    plot_area(df=df, png_prefix='deaths_age_bins', cols_subset=cols, title='Thailand Covid Death Age Range',
-              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer',
-              actuals=['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min'])
-
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+
+
+
+    # Work out Death ages from CFR from situation reports
+    age_ranges = ["15-39", "40-59", "60-"]
+
+    cols = [f'W3 CFR {age}' for age in age_ranges]
+    plot_area(df=df, png_prefix='deaths_w3cfr', cols_subset=cols, title='Thailand Covid CFR since 2021-04-01',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
+
+    ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+    # Put unknowns into ages based on current ratios. But might not be valid for prison unknowns?
+    w3_cases = df[ages + ['Cases', 'Deaths']].pipe(normalise_to_total, ages, "Cases")
+
+    cols = ages
+    plot_area(df=w3_cases, png_prefix='cases_ages2', cols_subset=cols, title='Thailand Covid Cases by Age',
+              unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap=get_cycle('summer_r', len(cols) + 1))
+
+    case_ages_cum = w3_cases["2021-04-01":].cumsum()
+
+    # work out ages of deaths from cfr
+    # CFR * cases = deaths
+    for ages_range in age_ranges:
+        case_ages_cum[f"Deaths Age {ages_range} Cum"] = df[f"W3 CFR {ages_range}"].rolling(
+            7, min_periods=3, center=True).mean() / 100 * case_ages_cum[f"Age {ages_range}"].rolling(
+                7, min_periods=3, center=True).mean()
+    deaths_by_age = cum2daily(case_ages_cum)
+    df = df.combine_first(deaths_by_age)
+    df['Deaths (MA)'] = df['Deaths'].rolling(7,min_periods=3, center=True).mean()
+    df['Deaths Ages Sum'] = df[[f'Deaths Age {age}' for age in age_ranges]].sum(axis=1)
+    # TODO: Getting some negative daily deaths, esp for 15-39.
+    # There are too many unknown case ages each day I think it throws it off and end up getting spikes
+    #
+    # either that or the precision of the CFR is just not enough?
+    # 28 and 30 it jumps to 0.12, then down to 0.11 again.
+
+    cols = [f'Deaths Age {age}' for age in age_ranges] + ['Deaths (MA)', 'Deaths Ages Sum']
+    plot_area(df=df, png_prefix='deaths_age_bins', cols_subset=cols, title='Thailand Covid Death Age Range',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10', actuals=["Deaths"])
 
 
 if __name__ == "__main__":

@@ -85,6 +85,14 @@ def daily2cum(results):
     return cum[cum.columns]
 
 
+def normalise_to_total(df, cols, total_col):
+    "adjust cols so they add up to total"
+    col_total = df[cols].sum(axis=1)
+    for c in cols:
+        df[c] = df[c] / col_total * df[total_col]
+    return df
+
+
 def human_format(num: float, pos: int) -> str:
     magnitude = 0
     while abs(num) >= 1000:
