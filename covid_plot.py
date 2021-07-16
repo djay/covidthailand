@@ -710,7 +710,8 @@ def save_plots(df: pd.DataFrame) -> None:
         cols_subset=daily_cols,
         title='Thailand Daily Vaccinations by Priority Groups',
         legends=[
-            'Doses per day needed to run out in a week', 'Needed to reach 70% 1st Dose in 2021',
+            # 'Doses per day needed to run out in a week',
+            'Needed to reach 70% 1st Dose in 2021',
             'Needed to reach 70% Fully Vaccinated in 2021'
         ] + [clean_vac_leg(c, "(1st jab)", "(2nd jab)") for c in daily_cols],  # bar puts the line first?
         kind='bar',
@@ -976,7 +977,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
     # Put unknowns into ages based on current ratios. But might not be valid for prison unknowns?
-    w3_cases = df[ages + ['Cases', 'Deaths']].pipe(normalise_to_total, ages, "Cases")
+    #w3_cases = df[ages + ['Cases', 'Deaths']].pipe(normalise_to_total, ages, "Cases")
+    w3_cases = df[ages + ['Cases', 'Deaths']]
 
     cols = ages
     plot_area(df=w3_cases, png_prefix='cases_ages2', cols_subset=cols, title='Thailand Covid Cases by Age',
@@ -989,21 +991,18 @@ def save_plots(df: pd.DataFrame) -> None:
     # CFR * cases = deaths
     for ages_range in age_ranges:
         case_ages_cum[f"Deaths Age {ages_range} Cum"] = df[f"W3 CFR {ages_range}"].rolling(
-            7, min_periods=3, center=True).mean() / 100 * case_ages_cum[f"Age {ages_range}"].rolling(
+            21, min_periods=7, center=True).mean() / 100 * case_ages_cum[f"Age {ages_range}"].rolling(
                 7, min_periods=3, center=True).mean()
     deaths_by_age = cum2daily(case_ages_cum)
-    df = df.combine_first(deaths_by_age)
-    df['Deaths (MA)'] = df['Deaths'].rolling(7,min_periods=3, center=True).mean()
-    df['Deaths Ages Sum'] = df[[f'Deaths Age {age}' for age in age_ranges]].sum(axis=1)
-    # TODO: Getting some negative daily deaths, esp for 15-39.
-    # There are too many unknown case ages each day I think it throws it off and end up getting spikes
-    #
-    # either that or the precision of the CFR is just not enough?
-    # 28 and 30 it jumps to 0.12, then down to 0.11 again.
-
-    cols = [f'Deaths Age {age}' for age in age_ranges] + ['Deaths (MA)', 'Deaths Ages Sum']
-    plot_area(df=df, png_prefix='deaths_age_bins', cols_subset=cols, title='Thailand Covid Death Age Range',
+    death_cols = [f'Deaths Age {age}' for age in age_ranges]
+    deaths_by_age['Deaths'] = df['Deaths']
+    deaths_by_age['Deaths (MA)'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
+    deaths_by_age['Deaths Ages Sum'] = deaths_by_age[death_cols].sum(axis=1)
+    cols = death_cols + ['Deaths (MA)', 'Deaths Ages Sum']
+    plot_area(df=deaths_by_age, png_prefix='deaths_age_bins', cols_subset=cols, title='Thailand Covid Death Age Range',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10', actuals=["Deaths"])
+    plot_area(df=deaths_by_age, png_prefix='deaths_age_est', cols_subset=death_cols, title='Thailand Covid Death Age Distribution\nEstimated by CFR from daily situation reports',
+              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer_r', actuals=["Deaths"])
 
 
 if __name__ == "__main__":

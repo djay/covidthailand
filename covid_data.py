@@ -16,7 +16,7 @@ import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
 
-from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, normalise_to_total, \
+from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
@@ -759,7 +759,7 @@ def get_cases_by_demographics_api():
         20210622.36: "ACF สนามกีฬาธูปะเตมีย์:Entertainment",
         20210622.37: "Cluster ห้างแสงทอง (สายล่าง):Community",
         20210622.38: "Cluster ทันฑสถานบำบัดพิเศษกลาง:Community",
-
+        20210714.01: "Sandbox:Sandbox",
     }
     for v in r.values():
         key, cat = v.split(":")
