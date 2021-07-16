@@ -1337,6 +1337,7 @@ def briefing_deaths_summary(text, date):
                                    "ค่ากลางอายุ",
                                    "ค่ากลางของอายุ",
                                    "• ค่ากลาง",
+                                   "ค่ามัธยฐานของอาย",
                                    ints=False)
     med_age, min_age, max_age, *_ = numbers
     numbers, *_ = get_next_numbers(text, "ชาย")
