@@ -323,14 +323,14 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
         numbers = get_next_numbers(rest, "2 เดือน 1", " 60 ปีขึ้นไป", ints=False, return_rest=False)
         a1_w1, a2_w1, a3_w1, a1_w2, a2_w2, a3_w2, a1_w3, a2_w3, a3_w3, *_ = numbers
     # else:
-        # a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text,
-        #                                            "วหรือภำวะเส่ียง",
-        #                                            "หรือสูงอำยุ",
-        #                                            "มีโรคประจ",
-        #                                            "หรือภำวะเส่ียง",
-        #                                            before=True,
-        #                                            ints=False,
-        #                                            return_rest=False)
+    # a3_w3, a2_w3, a1_w3, *_ = get_next_numbers(text,
+    #                                            "วหรือภำวะเส่ียง",
+    #                                            "หรือสูงอำยุ",
+    #                                            "มีโรคประจ",
+    #                                            "หรือภำวะเส่ียง",
+    #                                            before=True,
+    #                                            ints=False,
+    #                                            return_rest=False)
     assert 0 <= a3_w3 <= 25
     assert 0 <= a2_w3 <= 25
     assert 0 <= a1_w3 <= 25
@@ -593,7 +593,7 @@ def get_case_details_api():
     export(cases, "covid-19", csv_only=True, dir="json")
     cases = cases.set_index("Date")
     print("Covid19daily: ", "covid-19", cases.last_valid_index())
-    
+
     # # they screwed up the date conversion. d and m switched sometimes
     # # TODO: bit slow. is there way to do this in pandas?
     # for record in records:
@@ -2008,31 +2008,32 @@ def vaccination_daily(daily, date, file, page):
     # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2)]:
-        if len(numbers) != 7 or not re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว)", rest):
-            if numbers:
-                total, *_ = numbers
-                df = pd.DataFrame([[date, total]], columns=[
-                    "Date",
-                    f"Vac Given {dose} Cum",
-                ]).set_index("Date")
-                daily = daily.combine_first(df)
+        if len(numbers) == 7 and re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60)", rest):
+            total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
+            assert sixty == 60
+            row = [medical, frontline, over60, chronic, area]
+            assert not any_in(row, None)
+            assert 0.99 <= (sum(row) / total) <= 1.01
+            df = pd.DataFrame([[date, total] + row],
+                              columns=[
+                                  "Date",
+                                  f"Vac Given {dose} Cum",
+                                  f"Vac Group Medical Staff {dose} Cum",
+                                  f"Vac Group Other Frontline Staff {dose} Cum",
+                                  f"Vac Group Over 60 {dose} Cum",
+                                  f"Vac Group Risk: Disease {dose} Cum",
+                                  f"Vac Group Risk: Location {dose} Cum",
+                              ]).set_index("Date")
+        elif numbers:
+            assert date < d("2021-07-12")  # Should be getting all the numbers every day now
+            total, *_ = numbers
+            df = pd.DataFrame([[date, total]], columns=[
+                "Date",
+                f"Vac Given {dose} Cum",
+            ]).set_index("Date")
+        else:
+            assert date < d("2021-07-12")  # Should be getting all the numbers every day now
             continue
-
-        total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
-        assert sixty == 60
-        row = [medical, frontline, over60, chronic, area]
-        assert not any_in(row, None)
-        assert 0.99 <= (sum(row) / total) <= 1.01
-        df = pd.DataFrame([[date, total] + row],
-                          columns=[
-                              "Date",
-                              f"Vac Given {dose} Cum",
-                              f"Vac Group Medical Staff {dose} Cum",
-                              f"Vac Group Other Frontline Staff {dose} Cum",
-                              f"Vac Group Over 60 {dose} Cum",
-                              f"Vac Group Risk: Disease {dose} Cum",
-                              f"Vac Group Risk: Location {dose} Cum", ]
-                          ).set_index("Date")
         daily = daily.combine_first(df)
     print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
@@ -2148,15 +2149,16 @@ def get_vaccinations():
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
     vac_prov = vac_prov.combine_first(vac_reports_prov).combine_first(vacct)
-    export(vac_prov, "vaccinations", csv_only=True)
+    if not USE_CACHE_DATA:
+        export(vac_prov, "vaccinations", csv_only=True)
 
     vac_prov = vac_prov.combine_first(vacct)
 
-    # Need the last day we have a full set of data since some provinces can come in late
+    # Need the last day we have a full set of data since some provinces can come in late in vac tracker data
     # TODO: could add unknowns
-    crossed = vac_prov.reset_index()
-    crossed = pd.crosstab(crossed['Date'], crossed['Province'], values="Vac Given", aggfunc='sum')
-    last_valid = crossed.apply(pd.Series.last_valid_index).min()
+    counts1 = vac_prov['Vac Given'].groupby("Date").count()
+    counts2 = vac_prov['Vac Given Cum'].groupby("Date").count()
+    last_valid = max([counts2[counts1 > 76].last_valid_index(), counts2[counts2 > 76].last_valid_index()])
     vac_prov = vac_prov.loc[:last_valid]
 
     # Get vaccinations by district
@@ -2175,7 +2177,8 @@ def get_vaccinations():
         given_by_area_2).combine_first(
         given_by_area_both).combine_first(
         vac_prov_sum)
-    export(vac_timeline, "vac_timeline")
+    if not USE_CACHE_DATA:
+        export(vac_timeline, "vac_timeline")
 
     return vac_timeline
 
@@ -2254,7 +2257,7 @@ def vaccination_reports():
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
         # Just in case coldchain data not working
-        vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum'] 
+        vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum']
 
     return vac_daily, vac_prov_reports
 
@@ -2413,8 +2416,8 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        situation = get_situation()
         cases_by_area = get_cases_by_area()
+        situation = get_situation()
         # hospital = get_hospital_resources()
         vac = get_vaccinations()
         tests = get_tests_by_day()

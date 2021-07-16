@@ -695,8 +695,9 @@ def save_plots(df: pd.DataFrame) -> None:
     # interpolate to fill gaps and get some values for each group
     vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
     # now normalise the filled in days so they add to their real total
-    for c in daily_cols:
-        vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
+    vac_daily = vac_daily.pipe(normalise_to_total, daily_cols, 'Vac Given')
+    #for c in daily_cols:
+    #    vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
     # vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
     days_to_target = (pd.Timestamp('2022-01-01') - vac_daily.index.to_series()).dt.days
@@ -999,10 +1000,24 @@ def save_plots(df: pd.DataFrame) -> None:
     deaths_by_age['Deaths (MA)'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
     deaths_by_age['Deaths Ages Sum'] = deaths_by_age[death_cols].sum(axis=1)
     cols = death_cols + ['Deaths (MA)', 'Deaths Ages Sum']
-    plot_area(df=deaths_by_age, png_prefix='deaths_age_bins', cols_subset=cols, title='Thailand Covid Death Age Range',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10', actuals=["Deaths"])
-    plot_area(df=deaths_by_age, png_prefix='deaths_age_est', cols_subset=death_cols, title='Thailand Covid Death Age Distribution\nEstimated by CFR from daily situation reports',
-              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='summer_r', actuals=["Deaths"])
+    plot_area(df=deaths_by_age,
+              png_prefix='deaths_age_bins',
+              cols_subset=cols,
+              title='Thailand Covid Death Age Range',
+              kind='line',
+              stacked=False,
+              percent_fig=False,
+              ma_days=None,
+              cmap='tab10')
+    plot_area(df=deaths_by_age,
+              png_prefix='deaths_age_est',
+              cols_subset=death_cols,
+              title='Thailand Covid Death Age Distribution\nEstimated using CFR from daily situation reports',
+              kind='area',
+              stacked=True,
+              percent_fig=True,
+              ma_days=None,
+              cmap=get_cycle('summer_r', len(cols) + 1))
 
 
 if __name__ == "__main__":
