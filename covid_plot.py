@@ -992,13 +992,14 @@ def save_plots(df: pd.DataFrame) -> None:
     # CFR * cases = deaths
     for ages_range in age_ranges:
         case_ages_cum[f"Deaths Age {ages_range} Cum"] = df[f"W3 CFR {ages_range}"].rolling(
-            21, min_periods=7, center=True).mean() / 100 * case_ages_cum[f"Age {ages_range}"].rolling(
+            21, min_periods=13, center=True).mean() / 100 * case_ages_cum[f"Age {ages_range}"].rolling(
                 7, min_periods=3, center=True).mean()
     deaths_by_age = cum2daily(case_ages_cum)
     death_cols = [f'Deaths Age {age}' for age in age_ranges]
     deaths_by_age['Deaths'] = df['Deaths']
     deaths_by_age['Deaths (MA)'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
     deaths_by_age['Deaths Ages Sum'] = deaths_by_age[death_cols].sum(axis=1)
+    deaths_by_age = deaths_by_age.pipe(normalise_to_total, death_cols, 'Deaths (MA)')
     cols = death_cols + ['Deaths (MA)', 'Deaths Ages Sum']
     plot_area(df=deaths_by_age,
               png_prefix='deaths_age_bins',
@@ -1012,7 +1013,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=deaths_by_age,
               png_prefix='deaths_age_est',
               cols_subset=death_cols,
-              title='Thailand Covid Death Age Distribution\nEstimated using CFR from daily situation reports',
+              title='Thailand Covid Death Age Distribution\nEstimation from smoothed CFR from daily situation reports',
               kind='area',
               stacked=True,
               percent_fig=True,

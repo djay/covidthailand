@@ -115,6 +115,9 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
 - Source: [CCSA Daily Briefing ](#dl-briefings) 
 
+![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_est_3.png)
+- Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
+
 # Testing <a name="testing">
 
 ## Positive Rate
