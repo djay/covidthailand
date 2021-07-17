@@ -1284,7 +1284,8 @@ def briefing_deaths_provinces(text, date, total_deaths):
     *bullets, ptext2 = bullets_re.split(rest_bullets2)
     ptext2, *age_text = re.split("•", ptext2, 1)
     ptext = ptext1 + ptext2
-    pcells = pairwise(strip(re.split(r"(\(?\d+\)?)", ptext)))
+    # if two numbers 2nd is subtotal and will be ignored
+    pcells = pairwise(strip(re.split(r"(\(?\d+\)?\s*\d*)", ptext)))
 
     province_count = {}
     last_provs = None
