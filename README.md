@@ -132,7 +132,7 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 ## PCR Tests in Thailand by day
 
-![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests_all.png)
+![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests_2.png)
 
 - Note, In the past Thailand seems to have confirmed some cases from proactive testing without using PCR tests which makes the number of tests published lower than it might be.  see [Understanding Thailand COVID-19 Positive Rate](https://github.com/djay/covidthailand/wiki)
 - Sources: [Daily situation Reports](#dl-situation-reports), [DMSC: Thailand Laboratory testing data](#dl-testing)
