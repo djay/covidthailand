@@ -175,6 +175,7 @@ def is_cutshort(file, modified, check):
         modified = dateutil.parser.parse(modified).astimezone()
     if not check and MAX_DAYS and modified and (datetime.datetime.today().astimezone()
                                                 - modified).days > MAX_DAYS and os.path.exists(file):
+        print(f"Reached MAX_DAYS={MAX_DAYS}")
         return True
     return False
 

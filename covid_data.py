@@ -2268,14 +2268,22 @@ def vaccination_reports():
 def vac_manuf_given(df, page, file, page_num):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # านวนผู้ไดร้ับวคัซีน # ผลการฉีดวคัซีนสะสม
         return df
+    if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
+        return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
-    title1, daily, title2, doses, title3, totals, *_ = table[0]
+    title1, daily, title2, doses, *_ = table[0]  # + title3, totals + extras
     date = find_thai_date(title1)
     doses = re.sub(r"\([^\)]+\)", "", doses)
     if "Sinopharm" in doses:
         one, total_1, sv_1, az_1, sp_1, two, total_2, sv_2, az_2, sp_2 = get_next_numbers(doses, return_rest=False)
     else:
-        one, total_1, sv_1, az_1, two, total_2, sv_2, az_2 = get_next_numbers(doses, return_rest=False)
+        numbers = get_next_numbers(doses, return_rest=False)
+        if len(numbers) == 8:
+            one, total_1, sv_1, az_1, two, total_2, sv_2, az_2 = get_next_numbers(doses, return_rest=False)
+        else:
+            # vaccinations/1620456296431.pdf # somehow ends up inside brackets
+            one, total_1, sv_1, az_1, two, sv_2, az_2 = get_next_numbers(doses, return_rest=False)
+            total_2 = sv_2 + az_2
         sp_1, sp_2 = [0] * 2
     if total_1 == 1:
         one, total_1, two, total_2 = total_1, one, total_2, two
