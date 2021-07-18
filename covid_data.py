@@ -2286,11 +2286,11 @@ def vac_manuf_given(df, page, file, page_num):
     assert one == 1 and two == 2
     assert total_1 == sv_1 + az_1 + sp_1
     assert total_2 == sv_2 + az_2 + sp_2
-    row = pd.DataFrame([[date, sp_1, az_1, sv_1, sv_2, az_2, sp_2]],
+    row = pd.DataFrame([[date, sv_1, az_1, sp_1, sv_2, az_2, sp_2]],
                        columns=['Date']
                        + [f"Vac Given {m} {d} Cum" for d in [1, 2] for m in ["Sinovac", "AstraZeneca", "Sinopharm"]])
     print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
-    return df.combine_first(row)
+    return df.combine_first(row.set_index("Date"))
 
 
 def vac_slides():
@@ -2459,10 +2459,10 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
+        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         situation = get_situation()
         # hospital = get_hospital_resources()
-        vac = get_vaccinations()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
 
