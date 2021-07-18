@@ -2146,6 +2146,7 @@ def get_vaccinations():
 
     vac_reports, vac_reports_prov = vaccination_reports()
     vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
+    vac_reports = vac_slides(vac_reports)
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
@@ -2262,6 +2263,41 @@ def vaccination_reports():
         vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum']
 
     return vac_daily, vac_prov_reports
+
+
+def vac_manuf_given(df, page, file, page_num):
+    if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # านวนผู้ไดร้ับวคัซีน # ผลการฉีดวคัซีนสะสม
+        return df
+    table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
+    title1, daily, title2, doses, title3, totals, *_ = table[0]
+    date = find_thai_date(title1)
+    doses = re.sub(r"\([^\)]+\)", "", doses)
+    if "Sinopharm" in doses:
+        one, total_1, sv_1, az_1, sp_1, two, total_2, sv_2, az_2, sp_2 = get_next_numbers(doses, return_rest=False)
+    else:
+        one, total_1, sv_1, az_1, two, total_2, sv_2, az_2 = get_next_numbers(doses, return_rest=False)
+        sp_1, sp_2 = [0] * 2
+    if total_1 == 1:
+        one, total_1, two, total_2 = total_1, one, total_2, two
+    assert one == 1 and two == 2
+    assert total_1 == sv_1 + az_1 + sp_1
+    assert total_2 == sv_2 + az_2 + sp_2
+    row = pd.DataFrame([[date, sp_1, az_1, sv_1, sv_2, az_2, sp_2]],
+                       columns=['Date'] +
+                       [f"Vac Given {m} {d} Cum" for d in [1, 2] for m in ["Sinovac", "AstraZeneca", "Sinopharm"]])
+    print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
+    return df.combine_first(row)
+
+
+def vac_slides(df):
+    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
+    links = sorted((link for f in folders for link in web_links(f, ext=".pdf")), reverse=True)
+    files = (f for f, _, _ in web_files(*links, dir="vaccinations"))
+    for file in files:
+        for i, page in enumerate(parse_file(file), 1):
+            vac_manuf_given(df, page, file, i)
+    return df
+
 
 ################################
 # Misc
