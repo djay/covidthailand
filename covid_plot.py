@@ -9,8 +9,8 @@ from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, rearrange, \
-    set_time_series_labels_2, topprov, value_ma
+from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
+    rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, get_provinces, join_provinces, thaipop
@@ -696,8 +696,6 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
     # now normalise the filled in days so they add to their real total
     vac_daily = vac_daily.pipe(normalise_to_total, daily_cols, 'Vac Given')
-    #for c in daily_cols:
-    #    vac_daily[c] = vac_daily[c] / vac_daily[daily_cols].sum(axis=1) * vac_daily['Vac Given']
 
     # vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
     days_to_target = (pd.Timestamp('2022-01-01') - vac_daily.index.to_series()).dt.days
@@ -719,7 +717,7 @@ def save_plots(df: pd.DataFrame) -> None:
         stacked=True,
         percent_fig=False,
         between=[
-            #'7d Runway Rate',
+            # '7d Runway Rate',
             'Target Rate 1',
             'Target Rate 2'],
         ma_days=None,
@@ -906,8 +904,6 @@ def save_plots(df: pd.DataFrame) -> None:
                   ma_days=7,
                   cmap='tab10')
 
-
-
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
     cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df[
@@ -967,8 +963,6 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
               kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
 
-
-
     # Work out Death ages from CFR from situation reports
     age_ranges = ["15-39", "40-59", "60-"]
 
@@ -978,7 +972,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
     # Put unknowns into ages based on current ratios. But might not be valid for prison unknowns?
-    #w3_cases = df[ages + ['Cases', 'Deaths']].pipe(normalise_to_total, ages, "Cases")
+    # w3_cases = df[ages + ['Cases', 'Deaths']].pipe(normalise_to_total, ages, "Cases")
     w3_cases = df[ages + ['Cases', 'Deaths']]
 
     cols = ages

@@ -23,7 +23,7 @@ from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_n
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, to_switching_date, today,  \
+    find_thai_date, get_province, join_provinces, parse_gender, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
 
 
@@ -569,10 +569,7 @@ def get_case_details_csv():
 
 
 def get_case_details_api():
-    # TODO: use api - https://data.go.th/api/3/action/datastore_search?resource_id=67d43695-8626-45ad-9094-dabc374925ab&limit=100&offset=100&q=
-    # _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json"))
     rid = "67d43695-8626-45ad-9094-dabc374925ab"
-    #rid = "be19a8ad-ab48-4081-b04a-8035b5b2b8d6"
     chunk = 10000
     url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit={chunk}&q=&offset="
     records = []
@@ -602,6 +599,7 @@ def get_case_details_api():
     # cases = pd.DataFrame(records)
     return cases
 
+
 @functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
     print("========Covid19Daily Demographics==========")
@@ -619,9 +617,6 @@ def get_cases_by_demographics_api():
     age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
     case_ages2 = pd.crosstab(cases['Date'], age_groups2)
     case_ages2.columns = case_ages2.columns.tolist()
-
-
-    # case_areas = case_areas.rename(columns=dict((i,f"Cases Area {i}") for i in DISTRICT_RANGE))
 
     cases['risk'].value_counts()
     risks = {}
@@ -840,7 +835,7 @@ def parse_unofficial_tweet(df, date, text, url):
     cases, _ = get_next_number(text, "cases", before=True)
     prisons, _ = get_next_number(text, "prisons", before=True)
     if any_in([None], deaths, cases):
-        #raise Exception(f"Can't parse tweet {date} {text}")
+        # raise Exception(f"Can't parse tweet {date} {text}")
         return df
     cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Source Cases"]
     row = [date, deaths, cases, prisons, url]
@@ -1323,7 +1318,7 @@ def briefing_deaths_provinces(text, date, total_deaths):
 
 
 def briefing_deaths_summary(text, date):
-    title_re = re.compile("(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")
+    title_re = re.compile(r"(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")  # noqa
     if not title_re.search(text):
         return pd.DataFrame(), pd.DataFrame()
     # Summary of locations, reasons, medium age, etc
@@ -1401,7 +1396,7 @@ def briefing_deaths_cells(cells, date, all):
             if p:
                 province = p[0]
             else:
-                #raise Exception(f"no province found for death in: {cell}")
+                # raise Exception(f"no province found for death in: {cell}")
                 province = "Unknown"
         rows.append([float(death_num), date, gender, age, province, None, None, None, None, None])
     df = \
@@ -1974,7 +1969,7 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|บุคคลที่มีโรคประจ)", page):
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|บุคคลที่มีโรคประจ)", page):  # noqa
         return daily
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
@@ -2051,7 +2046,7 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
     oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
     lines = [line.strip() for line in page.split('\n') if line.strip()]
-    preamble, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
+    _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = max(len(shots.findall(h)) for h in headings)
         table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count)
@@ -2146,7 +2141,7 @@ def get_vaccinations():
 
     vac_reports, vac_reports_prov = vaccination_reports()
     vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
-    vac_reports = vac_slides(vac_reports)
+    vac_slides_data = vac_slides()
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
@@ -2174,6 +2169,7 @@ def get_vaccinations():
 
     vac_timeline = vac_timeline.combine_first(
         vac_reports).combine_first(
+        vac_slides_data).combine_first(
         vac_delivered).combine_first(
         vac_import).combine_first(
         given_by_area_1).combine_first(
@@ -2266,7 +2262,7 @@ def vaccination_reports():
 
 
 def vac_manuf_given(df, page, file, page_num):
-    if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # านวนผู้ไดร้ับวคัซีน # ผลการฉีดวคัซีนสะสม
+    if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
     if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
         return df
@@ -2291,19 +2287,20 @@ def vac_manuf_given(df, page, file, page_num):
     assert total_1 == sv_1 + az_1 + sp_1
     assert total_2 == sv_2 + az_2 + sp_2
     row = pd.DataFrame([[date, sp_1, az_1, sv_1, sv_2, az_2, sp_2]],
-                       columns=['Date'] +
-                       [f"Vac Given {m} {d} Cum" for d in [1, 2] for m in ["Sinovac", "AstraZeneca", "Sinopharm"]])
+                       columns=['Date']
+                       + [f"Vac Given {m} {d} Cum" for d in [1, 2] for m in ["Sinovac", "AstraZeneca", "Sinopharm"]])
     print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
     return df.combine_first(row)
 
 
-def vac_slides(df):
+def vac_slides():
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
     links = sorted((link for f in folders for link in web_links(f, ext=".pdf")), reverse=True)
     files = (f for f, _, _ in web_files(*links, dir="vaccinations"))
+    df = pd.DataFrame(columns=['Date']).set_index("Date")
     for file in files:
         for i, page in enumerate(parse_file(file), 1):
-            vac_manuf_given(df, page, file, i)
+            df = vac_manuf_given(df, page, file, i)
     return df
 
 

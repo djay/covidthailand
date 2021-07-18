@@ -5,7 +5,6 @@ import difflib
 import json
 import os
 import re
-import math
 import pythainlp.tokenize
 
 import pandas as pd
@@ -239,7 +238,7 @@ def get_provinces():
 
 
 def prov_mapping_subdistricts(provinces):
-    url = "https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv"
+    url = "https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv"  # noqa
     file, _, _ = next(web_files(url, dir="json", check=False))
     subs = pd.read_csv(file)
     subs = subs.groupby(['AMPHOE_T', 'CHANGWAT_T']).count().reset_index()

@@ -44,7 +44,7 @@ Phetchabun,เพชรบูรณ์,992451,12340,80,Phetchabun,PNB,TH-67,TH14
 Phetchaburi,เพชรบุรี,485191,6172,77,Phetchaburi,PBI,TH-76,TH56,"['PBI', 'Phetchaburi', 'พบ', 'เพชรบรุ', 'เพชรบรุี', 'เพชรบุร', 'เพชรบุรี', 'เพชรบุรีี', 'เพชรบุุรี']",5
 Phichit,พิจิตร,536311,4319,124,Phichit,PCT,TH-66,TH13,"['PCT', 'Phichit', 'พจ', 'พจิติร', 'พิจิตร']",3
 Phitsanulok,พิษณุโลก,865247,10589,82,Phitsanulok,PLK,TH-65,TH12,"['PLK', 'Phitsanulok', 'พล', 'พษิณุโลก', 'พิษณุโลก']",2
-Phra Nakhon Si Ayutthaya,พระนครศรีอยุธยา,820188,2548,322,Phra Nakhon Si Ayutthaya,AYA,TH-14,TH36,"['AYA', 'Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'PhraNakhonSiAyutthaya', 'พระนครศรอียธุยา', 'พระนครศรอียธุยำ', 'พระนครศรอียุธยา', 'พระนครศรอียุธยำ', 'พระนครศรีอยุธยา', 'พระนครศรีอยุธา', 'อย', 'อยุธยา', 'พระนครศรียุธยา']",4
+Phra Nakhon Si Ayutthaya,พระนครศรีอยุธยา,820188,2548,322,Phra Nakhon Si Ayutthaya,AYA,TH-14,TH36,"['AYA', 'Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'PhraNakhonSiAyutthaya', 'พระนครศรอียธุยา', 'พระนครศรอียธุยำ', 'พระนครศรอียุธยา', 'พระนครศรอียุธยำ', 'พระนครศรีอยุธยา', 'พระนครศรีอยุธา', 'อย', 'อยุธยา', 'พระนครศรียุธยา', 'พระนครศรีอยุทธยา']",4
 Phrae,แพร่,441726,6483,68,Phrae,PRE,TH-54,TH07,"['PRE', 'Phrae', 'พร', 'แพร่']",1
 Phuket,ภูเก็ต,416582,547,762,Phuket,PKT,TH-83,TH62,"['PKT', 'Phuket', 'ภก', 'ภูเก็ต', 'ภเูก็ต']",11
 Prachinburi,ปราจีนบุรี,494680,5026,99,Prachinburi,PRI,TH-25,TH74,"['PRI', 'Prachin Buri', 'PrachinBuri', 'Prachinburi', 'ปจ', 'ปราจนีบรุ', 'ปราจนีบุร', 'ปราจีนบุร', 'ปราจีนบุรี', 'ปรำจนีบรุ']",6
@@ -55,9 +55,9 @@ Rayong,ระยอง,734753,3666,201,Rayong,RYG,TH-21,TH47,"['RYG', 'Rayong', 
 Roi Et,ร้อยเอ็ด,1305211,7873,166,Roi Et,RET,TH-45,TH25,"['RET', 'Roi Et', 'RoiEt', 'รอ', 'รอ้ยเอ็ด', 'ร้อยเอ็ด', 'ร้อยเอ็็ด', 'ร้้อยเอ็ด']",7
 Sa Kaeo,สระแก้ว,566303,6831,83,Sa Kaeo,SKW,TH-27,TH80,"['SKW', 'Sa Kaeo', 'SaKaeo', 'สก', 'สระแกว้', 'สระแก้ว', 'สะแก้ว']",6
 Sakon Nakhon,สกลนคร,1153390,9580,121,Sakon Nakhon,SNK,TH-47,TH20,"['SNK', 'Sakon Nakhon', 'SakonNakhon', 'สกลนคร', 'สน']",8
-Samut Prakan,สมุทรปราการ,1344875,947,1420,Samut Prakan,SPK,TH-11,TH42,"['SPK', 'Samut Prakan', 'SamutPrakan', 'สป', 'สมทุรปราการ', 'สมทุรปรำกำร', 'สมุทรปราการ', 'สมุุทรปราการ']",6
+Samut Prakan,สมุทรปราการ,1344875,947,1420,Samut Prakan,SPK,TH-11,TH42,"['SPK', 'Samut Prakan', 'SamutPrakan', 'สป', 'สมทุรปราการ', 'สมทุรปรำกำร', 'สมุทรปราการ', 'สมุุทรปราการ', 'สมุทรปรำกำร']",6
 Samut Sakhon,สมุทรสาคร,584703,866,675,Samut Sakhon,SKN,TH-74,TH55,"['SKN', 'Samut Sakhon', 'SamutSakhon', 'สค', 'สมทุรสาคร', 'สมทุรสำคร', 'สมุทธสาคร', 'สมุทรสาคร', 'สมุุทรสาคร']",5
-Samut Songkhram,สมุทรสงคราม,193305,414,467,Samut Songkhram,SKM,TH-75,TH54,"['SKM', 'Samut Songkhram', 'SamutSongkhram', 'สมทุรสงคราม', 'สมทุรสงครำม', 'สมุทรสงคราม', 'สมุุทรสงคราม', 'สส']",5
+Samut Songkhram,สมุทรสงคราม,193305,414,467,Samut Songkhram,SKM,TH-75,TH54,"['SKM', 'Samut Songkhram', 'SamutSongkhram', 'สมทุรสงคราม', 'สมทุรสงครำม', 'สมุทรสงคราม', 'สมุุทรสงคราม', 'สส', 'สมุทรสงครำม']",5
 Saraburi,สระบุรี,645911,3499,185,Saraburi,SRI,TH-19,TH37,"['SRI', 'Saraburi', 'สบ', 'สระบรุ', 'สระบุร', 'สระบุรี', 'สระบุุรี']",4
 Satun,สตูล,323586,3019,107,Satun,STN,TH-91,TH67,"['STN', 'Satun', 'สต', 'สตลู', 'สตูล']",12
 Sing Buri,สิงห์บุรี,208446,817,255,Sing Buri,SBR,TH-17,TH33,"['SBR', 'Sing Buri', 'SingBuri', 'สงิหบ์รุ', 'สงิหบ์ุร', 'สห', 'สิงห์บุร', 'สิงห์บุรี']",4
