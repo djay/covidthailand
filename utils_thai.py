@@ -233,12 +233,28 @@ def get_provinces():
         'index': 'ProvinceEn', 'district_num': 'Health District Number',
         'Name(in Thai)': 'ProvinceTh', 'Population (2019)[1]': 'Population',
         'Area (km²)[2]': 'Area_km2'}).set_index('Alt_names')
+    df4 = prov_mapping_subdistricts(df3)
 
-    return df3
+    return df4
+
+
+def prov_mapping_subdistricts(provinces):
+    url = "https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv"
+    file, _, _ = next(web_files(url, dir="json", check=False))
+    subs = pd.read_csv(file)
+    subs = subs.groupby(['AMPHOE_T', 'CHANGWAT_T']).count().reset_index()
+    subs['AMPHOE_T'] = subs['AMPHOE_T'].str.replace(r"^อ. ", "", regex=True)
+    subs['CHANGWAT_T'] = subs['CHANGWAT_T'].str.replace(r"^จ. ", "", regex=True)
+    subs = join_provinces(subs, on="CHANGWAT_T", provinces=provinces)
+    altnames = subs[['AMPHOE_T', 'CHANGWAT_T']].merge(provinces, right_index=True, left_on="CHANGWAT_T")
+    # AMPHOE_T
+    provinces = provinces.combine_first(
+        altnames.rename(columns=dict(
+            AMPHOE_T="ProvinceAlt")).set_index("ProvinceAlt"))
+    return provinces
 
 
 def prov_mapping_from_cases(provinces):
-
     # use the case data as it has a mapping between thai and english names
     _, cases = next(web_files("https://covid19.th-stat.com/api/open/cases", dir="json", check=False))
     cases = pd.DataFrame(json.loads(cases)["Data"])
@@ -331,14 +347,16 @@ def get_province(prov, ignore_error=False, cutoff=0.74, split=False):
 
 
 def prov_trim(p):
-    return remove_suffix(remove_prefix(p, "จ.", "จังหวัด").strip(' .'), " Province")
+    return remove_suffix(remove_prefix(p, "จ.", "จังหวัด").strip(' .'), " Province").strip()
 
 
-def join_provinces(df, on, extra=["Health District Number"]):
+def join_provinces(df, on, extra=["Health District Number"], provinces=None):
     global prov_guesses
+    if provinces is None:
+        provinces = get_provinces()
     joined, guess = fuzzy_join(
         df.drop(columns=extra, errors="ignore"),
-        get_provinces()[extra + ["ProvinceEn"]],
+        provinces[extra + ["ProvinceEn"]],
         on,
         True,
         prov_trim,
