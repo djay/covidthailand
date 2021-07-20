@@ -1266,10 +1266,10 @@ def briefing_province_cases(date, pages):
     return df
 
 
-def briefing_deaths_provinces(text, date, total_deaths):
+def briefing_deaths_provinces(dtext, date, total_deaths):
 
     # get rid of extra words in brakets to make easier
-    text = re.sub("(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)", "", text)
+    text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
     # Provinces are split between bullets with disease and risk.
     pre, noheader = re.split("โควิด *-?19\n\n", text, 1)
@@ -1313,7 +1313,7 @@ def briefing_deaths_provinces(text, date, total_deaths):
         last_provs = rest
     dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                           columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
-    assert total_deaths == dfprov['Deaths'].sum()
+    assert total_deaths == dfprov['Deaths'].sum() or date in [d("2021-07-20")]
     return dfprov
 
 
@@ -1351,6 +1351,10 @@ def briefing_deaths_summary(text, date):
 
     assert male + female == deaths_title
     # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
+    # "ค่ากลางระยะเวลา (วันที่ทราบผลติดเชื้อ – เสียชีวิต) 9 วัน (นานสุด 85 วัน)"
+
+    # TODO: "เป็นผู้ที่ได้วัคซีน AZ 1 เข็ม 7 ราย และไม่ระบุชนิด 1 เข็ม 1 ราย" <- vaccinated deaths
+    # TODO: deaths at home - "เสียชีวิตที่บ้าน 1 ราย จ.เพชรบุรี พบเชื้อหลังเสียชีวิต"
 
     # TODO: what if they have more than one page?
     sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female, no_comorbidity, risk_family]],
@@ -2139,6 +2143,12 @@ def get_vaccinations():
     vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
     vacct = vacct.combine_first(vaccum)
 
+    # TODO: Imports from https://docs.google.com/spreadsheets/u/1/d/1BaCh5Tbm1EXwh4SeRM9dv-yemK2J5RpO-dz28UVtX3s/htmlview?fbclid=IwAR36L3itMKFv6fq7q-7_CF4WpxtI-QGQAcJ1f62BLen6N6IHc1iq-u-wWNI/export?gid=0&format=csv
+
+    # TODO: totals at risk from https://hdcservice.moph.go.th/hdc/main/index.php
+
+    # TODO: priority groups and ages per province - https://dashboard-vaccine.moph.go.th/dashboard.html
+
     vac_reports, vac_reports_prov = vaccination_reports()
     vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
     vac_slides_data = vac_slides()
@@ -2451,16 +2461,16 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
         situation = get_situation()
+        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
         # hospital = get_hospital_resources()
         tests = get_tests_by_day()
