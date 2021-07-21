@@ -1977,6 +1977,8 @@ def vaccination_daily(daily, date, file, page):
         return daily
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
+    if date == d("2021-05-06"):
+        page = re.sub(r",5 9 รำย", "", page)  # glitch on 2021-05-6
     # dose1_total, rest1 = get_next_number(page, "ได้รับวัคซีนเข็มที่ 1", until="โดส")
     # dose2_total, rest2 = get_next_number(page, "ได้รับวัคซีน 2 เข็ม", until="โดส")
 
@@ -2009,8 +2011,12 @@ def vaccination_daily(daily, date, file, page):
     # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2)]:
-        if len(numbers) == 7 and re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60)", rest):
-            total, medical, frontline, sixty, over60, chronic, area, *_ = numbers
+        if len(numbers) in [7, 8] and re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60)", rest):
+            if len(numbers) == 7:
+                total, medical, frontline, sixty, over60, chronic, area = numbers
+            else:
+                total, medical, frontline, sixty, over60, seven, chronic, area = numbers
+                assert seven == 7  # 7 disease groups 
             assert sixty == 60
             row = [medical, frontline, over60, chronic, area]
             assert not any_in(row, None)
@@ -2082,7 +2088,8 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
             numbers = parse_numbers(cols)
             added += 1
             if table == "alloc":
-                allocations[(date, prov)] = numbers[3:7]
+                sv1, sv2, az1, az2 = numbers[3:7]
+                allocations[(date, prov)] = [sv1, sv2, az1, az2, sv1 + sv2, az1 + az2]
             elif table == "given":
                 if len(numbers) == 16:
                     alloc_sino, alloc_az, *numbers = numbers
@@ -2090,9 +2097,25 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
                 assert_no_repeat(vaccinations, prov, thaiprov, numbers)
                 vaccinations[(date, prov)] = numbers
             elif table == "new_given":
-                assert len(numbers) == 12  # some extra "-" throwing it out. have to use camelot
-                assert_no_repeat(vacnew, prov, thaiprov, numbers)
-                vacnew[(date, prov)] = numbers
+                if len(numbers) == 12:
+                    givens, groups = numbers[0:4], numbers[4:12]
+                    assert_no_repeat(vacnew, prov, thaiprov, givens + groups)
+                    vacnew[(date, prov)] = givens + groups
+                elif len(numbers) == 21:  # from 2021-07-20
+                    # Actually cumulative totals
+                    population, alloc, givens, groups = numbers[0], numbers[1:4], numbers[4:8], numbers[9:21]
+                    sv, az, total_alloc = alloc
+                    # Allocations were per dose before
+                    allocations[(date, prov)] = [None, None, None, None, sv, az]
+
+                    # now includes volunteers seperate from medical. TODO: seperate them
+                    med1, med2, vol1, vol2, front1, front2, old1, old2, dis1, dis2, other1, other2 = groups
+                    groups = [med1 + vol1, med2 + vol2, front1, front2, old1, old2, dis1, dis2, other1, other2]
+
+                    assert_no_repeat(vaccinations, prov, thaiprov, givens + groups)
+                    vaccinations[(date, prov)] = givens + groups
+                else:
+                    assert False
             elif table == "old_given":
                 alloc, target_num, given, perc, *rest = numbers
                 medical, frontline, disease, elders, riskarea, *rest = rest
@@ -2100,7 +2123,7 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
                 # unknown = sum(rest)
                 vaccinations[(date, prov)] = [given, perc, 0, 0] + \
                     [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
-                allocations[(date, prov)] = [alloc, 0, 0, 0]
+                allocations[(date, prov)] = [alloc, 0, 0, 0, alloc, 0]
             elif table == "july":
                 pop, given1, perc1, given2, perc2, = numbers
                 vaccinations[(date, prov)] = [given1, perc1, given2, perc2] + [None] * 10
@@ -2243,6 +2266,8 @@ def vaccination_reports():
         "Vac Allocated Sinovac 2",
         "Vac Allocated AstraZeneca 1",
         "Vac Allocated AstraZeneca 2",
+        "Vac Allocated Sinovac",
+        "Vac Allocated AstraZeneca",
     ]).set_index(["Date", "Province"])
     # regdf = pd.DataFrame((list(key) + [value] for key, value in reg.items()), columns=[
     #     "Date",
@@ -2469,8 +2494,8 @@ def scrape_and_combine():
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
-        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
         situation = get_situation()
         # hospital = get_hospital_resources()
         tests = get_tests_by_day()

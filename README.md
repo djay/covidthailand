@@ -315,7 +315,9 @@ Bureau, Chaeng Watthana"
 ## Testing Data <a name="dl-testing"> 
 
 - Source: 
-   - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sporadic)
+   - [DMSC: Thailand Laboratory testing data - latest report](https://service.dmsc.moph.go.th/labscovid19/indexen.php#rtpcr) (link at bottom) (updated weekly but sporadic)
+   - [DMSC: Thailand Laboratory testing data - weekly summary reports](http://nextcloud.dmsc.moph.go.th/index.php/s/wbioWZAQfManokc)
+   - also available via [data.go.th testing data](https://data.go.th/dataset/covid-19-testing-data)
    - This datasource is incomplete as not all tests go via this [DMSc’co-lab database](https://www3.dmsc.moph.go.th/post-view/974). In particular times with large amounts of proactive testing
      sometimes result in more cases reported than positive results.
 
