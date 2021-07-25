@@ -1055,7 +1055,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     bins = [0, 15, 65, 75, 85, 120]
     labels = ['Under 15', '15-64', '65-74', '75-84', '85+']
-    ages['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
+    excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
     by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
     by_age = by_age.reset_index().pivot(values=["PScore"], index="Date", columns="Age Group")
     by_age.columns = [' '.join(c) for c in by_age.columns]
