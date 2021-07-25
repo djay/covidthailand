@@ -1543,11 +1543,12 @@ def get_cases_by_prov_briefings():
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
     end = today()
-    links = (f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1))
+    links = [f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1)]
+    links += [f"{url}249764.pdf"]  # named incorrectly
     for file, text, briefing_url in web_files(*reversed(list(links)), dir="briefings"):
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
-        date = file2date(file)
+        date = file2date(file) if "249764.pdf" not in file else d("2021-07-24")
 
         today_types = briefing_case_types(date, pages, briefing_url)
         types = types.combine_first(today_types)
@@ -2054,7 +2055,7 @@ def vaccination_daily(daily, date, file, page):
     # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2)]:
-        if len(numbers) in [7, 8] and re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60)", rest):
+        if len(numbers) in [7, 8] and re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน)", rest):
             if len(numbers) == 7:
                 total, medical, frontline, sixty, over60, chronic, area = numbers
             else:
