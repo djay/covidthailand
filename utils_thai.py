@@ -80,6 +80,18 @@ def today() -> datetime.datetime:
     return datetime.datetime.today()
 
 
+def to_gregyear(thai, short=False):
+    thai = thai if type(thai) != str else int(thai)
+    thai += (2500 if thai < 100 else 0) - 543
+    return thai if not short else thai - 2000
+
+
+def to_thaiyear(year, short=False):
+    year = year if type(year) != str else int(year)
+    year += (2000 if year < 100 else 0) + 543
+    return year if not short else year - 2500
+
+
 def file2date(file):
     "return date of either for '10-02-21' or '100264'"
     file = os.path.basename(file)

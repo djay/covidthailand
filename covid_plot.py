@@ -7,6 +7,7 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
+from pandas.tseries.offsets import MonthEnd
 
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
@@ -1013,6 +1014,61 @@ def save_plots(df: pd.DataFrame) -> None:
               percent_fig=True,
               ma_days=None,
               cmap=get_cycle('summer_r', len(cols) + 1))
+
+    # Excess Deaths
+
+    excess = import_csv("deaths_all", dir="json", date_cols=[])
+
+    #  Take avg(2015-2019)/(2021) = p num. (can also correct for population changes?)
+    def calc_pscore(adf):
+        months = adf.groupby(["Year", "Month"], as_index=False).sum().pivot(columns="Year", values="Deaths", index="Month")
+        avg = months[[2015, 2017, 2018]].mean(axis=1)
+        result = pd.DataFrame()
+        for year in [2020, 2021]:
+            res = pd.DataFrame()
+            res['Excess Deaths'] = (months[year] - avg)
+            res['PScore'] = res['Excess Deaths'] / avg * 100
+            res['Deaths All Month Avg'] = avg
+            res['Deaths All Month'] = months[year]
+            res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1', format='%Y-%m') + MonthEnd(0)
+            result = result.combine_first(res.reset_index().set_index("Date"))
+        result = result.dropna(subset=['PScore'])
+        return result.drop(columns=["Month"])
+
+    all = calc_pscore(excess)
+
+    by_province = excess.groupby(["Province"]).apply(calc_pscore)
+
+    top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"] / adf['Deaths All Month Avg'] * 100, num=5)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='deaths_pscore_prov', cols_subset=cols,
+              title='Thai Provinces with most Excess Deaths (P-Score)',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='deaths_excessdeaths_prov', cols_subset=cols,
+              title='Thai Provinces with most Excess Deaths',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    bins = [0, 15, 65, 75, 85, 120]
+    labels = ['Under 15', '15-64', '65-74', '75-84', '85+']
+    ages['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
+    by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
+    by_age = by_age.reset_index().pivot(values=["PScore"], index="Date", columns="Age Group")
+    by_age.columns = [' '.join(c) for c in by_age.columns]
+
+    plot_area(df=by_age,
+              png_prefix='deaths_excess_age',
+              cols_subset=list(by_age.columns),
+              title='Thailand Excess Deaths (P-Score) by age',
+              kind='line',
+              stacked=False,
+              percent_fig=False,
+              ma_days=0,
+              cmap='tab10')
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import os
 import re
 import copy
 import codecs
+import shutil
 
 from bs4 import BeautifulSoup
 import camelot
@@ -15,6 +16,7 @@ import numpy as np
 import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
+from requests.packages.urllib3.util import Url
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
@@ -23,7 +25,7 @@ from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_n
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, join_provinces, parse_gender, today,  \
+    find_thai_date, get_province, get_provinces, join_provinces, parse_gender, to_gregyear, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
 
 
@@ -549,7 +551,7 @@ def get_case_details_csv():
     # ensure csv is first pick but we can handle either if one is missing
     links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
     # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
-    file, _, _ = next(web_files(next(iter(links)), dir="json", check=True))
+    file, _, _ = next(web_files(next(iter(links)), dir="json", check=True, strip_version=True))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):
@@ -782,6 +784,47 @@ def get_cases_by_demographics_api():
     risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
 
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
+
+
+def excess_deaths():
+    url = "https://stat.bora.dopa.go.th/stat/statnew/connectSAPI/stat_forward.php?API=/api/stattranall/v1/statdeath/list?action=73"
+    url += "&statType=-1&statSubType=999&subType=99"
+    rows = []
+    provinces = pd.read_csv('province_mapping.csv', header=0)
+    index = ["Year", "Month", "Province", "Gender", "Age"]
+    df = import_csv("deaths_all", index, date_cols=[], dir="json")
+    if df.empty:
+        lyear, lmonth = 2015, 0
+    else:
+        lyear, lmonth, lprov, lage, lgender = df.last_valid_index()
+    error = False
+    changed = False
+    for year in range(2002, 2022):
+        for month in range(1, 13):
+            if error or year < lyear or (year == lyear and month <= lmonth):
+                continue
+            for prov, iso in provinces[["Name", "ISO[7]"]].itertuples(index=False):
+                if iso is None or type(iso) != str:
+                    continue
+                date = f"{to_thaiyear(year, short=True)}{month:02}"
+                res = s.get(f"{url}&yymmBegin={date}&yymmEnd={date}&cc={iso[3:]}")
+                data = json.loads(res.content)
+                if len(data) != 2:
+                    # data not found
+                    error = True
+                    break
+                changed = True
+                for sex, numbers in zip(["male", "female"], data):
+                    rows.extend([[year, month, prov, sex, age, numbers.get(f"lsAge{age}")] for age in range(0, 120)])
+    df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
+    if changed:
+        export(df, "deaths_all", csv_only=True, dir="json")
+        shutil.copy(os.path.join("json", "deaths_all.csv"), "api")  # "json" for cachine, api so it's downloadable
+
+
+    return df
+
+
 
 
 ##################################
@@ -2491,6 +2534,7 @@ def scrape_and_combine():
         cases_by_area = get_cases_by_area()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
+        excess_deaths()
         # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
         pass
     else:
@@ -2500,6 +2544,7 @@ def scrape_and_combine():
         # hospital = get_hospital_resources()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
+        excess_deaths()
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")

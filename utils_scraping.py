@@ -195,7 +195,7 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
                 yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False):
     "if check is None, then always download"
     i = 0
     for url in urls:
@@ -204,6 +204,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER):
         except (Timeout, ConnectionError):
             modified = None
         file = sanitize_filename(url.rsplit("/", 1)[-1])
+        if strip_version and '.' in file:
+            file = ".".join(file.split(".")[:2])
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
         if i > 0 and is_cutshort(file, modified, check):
