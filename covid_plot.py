@@ -1030,12 +1030,29 @@ def save_plots(df: pd.DataFrame) -> None:
             res['PScore'] = res['Excess Deaths'] / avg * 100
             res['Deaths All Month Avg'] = avg
             res['Deaths All Month'] = months[year]
-            res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1', format='%Y-%m') + MonthEnd(0)
+            for y in range(2015, 2022):
+                res[f'Deaths {y}'] = months[y]
+            res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
+                                         format='%Y-%m') + MonthEnd(0)
             result = result.combine_first(res.reset_index().set_index("Date"))
         result = result.dropna(subset=['PScore'])
         return result.drop(columns=["Month"])
 
     all = calc_pscore(excess)
+    all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='M')).sum()
+    all['Expected Deaths'] = all['Deaths All Month Avg'] + all['Deaths Covid']
+    all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Deaths All Month Avg'] * 100
+    cols = ['Deviation from expected Deaths', 'PScore']
+    plot_area(df=all, png_prefix='deaths_pscore', cols_subset=cols,
+              title='Thailand Excess Deaths',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    cols = [f'Deaths {y}' for y in range(2015, 2022)] + ['Deaths All Month Avg', 'Expected Deaths']
+    plot_area(df=all, png_prefix='deaths_excessdeaths', cols_subset=cols,
+              title='Thailand Excess Deaths',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
 
