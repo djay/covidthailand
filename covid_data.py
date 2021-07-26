@@ -1310,19 +1310,22 @@ def briefing_province_cases(date, pages):
 
 
 def briefing_deaths_provinces(dtext, date, total_deaths):
+    bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
 
     # get rid of extra words in brakets to make easier
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
-    # Provinces are split between bullets with disease and risk.
-    pre, noheader = re.split("โควิด *-?19\n\n", text, 1)
-    bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
-    ptext1, b1, rest_bullets = bullets_re.split(noheader, 1)
+    # remove the table header and page title.
+    pre, table_content = re.split("โควิด[ \n-]*19\n\n", text, 1)
+
+    # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
+    ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
     rest_bullets2, gender = rest_bullets.split("• ชาย", 1)
     *bullets, ptext2 = bullets_re.split(rest_bullets2)
     ptext2, *age_text = re.split("•", ptext2, 1)
     ptext = ptext1 + ptext2
-    # if two numbers 2nd is subtotal and will be ignored
+    # Now we have text that just contains provinces and numbers
+    # but could have subtotals. Get each word + number (or 2 number) combo
     pcells = pairwise(strip(re.split(r"(\(?\d+\)?\s*\d*)", ptext)))
 
     province_count = {}
