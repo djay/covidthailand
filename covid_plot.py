@@ -14,7 +14,7 @@ from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_
     rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, get_provinces, join_provinces, thaipop
+    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
@@ -1068,6 +1068,16 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='deaths_excessdeaths_prov', cols_subset=cols,
               title='Thai Provinces with most Excess Deaths',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    by_district = join_provinces(excess, 'Province').groupby("Health District Number").apply(calc_pscore)
+    pscore_districts = by_district.reset_index().pivot(values=["PScore"], index="Date", columns="Health District Number")
+    pscore_districts.columns = [' '.join(c) for c in pscore_districts.columns]
+    cols = rearrange([f'PScore {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    plot_area(df=pscore_districts, png_prefix='deaths_pscore_area', 
+              cols_subset=cols, legends=AREA_LEGEND,
+              title='Thai Health Districts Excess Deaths (% P-Score)',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
               )
 
     bins = [0, 15, 65, 75, 85, 120]
