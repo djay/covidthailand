@@ -212,7 +212,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False):
             break
         if is_remote_newer(file, modified, check):
             try:
-                r = s.get(url, timeout=2)
+                r = s.get(url, timeout=2, stream=True)
             except (Timeout, ConnectionError):
                 r = None
             if r is not None and r.status_code == 200:
