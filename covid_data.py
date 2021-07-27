@@ -2352,20 +2352,18 @@ def vac_manuf_given(df, page, file, page_num):
     title1, daily, title2, doses, *_ = table[0]  # + title3, totals + extras
     date = find_thai_date(title1)
     doses = re.sub(r"\([^\)]+\)", "", doses)
+    numbers = get_next_numbers(doses, return_rest=False)
+    numbers = [n for n in numbers if n not in [1, 2]]  # these are in subtitles and seem to switch positions
     if "Sinopharm" in doses:
-        one, total_1, sv_1, az_1, sp_1, two, total_2, sv_2, az_2, sp_2 = get_next_numbers(doses, return_rest=False)
+        total_1, sv_1, az_1, sp_1, total_2, sv_2, az_2, sp_2 = numbers
     else:
-        numbers = get_next_numbers(doses, return_rest=False)
-        if len(numbers) == 8:
-            one, total_1, sv_1, az_1, two, total_2, sv_2, az_2 = get_next_numbers(doses, return_rest=False)
+        if len(numbers) == 6:
+            total_1, sv_1, az_1, total_2, sv_2, az_2 = numbers
         else:
             # vaccinations/1620456296431.pdf # somehow ends up inside brackets
-            one, total_1, sv_1, az_1, two, sv_2, az_2 = get_next_numbers(doses, return_rest=False)
+            total_1, sv_1, az_1, sv_2, az_2 = numbers
             total_2 = sv_2 + az_2
         sp_1, sp_2 = [0] * 2
-    if total_1 == 1:
-        one, total_1, two, total_2 = total_1, one, total_2, two
-    assert one == 1 and two == 2
     assert total_1 == sv_1 + az_1 + sp_1
     assert total_2 == sv_2 + az_2 + sp_2
     row = pd.DataFrame([[date, sv_1, az_1, sp_1, sv_2, az_2, sp_2]],
