@@ -551,7 +551,7 @@ def get_case_details_csv():
     # ensure csv is first pick but we can handle either if one is missing
     links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
     # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
-    file, _, _ = next(web_files(next(iter(links)), dir="json", check=True, strip_version=True))
+    file, _, _ = next(web_files(next(iter(links)), dir="json", check=True, strip_version=True, appending=True))
     if file.endswith(".xlsx"):
         cases = pd.read_excel(file)
     elif file.endswith(".csv"):

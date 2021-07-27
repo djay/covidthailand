@@ -149,24 +149,27 @@ def pptx2chartdata(file):
 ####################
 # Download helpers
 ####################
-def is_remote_newer(file, remote_date, check=True):
+def resume_from(file, remote_date, check=True, size=0, appending=False):
     if not os.path.exists(file):
         print(f"Missing: {file}")
-        return True
-    elif os.stat(file).st_size == 0:
-        return True
+        return 0
     elif not check:
-        return False
+        return -1
     elif remote_date is None:
-        return True  # TODO: should we always keep cached?
+        return 0  # TODO: should we always keep cached?
     if type(remote_date) == str:
         remote_date = dateutil.parser.parse(remote_date).astimezone()
     fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
-    if remote_date > fdate:
-        timestamp = fdate.strftime("%Y%m%d-%H%M%S")
-        os.rename(file, f"{file}.{timestamp}")
-        return True
-    return False
+    resume_pos = os.stat(file).st_size
+    if remote_date > fdate and not appending:
+        #timestamp = fdate.strftime("%Y%m%d-%H%M%S")
+        #os.rename(file, f"{file}.{timestamp}")
+        return 0
+    elif resume_pos == 0:
+        return 0
+    elif resume_pos != size:
+        return resume_pos
+    return -1
 
 
 def is_cutshort(file, modified, check):
@@ -195,34 +198,59 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
                 yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False):
     "if check is None, then always download"
     i = 0
     for url in urls:
-        try:
-            modified = s.head(url, timeout=1).headers.get("Last-Modified") if check or MAX_DAYS else None
-        except (Timeout, ConnectionError):
-            modified = None
         file = sanitize_filename(url.rsplit("/", 1)[-1])
         if strip_version and '.' in file:
             file = ".".join(file.split(".")[:2])
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
+        resumable = False
+        size = None
+
+        if check or MAX_DAYS:
+            try:
+                r = s.head(url, timeout=1)
+                modified = r.headers.get("Last-Modified")
+                if r.headers.get("content-range"):
+                    pre, size = r.headers.get("content-range").split("/")
+                    size = int(size)
+                    assert "bytes" in pre
+                else:
+                    size = int(r.headers.get("content-length", 0))
+                resumable = r.headers.get('accept-ranges') == 'bytes' and check and size > 0
+            except (Timeout, ConnectionError):
+                modified = None
+        else:
+            modified = None
         if i > 0 and is_cutshort(file, modified, check):
             break
-        if is_remote_newer(file, modified, check):
+        if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
+            resume_byte_pos = int(resume_byte_pos * 0.9) if resumable else 0  # go back 10% in case end of data changed (e.g csv)
+            resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
+
             try:
-                r = s.get(url, timeout=2, stream=True)
+                # TODO: handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
+                # Will speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
+                r = s.get(url, timeout=2, stream=True, headers=resume_header, verify=False, allow_redirects=True)
             except (Timeout, ConnectionError):
                 r = None
             if r is not None and r.status_code == 200:
                 print(f"Download: {file} {modified}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
-                with open(file, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=512 * 1024):
-                        if chunk:  # filter out keep-alive new chunks
-                            f.write(chunk)
-                            print(".", end="")
+                with open(file, "w+b") as f:
+                    f.seek(resume_byte_pos, 0)
+                    # TODO: handle timeouts happening below since now switched to streaming
+                    try:
+                        for chunk in r.iter_content(chunk_size=512 * 1024):
+                            if chunk:  # filter out keep-alive new chunks
+                                f.write(chunk)
+                                print(".", end="")
+                    except Timeout:
+                        print(f"Error downloading: {file}: skipping")
+                        continue
                 print("")
             elif os.path.exists(file):
                 print(f"Error downloading: {file}: using cache")
@@ -266,7 +294,7 @@ def dav_files(url, username=None, password=None,
         os.makedirs(os.path.dirname(target), exist_ok=True)
         if i > 0 and is_cutshort(target, info["modified"], False):
             break
-        if is_remote_newer(target, info["modified"]):
+        if resume_from(target, info["modified"]) >= 0:
             client.download_file(file, target)
         i += 1
         yield target
