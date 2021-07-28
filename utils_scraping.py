@@ -162,13 +162,13 @@ def resume_from(file, remote_date, check=True, size=0, appending=False):
     fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
     resume_pos = os.stat(file).st_size
     if remote_date > fdate and not appending:
-        #timestamp = fdate.strftime("%Y%m%d-%H%M%S")
-        #os.rename(file, f"{file}.{timestamp}")
+        # timestamp = fdate.strftime("%Y%m%d-%H%M%S")
+        # os.rename(file, f"{file}.{timestamp}")
         return 0
-    elif resume_pos == 0:
-        return 0
-    elif resume_pos != size:
+    elif remote_date > fdate and resume_pos < size:
         return resume_pos
+    elif resume_pos != size:
+        return 0
     return -1
 
 
@@ -240,11 +240,12 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             if r is not None and r.status_code == 200:
                 print(f"Download: {file} {modified}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
-                with open(file, "w+b") as f:
+                mode = "w+b" if resume_byte_pos > 0 else "wb"
+                with open(file, mode) as f:
                     f.seek(resume_byte_pos, 0)
                     # TODO: handle timeouts happening below since now switched to streaming
                     try:
-                        for chunk in r.iter_content(chunk_size=512 * 1024):
+                        for chunk in r.iter_content(chunk_size=2 * 1024 * 1024):
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
                                 print(".", end="")
