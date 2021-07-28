@@ -118,6 +118,17 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_est_3.png)
 - Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
 
+
+## Excess Deaths
+![Thailand Excess deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_avg3y_all.png)
+
+![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
+
+![Thailand Excess Deaths by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+
+
+- Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
+
 # Testing <a name="testing">
 
 ## Positive Rate

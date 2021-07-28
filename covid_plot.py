@@ -18,7 +18,7 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_
 
 
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
-              legends: List[str] = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
+              legends: List[str] = None, legend_pos: str = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
               ma_days: int = None, cmap: str = 'tab20', actuals: bool = False,
               reverse_cmap: bool = False, highlight: List[str] = [],
@@ -63,6 +63,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         "legend.fontsize": 24,
         "axes.prop_cycle": get_cycle(cmap),
     })
+
     if len(cols) > 6:
         plt.rcParams.update({"legend.fontsize": 18})
 
@@ -84,6 +85,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     # try to hone in on last day of "important" data. Assume first col
     last_update = df[orig_cols[:1]].dropna().last_valid_index()  # date format chosen: '05 May 2021'
     # last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
+    is_dates = hasattr(last_update, 'date')
 
     if unknown_total:
         if ma_days:
@@ -113,7 +115,11 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
     if ma_days:
         title = title + f'({ma_days} day rolling average) '
-    title += f"Last Data: {last_update.date().strftime('%d %b %Y')}\n"
+    if is_dates:
+        title += f"Last Data: {last_update.date().strftime('%d %b %Y')}\n"
+    else:
+        title += f"Last Data: {last_update}\n"
+
     title += 'Sources: https://djay.github.io/covidthailand - (CC BY)'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
@@ -136,17 +142,20 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     else:
         df_clean = df
 
-    periods = {
-        'all': df_clean,
-        '1': df_clean[:'2020-06-01'],
-        '2': df_clean['2020-12-12':],
-        '3': df_clean['2021-04-01':],
-        '30d': df_clean.last('30d')
-    }
+    if is_dates:
+        periods = {
+            'all': df_clean,
+            '1': df_clean[:'2020-06-01'],
+            '2': df_clean['2020-12-12':],
+            '3': df_clean['2021-04-01':],
+            '30d': df_clean.last('30d')
+        }
 
-    quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch
-    if quick:
-        periods = {key: periods[key] for key in ['2']}
+        quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch
+        if quick:
+            periods = {key: periods[key] for key in ['all']}
+    else:
+        periods = {'all': df_clean}
 
     for suffix, df_plot in periods.items():
         if df_plot.empty:
@@ -180,11 +189,15 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
 
-        if kind == "bar":
+        if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
 
         a0.set_title(label=title)
         leg = a0.legend(labels=legends)
+
+        if legend_pos:
+            legend = a0.legend(loc=legend_pos, edgecolor="black", fancybox=True, framealpha=0.5)
+
         for line in leg.get_lines():
             line.set_linewidth(4.0)
 
@@ -1022,13 +1035,19 @@ def save_plots(df: pd.DataFrame) -> None:
     #  Take avg(2015-2019)/(2021) = p num. (can also correct for population changes?)
     def calc_pscore(adf):
         months = adf.groupby(["Year", "Month"], as_index=False).sum().pivot(columns="Year", values="Deaths", index="Month")
-        avg = months[[2015, 2017, 2018]].mean(axis=1)
+        death3_avg = months[[2015, 2017, 2018]].mean(axis=1)
+        death3_min = months[[2015, 2017, 2018]].min(axis=1)
+        death3_max = months[[2015, 2017, 2018]].max(axis=1)
+        death5_avg = months[range(2015, 2020)].mean(axis=1)
+        death5_min = months[range(2015, 2020)].min(axis=1)
+        death5_max = months[range(2015, 2020)].max(axis=1)
         result = pd.DataFrame()
         for year in [2020, 2021]:
             res = pd.DataFrame()
-            res['Excess Deaths'] = (months[year] - avg)
-            res['PScore'] = res['Excess Deaths'] / avg * 100
-            res['Deaths All Month Avg'] = avg
+            res['Excess Deaths'] = (months[year] - death3_avg)
+            res['PScore'] = res['Excess Deaths'] / death3_avg * 100
+            res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
+            res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
             for y in range(2015, 2022):
                 res[f'Deaths {y}'] = months[y]
@@ -1040,23 +1059,61 @@ def save_plots(df: pd.DataFrame) -> None:
 
     all = calc_pscore(excess)
     all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='M')).sum()
-    all['Expected Deaths'] = all['Deaths All Month Avg'] + all['Deaths Covid']
-    all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Deaths All Month Avg'] * 100
+    all['Deaths (ex. Known Covid)'] = all['Deaths All Month'] - all['Deaths Covid']
+    all['Deaths 2021 (ex. Known Covid)'] = all['Deaths 2021'] - all['Deaths Covid']
+    all['Expected Deaths'] = all['Pre Avg'] + all['Deaths Covid']
+    all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
     cols = ['Deviation from expected Deaths', 'PScore']
     plot_area(df=all, png_prefix='deaths_pscore', cols_subset=cols,
               title='Thailand Excess Deaths',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
 
-    cols = [f'Deaths {y}' for y in range(2015, 2022)] + ['Deaths All Month Avg', 'Expected Deaths']
-    plot_area(df=all, png_prefix='deaths_excessdeaths', cols_subset=cols,
-              title='Thailand Excess Deaths',
-              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+    cols = [f'Deaths {y}' for y in range(2015, 2021, 1)]
+    by_month = pd.DataFrame(all)
+    by_month['Month'] = by_month.index.strftime('%B')
+    years2020 = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
+    cols2021 = ['Deaths 2021', 'Deaths 2021 (ex. Known Covid)']
+    years2021 = by_month["2021-01-01":"2022-01-01"][cols2021 + ['Month']].reset_index().set_index("Month")
+    by_month = years2020.combine_first(years2021).sort_values("Date")
+    cols = cols + cols2021
+
+    plot_area(df=by_month, png_prefix='deaths_excess_years', cols_subset=cols,
+              legend_pos="lower right",
+              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to previous years',
+              kind='bar', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    pan_months = pd.DataFrame(all)
+    pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
+    # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
+    skip_years = [2015, 2017, 2018]
+    pan_months['5Y Min'] = pan_months[[f'Deaths {y}' for y in range(2015, 2020)]].min(axis=1)
+    pan_months['5Y Max'] = pan_months[[f'Deaths {y}' for y in range(2015, 2020)]].max(axis=1)
+    pan_months['5Y Avg'] = pan_months[[f'Deaths {y}' for y in range(2015, 2020)]].mean(axis=1)
+    pan_months['3Y Min'] = pan_months[[f'Deaths {y}' for y in skip_years]].min(axis=1)
+    pan_months['3Y Max'] = pan_months[[f'Deaths {y}' for y in skip_years]].max(axis=1)
+    pan_months['3Y Avg'] = pan_months[[f'Deaths {y}' for y in skip_years]].mean(axis=1)
+    # pan_months = pan_months.set_index("Month")
+    # pan_months[['Deaths All Month', 'Deaths (ex. Known Covid)', '5Y Min', '5Y Avg', '5Y Max', ]]
+
+    plot_area(df=pan_months, png_prefix='deaths_excess_avg', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
+              legends=["Min Deaths 2015-19", "Avg Deaths 2015/17/18", "Avg Deaths 2015-19", "Min Deaths 2015-19", "Deaths (ex. Covid)", "Known Covid Deaths", ],
+              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2019',
+              kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
+              between=['5Y Min', '3Y Avg', '5Y Avg', '5Y Max', ]
+              )
+
+    plot_area(df=pan_months, png_prefix='deaths_excess_avg3y', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
+              legends=["Min Deaths 2015/17/18", "Avg Deaths 2015/17/18", "Min Deaths 2015/17/18", "Deaths (ex. Covid)", "Known Covid Deaths", ],
+              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015, 2018 and 2018',
+              kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
+              between=['3Y Min', '3Y Avg', '3Y Max']
               )
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
 
-    top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"] / adf['Deaths All Month Avg'] * 100, num=5)
+    top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"] / adf['Pre Avg'] * 100, num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='deaths_pscore_prov', cols_subset=cols,
               title='Thai Provinces with most Excess Deaths (P-Score)',
@@ -1065,7 +1122,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='deaths_excessdeaths_prov', cols_subset=cols,
+    plot_area(df=top5, png_prefix='deaths_excess_prov', cols_subset=cols,
               title='Thai Provinces with most Excess Deaths',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
@@ -1074,7 +1131,7 @@ def save_plots(df: pd.DataFrame) -> None:
     pscore_districts = by_district.reset_index().pivot(values=["PScore"], index="Date", columns="Health District Number")
     pscore_districts.columns = [' '.join(c) for c in pscore_districts.columns]
     cols = rearrange([f'PScore {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=pscore_districts, png_prefix='deaths_pscore_area', 
+    plot_area(df=pscore_districts, png_prefix='deaths_pscore_area',
               cols_subset=cols, legends=AREA_LEGEND,
               title='Thai Health Districts Excess Deaths (% P-Score)',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
@@ -1088,13 +1145,40 @@ def save_plots(df: pd.DataFrame) -> None:
     by_age.columns = [' '.join(c) for c in by_age.columns]
 
     plot_area(df=by_age,
-              png_prefix='deaths_excess_age',
+              png_prefix='deaths_pscore_age',
               cols_subset=list(by_age.columns),
               title='Thailand Excess Deaths (P-Score) by age',
               kind='line',
               stacked=False,
               percent_fig=False,
               ma_days=0,
+              cmap='tab10')
+
+    bins = [0, 15, 40, 60, 120]
+    labels = ['Under 15', '15-39', '40-59', '60+']
+    dist = ["Pre Avg", "Pre Min", "Pre Max"]
+    excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
+    by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
+    by_age = by_age.reset_index().pivot(values=["Deaths All Month"] + dist,
+                                        index="Date",
+                                        columns="Age Group")
+    by_age.columns = [' '.join(c) for c in by_age.columns]
+    by_age = by_age.set_index(by_age.index - pd.offsets.MonthBegin(1))
+    # Need to move up to include total below to line is in the right place
+
+    for i in range(1, len(labels)):
+        for d in dist:
+            by_age[f'{d} {labels[i]}'] += by_age[f'{d} {labels[i-1]}']
+    plot_area(df=by_age,
+              png_prefix='deaths_excess_age_bar',
+              cols_subset=list(by_age.columns),
+              legends=[f'{age} {m} 2015/17/18' for m in ['Avg', 'Min', 'Max'] for age in labels] + [f'{age} Deaths' for age in labels],
+              title='Thailand Deaths by age group compared to Pre-Covid Years',
+              kind='bar',
+              stacked=True,
+              percent_fig=False,
+              ma_days=0,
+              between=[f'{d} {age}' for d in dist for age in labels],
               cmap='tab10')
 
 
