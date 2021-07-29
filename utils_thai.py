@@ -142,9 +142,14 @@ def previous_date(end, day):
     return start
 
 
-def find_thai_date(content):
+def find_thai_date(content, remove=False):
     "find thai date like '17 เม.ย. 2563' "
-    m3 = re.search(r"([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    thai_date = re.compile(r"([0-9]+) *([^ ]+) *(25[0-9][0-9])")
+    m3 = thai_date.search(content)
+    if m3 is None and remove:
+        return None, content
+    elif m3 is None:
+        return None
     d2, month, year = m3.groups()
     month = (
         THAI_ABBR_MONTHS.index(month) + 1
@@ -154,7 +159,10 @@ def find_thai_date(content):
         else None
     )
     date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
-    return date
+    if remove:
+        return date, thai_date.sub(" ", content)
+    else:
+        return date
 
 
 def find_date_range(content):

@@ -2351,7 +2351,11 @@ def vac_manuf_given(df, page, file, page_num):
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
     title1, daily, title2, doses, *_ = table[0]  # + title3, totals + extras
     date = find_thai_date(title1)
-    doses = re.sub(r"\([^\)]+\)", "", doses)
+
+    # Sometimes there is an extra date thrown in inside brackets on the subheadings
+    # e.g. vaccinations/1624968183817.pdf
+    _, doses = find_thai_date(doses, remove=True)
+
     numbers = get_next_numbers(doses, return_rest=False)
     numbers = [n for n in numbers if n not in [1, 2]]  # these are in subtitles and seem to switch positions
     if "Sinopharm" in doses:
@@ -2531,8 +2535,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        situation = get_situation()
         vac = get_vaccinations()
+        situation = get_situation()
         cases_by_area = get_cases_by_area()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
