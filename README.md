@@ -118,7 +118,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_est_3.png)
 - Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
 
-
+<!--
 ## Excess Deaths
 ![Thailand Excess deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_avg3y_all.png)
 
@@ -128,6 +128,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 
 - Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
+-->
 
 # Testing <a name="testing">
 
@@ -137,7 +138,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 - *NOTE* Walkin Cases/3*PUI seems to give an estimate of positive rate (when cases are high), so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
 - Positive rate is little like fishing in a lake. If you get few nibbles each time you put your line in you can guess that there is few fish in the lake. Less positives per test, less infections likely in the population.
-- [WHO considers enough testing is happening if positive rate is under %5](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) rather than tests per population but only if 0.1% of the population is being tested (70k tests per day for Thailand). Note this recommendation works best if everyone who might have COVID-19 is equally likely to get tested and there are reasons why this might not be the case in Thailand.
+- [WHO considers enough testing is happening if positive rate is under %5](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) rather than tests per population but only if 0.1% of the population is being tested per week (avg 7k tests per day for Thailand). Note this recommendation works best if everyone who might have COVID-19 is equally likely to get tested and there are reasons why this might not be the case in Thailand.
 - It's likely [Thailand excludes some test data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results) so there could be more tests than this data shows. Excluding
 proactive tests from positive rate is perhaps better for [comparison with other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) they are less random and more likely to be positive as its testing known clusters.
 - This positive rate is based on [DMSC: Thailand Laboratory testing data](#dl-testing). In the [Daily MOPH Situation Reports](#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). 

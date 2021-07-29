@@ -20,9 +20,12 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_
 def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
               legends: List[str] = None, legend_pos: str = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
-              ma_days: int = None, cmap: str = 'tab20', actuals: bool = False,
-              reverse_cmap: bool = False, highlight: List[str] = [],
+              ma_days: int = None, cmap: str = 'tab20', 
+              actuals: List[str] = [], highlight: List[str] = [],
+              box_cols: List[str] =[],
+              reverse_cmap: bool = False,
               y_formatter: Callable[[float, int], str] = human_format, clean_end=True,
+              
               between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
@@ -188,6 +191,9 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
                          kind="line",
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
+        if box_cols:
+            boxes = df_plot[box_cols].transpose()
+            boxes.boxplot(ax=a0)
 
         if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
@@ -1087,28 +1093,30 @@ def save_plots(df: pd.DataFrame) -> None:
     pan_months = pd.DataFrame(all)
     pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
     # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
-    skip_years = [2015, 2017, 2018]
-    pan_months['5Y Min'] = pan_months[[f'Deaths {y}' for y in range(2015, 2020)]].min(axis=1)
-    pan_months['5Y Max'] = pan_months[[f'Deaths {y}' for y in range(2015, 2020)]].max(axis=1)
-    pan_months['5Y Avg'] = pan_months[[f'Deaths {y}' for y in range(2015, 2020)]].mean(axis=1)
-    pan_months['3Y Min'] = pan_months[[f'Deaths {y}' for y in skip_years]].min(axis=1)
-    pan_months['3Y Max'] = pan_months[[f'Deaths {y}' for y in skip_years]].max(axis=1)
-    pan_months['3Y Avg'] = pan_months[[f'Deaths {y}' for y in skip_years]].mean(axis=1)
-    # pan_months = pan_months.set_index("Month")
-    # pan_months[['Deaths All Month', 'Deaths (ex. Known Covid)', '5Y Min', '5Y Avg', '5Y Max', ]]
+
+    # Test to get box plots working
+    # https://stackoverflow.com/questions/57466631/matplotlib-boxplot-and-bar-chart-shifted-when-overlaid-using-twinx
+    # fig, ax = plt.subplots(figsize=(20, 10))
+    # ax2 = ax.twinx()
+    # boxes = pan_months[[f'Deaths {y}' for y in range(2015,2020)]].transpose()
+    # boxes.plot.box(ax=ax2, grid=False)
+    # pan_months[['Deaths (ex. Known Covid)', 'Deaths Covid', ]].plot.bar(ax=ax, stacked=True, align='center', alpha=0.3)
+    # ax2.set_ylim(0)
+    # ax.set_ylim(ax2.get_ylim())
+    # plt.savefig("test.png")
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
-              legends=["Min Deaths 2015-19", "Avg Deaths 2015/17/18", "Avg Deaths 2015-19", "Min Deaths 2015-19", "Deaths (ex. Covid)", "Known Covid Deaths", ],
+              legends=["Min Deaths 2015-19", "Avg Deaths 2015-19", "Min Deaths 2015-19", "Deaths (ex. Covid)", "Known Covid Deaths", ],
               title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2019',
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              between=['5Y Min', '3Y Avg', '5Y Avg', '5Y Max', ]
+              between=['Pre 5 Min', 'Pre 5 Avg', 'Pre 5 Max', ]
               )
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg3y', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
               legends=["Min Deaths 2015/17/18", "Avg Deaths 2015/17/18", "Min Deaths 2015/17/18", "Deaths (ex. Covid)", "Known Covid Deaths", ],
               title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015, 2018 and 2018',
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              between=['3Y Min', '3Y Avg', '3Y Max']
+              between=['Pre Min', 'Pre Avg', 'Pre Max']
               )
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
