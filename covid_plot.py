@@ -21,11 +21,11 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
               legends: List[str] = None, legend_pos: str = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
               unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
               ma_days: int = None, cmap: str = 'tab20', 
+              periods_to_plot=None,
               actuals: List[str] = [], highlight: List[str] = [],
               box_cols: List[str] =[],
               reverse_cmap: bool = False,
               y_formatter: Callable[[float, int], str] = human_format, clean_end=True,
-              
               between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
@@ -153,10 +153,13 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             '3': df_clean['2021-04-01':],
             '30d': df_clean.last('30d')
         }
-
         quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch
         if quick:
-            periods = {key: periods[key] for key in ['all']}
+            periods_to_plot = ['all']
+        elif not periods_to_plot:
+            periods_to_plot = set(periods.keys())
+
+        periods = {key: periods[key] for key in periods_to_plot}
     else:
         periods = {'all': df_clean}
 
@@ -1109,14 +1112,16 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=["Min Deaths 2015-19", "Avg Deaths 2015-19", "Min Deaths 2015-19", "Deaths (ex. Covid)", "Known Covid Deaths", ],
               title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2019',
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              between=['Pre 5 Min', 'Pre 5 Avg', 'Pre 5 Max', ]
+              between=['Pre 5 Min', 'Pre 5 Avg', 'Pre 5 Max', ],
+              periods_to_plot=['all']
               )
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg3y', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
               legends=["Min Deaths 2015/17/18", "Avg Deaths 2015/17/18", "Min Deaths 2015/17/18", "Deaths (ex. Covid)", "Known Covid Deaths", ],
               title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015, 2018 and 2018',
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              between=['Pre Min', 'Pre Avg', 'Pre Max']
+              between=['Pre Min', 'Pre Avg', 'Pre Max'],
+              periods_to_plot=['all']
               )
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
@@ -1126,6 +1131,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='deaths_pscore_prov', cols_subset=cols,
               title='Thai Provinces with most Excess Deaths (P-Score)',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              periods_to_plot=['all']
               )
 
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
@@ -1133,6 +1139,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='deaths_excess_prov', cols_subset=cols,
               title='Thai Provinces with most Excess Deaths',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              periods_to_plot=['all']
               )
 
     by_district = join_provinces(excess, 'Province').groupby("Health District Number").apply(calc_pscore)
@@ -1143,6 +1150,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cols_subset=cols, legends=AREA_LEGEND,
               title='Thai Health Districts Excess Deaths (% P-Score)',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
+              periods_to_plot=['all']
               )
 
     bins = [0, 15, 65, 75, 85, 120]
@@ -1160,6 +1168,7 @@ def save_plots(df: pd.DataFrame) -> None:
               stacked=False,
               percent_fig=False,
               ma_days=0,
+              periods_to_plot=['all'],
               cmap='tab10')
 
     bins = [0, 15, 40, 60, 120]
@@ -1187,6 +1196,7 @@ def save_plots(df: pd.DataFrame) -> None:
               percent_fig=False,
               ma_days=0,
               between=[f'{d} {age}' for d in dist for age in labels],
+              periods_to_plot=['all'],
               cmap='tab10')
 
 
