@@ -177,12 +177,17 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
         if y_formatter is not None:
             a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
+        areacols = [c for c in cols if c not in between]
         if kind != "line":
-            areacols = [c for c in cols if c not in between]
             df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked)
             linecols = between + actuals
         else:
             linecols = cols + actuals
+
+        # advance colour cycle so lines have correct next colour
+        for _ in range(len(areacols)):
+             next(a0._get_lines.prop_cycler)
+
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
@@ -192,20 +197,28 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
                          linewidth=width,
                          style=style,
                          kind="line",
+                         zorder=4,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
-        if box_cols:
-            boxes = df_plot[box_cols].transpose()
-            boxes.boxplot(ax=a0)
+        if box_cols and type(box_cols[0]) != list:
+            box_cols = [box_cols]
+        elif not box_cols:
+            box_cols = []
+        for dist in box_cols:
+            mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
+            a0.fill_between(df.index, mins, maxes, facecolor="orange", alpha=0.3, zorder=3, label=None, step=None)
+            avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=False)
+            # boxes = df_plot[box_cols].transpose()
+            # boxes.boxplot(ax=a0)
 
         if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
 
         a0.set_title(label=title)
-        leg = a0.legend(labels=legends)
+        handles, labels = a0.get_legend_handles_labels()
+        handles = handles[len(box_cols):]
 
-        if legend_pos:
-            legend = a0.legend(loc=legend_pos, edgecolor="black", fancybox=True, framealpha=0.5)
+        leg = a0.legend(handles=handles, labels=legends, loc=legend_pos, edgecolor="black", fancybox=True, framealpha=0.5)
 
         for line in leg.get_lines():
             line.set_linewidth(4.0)
@@ -1093,6 +1106,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='bar', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
 
+    cols5y = [f'Deaths {y}' for y in range(2015, 2021, 1)]
+    cols3y = [f'Deaths {y}' for y in [2015, 2016, 2017, 2018]]
+
     pan_months = pd.DataFrame(all)
     pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
     # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
@@ -1109,18 +1125,18 @@ def save_plots(df: pd.DataFrame) -> None:
     # plt.savefig("test.png")
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
-              legends=["Min Deaths 2015-19", "Avg Deaths 2015-19", "Min Deaths 2015-19", "Deaths (ex. Covid)", "Known Covid Deaths", ],
+              legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths", ],
               title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2019',
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              between=['Pre 5 Min', 'Pre 5 Avg', 'Pre 5 Max', ],
+              box_cols=cols5y,
               periods_to_plot=['all']
               )
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg3y', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
-              legends=["Min Deaths 2015/17/18", "Avg Deaths 2015/17/18", "Min Deaths 2015/17/18", "Deaths (ex. Covid)", "Known Covid Deaths", ],
-              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015, 2018 and 2018',
+              legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths", ],
+              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2018',
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              between=['Pre Min', 'Pre Avg', 'Pre Max'],
+              box_cols=cols3y,
               periods_to_plot=['all']
               )
 
@@ -1154,7 +1170,7 @@ def save_plots(df: pd.DataFrame) -> None:
               )
 
     bins = [0, 15, 65, 75, 85, 120]
-    labels = ['Under 15', '15-64', '65-74', '75-84', '85+']
+    labels = ['0-15', '15-64', '65-74', '75-84', '85+']
     excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
     by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
     by_age = by_age.reset_index().pivot(values=["PScore"], index="Date", columns="Age Group")
@@ -1176,27 +1192,28 @@ def save_plots(df: pd.DataFrame) -> None:
     dist = ["Pre Avg", "Pre Min", "Pre Max"]
     excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
     by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
-    by_age = by_age.reset_index().pivot(values=["Deaths All Month"] + dist,
+    by_age = by_age.reset_index().pivot(values=["Deaths All Month"] + cols5y,
                                         index="Date",
                                         columns="Age Group")
     by_age.columns = [' '.join(c) for c in by_age.columns]
     by_age = by_age.set_index(by_age.index - pd.offsets.MonthBegin(1))
-    # Need to move up to include total below to line is in the right place
 
+    # Need to move up to include total below to line is in the right place
     for i in range(1, len(labels)):
-        for d in dist:
+        for d in cols3y:
             by_age[f'{d} {labels[i]}'] += by_age[f'{d} {labels[i-1]}']
+
     plot_area(df=by_age,
               png_prefix='deaths_excess_age_bar',
-              cols_subset=list(by_age.columns),
-              legends=[f'{age} {m} 2015/17/18' for m in ['Avg', 'Min', 'Max'] for age in labels] + [f'{age} Deaths' for age in labels],
-              title='Thailand Deaths by age group compared to Pre-Covid Years',
+              cols_subset=[f'Deaths All Month {age}' for age in labels],
+              legends=[f'{age} Deaths' for age in labels],
+              title='Thailand Deaths from all causes by age group compared to Pre-Covid Years (2015-18)',
               kind='bar',
               stacked=True,
               percent_fig=False,
               ma_days=0,
-              between=[f'{d} {age}' for d in dist for age in labels],
               periods_to_plot=['all'],
+              box_cols=[[f"{y} {age}" for y in cols3y] for age in labels],
               cmap='tab10')
 
 
