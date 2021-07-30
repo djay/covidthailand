@@ -9,6 +9,13 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 ## [Cases](#cases) |  [Active Cases](#active-cases) |  [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](#downloads) | [About](#about)
 
+**NEW** [Excess Deaths](#excess-deaths)
+
+## Disclaimer
+**Data offered here is offered as is with no guarentees. As much as possible government reportsk
+and data feeds have been used effort has gone into making this data collection accurate and timely.
+This sites only intention is to give an accurate representation of all the available Covid data for Thailand in one place.**
+Links to all data sources are including in [Downloads](#downloads)
 
 # Cases <a name="cases">
 
@@ -118,7 +125,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_est_3.png)
 - Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
 
-## Excess Deaths
+## Excess Deaths <a name="excess-deaths">
 Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month. 
 2019 was not used due to unusually large number of deaths very different to previous years (2016 also had an unusual spike in deaths in April).
 - *Any difference deaths can be caused by many other factors other than covid*
@@ -196,12 +203,6 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Downloads
-
-## Disclaimer
-- Some data sources are missing days or numbers (e.g. situation reports and tests)
-- Some are scraped from text, and the code to do this might not be perfect
-- Some are translations where mistypings have happened. Some manual corrections are included
-- I take no responsibility for the accuracy of this data.
 
 
 ## Daily CCSA Briefings <a name="dl-briefings">
