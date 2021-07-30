@@ -24,9 +24,10 @@ def plot_area(df: pd.DataFrame,
               footnote: str = None,
               legends: List[str] = None,
               legend_pos: str = None,
+              legend_cols: int = 1,
               kind: str = 'line',
               stacked=False,
-              percent_fig: bool = True,
+              percent_fig: bool = False,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
               unknown_percent=False,
@@ -239,7 +240,14 @@ def plot_area(df: pd.DataFrame,
         handles, labels = a0.get_legend_handles_labels()
         handles = handles[len(box_cols):]
 
-        leg = a0.legend(handles=handles, labels=legends, loc=legend_pos, edgecolor="black", fancybox=True, framealpha=0.5)
+        leg = a0.legend(handles=handles,
+                        labels=legends,
+                        loc=legend_pos,
+                        frameon=True,
+                        edgecolor="black",
+                        fancybox=True,
+                        framealpha=0.5,
+                        ncol=legend_cols)
 
         for line in leg.get_lines():
             line.set_linewidth(4.0)
@@ -770,6 +778,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Needed to reach 70% 1st Dose in 2021',
             'Needed to reach 70% Fully Vaccinated in 2021'
         ] + [clean_vac_leg(c, "(1st jab)", "(2nd jab)") for c in daily_cols],  # bar puts the line first?
+        legend_cols=2,
         kind='bar',
         stacked=True,
         percent_fig=False,
@@ -1073,17 +1082,23 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # Excess Deaths
 
-    excess = import_csv("deaths_all", dir="json", date_cols=[])
+    # TODO: look at causes of death
+    # - https://data.humdata.org/dataset/who-data-for-thailand
+    # - https://en.wikipedia.org/wiki/Health_in_Thailand
+    # - pm2.5?
+    # - change in reporting?
+    # Just normal ageing population
+
 
     #  Take avg(2015-2019)/(2021) = p num. (can also correct for population changes?)
     def calc_pscore(adf):
         months = adf.groupby(["Year", "Month"], as_index=False).sum().pivot(columns="Year", values="Deaths", index="Month")
-        death3_avg = months[[2015, 2017, 2018]].mean(axis=1)
-        death3_min = months[[2015, 2017, 2018]].min(axis=1)
-        death3_max = months[[2015, 2017, 2018]].max(axis=1)
-        death5_avg = months[range(2015, 2020)].mean(axis=1)
-        death5_min = months[range(2015, 2020)].min(axis=1)
-        death5_max = months[range(2015, 2020)].max(axis=1)
+        death3_avg = months[years3].mean(axis=1)
+        death3_min = months[years3].min(axis=1)
+        death3_max = months[years3].max(axis=1)
+        death5_avg = months[years5].mean(axis=1)
+        death5_min = months[years5].min(axis=1)
+        death5_max = months[years5].max(axis=1)
         result = pd.DataFrame()
         for year in [2020, 2021]:
             res = pd.DataFrame()
@@ -1100,12 +1115,10 @@ def save_plots(df: pd.DataFrame) -> None:
         result = result.dropna(subset=['PScore'])
         return result.drop(columns=["Month"])
 
-    footnote = """
-Shows 2020-2021 Deaths in comparison to Deaths in 2015-2018 across months.
-NOTE: Excess deaths can be changed by many factors other than Covid.
-2015-2018 was used to compare for the most stable death rates. For other comparisons see
-https://djay.github.io/covidthailand/#excess-deaths
-    """.strip()
+    excess = import_csv("deaths_all", dir="json", date_cols=[])
+    excess = join_provinces(excess, 'Province', ['region', 'Health District Number'])
+    years5 = list(range(2015, 2020))
+    years3 = [2015, 2016, 2017, 2018]
 
     all = calc_pscore(excess)
     all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='M')).sum()
@@ -1129,17 +1142,10 @@ https://djay.github.io/covidthailand/#excess-deaths
     cols = cols + cols2021
 
     plot_area(df=by_month, png_prefix='deaths_excess_years', cols_subset=cols,
-              legend_pos="lower right",
+              legend_pos="lower center", legend_cols=3,
               title='Thailand Excess Deaths\nNumber of deaths from all causes compared to previous years',
               kind='bar', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
-
-    cols5y = [f'Deaths {y}' for y in range(2015, 2021, 1)]
-    cols3y = [f'Deaths {y}' for y in [2015, 2016, 2017, 2018]]
-
-    pan_months = pd.DataFrame(all)
-    pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
-    # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
 
     # Test to get box plots working
     # https://stackoverflow.com/questions/57466631/matplotlib-boxplot-and-bar-chart-shifted-when-overlaid-using-twinx
@@ -1152,26 +1158,90 @@ https://djay.github.io/covidthailand/#excess-deaths
     # ax.set_ylim(ax2.get_ylim())
     # plt.savefig("test.png")
 
-    plot_area(df=pan_months, png_prefix='deaths_excess_avg', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
-              legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths", ],
-              title='Thailand Deaths from all causes compared to 2015-2019',
-#              footnote=footnote,
-              kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              box_cols=cols5y,
-              periods_to_plot=['all']
-              )
+    def group_deaths(by):
+        dfby = excess.groupby(by).apply(calc_pscore)
+        cols5y = [f'Deaths {y}' for y in years5]
+        dfby = dfby.reset_index().pivot(values=["Deaths All Month"] + cols5y, index="Date", columns=by)
+        dfby.columns = [' '.join(c) for c in dfby.columns]
+        dfby = dfby.set_index(dfby.index - pd.offsets.MonthBegin(1))  # Bar chart is not aligned right otherwise
+        labels = list(excess[by].unique())
 
-    plot_area(df=pan_months, png_prefix='deaths_excess_avg3y', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
-              legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths", ],
-              title='Thailand Deaths from all causes compared to 2015-2018',
-              footnote=footnote,
-              kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
-              box_cols=cols3y,
-              periods_to_plot=['all']
-              )
+        # Need to adjust each prev year so stacked in the right place
+        for i in range(1, len(labels)):
+            heights = dfby[[f'Deaths All Month {label}' for label in labels[:i]]].sum(axis=1)
+            for year in cols5y:
+                dfby[f'{year} {labels[i]}'] += heights
+        return dfby, labels
+
+    # Do comparion bar charts to historical distribution of years
+
+    pan_months = pd.DataFrame(all)
+    pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
+    # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
+
+    by_region, regions = group_deaths("region")
+
+    bins = [0, 15, 40, 60, 120]
+    ages = ['0-15', '15-39', '40-59', '60+']
+    excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=ages, right=False)
+    by_age, ages = group_deaths("Age Group")
+
+    footnote = """
+Shows 2020-2021 Deaths in comparison to Deaths in {year_span} across months.
+NOTE: Excess deaths can be changed by many factors other than Covid.
+    """.strip()
+    footnote3 = f"""{footnote}
+2015-2018 was used to compare for the most stable death rates. For other comparisons see
+https://djay.github.io/covidthailand/#excess-deaths
+    """.strip()
+
+    for years in [years5, years3]:
+        year_span = f"{min(years)}-{max(years)}"
+        cols_y = [f'Deaths {y}' for y in years]
+        note = (footnote if len(years) > 4 else footnote3).format(year_span=year_span)
+        suffix = "_5y" if len(years) > 4 else ""
+
+        plot_area(df=pan_months,
+                  png_prefix=f'deaths_excess_covid{suffix}',
+                  cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid'],
+                  legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths"],
+                  legend_cols=2,
+                  legend_pos="lower center",
+                  title=f'Thailand Deaths from all causes compared to {year_span}',
+                  footnote=note,
+                  kind='bar',
+                  stacked=True,
+                  cmap='tab10',
+                  box_cols=cols_y,
+                  periods_to_plot=['all'])
+
+        plot_area(df=by_region,
+                  png_prefix=f'deaths_excess_region{suffix}',
+                  cols_subset=[f'Deaths All Month {reg}' for reg in regions],
+                  legends=[f'{reg} Deaths' for reg in regions],
+                  legend_cols=4,
+                  legend_pos="lower center",
+                  title=f'Thailand Deaths from all causes by Region compared to {year_span}',
+                  footnote=note,
+                  kind='bar',
+                  stacked=True,
+                  periods_to_plot=['all'],
+                  box_cols=[[f"{y} {reg}" for y in cols_y] for reg in regions],
+                  cmap='tab10')
+
+        plot_area(df=by_age,
+                  png_prefix=f'deaths_excess_age_bar{suffix}',
+                  cols_subset=[f'Deaths All Month {age}' for age in ages],
+                  legends=[f'{age} Deaths' for age in ages],
+                  title=f'Thailand Deaths from all causes by age group compared to {year_span}',
+                  footnote=note,
+                  kind='bar',
+                  stacked=True,
+                  periods_to_plot=['all'],
+                  box_cols=[[f"{y} {age}" for y in cols_y] for age in ages],
+                  cmap='tab10')
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
-
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"] / adf['Pre Avg'] * 100, num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='deaths_pscore_prov', cols_subset=cols,
@@ -1188,7 +1258,7 @@ https://djay.github.io/covidthailand/#excess-deaths
               periods_to_plot=['all']
               )
 
-    by_district = join_provinces(excess, 'Province').groupby("Health District Number").apply(calc_pscore)
+    by_district = excess.groupby("Health District Number").apply(calc_pscore)
     pscore_districts = by_district.reset_index().pivot(values=["PScore"], index="Date", columns="Health District Number")
     pscore_districts.columns = [' '.join(c) for c in pscore_districts.columns]
     cols = rearrange([f'PScore {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
@@ -1212,39 +1282,7 @@ https://djay.github.io/covidthailand/#excess-deaths
               title='Thailand Excess Deaths (P-Score) by age',
               kind='line',
               stacked=False,
-              percent_fig=False,
-              ma_days=0,
               periods_to_plot=['all'],
-              cmap='tab10')
-
-    bins = [0, 15, 40, 60, 120]
-    labels = ['0-15', '15-39', '40-59', '60+']
-    dist = ["Pre Avg", "Pre Min", "Pre Max"]
-    excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
-    by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
-    by_age = by_age.reset_index().pivot(values=["Deaths All Month"] + cols5y,
-                                        index="Date",
-                                        columns="Age Group")
-    by_age.columns = [' '.join(c) for c in by_age.columns]
-    by_age = by_age.set_index(by_age.index - pd.offsets.MonthBegin(1))
-
-    # Need to move up to include total below to line is in the right place
-    for i in range(1, len(labels)):
-        for d in cols3y:
-            by_age[f'{d} {labels[i]}'] += by_age[f'{d} {labels[i-1]}']
-
-    plot_area(df=by_age,
-              png_prefix='deaths_excess_age_bar',
-              cols_subset=[f'Deaths All Month {age}' for age in labels],
-              legends=[f'{age} Deaths' for age in labels],
-              title='Thailand Deaths from all causes by age group compared to 2015-2018',
-              footnote=footnote,
-              kind='bar',
-              stacked=True,
-              percent_fig=False,
-              ma_days=0,
-              periods_to_plot=['all'],
-              box_cols=[[f"{y} {age}" for y in cols3y] for age in labels],
               cmap='tab10')
 
 

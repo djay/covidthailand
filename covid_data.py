@@ -821,7 +821,6 @@ def excess_deaths():
         export(df, "deaths_all", csv_only=True, dir="json")
         shutil.copy(os.path.join("json", "deaths_all.csv"), "api")  # "json" for cachine, api so it's downloadable
 
-
     return df
 
 

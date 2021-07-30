@@ -133,10 +133,13 @@ Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same mo
 - *Any difference deaths can be caused by many other factors other than covid*
 
 ![Thailand Excess Deaths by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+[Compare to 2015-1019](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
 
-![Thailand Excess deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_avg3y_all.png)
+![Thailand Excess deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
+[Compare to 2015-1019](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
 
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
+[Compare to 2015-1019](https://github.com/djay/covidthailand/wiki/deaths_excess_years_5y_all.png)
 
 Notes
 - You can view [Thailand Deaths by all causes compared to 2015-2019](https://raw.githubusercontent.com/wiki/djay/covidthailand/deaths_excess_avg_all.png) instead of 2015-2018.
