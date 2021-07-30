@@ -118,17 +118,19 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_est_3.png)
 - Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
 
-<!--
 ## Excess Deaths
+Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month. 
+2019 was not used due to unusually large number of deaths very different to previous years (2016 also had an unusual spike in deaths in April).
+- *Any difference deaths can be caused by many other factors other than covid*
+
+![Thailand Excess Deaths by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+
 ![Thailand Excess deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_avg3y_all.png)
 
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
-![Thailand Excess Deaths by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
-
-
 - Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
--->
+
 
 # Testing <a name="testing">
 
@@ -453,6 +455,12 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-07-30 - Add plots for excess deaths
+- 2021-07-18 - Add data on vaccines by manufacturer from vaccine slides
+- 2021-07-17 - Add estimate of death ages
+- 2021-07-13 - Remove import vaccines due to coldchain data being restricted
+- 2021-07-10 - Switch province plots to per 100,000
+- 2021-07-10 - Put actuals on main case plots
 - 2021-06-29 - Use coldchain data to plot deliveries and province vac data
 - 2021-06-22 - Add trending provinces for contact cases
 - 2021-06-12 - Add vacination daily and improve cumulative vaccinations

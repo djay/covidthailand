@@ -17,15 +17,28 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
 
-def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequence[str]], title: str,
-              legends: List[str] = None, legend_pos: str = None, kind: str = 'line', stacked=False, percent_fig: bool = True,
-              unknown_name: str = 'Unknown', unknown_total: str = None, unknown_percent=False,
-              ma_days: int = None, cmap: str = 'tab20', 
+def plot_area(df: pd.DataFrame,
+              png_prefix: str,
+              cols_subset: Union[str, Sequence[str]],
+              title: str,
+              footnote: str = None,
+              legends: List[str] = None,
+              legend_pos: str = None,
+              kind: str = 'line',
+              stacked=False,
+              percent_fig: bool = True,
+              unknown_name: str = 'Unknown',
+              unknown_total: str = None,
+              unknown_percent=False,
+              ma_days: int = None,
+              cmap: str = 'tab20',
               periods_to_plot=None,
-              actuals: List[str] = [], highlight: List[str] = [],
-              box_cols: List[str] =[],
+              actuals: List[str] = [],
+              highlight: List[str] = [],
+              box_cols: List[str] = [],
               reverse_cmap: bool = False,
-              y_formatter: Callable[[float, int], str] = human_format, clean_end=True,
+              y_formatter: Callable[[float, int], str] = human_format,
+              clean_end=True,
               between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
@@ -123,7 +136,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
     else:
         title += f"Last Data: {last_update}\n"
 
-    title += 'Sources: https://djay.github.io/covidthailand - (CC BY)'
+    title += 'https://djay.github.io/covidthailand - (CC BY)'
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
@@ -186,7 +199,7 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
 
         # advance colour cycle so lines have correct next colour
         for _ in range(len(areacols)):
-             next(a0._get_lines.prop_cycler)
+            next(a0._get_lines.prop_cycler)
 
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
@@ -215,6 +228,14 @@ def plot_area(df: pd.DataFrame, png_prefix: str, cols_subset: Union[str, Sequenc
             set_time_series_labels_2(df_plot, a0)
 
         a0.set_title(label=title)
+        if footnote:
+            plt.annotate(footnote, (0.99, 0), (0, -50),
+                         xycoords='axes fraction',
+                         textcoords='offset points',
+                         va='top',
+                         fontsize=15,
+                         horizontalalignment='right')
+
         handles, labels = a0.get_legend_handles_labels()
         handles = handles[len(box_cols):]
 
@@ -1079,6 +1100,12 @@ def save_plots(df: pd.DataFrame) -> None:
         result = result.dropna(subset=['PScore'])
         return result.drop(columns=["Month"])
 
+    footnote = """
+Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month. 
+NOTE: Excess deaths can be changed by many factors other than Covid.
+2019 was exluded as it had unusually high deaths. 2016 also had a spike in April but is included.
+    """.strip()
+
     all = calc_pscore(excess)
     all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='M')).sum()
     all['Deaths (ex. Known Covid)'] = all['Deaths All Month'] - all['Deaths Covid']
@@ -1126,7 +1153,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
               legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths", ],
-              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2019',
+              title='Thailand Deaths from all causes compared to 2015-2019',
+#              footnote=footnote,
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
               box_cols=cols5y,
               periods_to_plot=['all']
@@ -1134,7 +1162,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=pan_months, png_prefix='deaths_excess_avg3y', cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid', ],
               legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths", ],
-              title='Thailand Excess Deaths\nNumber of deaths from all causes compared to 2015-2018',
+              title='Thailand Deaths from all causes compared to 2015-2018',
+              footnote=footnote,
               kind='bar', stacked=True, percent_fig=False, ma_days=None, cmap='tab10',
               box_cols=cols3y,
               periods_to_plot=['all']
@@ -1188,7 +1217,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10')
 
     bins = [0, 15, 40, 60, 120]
-    labels = ['Under 15', '15-39', '40-59', '60+']
+    labels = ['0-15', '15-39', '40-59', '60+']
     dist = ["Pre Avg", "Pre Min", "Pre Max"]
     excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
     by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
@@ -1207,7 +1236,8 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='deaths_excess_age_bar',
               cols_subset=[f'Deaths All Month {age}' for age in labels],
               legends=[f'{age} Deaths' for age in labels],
-              title='Thailand Deaths from all causes by age group compared to Pre-Covid Years (2015-18)',
+              title='Thailand Deaths from all causes by age group compared to 2015-2018',
+              footnote=footnote,
               kind='bar',
               stacked=True,
               percent_fig=False,
