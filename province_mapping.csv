@@ -29,7 +29,7 @@ Nakhon Pathom,นครปฐม,920030,2142,430,Nakhon Pathom,NPT,TH-73,TH53,"[
 Nakhon Phanom,นครพนม,719136,5637,127,Nakhon Phanom,NPM,TH-48,TH73,"['NPM', 'Nakhon Phanom', 'NakhonPhanom', 'นครพนม', 'นพ']",8
 Nakhon Ratchasima,นครราชสีมา,2648927,20736,128,Nakhon Ratchasima,NMA,TH-30,TH27,"['Khorat', 'Korat', 'NMA', 'Nakhon Ratchasima', 'NakhonRatchasima', 'นครราชสมีา', 'นครราชสีมา', 'นครรำชสมีำ', 'นม']",9
 Nakhon Sawan,นครสวรรค์,1059887,9526,111,Nakhon Sawan,NSN,TH-60,TH16,"['NSN', 'Nakhon Sawan', 'NakhonSawan', 'นครสวรรค', 'นครสวรรค์', 'นว']",3
-Nakhon Si Thammarat,นครศรีธรรมราช,1561927,9885,158,Nakhon Si Thammarat,NRT,TH-80,TH64,"['NRT', 'Nakhon Si Thammarat', 'NakhonSiThammarat', 'นครศรธีรรมราช', 'นครศรธีรรมรำช', 'นครศรีธรรมราช', 'นศ']",11
+Nakhon Si Thammarat,นครศรีธรรมราช,1561927,9885,158,Nakhon Si Thammarat,NRT,TH-80,TH64,"['NRT', 'Nakhon Si Thammarat', 'NakhonSiThammarat', 'นครศรธีรรมราช', 'นครศรธีรรมรำช', 'นครศรีธรรมราช', 'นศ', 'นครศรีธรรรมราช']",11
 Nan,น่าน,478227,12130,40,Nan,NAN,TH-55,TH04,"['NAN', 'Nan', 'นน', 'นา่น', 'นำ่น', 'น่าน']",1
 Narathiwat,นราธิวาส,808020,4491,180,Narathiwat,NWT,TH-96,TH31,"['NWT', 'Narathiwat', 'นธ', 'นราธวิาส', 'นราธิวาส', 'นรำธวิำส']",12
 Nong Bua Lamphu,หนองบัวลำภู,512780,4099,125,Nong Bua Lam Phu,NBP,TH-39,TH79,"['Lam Phu', 'NBP', 'Nong Bua Lam Phu', 'Nong Bua Lamphu', 'NongBuaLamPhu', 'นภ', 'หนองบวัล', 'หนองบวัล าภู', 'หนองบวัล ำภู', 'หนองบวัลาภู', 'หนองบัวล าภู', 'หนองบัวลาภู', 'หนองบัวลำภู', 'นาวัง']",8
@@ -44,7 +44,7 @@ Phetchabun,เพชรบูรณ์,992451,12340,80,Phetchabun,PNB,TH-67,TH14
 Phetchaburi,เพชรบุรี,485191,6172,77,Phetchaburi,PBI,TH-76,TH56,"['PBI', 'Phetchaburi', 'พบ', 'เพชรบรุ', 'เพชรบรุี', 'เพชรบุร', 'เพชรบุรี', 'เพชรบุรีี', 'เพชรบุุรี']",5
 Phichit,พิจิตร,536311,4319,124,Phichit,PCT,TH-66,TH13,"['PCT', 'Phichit', 'พจ', 'พจิติร', 'พิจิตร']",3
 Phitsanulok,พิษณุโลก,865247,10589,82,Phitsanulok,PLK,TH-65,TH12,"['PLK', 'Phitsanulok', 'พล', 'พษิณุโลก', 'พิษณุโลก']",2
-Phra Nakhon Si Ayutthaya,พระนครศรีอยุธยา,820188,2548,322,Phra Nakhon Si Ayutthaya,AYA,TH-14,TH36,"['AYA', 'Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'PhraNakhonSiAyutthaya', 'พระนครศรอียธุยา', 'พระนครศรอียธุยำ', 'พระนครศรอียุธยา', 'พระนครศรอียุธยำ', 'พระนครศรีอยุธยา', 'พระนครศรีอยุธา', 'อย', 'อยุธยา', 'พระนครศรียุธยา', 'พระนครศรีอยุทธยา']",4
+Phra Nakhon Si Ayutthaya,พระนครศรีอยุธยา,820188,2548,322,Phra Nakhon Si Ayutthaya,AYA,TH-14,TH36,"['AYA', 'Ayutthaya', 'Phra Nakhon Si Ayutthaya', 'PhraNakhonSiAyutthaya', 'พระนครศรอียธุยา', 'พระนครศรอียธุยำ', 'พระนครศรอียุธยา', 'พระนครศรอียุธยำ', 'พระนครศรีอยุธยา', 'พระนครศรีอยุธา', 'อย', 'อยุธยา', 'พระนครศรียุธยา', 'พระนครศรีอยุทธยา', 'อุยุธยา']",4
 Phrae,แพร่,441726,6483,68,Phrae,PRE,TH-54,TH07,"['PRE', 'Phrae', 'พร', 'แพร่']",1
 Phuket,ภูเก็ต,416582,547,762,Phuket,PKT,TH-83,TH62,"['PKT', 'Phuket', 'ภก', 'ภูเก็ต', 'ภเูก็ต']",11
 Prachinburi,ปราจีนบุรี,494680,5026,99,Prachinburi,PRI,TH-25,TH74,"['PRI', 'Prachin Buri', 'PrachinBuri', 'Prachinburi', 'ปจ', 'ปราจนีบรุ', 'ปราจนีบุร', 'ปราจีนบุร', 'ปราจีนบุรี', 'ปรำจนีบรุ']",6
@@ -73,7 +73,7 @@ Trat,ตราด,229958,2866,78,Trat,TRT,TH-23,TH49,"['TRT', 'Trat', 'ตร', 
 Ubon Ratchathani,อุบลราชธานี,1878146,15626,120,Ubon Ratchathani,UBN,TH-34,TH75,"['UBN', 'Ubon Ratchathani', 'UbonRatchathani', 'อบ', 'อบุลราชธาน', 'อบุลราชธานี', 'อบุลรำชธำน', 'อุบลราชธาน', 'อุบลราชธานี']",10
 Udon Thani,อุดรธานี,1586646,11072,143,Udon Thani,UDN,TH-41,TH76,"['UDN', 'Ubon Thani', 'Udon Thani', 'UdonThani', 'อด', 'อดุรธาน', 'อดุรธานี', 'อดุรธำน', 'อุดรธาน', 'อุดรธานี', 'อุุดรธานี']",8
 Uthai Thani,อุทัยธานี,328618,6647,50,Uthai Thani,UTI,TH-61,TH15,"['UTI', 'Uthai Thani', 'UthaiThani', 'อทัุยธาน', 'อทุยัธาน', 'อทุยัธานี', 'อทุัยธาน', 'อน', 'อุทัยธาน', 'อุทัยธานี']",3
-Uttaradit,อุตรดิตถ์,453103,7906,58,Uttaradit,UTD,TH-53,TH10,"['UTT', 'Uttaradit', 'อต', 'อตุรดติถ', 'อุตรดิตถ', 'อุตรดิตถ์']",2
+Uttaradit,อุตรดิตถ์,453103,7906,58,Uttaradit,UTD,TH-53,TH10,"['UTT', 'Uttaradit', 'อต', 'อตุรดติถ', 'อุตรดิตถ', 'อุตรดิตถ์', 'อุุตรดิตถ์']",2
 Yala,ยะลา,536330,4476,119,Yala,YLA,TH-95,TH70,"['YLA', 'Yala', 'ยล', 'ยะลา', 'ธารโต']",12
 Yasothon,ยโสธร,537299,4131,130,Yasothon,YST,TH-35,TH72,"['YST', 'Yasothon', 'ยส', 'ยโสธร']",10
 Prison,เรือนจำฯ,,,,,,,,"['Prison', 'เรอืนจา/ทีต่อ้งขงั', 'เรอืนจาฯ', 'เรอืนจาและทีต่อ้งขงั', 'เรือนจ า']",Prison

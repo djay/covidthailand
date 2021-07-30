@@ -6,7 +6,7 @@ import json
 import os
 import re
 import pythainlp.tokenize
-
+import numpy as np
 import pandas as pd
 
 from utils_pandas import fuzzy_join, rearrange
@@ -253,8 +253,9 @@ def get_provinces():
         'Name(in Thai)': 'ProvinceTh', 'Population (2019)[1]': 'Population',
         'Area (km²)[2]': 'Area_km2'}).set_index('Alt_names')
     df4 = prov_mapping_subdistricts(df3)
+    df5 = prov_regions_wealth(df4)
 
-    return df4
+    return df5
 
 
 def prov_mapping_subdistricts(provinces):
@@ -269,7 +270,7 @@ def prov_mapping_subdistricts(provinces):
     # AMPHOE_T
     provinces = provinces.combine_first(
         altnames.rename(columns=dict(
-            AMPHOE_T="ProvinceAlt")).set_index("ProvinceAlt"))
+            AMPHOE_T="ProvinceAlt")).set_index("ProvinceAlt")).drop(columns=["CHANGWAT_T"])
     return provinces
 
 
@@ -324,6 +325,48 @@ def prov_mapping_from_kristw(provinces):
 
     # TODO: another source of alternative names
     # https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv
+    return provinces
+
+
+def prov_regions_wealth(provinces):
+    def clean_column_name(col):
+        return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()
+
+    df = pd.read_html("https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP")[0]
+
+    df.columns = [clean_column_name(x) for x in df.columns]
+
+    columns_of_interest = ['id', 'province', 'population_millions', 'gppbillions', 'gppbillionsus_nominal']
+    df = df[columns_of_interest].rename({
+        'gppbillions': 'gpp_billions_thb',
+        'gppbillionsus_nominal': 'gpp_billions_usd'
+    }, axis=1)
+
+    df['region_id'] = np.floor(df['id'] / 100)
+
+    df_region = df[df['id'] % 100 == 0][['region_id', 'province']].rename({'province': 'region'}, axis=1)
+
+    df = df.merge(df_region, how='left', on='region_id')
+
+    df = df[~(df['id'] % 100 == 0)]
+
+    # Remap a couple of spellings
+    df['province'].replace({'Chainat': 'Chai Nat', 'Phattalung': 'Phatthalung'}, inplace=True)
+
+    # Add some extras
+    df = df.combine_first(pd.DataFrame([{
+        'id': 901,
+        'province': 'Prison',
+        'region': 'Other'
+    }, {
+        'id': 902,
+        'province': 'Unknown',
+        'region': 'Other'
+    }]))
+
+    provinces = provinces.join(df.set_index("province"), on="ProvinceEn")
+    provinces = provinces.drop(columns=["id"])
+
     return provinces
 
 
