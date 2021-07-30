@@ -12,9 +12,10 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 **NEW** [Excess Deaths](#excess-deaths)
 
 ## Disclaimer
-**Data offered here is offered as is with no guarentees. As much as possible government reportsk
+*Data offered here is offered as is with no guarentees. As much as possible government reportsk
 and data feeds have been used effort has gone into making this data collection accurate and timely.
-This sites only intention is to give an accurate representation of all the available Covid data for Thailand in one place.**
+This sites only intention is to give an accurate representation of all the available Covid data for Thailand in one place.*
+
 Links to all data sources are including in [Downloads](#downloads)
 
 # Cases <a name="cases">
@@ -126,8 +127,9 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
 
 ## Excess Deaths <a name="excess-deaths">
-Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month. 
-2019 was not used due to unusually large number of deaths very different to previous years (2016 also had an unusual spike in deaths in April).
+Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month.
+- To try to make a fair comparison against a normal Thai rate 2019 was exluded as an outlier as 
+[2019 was very different to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) 
 - *Any difference deaths can be caused by many other factors other than covid*
 
 ![Thailand Excess Deaths by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
@@ -136,6 +138,10 @@ Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same mo
 
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
+Notes
+- You can view [Thailand Deaths by all causes compared to 2015-2019](https://raw.githubusercontent.com/wiki/djay/covidthailand/deaths_excess_avg_all.png) instead of 2015-2018.
+- Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
+  [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
 - Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
 
 
@@ -178,7 +184,6 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 - see also [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_all.png)
 
-- *NOTE* Excludes some proactive tests (non-PCR) so actual rate would be lower
 - Source: [DMSC: Thailand Laboratory testing data](#dl-testing)
 
 # Vaccinations <a name="vaccinations">

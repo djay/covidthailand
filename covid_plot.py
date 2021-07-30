@@ -1101,9 +1101,10 @@ def save_plots(df: pd.DataFrame) -> None:
         return result.drop(columns=["Month"])
 
     footnote = """
-Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month. 
+Shows 2020-2021 Deaths in comparison to Deaths in 2015-2018 across months.
 NOTE: Excess deaths can be changed by many factors other than Covid.
-2019 was exluded as it had unusually high deaths. 2016 also had a spike in April but is included.
+2015-2018 was used to compare for the most stable death rates. For other comparisons see
+https://djay.github.io/covidthailand/#excess-deaths
     """.strip()
 
     all = calc_pscore(excess)
