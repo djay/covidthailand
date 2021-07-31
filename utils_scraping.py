@@ -260,13 +260,17 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                     f.seek(resume_byte_pos, 0)
                     # TODO: handle timeouts happening below since now switched to streaming
                     try:
-                        for chunk in r.iter_content(chunk_size=2 * 1024 * 1024):
+                        for chunk in r.iter_content(chunk_size=2 * 1024 * 1024, timeout=5):
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
                                 print(".", end="")
-                    except Timeout:
-                        print(f"Error downloading: {file}: skipping")
-                        continue
+                    except (Timeout, ConnectionError):
+                        if resumable:
+                            # TODO: should we revert to last version instead?
+                            print(f"Error downloading: {file}: resumable file incomplete")
+                        else:    
+                            print(f"Error downloading: {file}: skipping")
+                            continue
                 print("")
             elif os.path.exists(file):
                 print(f"Error downloading: {file}: using cache")
