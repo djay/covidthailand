@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
-from requests.packages.urllib3.util import Url
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
@@ -25,7 +24,7 @@ from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_n
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
-    find_thai_date, get_province, get_provinces, join_provinces, parse_gender, to_gregyear, to_thaiyear, today,  \
+    find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
 
 
@@ -310,8 +309,6 @@ def get_en_situation():
 
 
 def situation_pui_th_death(dfsit, parsed_pdf, date, file):
-    # numbers, text = get_next_numbers(parsed_pdf, "อัตรำป่วยตำยตำมกลุ่มอำยุ", "อัตราป่วยตายตามกลุ่มอายุ", ints=False, until="รคประจ")
-    # if not numbers:
     if "40 – 59" not in parsed_pdf:
         return dfsit
     numbers, rest = get_next_numbers(parsed_pdf, "15 – 39", until="40 – 59", ints=False)
@@ -787,7 +784,8 @@ def get_cases_by_demographics_api():
 
 
 def excess_deaths():
-    url = "https://stat.bora.dopa.go.th/stat/statnew/connectSAPI/stat_forward.php?API=/api/stattranall/v1/statdeath/list?action=73"
+    url = "https://stat.bora.dopa.go.th/stat/statnew/connectSAPI/stat_forward.php?"
+    url += "API=/api/stattranall/v1/statdeath/list?action=73"
     url += "&statType=-1&statSubType=999&subType=99"
     rows = []
     provinces = pd.read_csv('province_mapping.csv', header=0)
@@ -824,12 +822,9 @@ def excess_deaths():
     return df
 
 
-
-
 ##################################
 # RB Tweet Parsing
 ##################################
-
 
 UNOFFICIAL_TWEET = re.compile("Full details at 12:30pm.*#COVID19")
 OFFICIAL_TWEET = re.compile("#COVID19 update")
@@ -1373,12 +1368,10 @@ def briefing_deaths_summary(text, date):
     # Risk factors for COVID-19 infection
     # risk_factors = df[3][0]
     numbers, *_ = get_next_numbers(text,
-                                   "ค่ามัธยฐานของอายุ",
-                                   "ค่ากลาง อายุ",
-                                   "ค่ากลางอายุ",
-                                   "ค่ากลางของอายุ",
+                                   "ค่ามัธยฐานของอา",
+                                   "ค่ากลางขอ(?:งอ)?ายุ",
+                                   "ามัธยฐานอายุ",
                                    "• ค่ากลาง",
-                                   "ค่ามัธยฐานของอาย",
                                    ints=False)
     med_age, min_age, max_age, *_ = numbers
     numbers, *_ = get_next_numbers(text, "ชาย")
@@ -2055,14 +2048,15 @@ def vaccination_daily(daily, date, file, page):
     # over60, _ = get_next_number(text, "ผู้ที่มีอำยุตั้งแต่ 60 ปีขึ้นไป", "ผู้ที่มีอำยุตั้งแต่ 60", until="รำย")
     # chronic, _ = get_next_number(text, "บุคคลที่มีโรคประจ", until="รำย")
     # area, _ = get_next_number(text, "ในพ้ืนที่เสี่ยง", "และประชำชนในพื้นท่ีเสี่ยง", until="รำย")
+    is_risks = re.compile("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน)")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2)]:
-        if len(numbers) in [7, 8] and re.search("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน)", rest):
+        if len(numbers) in [7, 8] and is_risks.search(rest):
             if len(numbers) == 7:
                 total, medical, frontline, sixty, over60, chronic, area = numbers
             else:
                 total, medical, frontline, sixty, over60, seven, chronic, area = numbers
-                assert seven == 7  # 7 disease groups 
+                assert seven == 7  # 7 disease groups
             assert sixty == 60
             row = [medical, frontline, over60, chronic, area]
             assert not any_in(row, None)
@@ -2211,12 +2205,6 @@ def get_vaccinations():
     vacct = vacct.fillna(0)
     vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
     vacct = vacct.combine_first(vaccum)
-
-    # TODO: Imports from https://docs.google.com/spreadsheets/u/1/d/1BaCh5Tbm1EXwh4SeRM9dv-yemK2J5RpO-dz28UVtX3s/htmlview?fbclid=IwAR36L3itMKFv6fq7q-7_CF4WpxtI-QGQAcJ1f62BLen6N6IHc1iq-u-wWNI/export?gid=0&format=csv
-
-    # TODO: totals at risk from https://hdcservice.moph.go.th/hdc/main/index.php
-
-    # TODO: priority groups and ages per province - https://dashboard-vaccine.moph.go.th/dashboard.html
 
     vac_reports, vac_reports_prov = vaccination_reports()
     vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
@@ -2526,6 +2514,31 @@ def get_hospital_resources():
     export(data, "hospital_resources", csv_only=True)
     return data
 
+
+# TODO: Additional data sources
+# - medical supplies (tableux)
+#    - https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1
+#    - is it accurate?
+#    - no timeseries
+# - offocial moph dashboard (tableux)
+#   - https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line
+# - vaccine imports (unofficial) (getting out of date?)
+#    - https://docs.google.com/spreadsheets/u/1/d/1BaCh5Tbm1EXwh4SeRM9dv-yemK2J5RpO-dz28UVtX3s/htmlview?fbclid=IwAR36L3itMKFv6fq7q-7_CF4WpxtI-QGQAcJ1f62BLen6N6IHc1iq-u-wWNI/export?gid=0&format=csv  # noqa
+# - vaccine dashboard (power BI)
+#   - https://dashboard-vaccine.moph.go.th/dashboard.html
+#   - groups, ages, manuf per prov. ages per group all thailand
+#   - no timeseries
+# - Vaccine total numbers in at risk groups
+#   - https://hdcservice.moph.go.th/hdc/main/index.php
+# - vaccine slides
+#   - has complications list but in graphic
+# - briefings
+#   - clusters per day
+#   - nationality of deaths
+#   - time to death?
+#   - deaths at home
+# - test reports
+#   - top labs over time
 
 def scrape_and_combine():
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
