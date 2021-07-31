@@ -249,7 +249,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             try:
                 # TODO: handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Will speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
-                r = s.get(url, timeout=2, stream=True, headers=resume_header, verify=False, allow_redirects=True)
+                r = s.get(url, timeout=5, stream=True, headers=resume_header, verify=False, allow_redirects=True)
             except (Timeout, ConnectionError):
                 r = None
             if r is not None and r.status_code == 200:
@@ -260,7 +260,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                     f.seek(resume_byte_pos, 0)
                     # TODO: handle timeouts happening below since now switched to streaming
                     try:
-                        for chunk in r.iter_content(chunk_size=2 * 1024 * 1024, timeout=5):
+                        for chunk in r.iter_content(chunk_size=2 * 1024 * 1024):
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
                                 print(".", end="")
