@@ -127,22 +127,24 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
 
 ## Excess Deaths <a name="excess-deaths">
-Shows 2020-2021 Deaths in comparison to range of Deaths 2015-2018 in the same month.
-- To try to make a fair comparison against a normal Thai rate 2019 was exluded as an outlier as 
-[2019 was very different to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) 
-- *Any difference deaths can be caused by many other factors other than covid*
+Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
+- *Note: there are many possible factors alter deaths up or down other than uncounted Covid Deaths*
 
-![Thailand Excess Deaths by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
-[Compare to 2015-1019](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
+![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
+[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
 
-![Thailand Excess deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
-[Compare to 2015-1019](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
+![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
+[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
 
-![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
-[Compare to 2015-1019](https://github.com/djay/covidthailand/wiki/deaths_excess_years_5y_all.png)
+![Thailand Excess deaths with Covid Deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
+[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
+
+![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_5y_all.png)
+[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
 Notes
-- You can view [Thailand Deaths by all causes compared to 2015-2019](https://raw.githubusercontent.com/wiki/djay/covidthailand/deaths_excess_avg_all.png) instead of 2015-2018.
+- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Links excluding 2019 have been included as 
+it's not yet clear which range of years provides the best baseline to compare against. 
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
 - Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)

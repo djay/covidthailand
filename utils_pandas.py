@@ -119,6 +119,13 @@ def rearrange(lst, *first):
     return result + [i for i in lst if i is not None]
 
 
+def cut_ages(df, ages=[15, 65, 75, 85], age_col="Age", group_col="Age Group"):
+    bins = [0] + ages + [140]
+    labels = [f"{p}-{n-1}" if n else f"{p}+" for p, n in zip(bins[:-1], bins[1:-1] + [None])]
+    df[group_col] = pd.cut(df[age_col], bins=bins, labels=labels, right=False)
+    return df
+
+
 def fuzzy_join(a,
                b,
                on,

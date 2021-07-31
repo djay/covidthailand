@@ -10,7 +10,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
+from utils_pandas import cum2daily, cut_ages, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
@@ -1089,7 +1089,6 @@ def save_plots(df: pd.DataFrame) -> None:
     # - change in reporting?
     # Just normal ageing population
 
-
     #  Take avg(2015-2019)/(2021) = p num. (can also correct for population changes?)
     def calc_pscore(adf):
         months = adf.groupby(["Year", "Month"], as_index=False).sum().pivot(columns="Year", values="Deaths", index="Month")
@@ -1158,7 +1157,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # ax.set_ylim(ax2.get_ylim())
     # plt.savefig("test.png")
 
-    def group_deaths(by):
+    def group_deaths(excess, by):
         dfby = excess.groupby(by).apply(calc_pscore)
         cols5y = [f'Deaths {y}' for y in years5]
         dfby = dfby.reset_index().pivot(values=["Deaths All Month"] + cols5y, index="Date", columns=by)
@@ -1179,12 +1178,11 @@ def save_plots(df: pd.DataFrame) -> None:
     pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
     # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
 
-    by_region, regions = group_deaths("region")
+    by_region, regions = group_deaths(excess, "region")
 
-    bins = [0, 15, 40, 60, 120]
-    ages = ['0-15', '15-39', '40-59', '60+']
-    excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=ages, right=False)
-    by_age, ages = group_deaths("Age Group")
+    # by_age = excess.pipe(cut_ages, [15, 40, 60])
+    by_age = excess.pipe(cut_ages, [15, 65, 75, 85])
+    by_age, ages = group_deaths(by_age, "Age Group")
 
     footnote = """
 Shows 2020-2021 Deaths in comparison to Deaths in {year_span} across months.
@@ -1193,6 +1191,10 @@ NOTE: Excess deaths can be changed by many factors other than Covid.
     footnote3 = f"""{footnote}
 2015-2018 was used to compare for the most stable death rates. For other comparisons see
 https://djay.github.io/covidthailand/#excess-deaths
+    """.strip()
+    footnote5 = f"""{footnote}
+A wider range of deaths from previous years is mainly due to 2019 which had higher deaths.
+To compare against other years see https://djay.github.io/covidthailand/#excess-deaths
     """.strip()
 
     for years in [years5, years3]:
@@ -1233,6 +1235,7 @@ https://djay.github.io/covidthailand/#excess-deaths
                   png_prefix=f'deaths_excess_age_bar{suffix}',
                   cols_subset=[f'Deaths All Month {age}' for age in ages],
                   legends=[f'{age} Deaths' for age in ages],
+                  legend_cols=2,
                   title=f'Thailand Deaths from all causes by age group compared to {year_span}',
                   footnote=note,
                   kind='bar',
@@ -1269,10 +1272,7 @@ https://djay.github.io/covidthailand/#excess-deaths
               periods_to_plot=['all']
               )
 
-    bins = [0, 15, 65, 75, 85, 120]
-    labels = ['0-15', '15-64', '65-74', '75-84', '85+']
-    excess['Age Group'] = pd.cut(excess['Age'], bins=bins, labels=labels, right=False)
-    by_age = excess.groupby(["Age Group"]).apply(calc_pscore)
+    by_age = excess.pipe(cut_ages, [15, 65, 75, 85]).groupby(["Age Group"]).apply(calc_pscore)
     by_age = by_age.reset_index().pivot(values=["PScore"], index="Date", columns="Age Group")
     by_age.columns = [' '.join(c) for c in by_age.columns]
 
