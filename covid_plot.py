@@ -1106,7 +1106,7 @@ def save_plots(df: pd.DataFrame) -> None:
             res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
             res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
-            for y in range(2015, 2022):
+            for y in range(2012, 2022):
                 res[f'Deaths {y}'] = months[y]
             res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
                                          format='%Y-%m') + MonthEnd(0)
@@ -1131,7 +1131,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
 
-    cols = [f'Deaths {y}' for y in range(2015, 2021, 1)]
+    cols = [f'Deaths {y}' for y in range(2012, 2021, 1)]
     by_month = pd.DataFrame(all)
     by_month['Month'] = by_month.index.strftime('%B')
     years2020 = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
@@ -1156,6 +1156,30 @@ def save_plots(df: pd.DataFrame) -> None:
     # ax2.set_ylim(0)
     # ax.set_ylim(ax2.get_ylim())
     # plt.savefig("test.png")
+
+    # TODO: Why the spikes in 2018 and 2019? Is there a way to correct? Change in reporting method?
+    # Age    Deaths
+    # Year                    
+    # 2002    514080   25896.0
+    # 2003    514080   25968.0
+    # 2004    514080   29951.0
+    # 2005    514080   34385.0
+    # 2006    514080   34098.0
+    # 2007    514080   33573.0
+    # 2008    514080   33743.0
+    # 2009    514080   33718.0
+    # 2010    514080   35049.0
+    # 2011  10024560  322167.0
+    # 2012  13194720  422776.0
+    # 2013  12323640  413373.0
+    # 2014  13194720  448601.0
+    # 2015   9519048  456391.0
+    # 2016   9519048  480434.0
+    # 2017   9519048  468911.0
+    # 2018   9519048  473541.0
+    # 2019   9519048  506211.0
+    # 2020   9519048  501438.0
+    # 2021   4759524  263005.0    
 
     def group_deaths(excess, by):
         dfby = excess.groupby(by).apply(calc_pscore)
@@ -1200,7 +1224,7 @@ To compare against other years see https://djay.github.io/covidthailand/#excess-
     for years in [years5, years3]:
         year_span = f"{min(years)}-{max(years)}"
         cols_y = [f'Deaths {y}' for y in years]
-        note = (footnote if len(years) > 4 else footnote3).format(year_span=year_span)
+        note = (footnote5 if len(years) > 4 else footnote3).format(year_span=year_span)
         suffix = "_5y" if len(years) > 4 else ""
 
         plot_area(df=pan_months,

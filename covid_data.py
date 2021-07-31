@@ -791,15 +791,16 @@ def excess_deaths():
     provinces = pd.read_csv('province_mapping.csv', header=0)
     index = ["Year", "Month", "Province", "Gender", "Age"]
     df = import_csv("deaths_all", index, date_cols=[], dir="json")
+    counts = df.reset_index(["Gender", "Age"]).groupby(["Year", "Month"]).count()
     if df.empty:
         lyear, lmonth = 2015, 0
     else:
         lyear, lmonth, lprov, lage, lgender = df.last_valid_index()
     error = False
     changed = False
-    for year in range(2002, 2022):
+    for year in range(2012, 2025):
         for month in range(1, 13):
-            if error or year < lyear or (year == lyear and month <= lmonth):
+            if counts.Age.get((year, month), 0) >= 77 * 102 * 2:
                 continue
             for prov, iso in provinces[["Name", "ISO[7]"]].itertuples(index=False):
                 if iso is None or type(iso) != str:
