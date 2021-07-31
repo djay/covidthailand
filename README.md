@@ -130,20 +130,19 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
 - *Note: there are many possible factors alter deaths up or down other than uncounted Covid Deaths*
 
-![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
-[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_5y_all.png)
+- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png)
 
 ![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
-[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
 
 ![Thailand Excess deaths with Covid Deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
-[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
+- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
 
-![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_5y_all.png)
-[Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
+![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
 Notes
-- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Links excluding 2019 have been included as 
+- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Links excluding 2019 have additionally been included as 
 it's not yet clear which range of years provides the best baseline to compare against. 
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).

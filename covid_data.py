@@ -753,7 +753,10 @@ def get_cases_by_demographics_api():
         20210622.36: "ACF สนามกีฬาธูปะเตมีย์:Entertainment",
         20210622.37: "Cluster ห้างแสงทอง (สายล่าง):Community",
         20210622.38: "Cluster ทันฑสถานบำบัดพิเศษกลาง:Community",
-        20210714.01: "Sandbox:Sandbox",
+        20210714.01: "Sandbox:Imported",
+        20210731.01: "Samui plus:Imported",
+        20210731.02: "ACF เคหะหลักสี่:Work",
+        20210731.03: "เดินทางมาจากพื้นที่เสี่ยงที่มีการระบาดของโรค:Community",
     }
     for v in r.values():
         key, cat = v.split(":")
