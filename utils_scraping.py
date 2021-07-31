@@ -150,32 +150,47 @@ def pptx2chartdata(file):
 # Download helpers
 ####################
 def resume_from(file, remote_date, check=True, size=0, appending=False):
+    if type(remote_date) == str:
+        remote_date = dateutil.parser.parse(remote_date)
+
     if not os.path.exists(file):
         print(f"Missing: {file}")
         return 0
-    elif not check:
+    else:
+        fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
+        resume_pos = os.stat(file).st_size
+
+    if not check:
         return -1
     elif remote_date is None:
         return 0  # TODO: should we always keep cached?
-    if type(remote_date) == str:
-        remote_date = dateutil.parser.parse(remote_date).astimezone()
-    fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
-    resume_pos = os.stat(file).st_size
-    if remote_date > fdate and not appending:
-        # timestamp = fdate.strftime("%Y%m%d-%H%M%S")
-        # os.rename(file, f"{file}.{timestamp}")
+    elif size and size == resume_pos and remote_date <= fdate:
+        # it's the same, don't redownload
+        return -1
+    elif appending and size:
+        if resume_pos < size:
+            return resume_pos
+        elif resume_pos > size:
+            # redownload it
+            return 0
+        elif remote_date > fdate:
+            # size is the same but says updated? redownload it to be sure
+            return 0
+        else:
+            return -1
+    elif remote_date > fdate:
         return 0
-    elif remote_date > fdate and resume_pos < size:
-        return resume_pos
-    elif resume_pos != size:
+    elif size and resume_pos != size:
         return 0
-    return -1
+    else:
+        # same size and date so keep what we have
+        return -1
 
 
 def is_cutshort(file, modified, check):
 
     if type(modified) == str:
-        modified = dateutil.parser.parse(modified).astimezone()
+        modified = dateutil.parser.parse(modified)
     if not check and MAX_DAYS and modified and (datetime.datetime.today().astimezone()
                                                 - modified).days > MAX_DAYS and os.path.exists(file):
         print(f"Reached MAX_DAYS={MAX_DAYS}")
