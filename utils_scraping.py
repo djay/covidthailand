@@ -37,11 +37,15 @@ s.mount("https://", HTTPAdapter(max_retries=RETRY))
 ####################
 # Extraction helpers
 #####################
-def parse_file(filename, html=False, paged=True):
+def parse_file(filename, html=False, paged=True, remove_corrupt=True):
     pages_txt = []
 
     # Read PDF file
     data = parser.from_file(filename, xmlContent=True)
+    if not data or not data["content"] and remove_corrupt:
+        # file is corrupt. Delete is so can get redownloaded
+        os.remove(filename)
+        return "" if not paged else []
     xhtml_data = BeautifulSoup(data["content"], features="lxml")
     if html and not paged:
         return xhtml_data
@@ -160,7 +164,12 @@ def resume_from(file, remote_date, check=True, size=0, appending=False):
         fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
         resume_pos = os.stat(file).st_size
 
-    if not check:
+    if resume_pos == 0:
+        # probably something went wrong. redownload
+        return 0
+    elif size and size != resume_pos:
+        return 0
+    elif not check:
         return -1
     elif remote_date is None:
         return 0  # TODO: should we always keep cached?
@@ -249,7 +258,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             try:
                 # TODO: handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Will speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
-                r = s.get(url, timeout=5, stream=True, headers=resume_header, verify=False, allow_redirects=True)
+                r = s.get(url, timeout=5, stream=True, headers=resume_header, allow_redirects=True)
             except (Timeout, ConnectionError):
                 r = None
             if r is not None and r.status_code == 200:
@@ -270,6 +279,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             print(f"Error downloading: {file}: resumable file incomplete")
                         else:    
                             print(f"Error downloading: {file}: skipping")
+                            remove = True  # TODO: if we leave it without check it will never get fixed
                             continue
                 print("")
             elif os.path.exists(file):
