@@ -12,7 +12,7 @@ from pandas.tseries.offsets import MonthEnd
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
-from utils_scraping import remove_suffix
+from utils_scraping import remove_prefix, remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
@@ -212,6 +212,7 @@ def plot_area(df: pd.DataFrame,
                          style=style,
                          kind="line",
                          zorder=4,
+                         legend=c not in actuals,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
         if box_cols and type(box_cols[0]) != list:
@@ -892,7 +893,7 @@ def save_plots(df: pd.DataFrame) -> None:
     all_days = pd.date_range(cases_pivot.index.min(), cases_pivot.index.max(), name="Date")
     cases_pivot = cases_pivot.reindex(all_days).fillna(0)  # put in missing days with NaN
     cases = cases.set_index(["Date", "Province"]).combine_first(cases_pivot.unstack().to_frame("Cases"))
-    cases = join_provinces(cases, "Province", ["Health District Number"])  # to fill in missing health districts
+    cases = join_provinces(cases, "Province", ["Health District Number", "region"])  # to fill in missing health districts
     cases = cases.fillna(0)  # all the other values
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
@@ -952,7 +953,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               cmap='tab10')
 
-    for risk in ['Contact', 'Proactive Search', 'Community', 'Work']:
+    for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
         top5 = cases.pipe(topprov,
                           increasing(cases_per_capita(f"Cases Risk: {risk}"), 5),
                           cases_per_capita(f"Cases Risk: {risk}"),
@@ -1159,7 +1160,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # TODO: Why the spikes in 2018 and 2019? Is there a way to correct? Change in reporting method?
     # Age    Deaths
-    # Year                    
+    # Year
     # 2002    514080   25896.0
     # 2003    514080   25968.0
     # 2004    514080   29951.0
@@ -1179,21 +1180,32 @@ def save_plots(df: pd.DataFrame) -> None:
     # 2018   9519048  473541.0
     # 2019   9519048  506211.0
     # 2020   9519048  501438.0
-    # 2021   4759524  263005.0    
+    # 2021   4759524  263005.0
 
-    def group_deaths(excess, by):
-        dfby = excess.groupby(by).apply(calc_pscore)
+    def group_deaths(excess, by, daily_covid):
         cols5y = [f'Deaths {y}' for y in years5]
-        dfby = dfby.reset_index().pivot(values=["Deaths All Month"] + cols5y, index="Date", columns=by)
+
+        dfby = excess.groupby(by).apply(calc_pscore)
+        covid_by = daily_covid.groupby([by, pd.Grouper(level=0, freq='M')])['Deaths'].sum()
+        dfby['Deaths ex Covid'] = dfby['Deaths All Month'] - covid_by
+        dfby['Covid Deaths'] = covid_by
+
+        dfby = dfby.reset_index().pivot(values=["Deaths All Month", 'Deaths ex Covid', 'Covid Deaths'] + cols5y,
+                                        index="Date",
+                                        columns=by)
         dfby.columns = [' '.join(c) for c in dfby.columns]
-        dfby = dfby.set_index(dfby.index - pd.offsets.MonthBegin(1))  # Bar chart is not aligned right otherwise
+
+        # Bar chart is not aligned right otherwise
+        dfby = dfby.set_index(dfby.index - pd.offsets.MonthBegin(1))
         labels = list(excess[by].unique())
 
         # Need to adjust each prev year so stacked in the right place
         for i in range(1, len(labels)):
-            heights = dfby[[f'Deaths All Month {label}' for label in labels[:i]]].sum(axis=1)
+            prev_bars = dfby[[f'Deaths All Month {label}' for label in labels[:i]]].sum(axis=1)
+            covid = dfby[f'Covid Deaths {labels[i]}']
+
             for year in cols5y:
-                dfby[f'{year} {labels[i]}'] += heights
+                dfby[f'{year} {labels[i]}'] += prev_bars.add(covid, fill_value=0)
         return dfby, labels
 
     # Do comparion bar charts to historical distribution of years
@@ -1202,14 +1214,23 @@ def save_plots(df: pd.DataFrame) -> None:
     pan_months = pan_months.set_index(pan_months.index - pd.offsets.MonthBegin(1))
     # pan_months['Month'] = pan_months['Date'].dt.to_period('M')
 
-    by_region, regions = group_deaths(excess, "region")
+    by_region, regions = group_deaths(excess, "region", cases)
+    # # Get covid deaths by region
+    # covid_by_region = cases.groupby([pd.Grouper(level=0, freq='M'), "region"])['Deaths'].sum()
+    # # fix up dates to start on 1st (for bar graph)
+    # covid_by_region = covid_by_region.reset_index("region")
+    # covid_by_region = covid_by_region.set_index(covid_by_region.index - pd.offsets.MonthBegin(1))
+    # by_region = by_region.combine_first(covid_by_region.pivot(values="Deaths", columns="region").add_prefix("Covid Deaths "))
 
-    # by_age = excess.pipe(cut_ages, [15, 40, 60])
-    by_age = excess.pipe(cut_ages, [15, 65, 75, 85])
-    by_age, ages = group_deaths(by_age, "Age Group")
+    by_age = excess.pipe(cut_ages, [15, 40, 60])
+    # by_age = excess.pipe(cut_ages, [15, 65, 75, 85])
+    new_cols = dict({a: remove_prefix(a, "Deaths Age ") for a in death_cols}, **{"Deaths Age 60-": "60+"})
+    covid_age = deaths_by_age[death_cols].rename(
+        columns=new_cols).unstack().to_frame("Deaths").rename_axis(["Age Group", "Date"]).reset_index("Age Group")
+    by_age, ages = group_deaths(by_age, "Age Group", covid_age)
 
     footnote = """
-Shows 2020-2021 Deaths in comparison to Deaths in {year_span} across months.
+Expected Deaths = Min/Mean/Max of years before the pandemic ({year_span}) + Known Covid Deaths.
 NOTE: Excess deaths can be changed by many factors other than Covid.
     """.strip()
     footnote3 = f"""{footnote}
@@ -1217,8 +1238,8 @@ NOTE: Excess deaths can be changed by many factors other than Covid.
 https://djay.github.io/covidthailand/#excess-deaths
     """.strip()
     footnote5 = f"""{footnote}
-A wider range of deaths from previous years is mainly due to 2019 which had higher deaths.
-To compare against other years see https://djay.github.io/covidthailand/#excess-deaths
+For a comparison exluding 2019 (which had higher than expected deaths) 
+see https://djay.github.io/covidthailand/#excess-deaths
     """.strip()
 
     for years in [years5, years3]:
@@ -1244,10 +1265,10 @@ To compare against other years see https://djay.github.io/covidthailand/#excess-
         plot_area(df=by_region,
                   png_prefix=f'deaths_excess_region{suffix}',
                   cols_subset=[f'Deaths All Month {reg}' for reg in regions],
-                  legends=[f'{reg} Deaths' for reg in regions],
+                  legends=[f'{reg}' for reg in regions],
                   legend_cols=4,
                   legend_pos="lower center",
-                  title=f'Thailand Deaths from all causes by Region compared to {year_span}',
+                  title=f'Thailand Deaths from all causes by Region vs Expected Deaths ({year_span})',
                   footnote=note,
                   kind='bar',
                   stacked=True,
@@ -1258,9 +1279,10 @@ To compare against other years see https://djay.github.io/covidthailand/#excess-
         plot_area(df=by_age,
                   png_prefix=f'deaths_excess_age_bar{suffix}',
                   cols_subset=[f'Deaths All Month {age}' for age in ages],
-                  legends=[f'{age} Deaths' for age in ages],
+                  legends=[f'{age}' for age in ages],
                   legend_cols=2,
-                  title=f'Thailand Deaths from all causes by age group compared to {year_span}',
+                  legend_pos="center left",
+                  title=f'Thailand Deaths from all causes by Age vs. Expected Deaths ({year_span})',
                   footnote=note,
                   kind='bar',
                   stacked=True,

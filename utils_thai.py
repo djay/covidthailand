@@ -329,6 +329,9 @@ def prov_mapping_from_kristw(provinces):
 
 
 def prov_regions_wealth(provinces):
+    # TODO: Use 4 regions + greater bangkok instead
+    # https://data.go.th/dataset/proviceandregionthailand - has 4, not 5. 
+
     def clean_column_name(col):
         return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()
 
