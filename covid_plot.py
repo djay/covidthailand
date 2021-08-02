@@ -239,7 +239,9 @@ def plot_area(df: pd.DataFrame,
                          horizontalalignment='right')
 
         handles, labels = a0.get_legend_handles_labels()
-        handles = handles[len(box_cols):]
+        # we are skipping pandas determining which legends to show so do it manually. box lines are 'None'
+        # TODO: go back to pandas doing it.
+        handles, labels = zip(*[(h, l) for h, l in zip(*a0.get_legend_handles_labels()) if l not in actuals + ['None']])
 
         leg = a0.legend(handles=handles,
                         labels=legends,
@@ -493,7 +495,6 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df, png_prefix='cases_all', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab20')
-
 
     df['Cases Proactive Community'] = df['Cases Proactive'].sub(df['Cases Area Prison'], fill_value=0)
     df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)

@@ -829,7 +829,7 @@ def moph_dashboard():
                 break
             atk = atk['SUM(atk_new)-alias'][0]
             df = df.combine_first(pd.DataFrame([[date.date(), atk]], columns=["Date", "ATK"]).set_index("Date"))
-            print(date, atk)
+            print("MOPH Dashboard", date, atk)
         return df
 
     def getTimelines():
