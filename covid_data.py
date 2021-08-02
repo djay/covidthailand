@@ -1392,7 +1392,7 @@ def briefing_deaths_provinces(dtext, date, total_deaths):
 
     # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
     ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
-    rest_bullets2, gender = rest_bullets.split("• ชาย", 1)
+    rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", rest_bullets, 1)
     *bullets, ptext2 = bullets_re.split(rest_bullets2)
     ptext2, *age_text = re.split("•", ptext2, 1)
     ptext = ptext1 + ptext2
@@ -1452,8 +1452,11 @@ def briefing_deaths_summary(text, date):
                                    "• ค่ากลาง",
                                    ints=False)
     med_age, min_age, max_age, *_ = numbers
-    numbers, *_ = get_next_numbers(text, "ชาย")
-    male, female, *_ = numbers
+
+    male, female, *_ = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
+    if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
+        # They sometimes reorder them
+        male, female = female, male
 
     numbers, *_ = get_next_numbers(text, "ค่ากลางระยะเวลา")
     if numbers:

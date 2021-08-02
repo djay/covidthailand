@@ -503,6 +503,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_types',
               cols_subset=cols,
               title='Thailand Covid Cases by Where Tested (Confirmed + Rapid Tests)',
+              footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test",
               legends=[
                   "Quarantine (Imported)", "Hospital (Walk-ins/Traced)",
                   "Mobile Community Testing (Proactive)",
@@ -994,9 +995,9 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_est = cases_est.join(df['Deaths'], on="Date")
     # cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-11) / 0.0054
-    cols = ["Infections Estimate", "Cases", ]
-    legend = ["Infections Estimate (based on deaths)", "Confirmed Cases"]
-    title = """Unofficial Estimate of Covid Infections in Thailand (based on Deaths/IFR)\n
+    cols = ["Cases", "Infections Estimate", ]
+    legend = ["Confirmed Cases", "Infections Estimate (based on deaths)"]
+    title = """Unofficial Estimate of Covid Infections in Thailand (based on Deaths/IFR)
 (DISCLAIMER: see site below for the assumptions of this simple estimate)"""
     plot_area(df=cases_est,
               png_prefix='cases_infections_estimate',
@@ -1163,6 +1164,9 @@ def save_plots(df: pd.DataFrame) -> None:
     # plt.savefig("test.png")
 
     # TODO: Why the spikes in 2018 and 2019? Is there a way to correct? Change in reporting method?
+    # death rates increase smoothly and so do total deaths here - https://knoema.com/atlas/Thailand/topics/Demographics/Mortality/Number-of-deaths
+    # why different totals?
+    # deaths by region 2019 - https://www.statista.com/statistics/1107886/thailand-number-of-male-deaths-by-region/
     # Age    Deaths
     # Year
     # 2002    514080   25896.0
@@ -1185,6 +1189,11 @@ def save_plots(df: pd.DataFrame) -> None:
     # 2019   9519048  506211.0
     # 2020   9519048  501438.0
     # 2021   4759524  263005.0
+    # deaths causes over multiple years - https://data.worldbank.org/indicator/SH.DTH.NCOM.ZS?locations=TH
+    #  - has suicides and road accidents also - as rate
+    # pnemonia? - https://nucleuswealth.com/articles/is-thailand-hiding-covid-19-cases/
+    # UN causes of death 2016 - https://www.who.int/nmh/countries/tha_en.pdf. total deaths - 539,000??
+    # road deaths? http://rvpreport.rvpeservice.com/viewrsc.aspx?report=0486&session=16
 
     def group_deaths(excess, by, daily_covid):
         cols5y = [f'Deaths {y}' for y in years5]

@@ -466,6 +466,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-08-02 - Add ATK cases parsing from dashboard and put in case_types plot
 - 2021-07-30 - Add plots for excess deaths
 - 2021-07-18 - Add data on vaccines by manufacturer from vaccine slides
 - 2021-07-17 - Add estimate of death ages
