@@ -13,3 +13,4 @@ pandas < 1.3.0 # div bt zero?
 numpy
 matplotlib
 pythainlp
+TableauScraper
