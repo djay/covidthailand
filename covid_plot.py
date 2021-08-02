@@ -193,7 +193,7 @@ def plot_area(df: pd.DataFrame,
 
         areacols = [c for c in cols if c not in between]
         if kind != "line":
-            df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked)
+            df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked, legend='reverse')
             linecols = between + actuals
         else:
             linecols = cols + actuals
@@ -494,23 +494,26 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test results compared to Confirmed Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab20')
 
+
     df['Cases Proactive Community'] = df['Cases Proactive'].sub(df['Cases Area Prison'], fill_value=0)
-    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison']
+    df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison', 'ATK']
     plot_area(df=df,
               png_prefix='cases_types',
               cols_subset=cols,
-              title='Thailand Covid Cases by Where Tested',
+              title='Thailand Covid Cases by Where Tested (Confirmed + Rapid Tests)',
               legends=[
                   "Quarantine (Imported)", "Hospital (Walk-ins/Traced)",
                   "Mobile Community Testing (Proactive)",
-                  "Prison (Proactive)"
+                  "Prison (Proactive)",
+                  "Rapid Positive Tests"
               ],
               unknown_name='Cases Unknown',
-              unknown_total='Cases',
+              unknown_total='Cases inc ATK',
               kind='area',
               stacked=True,
               percent_fig=True,
-              actuals=["Cases"],
+              actuals=["Cases inc ATK"],
               ma_days=7,
               cmap="tab10")
 

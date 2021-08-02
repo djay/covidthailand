@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
+from tableauscraper import TableauScraper as TS
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
@@ -519,6 +520,7 @@ def get_situation():
 # Cases Apis
 #################################
 
+
 def get_cases():
     print("========Covid19 Timeline==========")
     try:
@@ -785,6 +787,78 @@ def get_cases_by_demographics_api():
 
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
+
+########################
+# Dashboards
+########################
+
+def moph_dashboard():
+
+    def explore(workbook):
+        print()
+        print()
+        print("storypoints:", workbook.getStoryPoints())
+        print("parameters", workbook.getParameters())  
+        for t in workbook.worksheets:
+            print()
+            print(f"worksheet name : {t.name}") #show worksheet name
+            print(t.data) #show dataframe for this worksheet
+            print("filters: ", [f['column'] for f in t.getFilters()])
+            print("selectableItems: ")
+            for f in t.getSelectableItems():
+                print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
+
+    def getDailyStats(df):
+
+        def workbooks(check=[]):
+            url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
+            ts = TS()
+            ts.loads(url)
+            workbook = ts.getWorkbook()
+            updated = pd.to_datetime(workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0])
+            yield workbook, updated
+            for date in reversed(list(daterange(d("2021-07-31"), updated))):
+                if any([not df.empty and df[c].get(date) is not None for c in check]):
+                    # have a value already, skip
+                    continue
+                yield workbook.setParameter("param_date", str(date.date())), date
+
+        for wb, date in workbooks(['ATK']):
+            atk = wb.getWorksheet("D_ATK").data
+            if atk.empty:
+                break
+            atk = atk['SUM(atk_new)-alias'][0]
+            df = df.combine_first(pd.DataFrame([[date.date(), atk]], columns=["Date", "ATK"]).set_index("Date"))
+            print(date, atk)
+        return df
+
+    def getTimelines():
+        # Get deaths by prov, date. and other stats - timeline
+        #
+        url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
+        ts = TS()
+        ts.loads(url)
+        workbook = ts.getWorkbook()
+
+    # vax, case, death stats per province
+    url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=province"
+
+    # all province case numbers in one go
+    url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=scoreboard"
+
+    # 5 kinds cases stats for last 30 days
+    url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
+
+    daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
+
+    daily = getDailyStats(daily)
+    export(daily, "moph_dashboard", csv_only=True, dir="json")
+    return daily
+
+########################
+# Excess Deaths
+########################
 
 def excess_deaths():
     url = "https://stat.bora.dopa.go.th/stat/statnew/connectSAPI/stat_forward.php?"
@@ -2551,13 +2625,13 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
+        # vac = get_vaccinations()
+        dashboard = moph_dashboard()
         situation = get_situation()
         cases_by_area = get_cases_by_area()
-        tests = get_tests_by_day()
-        tests_reports = get_test_reports()
-        excess_deaths()
-        # slow due to fuzzy join TODO: append to local copy thats already joined or add extra spellings
+        # tests = get_tests_by_day()
+        # tests_reports = get_test_reports()
+        # excess_deaths()
         pass
     else:
         vac = get_vaccinations()
@@ -2567,10 +2641,11 @@ def scrape_and_combine():
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         excess_deaths()
+        dashboard = moph_dashboard()
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'situation', 'tests_reports', 'tests', 'vac']:
+    for f in ['cases_by_area', 'situation', 'tests_reports', 'tests', 'vac', 'dashboard']:
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
