@@ -508,7 +508,7 @@ def save_plots(df: pd.DataFrame) -> None:
                   "Quarantine (Imported)", "Hospital (Walk-ins/Traced)",
                   "Mobile Community Testing (Proactive)",
                   "Prison (Proactive)",
-                  "Rapid Positive Tests"
+                  "Rapid Testing (Antigen/ATK)"
               ],
               unknown_name='Cases Unknown',
               unknown_total='Cases inc ATK',
@@ -704,8 +704,10 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Recovered since 2021-04-01'] = df['2021-04-14':]['Recovered'].cumsum()
     df['Died since 2021-04-01'] = df['2021-04-01':]['Deaths'].cumsum()
     df['Cases since 2021-04-01'] = df['2021-04-01':]['Cases'].cumsum()
+    # This is those in hospital but we make this the catch all
+    exits = df[['Recovered since 2021-04-01', 'Died since 2021-04-01']].sum(axis=1, skipna=True)
     df['Other Active Cases'] = \
-        df['Cases since 2021-04-01'].sub(non_split, fill_value=0).sub(df['Recovered since 2021-04-01'], fill_value=0)
+        df['Cases since 2021-04-01'].sub(non_split, fill_value=0).sub(exits, fill_value=0).clip(0)
 
     cols = [
         'Died since 2021-04-01',

@@ -843,7 +843,7 @@ def moph_dashboard():
                     continue
                 yield workbook.setParameter("param_date", str(date.date())), date
 
-        for wb, date in workbooks(['Cases', 'Deaths', "Hospitalized Field", "Hospitalized"]):
+        for wb, date in workbooks(['Cases', 'Deaths', "Hospitalized Field", "Hospitalized", "Vac Given 1 Cum"]):
             row = worksheet2df(
                 wb,
                 date,
@@ -861,7 +861,7 @@ def moph_dashboard():
                 D_Death="Deaths",
                 D_ATK="ATK",
             )
-            vac = worksheet2df(wb, D_VacDate="Date", D_Vac1Today="Vac Given 1", D_Vac2Today="Vac Given 2")
+            vac = worksheet2df(wb, D_VacDate="Date", D_Vac1="Vac Given 1 Cum", D_Vac2="Vac Given 2 Cum")
             row = row.combine_first(vac)
             # latest date as a time in it. Need to get rid of it otherwise get duplicate rows
             row.index = row.index.normalize()
@@ -896,6 +896,7 @@ def moph_dashboard():
     daily = getDailyStats(daily)
     export(daily, "moph_dashboard", csv_only=True, dir="json")
     return daily
+
 
 ########################
 # Excess Deaths
@@ -932,7 +933,11 @@ def excess_deaths():
                     break
                 changed = True
                 for sex, numbers in zip(["male", "female"], data):
-                    rows.extend([[year, month, prov, sex, age, numbers.get(f"lsAge{age}")] for age in range(0, 120)])
+                    total = numbers.get("lsSumTotTot")
+                    thisrows = [[year, month, prov, sex, age, numbers.get(f"lsAge{age}")] for age in range(0, 102)]
+                    assert total == sum([r[-1] for r in thisrows])
+                    assert numbers.get("lsAge102") is None
+                    rows.extend(thisrows)
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
         export(df, "deaths_all", csv_only=True, dir="json")
@@ -2669,13 +2674,13 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        # vac = get_vaccinations()
+        vac = get_vaccinations()
+        excess_deaths()
         dashboard = moph_dashboard()
         situation = get_situation()
         cases_by_area = get_cases_by_area()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
-        # excess_deaths()
         pass
     else:
         vac = get_vaccinations()
