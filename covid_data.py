@@ -20,7 +20,7 @@ from tableauscraper import TableauScraper as TS
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
-from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
+from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s
@@ -792,21 +792,39 @@ def get_cases_by_demographics_api():
 # Dashboards
 ########################
 
-def moph_dashboard():
+def explore(workbook):
+    print()
+    print()
+    print("storypoints:", workbook.getStoryPoints())
+    print("parameters", workbook.getParameters())
+    for t in workbook.worksheets:
+        print()
+        print(f"worksheet name : {t.name}") #show worksheet name
+        print(t.data) #show dataframe for this worksheet
+        print("filters: ", [f['column'] for f in t.getFilters()])
+        print("selectableItems: ")
+        for f in t.getSelectableItems():
+            print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
 
-    def explore(workbook):
-        print()
-        print()
-        print("storypoints:", workbook.getStoryPoints())
-        print("parameters", workbook.getParameters())  
-        for t in workbook.worksheets:
-            print()
-            print(f"worksheet name : {t.name}") #show worksheet name
-            print(t.data) #show dataframe for this worksheet
-            print("filters: ", [f['column'] for f in t.getFilters()])
-            print("selectableItems: ")
-            for f in t.getSelectableItems():
-                print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
+
+def worksheet2df(wb, date=None, **mappings):
+    data = dict()
+    if date is not None:
+        data["Date"] = [date]
+    for name, col in mappings.items():
+        df = wb.getWorksheet(name).data
+        if df.empty:
+            data[col] = [None]
+        elif col == "Date":
+            data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
+        else:
+            data[col] = list(df.loc[0])
+            if data[col] == ["%null%"]:
+                data[col] = [None]
+    return pd.DataFrame(data).set_index("Date")
+
+
+def moph_dashboard():
 
     def getDailyStats(df):
 
@@ -814,22 +832,45 @@ def moph_dashboard():
             url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
             ts = TS()
             ts.loads(url)
+            fix_timeouts(ts.session)
             workbook = ts.getWorkbook()
-            updated = pd.to_datetime(workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0])
+            updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
+            updated = pd.to_datetime(updated, dayfirst=False)
             yield workbook, updated
-            for date in reversed(list(daterange(d("2021-07-31"), updated))):
-                if any([not df.empty and df[c].get(date) is not None for c in check]):
+            for date in reversed(list(daterange(d("2021-04-01"), updated))):
+                if not df.empty and all([not pd.isna(df[c].get(date)) for c in check]):
                     # have a value already, skip
                     continue
                 yield workbook.setParameter("param_date", str(date.date())), date
 
-        for wb, date in workbooks(['ATK']):
-            atk = wb.getWorksheet("D_ATK").data
-            if atk.empty:
+        for wb, date in workbooks(['Cases', 'Deaths', "Hospitalized Field", "Hospitalized"]):
+            row = worksheet2df(
+                wb,
+                date,
+                D_New="Cases",
+                D_Walkin="Cases Walkin",
+                D_Proact="Cases Proactive",
+                D_NonThai="Cases Imported",
+                D_Prison="Cases Area Prison",
+                D_Hospital="Hospitalized Hospital",
+                D_HospitalField="Hospitalized Field",
+                D_Severe="Hospitalized Severe",
+                D_SevereTube="Hospitalized Respirator",
+                D_Medic="Hospitalized",
+                D_Recov="Recovered",
+                D_Death="Deaths",
+                D_ATK="ATK",
+            )
+            vac = worksheet2df(wb, D_VacDate="Date", D_Vac1Today="Vac Given 1", D_Vac2Today="Vac Given 2")
+            row = row.combine_first(vac)
+            # latest date as a time in it. Need to get rid of it otherwise get duplicate rows
+            row.index = row.index.normalize()
+
+            if row.empty or vac.empty:
                 break
-            atk = atk['SUM(atk_new)-alias'][0]
-            df = df.combine_first(pd.DataFrame([[date.date(), atk]], columns=["Date", "ATK"]).set_index("Date"))
-            print("MOPH Dashboard", date, atk)
+            row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
+            df = df.combine_first(row).combine_first(vac)
+            print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
         return df
 
     def getTimelines():

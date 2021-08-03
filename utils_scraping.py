@@ -26,12 +26,35 @@ INT_RE = re.compile(r"\d+(?:\,\d+)*")
 NUM_OR_DASH = re.compile(r"([0-9\,\.]+|-)-?")
 
 requests.adapters.DEFAULT_RETRIES = 3  # for other tools that use requests internally
-s = requests.Session()
 RETRY = Retry(
     total=3, backoff_factor=1
 )  # should make it more reliable as ddc.moph.go.th often fails
-s.mount("http://", HTTPAdapter(max_retries=RETRY))
-s.mount("https://", HTTPAdapter(max_retries=RETRY))
+
+
+DEFAULT_TIMEOUT = 5 # seconds
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        self.timeout = DEFAULT_TIMEOUT
+        if "timeout" in kwargs:
+            self.timeout = kwargs["timeout"]
+            del kwargs["timeout"]
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        timeout = kwargs.get("timeout")
+        if timeout is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, **kwargs)
+
+
+def fix_timeouts(s):
+    s.mount("http://", TimeoutHTTPAdapter(max_retries=RETRY))
+    s.mount("https://", TimeoutHTTPAdapter(max_retries=RETRY))
+
+
+s = requests.Session()
+fix_timeouts(s)
 
 
 ####################
@@ -307,8 +330,7 @@ def dav_files(url, username=None, password=None,
         "webdav_password": password,
     }
     client = Client(options)
-    client.session.mount("http://", HTTPAdapter(max_retries=RETRY))
-    client.session.mount("https://", HTTPAdapter(max_retries=RETRY))
+    fix_timeouts(client.session)
     # important we get them sorted newest files first as we only fill in NaN from each additional file
     files = sorted(
         client.list(get_info=True),
