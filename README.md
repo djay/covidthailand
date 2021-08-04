@@ -216,18 +216,17 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 
 ## Daily CCSA Briefings <a name="dl-briefings">
+
+### [cases_briefings.json](https://github.com/djay/covidthailand/wiki/cases_briefings) | [cases_briefings.csv](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
+
 - Sources 
-   - [CCSA Daily Briefing ](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
+   - [CCSA Daily Briefing](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
+   - [MOPH COVID 19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main)
    - [API: Details of all confirmed COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
    - [API: Daily Summary of Cases/Deaths/Recovered](https://covid19.th-stat.com/json/covid19v2/getTimeline.json)
    - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
-<img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
-<img alt="Walk-in Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
-<img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
-<img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
-
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_briefings), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
+- Schema: 
   - Date: e.g "2021-04-06"
   - Cases: Total cases that day. (Cases Imported + Cases Local Transmission)
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
@@ -252,7 +251,10 @@ proactive tests from positive rate is perhaps better for [comparison with other 
     - Cases (Asymptomatic,Symptomatic): - No longer reported in briefing reports
 
 ### Cases/Deaths per province
-- Downloads by Province: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_province), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+
+#### [cases_by_province.json](https://github.com/djay/covidthailand/wiki/cases_by_province) | [cases_by_province.csv](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+
+- Schema cases_by_province: 
   - "Date": e.g "2021-04-06"
   - "Province": e.g "Samut Sakhon"
   - "Cases": Confirmed cases in this province
@@ -263,7 +265,8 @@ proactive tests from positive rate is perhaps better for [comparison with other 
      - "Deaths": 31.0
 
 ### Cases/Deaths per Health District
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/cases_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
+#### [cases_by_area.json](https://github.com/djay/covidthailand/wiki/cases_by_area), [cases_by_area.csv](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
+- Schema cases_by_area: 
   - "Date": e.g "2021-04-06"
   - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
   - "Deaths Area {1-13}": Deaths that day in the health district
@@ -274,8 +277,15 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - Notes:
   - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
 
+
+<img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
+<img alt="Walk-in Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
+<img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
+<img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
+
 ### Deaths by Province
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/deaths), [Download CSV](https://github.com/djay/covidthailand/wiki/deaths.csv)
+#### [deaths.json](https://github.com/djay/covidthailand/wiki/deaths), [deaths.csv](https://github.com/djay/covidthailand/wiki/deaths.csv)
+- Schema: 
    - e.g
       - "Date":"2021-04-27"
       - "death_num":149.0,
@@ -295,6 +305,8 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 ## Daily Situation Reports <a name="dl-situation-reports">
 Case Types and PUI counts
 
+### [situation_reports.json](https://github.com/djay/covidthailand/wiki/situation_reports) | [situation_reports.csv](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
+
 - Sources: 
   - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
   - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php) (Updated a few days later)
@@ -303,8 +315,7 @@ Case Types and PUI counts
 <img alt="PUI from situation reports" src="https://github.com/djay/covidthailand/wiki/tested_pui_all.png" width=200>
 <img alt="Case Types" src="https://github.com/djay/covidthailand/wiki/cases_types_all.png" width=200>
 
-
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/situation_reports), [Download CSV](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
+- Schema
   - Date: e.g "2021-04-06"
   - Cases: Total cases that day. Cases Imported + Cases Local Transmission
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
@@ -353,7 +364,8 @@ Bureau, Chaeng Watthana"
 <img alt="Positive Rate by Health District in overall positive rate (ex. some proactive tests)" src="https://github.com/djay/covidthailand/wiki/positivity_area_all.png" width=200>
 
 ### Daily Tests Private+Public
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_pubpriv), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
+#### [tests_pubpriv.json](https://github.com/djay/covidthailand/wiki/tests_pubpriv) | [tests_pubpriv.csv](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
+- Schema: 
    - Date: e.g "2021-04-06"
    - Tests: PCR tests
    - Tests Private: PCR tests from private labs
@@ -368,8 +380,9 @@ Bureau, Chaeng Watthana"
   should be the same numbers as ```Pos``` and ```Tests```. 
 
 ### Tests by Health District  
+#### [tests_by_area.json](https://github.com/djay/covidthailand/wiki/tests_by_area) [tests_by_area.csv](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
 
-- Downloads: [Download JSON](https://github.com/djay/covidthailand/wiki/tests_by_area), [Download CSV](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
+- Schema: 
    - Start: e.g "2021-04-06"
    - End: e.g "2021-04-13"
    - Pos Area {1-13} - Positive test results
@@ -382,11 +395,12 @@ Bureau, Chaeng Watthana"
 
 ## Vaccination Downloads <a name="dl-vac">
 ## Daily DDC Vaccination Reports
+### [vac_timeline.csv](https://github.com/djay/covidthailand/wiki/vac_timeline.csv)
+
 - Source: 
    - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
    - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
-- [Download CSV](https://github.com/djay/covidthailand/wiki/vac_timeline.csv)
-- e.g.
+- Schema e.g.
 ```
       "Date":"2021-04-25",
       "Vac Allocated Sinovac {1,2}":3840.0,
@@ -410,10 +424,12 @@ Bureau, Chaeng Watthana"
    - #TODO: put in thai group explanations.
 
 ## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety <a name="dl-vac-prov">
+### [vaccinations.csv](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
 - Source: 
+   - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
    - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
-- [Download CSV](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
-- e.g.
+
+- Schema:
 ```
       "Date":"2021-04-25",
       "Province": "Bangkok",
@@ -421,14 +437,33 @@ Bureau, Chaeng Watthana"
       "Vac Given ":83.0,
       "Vac Given {vaccine} Cum":3189.0,
       "Vac Given {vaccine}":83.0,
+      "Vac Allocated {vaccine} {1-2}:
+      "Vac Group {group} {1-2} Cum: Cumulative vaccines given to particular risk group (dose 1 and 2)
 ```
+
+## BORA Monthly Deaths <a name="dl-deaths-all">
+
+### [dealths_all.csv](https://github.com/djay/covidthailand/wiki/deaths_all.csv)
+
+- Source: 
+   - [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
+- Schema:
+  - Year: 2012-2021
+  - Month: 1-12
+  - Province:
+  - Gender: Male|Female
+  - Age: 0-101
+  - Deaths: 
+
 
 
 ## Combined <a name="dl-combined">
+### [combined.csv](https://github.com/djay/covidthailand/wiki/combined.csv)
+
 - Source: 
-  - All the above
+  - All the above daily sources combined
   - plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
-- Downloads: [Download CSV](https://github.com/djay/covidthailand/wiki/combined.csv)
+- Schema: 
   - See all the above for data definitions
 
 # About
