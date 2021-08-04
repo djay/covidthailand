@@ -2304,7 +2304,6 @@ def vaccination_tables(vaccinations, allocations, vacnew, reg, date, page, file)
                 vaccinations[(date, prov)] = [given1, perc1, given2, perc2] + [None] * 10
                 reg[(date, prov)] = pop
         assert added is None or added > 7
-        print(f"{date.date()}: {table} Vaccinations: {added}", file)
     return vaccinations, allocations, vacnew
 
 
@@ -2444,6 +2443,8 @@ def vaccination_reports():
     #     "Vac Registered",
     # ]).set_index(["Date", "Province"])
     vac_prov_reports = vac_prov_reports.combine_first(alloc)
+    print(vac_prov_reports.last_valid_index(), "Vac Tables", len(vac_prov_reports), "Provinces & Dates parsed")
+
 
     # Do cross check we got the same number of allocations to vaccination
     if not vac_prov_reports.empty:

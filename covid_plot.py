@@ -1109,8 +1109,8 @@ def save_plots(df: pd.DataFrame) -> None:
         result = pd.DataFrame()
         for year in [2020, 2021]:
             res = pd.DataFrame()
-            res['Excess Deaths'] = (months[year] - death3_avg)
-            res['PScore'] = res['Excess Deaths'] / death3_avg * 100
+            res['Excess Deaths'] = (months[year] - death5_avg)
+            res['PScore'] = res['Excess Deaths'] / death5_avg * 100
             res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
             res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
@@ -1131,11 +1131,13 @@ def save_plots(df: pd.DataFrame) -> None:
     all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='M')).sum()
     all['Deaths (ex. Known Covid)'] = all['Deaths All Month'] - all['Deaths Covid']
     all['Deaths 2021 (ex. Known Covid)'] = all['Deaths 2021'] - all['Deaths Covid']
-    all['Expected Deaths'] = all['Pre Avg'] + all['Deaths Covid']
+    all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
-    cols = ['Deviation from expected Deaths', 'PScore']
-    plot_area(df=all, png_prefix='deaths_pscore', cols_subset=cols,
-              title='Thailand Excess Deaths',
+    plot_area(df=all, png_prefix='deaths_pscore', 
+              cols_subset=['Deviation from expected Deaths', 'PScore'],
+              legends=["Deviation from normal deaths (removing Covid Deaths) %", "Deviation from Normal deaths (avg 2015-29)"],
+              footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
+              title='Thailand Monthly Deaths above Normal (Avg 2015-2019',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
 
@@ -1306,10 +1308,12 @@ see https://djay.github.io/covidthailand/#excess-deaths
                   cmap='tab10')
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
-    top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"] / adf['Pre Avg'] * 100, num=5)
+    by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
+    top5 = by_province.pipe(topprov, lambda adf: (adf["Excess Deaths"] - adf['Deaths Covid']) / adf['Pre 5 Avg'] * 100, num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='deaths_pscore_prov', cols_subset=cols,
-              title='Thai Provinces with most Excess Deaths (P-Score)',
+              title='Deviation from Expected Monthly Deaths (Avg 2015-19 + Known Covid Deaths)',
+              footnote=footnote5,
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               periods_to_plot=['all']
               )
@@ -1323,12 +1327,13 @@ see https://djay.github.io/covidthailand/#excess-deaths
               )
 
     by_district = excess.groupby("Health District Number").apply(calc_pscore)
-    pscore_districts = by_district.reset_index().pivot(values=["PScore"], index="Date", columns="Health District Number")
-    pscore_districts.columns = [' '.join(c) for c in pscore_districts.columns]
-    cols = rearrange([f'PScore {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=pscore_districts, png_prefix='deaths_pscore_area',
+    by_district['Deaths Covid'] = cases.groupby(["Health District Number", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
+    by_district['Deviation from expected Deaths'] = (by_district['Excess Deaths'] - by_district['Deaths Covid']) / by_district['Pre 5 Avg'] * 100
+    top5 = area_crosstab(by_district, "Deviation from expected Deaths", "")
+    cols = rearrange([f'Deviation from expected Deaths Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    plot_area(df=top5, png_prefix='deaths_expected_area',
               cols_subset=cols, legends=AREA_LEGEND,
-              title='Thai Health Districts Excess Deaths (% P-Score)',
+              title='Deviation from Expected Monthly Deaths (Avg 2015-19 + Known Covid Deaths)',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab20',
               periods_to_plot=['all']
               )
