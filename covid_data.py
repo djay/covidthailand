@@ -821,29 +821,38 @@ def worksheet2df(wb, date=None, **mappings):
             data[col] = list(df.loc[0])
             if data[col] == ["%null%"]:
                 data[col] = [None]
-    return pd.DataFrame(data).set_index("Date")
+    df = pd.DataFrame(data)
+    df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries 
+    return df.set_index("Date")
 
 
 def moph_dashboard():
 
     def getDailyStats(df):
 
-        def workbooks(check=[]):
+        def workbooks(allow_na=[]):
             url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
             ts = TS()
             ts.loads(url)
-            fix_timeouts(ts.session)
+            fix_timeouts(ts.session, timeout=15)
             workbook = ts.getWorkbook()
             updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
             updated = pd.to_datetime(updated, dayfirst=False)
             yield workbook, updated
             for date in reversed(list(daterange(d("2021-04-01"), updated))):
-                if not df.empty and all([not pd.isna(df[c].get(date)) for c in check]):
-                    # have a value already, skip
-                    continue
-                yield workbook.setParameter("param_date", str(date.date())), date
+                if not df.empty:
+                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and c not in allow_na]
+                    if not nulls:
+                        continue
+                    else:
+                        print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
+                try:
+                    yield workbook.setParameter("param_date", str(date.date())), date
+                except requests.exceptions.ReadTimeout:
+                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+                    break
 
-        for wb, date in workbooks(['Cases', 'Deaths', "Hospitalized Field", "Hospitalized", "Vac Given 1 Cum"]):
+        for wb, date in workbooks(["ATK", "Cases Area Prison"]):
             row = worksheet2df(
                 wb,
                 date,
@@ -864,7 +873,6 @@ def moph_dashboard():
             vac = worksheet2df(wb, D_VacDate="Date", D_Vac1="Vac Given 1 Cum", D_Vac2="Vac Given 2 Cum")
             row = row.combine_first(vac)
             # latest date as a time in it. Need to get rid of it otherwise get duplicate rows
-            row.index = row.index.normalize()
 
             if row.empty or vac.empty:
                 break
@@ -2674,15 +2682,16 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        dashboard = moph_dashboard()
         vac = get_vaccinations()
         excess_deaths()
-        dashboard = moph_dashboard()
         situation = get_situation()
         cases_by_area = get_cases_by_area()
         # tests = get_tests_by_day()
         # tests_reports = get_test_reports()
         pass
     else:
+        dashboard = moph_dashboard()
         vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         situation = get_situation()
@@ -2690,7 +2699,6 @@ def scrape_and_combine():
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         excess_deaths()
-        dashboard = moph_dashboard()
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")

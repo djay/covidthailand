@@ -32,7 +32,6 @@ RETRY = Retry(
 
 
 DEFAULT_TIMEOUT = 5 # seconds
-
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         self.timeout = DEFAULT_TIMEOUT
@@ -48,9 +47,13 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         return super().send(request, **kwargs)
 
 
-def fix_timeouts(s):
-    s.mount("http://", TimeoutHTTPAdapter(max_retries=RETRY))
-    s.mount("https://", TimeoutHTTPAdapter(max_retries=RETRY))
+def fix_timeouts(s, timeout=None):
+    if timeout is not None:
+        adapter = TimeoutHTTPAdapter(max_retries=RETRY, timeout=timeout)
+    else:
+        adapter = TimeoutHTTPAdapter(max_retries=RETRY)
+    s.mount("http://", adapter)
+    s.mount("https://", adapter)
 
 
 s = requests.Session()
