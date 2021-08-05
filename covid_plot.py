@@ -1311,7 +1311,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
     by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
     top5 = by_province.pipe(topprov, lambda adf: (adf["Excess Deaths"] - adf['Deaths Covid']) / adf['Pre 5 Avg'] * 100, num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='deaths_pscore_prov', cols_subset=cols,
+    plot_area(df=top5, png_prefix='deaths_expected_prov', cols_subset=cols,
               title='Deviation from Expected Monthly Deaths (Avg 2015-19 + Known Covid Deaths)',
               footnote=footnote5,
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',

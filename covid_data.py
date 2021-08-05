@@ -21,7 +21,7 @@ from tableauscraper import TableauScraper as TS
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
@@ -808,30 +808,51 @@ def explore(workbook):
 
 
 def worksheet2df(wb, date=None, **mappings):
+    res = pd.DataFrame()
     data = dict()
     if date is not None:
         data["Date"] = [date]
     for name, col in mappings.items():
-        df = wb.getWorksheet(name).data
+        if "_getSelectableItems" in name:
+            name = remove_suffix(name, "_getSelectableItems")
+            df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
+        else:
+            df = wb.getWorksheet(name).data
         if df.empty:
             data[col] = [None]
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
+        elif type(col) != str:
+            # if it's not a single value can pass in mapping of cols
+            df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
+            df['Date'] = pd.to_datetime(df['Date']).dt.normalize()
+            # if one mapping is dict then do pivot
+            pivot = [(k, v) for k, v in col.items() if type(v) != str]
+            if pivot:
+                pivot_cols, pivot_mapping = pivot[0] # can only have one
+                # Any other mapped cols are what are the values of the pivot
+                df = df.pivot(index="Date", columns=pivot_cols)
+                df = df.rename(columns=pivot_mapping)
+                df.columns = df.columns.map(' '.join)
+                df = df.reset_index()
+
+            res = res.combine_first(df.set_index("Date"))
         else:
             data[col] = list(df.loc[0])
             if data[col] == ["%null%"]:
                 data[col] = [None]
+    # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
-    df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries 
-    return df.set_index("Date")
+    df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
+    return res.combine_first(df.set_index("Date"))
 
 
 def moph_dashboard():
 
     def getDailyStats(df):
 
-        def workbooks(allow_na=[]):
-            url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
+        def workbooks(allow_na={}):
+            url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
             ts = TS()
             ts.loads(url)
             fix_timeouts(ts.session, timeout=15)
@@ -841,7 +862,8 @@ def moph_dashboard():
             yield workbook, updated
             for date in reversed(list(daterange(d("2021-04-01"), updated))):
                 if not df.empty:
-                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and c not in allow_na]
+                    # allow certain fields null if before set date
+                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, today())]
                     if not nulls:
                         continue
                     else:
@@ -851,8 +873,8 @@ def moph_dashboard():
                 except requests.exceptions.ReadTimeout:
                     print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
                     break
-
-        for wb, date in workbooks(["ATK", "Cases Area Prison"]):
+        allow_na = {"ATK": d("2021-07-31"), "Cases Area Prison": d("2021-05-12"), "Tests": d("2021-07-05")}
+        for wb, date in workbooks(allow_na):
             row = worksheet2df(
                 wb,
                 date,
@@ -869,8 +891,31 @@ def moph_dashboard():
                 D_Recov="Recovered",
                 D_Death="Deaths",
                 D_ATK="ATK",
+                D_Lab2={
+                    "SUM(cnt_ma14)-value": "Tests",
+                    "DAY(txn_date)-value": "Date"
+                },
+                D_NewTL={
+                    "SUM(case_new)-value": "Cases",
+                    "DAY(txn_date)-value": "Date"
+                },
+                D_DeathTL={
+                    "SUM(death_new)-value": "Deaths",
+                    "DAY(txn_date)-value": "Date"
+                },
+                D_Vac_Stack={
+                    "DAY(txn_date)-value": "Date",
+                    "Measure Names-alias": {
+                        "ได้รับวัคซีนเข็มที่ 1 สะสม": "1 Cum",
+                        "ได้รับวัคซีนเข็มที่ 2 สะสม": "2 Cum"
+                    },
+                    "Measure Values-value": "Vac Given",
+                },
             )
             vac = worksheet2df(wb, D_VacDate="Date", D_Vac1="Vac Given 1 Cum", D_Vac2="Vac Given 2 Cum")
+            # D_LabDate
+            # D_Lab2
+            # D_Lab
             row = row.combine_first(vac)
             # latest date as a time in it. Need to get rid of it otherwise get duplicate rows
 
@@ -2444,7 +2489,6 @@ def vaccination_reports():
     # ]).set_index(["Date", "Province"])
     vac_prov_reports = vac_prov_reports.combine_first(alloc)
     print(vac_prov_reports.last_valid_index(), "Vac Tables", len(vac_prov_reports), "Provinces & Dates parsed")
-
 
     # Do cross check we got the same number of allocations to vaccination
     if not vac_prov_reports.empty:
