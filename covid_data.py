@@ -2,6 +2,7 @@ import datetime
 import functools
 import dateutil
 from dateutil.parser import parse as d
+from dateutil.relativedelta import relativedelta
 from itertools import chain, islice
 import json
 import os
@@ -968,22 +969,35 @@ def excess_deaths():
         lyear, lmonth = 2015, 0
     else:
         lyear, lmonth, lprov, lage, lgender = df.last_valid_index()
-    error = False
+    done = False
     changed = False
     for year in range(2012, 2025):
         for month in range(1, 13):
+            if done:
+                break
             if counts.Age.get((year, month), 0) >= 77 * 102 * 2:
                 continue
+            date = datetime.datetime(year=year, month=month, day=1)
+            print("Excess Deaths:", f"missing {year}-{month}")
             for prov, iso in provinces[["Name", "ISO[7]"]].itertuples(index=False):
                 if iso is None or type(iso) != str:
                     continue
-                date = f"{to_thaiyear(year, short=True)}{month:02}"
-                res = s.get(f"{url}&yymmBegin={date}&yymmEnd={date}&cc={iso[3:]}")
+                dateth = f"{to_thaiyear(year, short=True)}{month:02}"
+                print(".", end="")
+                apiurl = f"{url}&yymmBegin={dateth}&yymmEnd={dateth}&cc={iso[3:]}"
+                res = s.get(apiurl)
                 data = json.loads(res.content)
                 if len(data) != 2:
                     # data not found
-                    error = True
-                    break
+                    if date < today() - relativedelta(months=1):
+                        # Error in specific past data
+                        print("Excess Deaths:", f"Error getting {prov}", apiurl, str(data))
+                        continue
+                    else:
+                        # This months data not yet available
+                        print("Excess Deaths:", f"Error in {year}-{month}")
+                        done = True
+                        break
                 changed = True
                 for sex, numbers in zip(["male", "female"], data):
                     total = numbers.get("lsSumTotTot")
@@ -991,6 +1005,7 @@ def excess_deaths():
                     assert total == sum([r[-1] for r in thisrows])
                     assert numbers.get("lsAge102") is None
                     rows.extend(thisrows)
+            print()
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
         export(df, "deaths_all", csv_only=True, dir="json")
@@ -2727,9 +2742,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        excess_deaths()
         dashboard = moph_dashboard()
         vac = get_vaccinations()
-        excess_deaths()
         situation = get_situation()
         cases_by_area = get_cases_by_area()
         # tests = get_tests_by_day()
