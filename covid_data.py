@@ -491,6 +491,9 @@ def get_situation():
                            not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
 
     cum = cum2daily(situation)
+
+    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
+
     # TODO: Not sure but 5 days have 0 PUI. Take them out for now
     # Date
     # 2020-02-12    0.0
@@ -498,9 +501,7 @@ def get_situation():
     # 2020-10-13    0.0
     # 2020-12-29    0.0
     # 2021-05-02    0.0
-    cum[(cum['Tested PUI'] == 0)]['Tested PUI'] = None
-
-    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
+    situation['Tested PUI'] = situation['Tested PUI'].replace(0, np.nan)
 
     # Only add in the live stats if they have been updated with new info
     today = today_situation.index.max()
@@ -2742,13 +2743,13 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        situation = get_situation()
         excess_deaths()
         dashboard = moph_dashboard()
         vac = get_vaccinations()
-        situation = get_situation()
         cases_by_area = get_cases_by_area()
-        # tests = get_tests_by_day()
-        # tests_reports = get_test_reports()
+        tests = get_tests_by_day()
+        tests_reports = get_test_reports()
         pass
     else:
         dashboard = moph_dashboard()
