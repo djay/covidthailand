@@ -761,6 +761,8 @@ def get_cases_by_demographics_api():
         20210731.01: "Samui plus:Imported",
         20210731.02: "ACF เคหะหลักสี่:Work",
         20210731.03: "เดินทางมาจากพื้นที่เสี่ยงที่มีการระบาดของโรค:Community",
+        20210806.01: "ท้ายบ้าน:Unknown",
+        20210806.02: "อื่นๆ:Unknown",  # Other
     }
     for v in r.values():
         key, cat = v.split(":")

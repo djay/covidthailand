@@ -278,7 +278,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         if i > 0 and is_cutshort(file, modified, check):
             break
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
-            resume_byte_pos = int(resume_byte_pos * 0.9) if resumable else 0  # go back 10% in case end of data changed (e.g csv)
+            resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0  # go back 10% in case end of data changed (e.g csv)
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
 
             try:
