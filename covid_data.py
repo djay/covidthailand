@@ -809,6 +809,32 @@ def explore(workbook):
             print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
 
 
+# def workbooks(df, allow_na={}, **params):
+#     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
+#     ts = TS()
+#     ts.loads(url)
+#     fix_timeouts(ts.session, timeout=15)
+#     workbook = ts.getWorkbook()
+#     # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
+#     # updated = pd.to_datetime(updated, dayfirst=False)
+#     yield workbook, idx_value # assume its first from each list?
+
+#     for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
+#         # Assume index of df is in the same order as params
+#         if not df.empty:
+#             # allow certain fields null if before set date
+#             nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and date >= allow_na.get(c, today())]
+#             if not nulls:
+#                 continue
+#             else:
+#                 print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
+#         try:
+#             wb1 = workbook.setParameter(param_name, idx), date
+#         except requests.exceptions.ReadTimeout:
+#             print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+#             break
+
+
 def worksheet2df(wb, date=None, **mappings):
     res = pd.DataFrame()
     data = dict()
@@ -821,7 +847,7 @@ def worksheet2df(wb, date=None, **mappings):
         else:
             df = wb.getWorksheet(name).data
         if df.empty:
-            data[col] = [None]
+            data[col] = [np.nan]
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         elif type(col) != str:
@@ -837,12 +863,14 @@ def worksheet2df(wb, date=None, **mappings):
                 df = df.rename(columns=pivot_mapping)
                 df.columns = df.columns.map(' '.join)
                 df = df.reset_index()
-
-            res = res.combine_first(df.set_index("Date"))
+            df = df.set_index("Date")
+            # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
+            df = df.apply(pd.to_numeric, errors='coerce', axis=1)
+            res = res.combine_first(df)
         else:
             data[col] = list(df.loc[0])
             if data[col] == ["%null%"]:
-                data[col] = [None]
+                data[col] = [np.nan]
     # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
     df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
@@ -853,7 +881,7 @@ def moph_dashboard():
 
     def getDailyStats(df):
 
-        def workbooks(allow_na={}):
+        def workbooks(df, allow_na={}, **params):
             url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
             ts = TS()
             ts.loads(url)
@@ -875,8 +903,9 @@ def moph_dashboard():
                 except requests.exceptions.ReadTimeout:
                     print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
                     break
+
         allow_na = {"ATK": d("2021-07-31"), "Cases Area Prison": d("2021-05-12"), "Tests": d("2021-07-05")}
-        for wb, date in workbooks(allow_na):
+        for wb, date in workbooks(df, allow_na, param_date=reversed(list(daterange(d("2021-04-01"), today())))):
             row = worksheet2df(
                 wb,
                 date,
@@ -937,8 +966,73 @@ def moph_dashboard():
         ts.loads(url)
         workbook = ts.getWorkbook()
 
-    # vax, case, death stats per province
-    url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=province"
+    def by_province():
+
+        def workbooks(df, allow_na={}, **params):
+            url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
+            ts = TS()
+            ts.loads(url)
+            fix_timeouts(ts.session, timeout=15)
+            workbook = ts.getWorkbook()
+            updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
+            updated = pd.to_datetime(updated, dayfirst=False)
+            yield workbook, updated
+            for date in reversed(list(daterange(d("2021-04-01"), updated))):
+                if not df.empty:
+                    # allow certain fields null if before set date
+                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, today())]
+                    if not nulls:
+                        continue
+                    else:
+                        print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
+                try:
+                    yield workbook.setParameter("param_date", str(date.date())), date
+                except requests.exceptions.ReadTimeout:
+                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+                    break
+
+        #selectable items - D2_ProvinceBar
+        #    province : ['แม่ฮ่องสอน', 'พังงา', 'กระบี่', 'ลำพูน', 'ตราด', 'สตูล', 'พัทลุง', 'พะเยา', 'พิษณุโลก', 'แพร่'] ...
+        #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
+        # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
+
+        for wb, date in workbooks(df):
+            row = worksheet2df(
+                wb,
+                date,
+                D2_VacTL={
+                    "DAY(txn_date)-value": "Date",
+                    "SUM(vaccine_1st_dose_acm)-value": "Vac Given 1 Cum",
+                    "SUM(vaccine_2nd_dose_acm)-value": "Vac Given 2 Cum",
+                },
+                D2_Walkin="Cases Walkin",
+                D2_Proact="Cases Proactive",
+                D2_Prison="Cases Area Prison",
+                D2_NonThai="Cases Imported",
+                D2_New="Cases",
+                D2_NewTL={
+                    "AGG(stat_count)-alias": "Cases",
+                    "DAY(txn_date)-value": "Date"
+                },
+                D2_Lab2={
+                    "SUM(cnt_ma14)-value": "Tests",
+                    "DAY(txn_date)-value": "Date"
+                },
+                D2_DeathTL={
+                    "AGG(num_death)-value": "Deaths",
+                    "DAY(txn_date)-value": "Date"
+                },
+                D2_Death="Deaths",
+
+                # D_Hospital="Hospitalized Hospital",
+                # D_HospitalField="Hospitalized Field",
+                # D_Severe="Hospitalized Severe",
+                # D_SevereTube="Hospitalized Respirator",
+                # D_Medic="Hospitalized",
+                # D_Recov="Recovered",
+                # D_ATK="ATK",
+            )
+        return df
 
     # all province case numbers in one go
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=scoreboard"
@@ -948,6 +1042,7 @@ def moph_dashboard():
 
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
 
+    #dfprov = by_province()
     daily = getDailyStats(daily)
     export(daily, "moph_dashboard", csv_only=True, dir="json")
     return daily
@@ -2743,9 +2838,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        dashboard = moph_dashboard()
         situation = get_situation()
         excess_deaths()
-        dashboard = moph_dashboard()
         vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
         tests = get_tests_by_day()
