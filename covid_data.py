@@ -2243,21 +2243,25 @@ def vac_briefing_totals(df, date, file, page, text):
     if not re.search("(ผู้รับวัคซีน|ผูรั้บวัคซีน)", text):
         return df
     # Vaccines
-    numbers, _ = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
-    if numbers:
-        vac_dose1, vac_dose1_cum, vac_dose2, vac_dose2_cum, *_ = numbers
-        row = [
-            date - datetime.timedelta(days=1), vac_dose1 + vac_dose2, vac_dose1_cum + vac_dose2_cum, vac_dose1,
-            vac_dose1_cum, vac_dose2, vac_dose2_cum
-        ]
-    else:
+    numbers, rest = get_next_numbers(text, "ผู้รับวัคซีน", "ผูรั้บวัคซีน")
+    if not numbers:
         return df
+    rest, *_ = rest.split("หายป่วยแล้ว")
+    total, _ = get_next_number(rest, "ฉีดแล้ว", "ฉีดแลว้", until="โดส")
+    cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
+    daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
+    if total:
+        assert 0.99 <= sum(cums) / total <= 1.01
+    else:
+        total = sum(cums)
+    assert len(cums) == len(daily)
+    assert len(cums) < 4
 
     # We need given totals to ensure we use these over other api given totals
-    columns = [
-        "Date", "Vac Given", "Vac Given Cum", "Vac Given 1", "Vac Given 1 Cum", "Vac Given 2",
-        "Vac Given 2 Cum"
-    ]
+    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums
+    columns = ["Date", "Vac Given", "Vac Given Cum"]
+    columns += [f"Vac Given {d}" for d in range(1, len(cums) + 1)]
+    columns += [f"Vac Given {d} Cum" for d in range(1, len(cums) + 1)]
     vac = pd.DataFrame([row], columns=columns).set_index("Date")
     if not vac.empty:
         print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
@@ -2330,7 +2334,8 @@ def vaccination_daily(daily, date, file, page):
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
     ]).set_index("Date")
-    daily = daily.combine_first(df)
+    # TODO: until make more specific to only reports for allocations
+#    daily = daily.combine_first(df)
 
     d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", "รับวัคซีนเข็มท่ี 1 จํานวน", until="2 เข็ม")
     d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until=r"(ดังรูป|3 \(Booster dose\))")
@@ -2339,36 +2344,34 @@ def vaccination_daily(daily, date, file, page):
     is_risks = re.compile("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน)")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2), (3, d3_num, rest3)]:
+        cols = [
+            "Date",
+            f"Vac Given {dose} Cum",
+            f"Vac Group Medical Staff {dose} Cum",
+            f"Vac Group Health Volunteer {dose} Cum",
+            f"Vac Group Other Frontline Staff {dose} Cum",
+            f"Vac Group Over 60 {dose} Cum",
+            f"Vac Group Risk: Disease {dose} Cum",
+            f"Vac Group Risk: Pregnant {dose} Cum",
+            f"Vac Group Risk: Location {dose} Cum",
+        ]
         numbers = [n for n in numbers if n not in [60, 7]]  # remove 7 chronic diseases and over 60 from numbers
         if len(numbers) in [6, 8] and is_risks.search(rest):
             if len(numbers) == 8:
                 total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
             else:
                 total, medical, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = None
+                pregnant = volunteer = 0
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
-            #assert not any_in(row, None)
+            assert not any_in(row, None)
             assert 0.99 <= (sum([i for i in row if i]) / total) <= 1.01
-            df = pd.DataFrame([[date, total] + row],
-                              columns=[
-                                  "Date",
-                                  f"Vac Given {dose} Cum",
-                                  f"Vac Group Medical Staff {dose} Cum",
-                                  f"Vac Group Health Volunteer {dose} Cum",
-                                  f"Vac Group Other Frontline Staff {dose} Cum",
-                                  f"Vac Group Over 60 {dose} Cum",
-                                  f"Vac Group Risk: Disease {dose} Cum",
-                                  f"Vac Group Risk: Pregnant {dose} Cum",
-                                  f"Vac Group Risk: Location {dose} Cum",
-                              ]).set_index("Date")
-        elif dose == 3 and len(numbers) == 2:
-            df = pd.DataFrame([[date] + numbers], columns=[
-                "Date",
-                f"Vac Given {dose} Cum",
-                f"Vac Group Medical Staff {dose} Cum",
-            ]).set_index("Date")
-        elif dose == 3 and not numbers and date < d("2021-08-05"):
-            continue
+            df = pd.DataFrame([[date, total] + row], columns=cols).set_index("Date")
+        elif dose == 3:
+            if len(numbers) == 2:
+                numbers = numbers + [0] * 6
+            else:
+                numbers = [0] * 8
+            df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
             total, *_ = numbers
@@ -2491,10 +2494,10 @@ def vaccination_tables(df, date, page, file):
                 df = add(df, prov, [sv1, sv2, az1, az2, sv1 + sv2, az1 + az2], alloc2_doses)
             elif table == "given":
                 if len(numbers) == 16:
-                    alloc_sino, alloc_az, *numbers = numbers
+                    alloc_sv, alloc_az, *numbers = numbers
+                    df = add(df, prov, [alloc_sv, alloc_az], alloc2)
                 assert len(numbers) == 14
                 df = add(df, prov, numbers, vaccols5x2)
-                df = add(df, prov, [alloc_sino, alloc_az, alloc_sino + alloc_az], alloc2)
             elif table == "new_given" and len(numbers) == 12:  # e.g. vaccinations/Daily report 2021-05-11.pdf
                 dose1, dose2, *groups = numbers
                 df = add(df, prov, [dose1, None, dose2, None] + groups, vaccols5x2)
@@ -2519,10 +2522,10 @@ def vaccination_tables(df, date, page, file):
                 #reg[(date, prov)] = pop
             elif table == "july" and len(numbers) == 33:  # from 2021-08-05
                 # Actually cumulative totals
-                population, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
+                pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
                 sv, az, pf, total_alloc = alloc
                 assert sv + az + pf == total_alloc
-                df = add(df, prov, givens + groups, vaccols7x3)
+                df = add(df, prov, givens + groups + [pop],  vaccols7x3 + ["Vac Population"])
                 df = add(df, prov, [sv, az, pf], alloc3)
             else:
                 assert False
@@ -2884,11 +2887,11 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
         dashboard = moph_dashboard()
         situation = get_situation()
         excess_deaths()
-        cases_by_area = get_cases_by_area()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         pass
