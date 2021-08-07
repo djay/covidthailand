@@ -748,22 +748,34 @@ def save_plots(df: pd.DataFrame) -> None:
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
+    # Too many groups. Combine some for now
+    for dose in range(1, 4):
+        df_vac_groups[f"Vac Group Risk: Location {dose} Cum"] = df_vac_groups[[
+            f"Vac Group Risk: Location {dose} Cum", f'Vac Group Risk: Pregnant {dose} Cum'
+        ]].sum()
+        df_vac_groups[f"Vac Group Medical Staff {dose} Cum"] = df_vac_groups[[
+            f"Vac Group Medical Staff {dose} Cum", f"Vac Group Health Volunteer {dose} Cum"
+        ]].sum()
+    groups = [c for c in groups if "Pregnant" not in c and "Volunteer" not in c and " 3 " not in c]
+    df_vac_groups = df_vac_groups[groups]
 
     # go backwards to get rid of "dips". ie take later cum value as correct. e.g. 2021-06-21
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
     df_vac_groups = df_vac_groups.cummin()  # if later corrected down, take that number into past
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
 
-    df_vac_groups['Vac Given Cum'] = df['Vac Given 1 Cum'] + df['Vac Given 2 Cum']
-    df['Vac Given'] = df['Vac Given 1'] + df['Vac Given 2']
+    # Only care about doses 1 and 2. Dailies will look lower but fully vaccinated is 2 doses
+    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 3)]].sum()
+    df_vac_groups['Vac Given'] = df[[f'Vac Given {d}' for d in range(1, 3)]].sum()
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
+    df_vac_groups['Vac Given 3 Cum'] = df['Vac Given 3 Cum']
     df_vac_groups['Vac Imported Cum'] = df_vac_groups[[c for c in df_vac_groups.columns if "Vac Imported" in c]].sum()
 
     # now convert to daily and interpolate and then normalise to real daily total.
     vac_daily = cum2daily(df_vac_groups)
     # bring in any daily figures we might have collected first
-    vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2']].combine_first(vac_daily)
+    vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2', 'Vac Given 3']].combine_first(vac_daily)
     daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group')]  # Keep for unknown
     # interpolate to fill gaps and get some values for each group
     vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
@@ -1133,7 +1145,7 @@ def save_plots(df: pd.DataFrame) -> None:
     all['Deaths 2021 (ex. Known Covid)'] = all['Deaths 2021'] - all['Deaths Covid']
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
-    plot_area(df=all, png_prefix='deaths_pscore', 
+    plot_area(df=all, png_prefix='deaths_pscore',
               cols_subset=['Deviation from expected Deaths', 'PScore'],
               legends=["Deviation from normal deaths (removing Covid Deaths) %", "Deviation from Normal deaths (avg 2015-29)"],
               footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
