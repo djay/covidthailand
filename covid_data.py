@@ -2498,15 +2498,6 @@ def vaccination_tables(df, date, page, file):
                     df = add(df, prov, [alloc_sv, alloc_az], alloc2)
                 assert len(numbers) == 14
                 df = add(df, prov, numbers, vaccols5x2)
-            elif table == "new_given" and len(numbers) == 12:  # e.g. vaccinations/Daily report 2021-05-11.pdf
-                dose1, dose2, *groups = numbers
-                df = add(df, prov, [dose1, None, dose2, None] + groups, vaccols5x2)
-            elif table == "new_given" and len(numbers) == 21:  # from 2021-07-20
-                # Actually cumulative totals
-                population, alloc, givens, groups = numbers[0], numbers[1:4], numbers[4:8], numbers[9:21]
-                sv, az, total_alloc = alloc
-                df = add(df, prov, givens + groups, vaccols6x2)
-                df = add(df, prov, [sv, az], alloc2)
             elif table == "old_given":
                 alloc, target_num, given, perc, *rest = numbers
                 medical, frontline, disease, elders, riskarea, *rest = rest
@@ -2515,17 +2506,25 @@ def vaccination_tables(df, date, page, file):
                 row = [given, perc, 0, 0] + [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
                 df = add(df, prov, row, vaccols5x2)
                 df = add(df, prov, [alloc, 0, 0, 0, alloc, 0], alloc2_doses)
+            elif table == "new_given" and len(numbers) == 12:  # e.g. vaccinations/Daily report 2021-05-11.pdf
+                dose1, dose2, *groups = numbers
+                df = add(df, prov, [dose1, None, dose2, None] + groups, vaccols5x2)
+            elif table == "new_given" and len(numbers) == 21:  # from 2021-07-20
+                # Actually cumulative totals
+                pop, alloc, givens, groups = numbers[0], numbers[1:4], numbers[4:8], numbers[9:21]
+                sv, az, total_alloc = alloc
+                df = add(df, prov, givens + groups + [pop], vaccols6x2 + ["Vac Population"])
+                df = add(df, prov, [sv, az], alloc2)
             elif table == "july" and len(numbers) == 5:
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 df = add(df, prov, row, givencols)
-                #reg[(date, prov)] = pop
             elif table == "july" and len(numbers) == 33:  # from 2021-08-05
                 # Actually cumulative totals
                 pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
                 sv, az, pf, total_alloc = alloc
                 assert sv + az + pf == total_alloc
-                df = add(df, prov, givens + groups + [pop],  vaccols7x3 + ["Vac Population"])
+                df = add(df, prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
                 df = add(df, prov, [sv, az, pf], alloc3)
             else:
                 assert False

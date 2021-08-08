@@ -765,8 +765,8 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
 
     # Only care about doses 1 and 2. Dailies will look lower but fully vaccinated is 2 doses
-    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 3)]].sum()
-    df_vac_groups['Vac Given'] = df[[f'Vac Given {d}' for d in range(1, 3)]].sum()
+    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 3)]].sum(axis=1)
+    df_vac_groups['Vac Given'] = df[[f'Vac Given {d}' for d in range(1, 3)]].sum(axis=1)
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
     df_vac_groups['Vac Given 3 Cum'] = df['Vac Given 3 Cum']
