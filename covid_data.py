@@ -2594,12 +2594,12 @@ def vaccination_reports():
     for file, _, _ in web_files(*links, dir="vaccinations"):
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         date = file2date(file)
+        date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
             continue
         for page in parse_file(file):
-            date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-            table = vaccination_tables(table, date, page, file)
-            table = table.combine_first(table)
+            page_table = vaccination_tables(table, date, page, file)
+            table = table.combine_first(page_table)
 
             vac_daily = vaccination_daily(vac_daily, date, file, page)
             vac_daily = vac_problem(vac_daily, date, file, page)
@@ -2617,14 +2617,13 @@ def vaccination_reports():
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
         # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
         # TODO: only have 76 prov? something going on
-        missing_data = counts[counts['Vac Given 1 Cum'] < 76]["2021-05-04":]
+        missing_data = counts[counts['Vac Given 1 Cum'] < 77]["2021-05-04":]
         vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
         # Just in case coldchain data not working
         vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum']
 
     return vac_daily, vac_prov_reports
-
 
 
 def get_vaccinations():
@@ -2930,8 +2929,8 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
+        cases_by_area = get_cases_by_area()
         dashboard = moph_dashboard()
         situation = get_situation()
         excess_deaths()
