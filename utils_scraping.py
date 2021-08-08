@@ -141,9 +141,13 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         return []
 
 
-def get_next_number(content, *matches, default=None, remove=False, before=False, until=None):
+def get_next_number(content, *matches, default=None, remove=False, before=False, until=None, return_rest=True):
     num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until)
-    return num[0] if num else default, rest
+    num = num[0] if num else default
+    if return_rest:
+        return num, rest
+    else:
+        return num
 
 
 def toint(s):

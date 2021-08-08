@@ -1677,8 +1677,49 @@ def briefing_deaths_summary(text, date):
     title_num, _ = get_next_numbers(text, title_re)
     day, year, deaths_title, *_ = title_num
 
-    no_comorbidity, _ = get_next_number(text, "ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", default=0)
-    risk_family, _ = get_next_number(text, "คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม", default=0)
+    text = re.sub(r"([\d]+wk)", "", text)  # remove 20wk pregnant
+    diseases = {
+        "Hypertension": ["ความดันโลหิตสูง", "HT", "ความดันโลหิตสงู"],
+        "Diabetes": ["เบาหวาน", "DM"],
+        "Hyperlipidemia": ["ไขมันในเลือดสูง"],
+        "Lung disease": ["โรคปอด"],
+        "Obesity": ["โรคอ้วน", "อ้วน"],
+        "Cerebrovascular": ["หลอดเลือดสมอง"],
+        "Kidney disease": ["โรคไต"],
+        "Heart disease": ["โรคหัวใจ"],
+        "Bedridden": ["ติดเตียง"],
+        "Pregnant": ["ตั้งครรภ์"],
+        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว"],
+    }
+    comorbidity = {
+        disease: get_next_number(text, *thdiseases, default=0, return_rest=False)
+        for disease, thdiseases in diseases.items()
+    }
+    assert sum(comorbidity.values()) >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
+
+    risks = {
+        "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
+        "Others": ["คนอื่นๆ", "คนอ่ืนๆ"],
+        "Location": [
+            "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพ้ืนที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด", "อาศัย/เข้าพ้ืนที่ระบาด",
+            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด"
+        ],  # Live/go to an epidemic area
+        "Crowds": [
+            "ไปที่แออัด", "ไปท่ีแออัด", "ไปสถานที่แออัดพลุกพลา่น", "เข้าไปในสถานที่แออัดพลุกพลา่น",
+            "ไปสถานที่แออัดพลุกพล่าน"
+        ],  # Go to crowded places
+        "Work": ["อาชีพเสี่ยง"],  # Risky occupations
+        "HCW": ["HCW", "บุคลากรทางการแพทย์"],
+        "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
+    }
+    risk = {
+        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False)
+        for en_risk, th_risks in risks.items()
+    }
+    # TODO: Get all bullets and fuzzy match them to categories
+    #assert sum(risk.values()) >= deaths_title, f"Missing risks {risk}\n{text}"
+
+    #    risk_family, _ = get_next_number(text, "คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม", default=0)
 
     assert male + female == deaths_title
     # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
@@ -1688,14 +1729,17 @@ def briefing_deaths_summary(text, date):
     # TODO: deaths at home - "เสียชีวิตที่บ้าน 1 ราย จ.เพชรบุรี พบเชื้อหลังเสียชีวิต"
 
     # TODO: what if they have more than one page?
-    sum = pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female, no_comorbidity, risk_family]],
-                       columns=[
-                           "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male",
-                           "Deaths Female", "Deaths Comorbidity None", "Deaths Risk Family"]
-                       ).set_index("Date")
+    risk_cols = [f"Deaths Risk {r}" for r in risk.keys()]
+    cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
+    row = pd.DataFrame(
+        [[date, male + female, med_age, min_age, max_age, male, female] + list(risk.values())
+         + list(comorbidity.values())],
+        columns=[
+            "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
+        ] + risk_cols + cm_cols).set_index("Date")
     dfprov = briefing_deaths_provinces(text, date, deaths_title)
-    print(f"{date.date()} Deaths:", len(dfprov), "|", sum.to_string(header=False, index=False))
-    return sum, dfprov
+    print(f"{date.date()} Deaths:", len(dfprov), "|", row.to_string(header=False, index=False))
+    return row, dfprov
 
 
 def briefing_deaths_cells(cells, date, all):
@@ -2335,7 +2379,7 @@ def vaccination_daily(daily, date, file, page):
         "Vac Allocated AstraZeneca",
     ]).set_index("Date")
     # TODO: until make more specific to only reports for allocations
-#    daily = daily.combine_first(df)
+    #    daily = daily.combine_first(df)
 
     d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", "รับวัคซีนเข็มท่ี 1 จํานวน", until="2 เข็ม")
     d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until=r"(ดังรูป|3 \(Booster dose\))")
@@ -2546,8 +2590,8 @@ def vaccination_reports():
     links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
-    
-    for file, _, _ in web_files(*links, dir="vaccinations"):            
+
+    for file, _, _ in web_files(*links, dir="vaccinations"):
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         date = file2date(file)
         if not date or date <= d("2021-01-01"):  # TODO: make go back later
