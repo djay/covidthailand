@@ -323,13 +323,13 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = [
         'Positivity Public+Private',
-        'Positive Rate Private',
+        'Positivity Cases/Tests',
         'Cases per PUI3',
         'Positivity Walkins/PUI3',
     ]
     legends = [
         'Positive Rate: Share of PCR tests that are positive ',
-        'Share of Private PCR tests that are positive',
+        'Share of PCR Tests that are confirmed cases',
         'Share of PUI*3 that are confirmed cases',
         'Share of PUI*3 that are walkin cases'
     ]
@@ -750,12 +750,11 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df['2021-02-28':][groups]
     # Too many groups. Combine some for now
     for dose in range(1, 4):
-        df_vac_groups[f"Vac Group Risk: Location {dose} Cum"] = df_vac_groups[[
-            f"Vac Group Risk: Location {dose} Cum", f'Vac Group Risk: Pregnant {dose} Cum'
-        ]].sum()
-        df_vac_groups[f"Vac Group Medical Staff {dose} Cum"] = df_vac_groups[[
-            f"Vac Group Medical Staff {dose} Cum", f"Vac Group Health Volunteer {dose} Cum"
-        ]].sum()
+        df_vac_groups[f"Vac Group Risk: Location {dose} Cum"] = df_vac_groups[
+            f"Vac Group Risk: Location {dose} Cum"].add(df_vac_groups[f'Vac Group Risk: Pregnant {dose} Cum'],
+                                                        fill_value=0)
+        df_vac_groups[f"Vac Group Medical Staff {dose} Cum"] = df_vac_groups[f"Vac Group Medical Staff {dose} Cum"].add(
+            df_vac_groups[f'Vac Group Health Volunteer {dose} Cum'], fill_value=0)
     groups = [c for c in groups if "Pregnant" not in c and "Volunteer" not in c and " 3 " not in c]
     df_vac_groups = df_vac_groups[groups]
 
