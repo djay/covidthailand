@@ -193,6 +193,7 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 # Vaccinations <a name="vaccinations">
 
+<!--
 ## Vaccinations by Priority Groups
 
 ![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
@@ -211,6 +212,8 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - Source: [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
 
 - see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
+
+-->
 
 # Downloads
 
