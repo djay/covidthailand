@@ -2429,13 +2429,37 @@ def vaccination_daily(daily, date, file, page):
         "Vac Allocated AstraZeneca",
     ]).set_index("Date")
     # TODO: until make more specific to only reports for allocations
-    #    daily = daily.combine_first(df)
+    daily = daily.combine_first(df)
 
-    d1_num, rest1 = get_next_numbers(page, "ได้รับวัคซีนเข็มที่ 1", "รับวัคซีนเข็มท่ี 1 จํานวน", until="2 เข็ม")
-    d2_num, rest2 = get_next_numbers(page, "ได้รับวัคซีน 2 เข็ม", "ไดรับวัคซีน 2 เข็ม", until=r"(ดังรูป|3 \(Booster dose\))")
+    if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย)", page):
+        print(date.date(), "Vac Sum (Missing groups)", df.to_string(header=False, index=False), file)
+        assert date < d("2021-07-12")
+        return daily
+
+    def clean_num(numbers):
+        return [n for n in numbers if n not in [60, 7]]
+
+    page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
+
+    d1_num, rest1 = get_next_numbers(page,
+                                     "เข็ม(?:ท่ี|ที่) 1 จํานวน",
+                                     "ซีนเข็มที่ 1 จ",
+                                     "1  จํานวน",
+                                     until=r"(?:2 เข็ม)")
+    d2_num, rest2 = get_next_numbers(page,
+                                     "ได้รับวัคซีน 2 เข็ม",
+                                     "ไดรับวัคซีน 2 เข็ม",
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|3 \(Booster dose\))")
     d3_num, rest3 = get_next_numbers(page, r"3 \(Booster dose\)", until="ดังรูป")
+    if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
+        if date > d("2021-04-24"):
+            assert False
+        else:
+            print(date.date(), "Vac Sum (Error groups)", df.to_string(header=False, index=False), file)
+            return daily
+    # assert len(d3_num) == 0 or len(d3_num) == len(d2_num)
 
-    is_risks = re.compile("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน)")
+    is_risks = re.compile("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน|ได้รับวัคซีน 2)")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2), (3, d3_num, rest3)]:
         cols = [
@@ -2449,7 +2473,7 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
         ]
-        numbers = [n for n in numbers if n not in [60, 7]]  # remove 7 chronic diseases and over 60 from numbers
+        numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if len(numbers) in [6, 8] and is_risks.search(rest):
             if len(numbers) == 8:
                 total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
@@ -2807,6 +2831,7 @@ def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
     for file in files:
         for i, page in enumerate(parse_file(file), 1):
+            # pass
             df = vac_manuf_given(df, page, file, i)
     return df
 
@@ -2984,9 +3009,9 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        vac = get_vaccinations()
         dashboard = moph_dashboard()
         cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
