@@ -496,7 +496,8 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test results compared to Confirmed Cases',
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab20')
 
-    df['Cases Proactive Community'] = df['Cases Proactive'].sub(df['Cases Area Prison'], fill_value=0)
+    # No longer include prisons in proactive number
+    df['Cases Proactive Community'] = df['Cases Proactive'] # .sub(df['Cases Area Prison'], fill_value=0)
     df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
     cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison', 'ATK']
     plot_area(df=df,

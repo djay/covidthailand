@@ -10,6 +10,7 @@ import re
 import copy
 import codecs
 import shutil
+import time
 
 from bs4 import BeautifulSoup
 import camelot
@@ -18,6 +19,7 @@ import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
 from tableauscraper import TableauScraper as TS
+import tableauscraper
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
@@ -35,6 +37,7 @@ from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range
 ##########################################
 
 def situation_cases_cum(parsed_pdf, date):
+    prison = None
     _, rest = get_next_numbers(parsed_pdf, "Disease Situation in Thailand", debug=False)
     cases, rest = get_next_numbers(
         rest,
@@ -102,8 +105,8 @@ def situation_cases_cum(parsed_pdf, date):
             "(?i)Cases were (?:infected )?migrant workers",
         )
         prison, _ = get_next_number(rest, "Cases found in Prisons", default=0)
-        if active is not None:
-            active += prison
+        #if active is not None:
+        #    active += prison
 
         # TODO: cum local really means all local ie walkins+active testing
         local, _ = get_next_number(rest, "(?i)(?:Local )?Transmission")
@@ -128,9 +131,9 @@ def situation_cases_cum(parsed_pdf, date):
 
     # assert cases == (local+imported) # Too many mistakes
     return pd.DataFrame(
-        [(date, cases, local, imported, quarantine, outside_quarantine, active)],
+        [(date, cases, local, imported, quarantine, outside_quarantine, active, prison)],
         columns=["Date", "Cases Cum", "Cases Local Transmission Cum", "Cases Imported Cum",
-                 "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum"]
+                 "Cases In Quarantine Cum", "Cases Outside Quarantine Cum", "Cases Proactive Cum", "Cases Area Prison Cum"]
     ).set_index("Date")
 
 
@@ -848,11 +851,11 @@ def worksheet2df(wb, date=None, **mappings):
             df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
         else:
             df = wb.getWorksheet(name).data
-        if df.empty:
-            data[col] = [np.nan]
-        elif col == "Date":
+        if col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         elif type(col) != str:
+            if df.empty:
+                continue
             # if it's not a single value can pass in mapping of cols
             df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
             df['Date'] = pd.to_datetime(df['Date']).dt.normalize()
@@ -869,6 +872,8 @@ def worksheet2df(wb, date=None, **mappings):
             # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
             df = df.apply(pd.to_numeric, errors='coerce', axis=1)
             res = res.combine_first(df)
+        elif df.empty:
+            data[col] = [np.nan]
         else:
             data[col] = list(df.loc[0])
             if data[col] == ["%null%"]:
@@ -877,6 +882,25 @@ def worksheet2df(wb, date=None, **mappings):
     df = pd.DataFrame(data)
     df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
     return res.combine_first(df.set_index("Date"))
+
+
+def setParamater(wb, parameterName, value):
+    scraper = wb._scraper
+    tableauscraper.api.delayExecution(scraper)
+    payload = (
+        ("fieldCaption", (None, parameterName)),
+        ("valueString", (None, value)),
+    )
+    r = scraper.session.post(
+        f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
+        files=payload,
+        verify=scraper.verify
+    )
+    scraper.lastActionTime = time.time()
+    resp = r.json()
+
+    wb.updateFullData(resp)
+    return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
 
 
 def moph_dashboard():
@@ -892,22 +916,36 @@ def moph_dashboard():
             updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
             updated = pd.to_datetime(updated, dayfirst=False)
             yield workbook, updated
-            for date in reversed(list(daterange(d("2021-04-01"), updated))):
+            start = d("2021-01-01")
+            for date in reversed(list(daterange(start, updated))):
                 if not df.empty:
                     # allow certain fields null if before set date
-                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, today())]
+                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, start)]
                     if not nulls:
                         continue
                     else:
                         print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
                 try:
-                    yield workbook.setParameter("param_date", str(date.date())), date
+                    yield setParamater(workbook, "param_date", str(date.date())), date
                 except requests.exceptions.ReadTimeout:
                     print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
                     break
 
-        allow_na = {"ATK": d("2021-07-31"), "Cases Area Prison": d("2021-05-12"), "Tests": d("2021-07-05")}
-        for wb, date in workbooks(df, allow_na, param_date=reversed(list(daterange(d("2021-04-01"), today())))):
+        allow_na = {
+            "ATK": d("2021-07-31"),
+            "Cases Area Prison": d("2021-05-12"),
+            "Tests": d("2021-07-05"),
+            'Hospitalized Field HICI': d("2021-08-08"),
+            'Hospitalized Field Hospitel': d("2021-08-08"),
+            'Hospitalized Field Other': d("2021-08-08"),
+            'Vac Given 1 Cum': d("2021-01-09"),
+            'Vac Given 2 Cum': d("2021-01-09"),
+            'Hospitalized Field': d('2021-01-10'),
+            'Hospitalized Respirator': d("2021-03-25"),  # patchy before this
+            'Hospitalized Severe': d("2021-03-25"),
+            'Hospitalized Hospital': d("2021-01-25"),
+        }
+        for wb, date in workbooks(df, allow_na, param_date=reversed(list(daterange(d("2021-01-01"), today())))):
             row = worksheet2df(
                 wb,
                 date,
@@ -917,7 +955,6 @@ def moph_dashboard():
                 D_NonThai="Cases Imported",
                 D_Prison="Cases Area Prison",
                 D_Hospital="Hospitalized Hospital",
-                D_HospitalField="Hospitalized Field",
                 D_Severe="Hospitalized Severe",
                 D_SevereTube="Hospitalized Respirator",
                 D_Medic="Hospitalized",
@@ -944,18 +981,21 @@ def moph_dashboard():
                     },
                     "Measure Values-value": "Vac Given",
                 },
-            )
-            vac = worksheet2df(wb, D_VacDate="Date", D_Vac1="Vac Given 1 Cum", D_Vac2="Vac Given 2 Cum")
-            # D_LabDate
-            # D_Lab2
-            # D_Lab
-            row = row.combine_first(vac)
-            # latest date as a time in it. Need to get rid of it otherwise get duplicate rows
+                D_HospitalField="Hospitalized Field",
+                D_Hospitel="Hospitalized Field Hospitel",
+                D_HICI="Hospitalized Field HICI",
+                D_HFieldOth="Hospitalized Field Other",
+                D_RecovL={
+                    "DAY(txn_date)-value": "Date",
+                    "SUM(recovered_new)-value": "Recovered"
+                }
 
-            if row.empty or vac.empty:
+            )
+
+            if row.empty:
                 break
             row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
-            df = df.combine_first(row).combine_first(vac)
+            df = df.combine_first(row)
             print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
         return df
 
@@ -1457,9 +1497,9 @@ def briefing_case_types(date, pages, url):
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
-        proactive += prison  # not sure if they are going to add this category going forward?
+        #proactive += prison  # not sure if they are going to add this category going forward?
 
-        assert cases == walkins + proactive + imported, f"{date}: briefing case types don't match"
+        assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
         numbers, rest = get_next_numbers(text, "อาการหนัก")
@@ -2302,10 +2342,11 @@ def vac_briefing_totals(df, date, file, page, text):
     assert len(cums) < 4
 
     # We need given totals to ensure we use these over other api given totals
-    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums
+    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [file]
     columns = ["Date", "Vac Given", "Vac Given Cum"]
     columns += [f"Vac Given {d}" for d in range(1, len(cums) + 1)]
     columns += [f"Vac Given {d} Cum" for d in range(1, len(cums) + 1)]
+    columns += ["Source Vac Given"]
     vac = pd.DataFrame([row], columns=columns).set_index("Date")
     if not vac.empty:
         print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
@@ -2929,13 +2970,13 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
-        vac = get_vaccinations()
-        cases_by_area = get_cases_by_area()
         dashboard = moph_dashboard()
+        cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
         situation = get_situation()
-        excess_deaths()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
+        excess_deaths()
         pass
     else:
         dashboard = moph_dashboard()
@@ -2949,7 +2990,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['cases_by_area', 'situation', 'tests_reports', 'tests', 'vac', 'dashboard']:
+    for f in ['tests_reports', 'tests', 'dashboard', 'cases_by_area', 'situation', 'vac']:
         if f in locals():
             df = df.combine_first(locals()[f])
     print(df)
