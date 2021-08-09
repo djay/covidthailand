@@ -2613,11 +2613,15 @@ def vaccination_tables(df, date, page, file):
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 df = add(df, prov, row, givencols)
-            elif table == "july" and len(numbers) == 33:  # from 2021-08-05
+            elif table == "july" and len(numbers) in [33, 27]:  # from 2021-08-05
                 # Actually cumulative totals
                 pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
                 sv, az, pf, total_alloc = alloc
                 assert sv + az + pf == total_alloc
+                if len(groups) == 15:
+                    # medical has 3 doses, rest 2, so insert some Nones
+                    for i in range(5, len(groups) + 6, 3):
+                        groups.insert(i, None)
                 df = add(df, prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
                 df = add(df, prov, [sv, az, pf], alloc3)
             else:
