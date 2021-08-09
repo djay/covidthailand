@@ -745,27 +745,30 @@ def save_plots(df: pd.DataFrame) -> None:
             'Only 1', first).replace(
             ' 1', " " + first).replace(
             ' 2', " " + second).replace(
+            'Given 3', "3rd Booster").replace(
             'Risk: Location', 'Under 60')
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
     # Too many groups. Combine some for now
-    for dose in range(1, 4):
-        df_vac_groups[f"Vac Group Risk: Location {dose} Cum"] = df_vac_groups[
-            f"Vac Group Risk: Location {dose} Cum"].add(df_vac_groups[f'Vac Group Risk: Pregnant {dose} Cum'],
-                                                        fill_value=0)
-        df_vac_groups[f"Vac Group Medical Staff {dose} Cum"] = df_vac_groups[f"Vac Group Medical Staff {dose} Cum"].add(
-            df_vac_groups[f'Vac Group Health Volunteer {dose} Cum'], fill_value=0)
-    groups = [c for c in groups if "Pregnant" not in c and "Volunteer" not in c and " 3 " not in c]
+    # for dose in range(1, 4):
+    #     df_vac_groups[f"Vac Group Risk: Location {dose} Cum"] = df_vac_groups[
+    #         f"Vac Group Risk: Location {dose} Cum"].add(df_vac_groups[f'Vac Group Risk: Pregnant {dose} Cum'],
+    #                                                     fill_value=0)
+    #     df_vac_groups[f"Vac Group Medical Staff {dose} Cum"] = df_vac_groups[f"Vac Group Medical Staff {dose} Cum"].add(
+    #         df_vac_groups[f'Vac Group Health Volunteer {dose} Cum'], fill_value=0)
+    # groups = [c for c in groups if "Pregnant" not in c and "Volunteer" not in c and " 3 " not in c]
     df_vac_groups = df_vac_groups[groups]
 
     # go backwards to get rid of "dips". ie take later cum value as correct. e.g. 2021-06-21
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
     df_vac_groups = df_vac_groups.cummin()  # if later corrected down, take that number into past
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
+    # We have some missing days so interpolate e.g. 2021-05-04
+    df_vac_groups = df_vac_groups.interpolate()
 
-    # Only care about doses 1 and 2. Dailies will look lower but fully vaccinated is 2 doses
-    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 3)]].sum(axis=1)
+    # TODO: should we use actual Given?
+    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 4)]].sum(axis=1)
     df_vac_groups['Vac Given'] = df[[f'Vac Given {d}' for d in range(1, 3)]].sum(axis=1)
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
@@ -776,7 +779,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_daily = cum2daily(df_vac_groups)
     # bring in any daily figures we might have collected first
     vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2', 'Vac Given 3']].combine_first(vac_daily)
-    daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group')]  # Keep for unknown
+    daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group') and ' 3' not in c] + ['Vac Given 3']  # Keep for unknown
     # interpolate to fill gaps and get some values for each group
     vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
     # now normalise the filled in days so they add to their real total
@@ -785,7 +788,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # vac_daily['7d Runway Rate'] = (df['Vac Imported Cum'].fillna(method="ffill") - df_vac_groups['Vac Given Cum']) / 7
     days_to_target = (pd.Timestamp('2022-01-01') - vac_daily.index.to_series()).dt.days
     vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / days_to_target
-    vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given Cum']) / days_to_target
+    vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given 2 Cum']) / days_to_target
 
     daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
@@ -807,26 +810,28 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 1',
             'Target Rate 2'],
         ma_days=None,
-        cmap='Paired_r',
+        cmap='tab20_r',
     )
 
-    # Now turn daily back to cumulative since we now have estimates for every day without dips
-    vac_cum = vac_daily.cumsum().combine_first(vac_daily[daily_cols].fillna(0).cumsum())
-    vac_cum.columns = [f"{c} Cum" for c in vac_cum.columns]
-    # Not sure why but we end up with large cumalitive than originally so normalise
-    for c in groups:
-        vac_cum[c] = vac_cum[c] / vac_cum[groups].sum(axis=1) * df_vac_groups['Vac Given Cum']
+    # # Now turn daily back to cumulative since we now have estimates for every day without dips
+    # vac_cum = vac_daily.cumsum().combine_first(vac_daily[daily_cols].fillna(0).cumsum())
+    # vac_cum.columns = [f"{c} Cum" for c in vac_cum.columns]
+    # # Not sure why but we end up with large cumalitive than originally so normalise
+    # for c in groups:
+    #     vac_cum[c] = vac_cum[c] / vac_cum[groups].sum(axis=1) * df_vac_groups['Vac Given Cum']
+
+    vac_cum = df_vac_groups
 
     # TODO: adjust allocated for double dose group
-    second_dose = [c for c in groups if "2 Cum" in c]
-    first_dose = [c for c in groups if "1 Cum" in c]
+    # second_dose = [c for c in groups if "2 Cum" in c]
+    # first_dose = [c for c in groups if "1 Cum" in c]
     # vac_cum['Available Vaccines Cum'] = df['Vac Imported Cum'].fillna(method="ffill") - vac_cum[second_dose].sum(axis=1)
 
     cols = []
     # We want people vaccinated not total doses
     for c in groups:
         if "1" in c:
-            vac_cum[c.replace("1", "Only 1")] = vac_cum[c].sub(vac_cum[c.replace("1", "2")], fill_value=0)
+            vac_cum[c.replace("1", "Only 1")] = vac_cum[c].sub(vac_cum[c.replace("1", "2")])
             cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
 
     cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
@@ -837,7 +842,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
-              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='Paired_r',
+              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='tab20_r',
               # between=['Available Vaccines Cum'],
               y_formatter=thaipop)
 
