@@ -938,9 +938,9 @@ def moph_dashboard():
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
-            'Vac Given 1 Cum': d("2021-01-09"),
-            'Vac Given 2 Cum': d("2021-01-09"),
-            'Hospitalized Field': d('2021-01-10'),
+            'Vac Given 1 Cum': d("2021-01-11"),
+            'Vac Given 2 Cum': d("2021-01-11"),
+            'Hospitalized Field': d('2021-04-01'),
             'Hospitalized Respirator': d("2021-03-25"),  # patchy before this
             'Hospitalized Severe': d("2021-03-25"),
             'Hospitalized Hospital': d("2021-01-25"),
@@ -997,6 +997,8 @@ def moph_dashboard():
             row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
             df = df.combine_first(row)
             print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+        # We get negative valus for field hosoutal before april
+        df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
         return df
 
     def getTimelines():
@@ -1640,13 +1642,16 @@ def briefing_deaths_provinces(dtext, date, total_deaths):
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
     # remove the table header and page title.
-    pre, table_content = re.split("โควิด[ \n-]*19\n\n", text, 1)
+    pre, table_content = re.split("(?:โควิด[ \n-]*19\n\n|รวม\( \))", text, 1)
 
     # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
     ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
-    rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", rest_bullets, 1)
-    *bullets, ptext2 = bullets_re.split(rest_bullets2)
-    ptext2, *age_text = re.split("•", ptext2, 1)
+    if "หญิง" in rest_bullets: # new format on 2021-08-09 - no gender and prov no longer shoved in the middle.
+        rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", rest_bullets, 1)
+        *bullets, ptext2 = bullets_re.split(rest_bullets2)
+        ptext2, *age_text = re.split("•", ptext2, 1)
+    else:
+        ptext2 = ""
     ptext = ptext1 + ptext2
     # Now we have text that just contains provinces and numbers
     # but could have subtotals. Get each word + number (or 2 number) combo
@@ -1705,10 +1710,15 @@ def briefing_deaths_summary(text, date):
                                    ints=False)
     med_age, min_age, max_age, *_ = numbers
 
-    male, female, *_ = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
-    if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
-        # They sometimes reorder them
-        male, female = female, male
+    genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
+    if genders and date == d("2021-08-09"):
+        male, female, *_ = genders
+        if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
+            # They sometimes reorder them
+            male, female = female, male
+        assert male + female == deaths_title
+    else:
+        male, female = None, None
 
     numbers, *_ = get_next_numbers(text, "ค่ากลางระยะเวลา")
     if numbers:
@@ -1721,7 +1731,7 @@ def briefing_deaths_summary(text, date):
     diseases = {
         "Hypertension": ["ความดันโลหิตสูง", "HT", "ความดันโลหิตสงู"],
         "Diabetes": ["เบาหวาน", "DM"],
-        "Hyperlipidemia": ["ไขมันในเลือดสูง"],
+        "Hyperlipidemia": ["ไขมันในเลือดสูง", "HPL"],
         "Lung disease": ["โรคปอด"],
         "Obesity": ["โรคอ้วน", "อ้วน"],
         "Cerebrovascular": ["หลอดเลือดสมอง"],
@@ -1761,7 +1771,6 @@ def briefing_deaths_summary(text, date):
 
     #    risk_family, _ = get_next_number(text, "คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม", default=0)
 
-    assert male + female == deaths_title
     # TODO: <= 2021-04-30. there is duration med, max and 7-21 days, 1-4 days, <1
     # "ค่ากลางระยะเวลา (วันที่ทราบผลติดเชื้อ – เสียชีวิต) 9 วัน (นานสุด 85 วัน)"
 
@@ -1772,7 +1781,7 @@ def briefing_deaths_summary(text, date):
     risk_cols = [f"Deaths Risk {r}" for r in risk.keys()]
     cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
     row = pd.DataFrame(
-        [[date, male + female, med_age, min_age, max_age, male, female] + list(risk.values())
+        [[date, deaths_title, med_age, min_age, max_age, male, female] + list(risk.values())
          + list(comorbidity.values())],
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
@@ -2804,6 +2813,7 @@ def vac_slides():
 
 
 def get_ifr():
+    # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
     file, _, _ = next(web_files(url, dir="json", check=False))
     pop = pd.read_excel(file, header=3, index_col=1)
