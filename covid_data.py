@@ -1642,7 +1642,7 @@ def briefing_deaths_provinces(dtext, date, total_deaths):
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
     # remove the table header and page title.
-    pre, table_content = re.split("(?:โควิด[ \n-]*19\n\n|รวม\( \))", text, 1)
+    *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\( \))", text, 1)
 
     # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
     ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
@@ -3009,18 +3009,18 @@ def scrape_and_combine():
 
     if quick:
         # Comment out what you don't need to run
+        cases_by_area = get_cases_by_area()
         vac = get_vaccinations()
         dashboard = moph_dashboard()
-        cases_by_area = get_cases_by_area()
         situation = get_situation()
         tests = get_tests_by_day()
         tests_reports = get_test_reports()
         excess_deaths()
         pass
     else:
-        dashboard = moph_dashboard()
-        vac = get_vaccinations()
         cases_by_area = get_cases_by_area()
+        vac = get_vaccinations()
+        dashboard = moph_dashboard()
         situation = get_situation()
         # hospital = get_hospital_resources()
         tests = get_tests_by_day()
