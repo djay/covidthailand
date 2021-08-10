@@ -969,7 +969,7 @@ def moph_dashboard():
                 D_Death="Deaths",
                 D_ATK="ATK",
                 D_Lab2={
-                    "SUM(cnt_ma14)-value": "Tests",
+                    "SUM(cnt_ma)-value": "Tests",
                     "DAY(txn_date)-value": "Date"
                 },
                 D_NewTL={
@@ -1002,7 +1002,7 @@ def moph_dashboard():
             if row.empty:
                 break
             row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
-            df = df.combine_first(row)
+            df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
             print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
         # We get negative valus for field hosoutal before april
         df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan

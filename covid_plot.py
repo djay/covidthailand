@@ -168,9 +168,11 @@ def plot_area(df: pd.DataFrame,
             '30d': df_clean.last('30d')
         }
         quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch
-        if quick:
+        if periods_to_plot:
+            pass
+        elif quick:
             periods_to_plot = ['all']
-        elif not periods_to_plot:
+        else:
             periods_to_plot = set(periods.keys())
 
         periods = {key: periods[key] for key in periods_to_plot}
@@ -328,10 +330,10 @@ def save_plots(df: pd.DataFrame) -> None:
         'Positivity Walkins/PUI3',
     ]
     legends = [
-        'Positive Rate: Share of PCR tests that are positive ',
-        'Share of PCR Tests that are confirmed cases',
-        'Share of PUI*3 that are confirmed cases',
-        'Share of PUI*3 that are walkin cases'
+        'Positive Results per PCR Test (Positive Rate)',
+        'Confirmed Cases per PCR Test',
+        'Confirmed Cases per PUI*3',
+        'Walkin Cases per PUI*3'
     ]
     plot_area(df=df,
               png_prefix='positivity',
@@ -768,12 +770,12 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df_vac_groups.interpolate()
 
     # TODO: should we use actual Given?
-    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 4)]].sum(axis=1)
-    df_vac_groups['Vac Given'] = df[[f'Vac Given {d}' for d in range(1, 3)]].sum(axis=1)
+    df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 4)]].sum(axis=1, skipna=False)
+    df_vac_groups['Vac Given'] = df[[f'Vac Given {d}' for d in range(1, 4)]].sum(axis=1, skipna=False)
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
     df_vac_groups['Vac Given 3 Cum'] = df['Vac Given 3 Cum']
-    df_vac_groups['Vac Imported Cum'] = df_vac_groups[[c for c in df_vac_groups.columns if "Vac Imported" in c]].sum()
+    df_vac_groups['Vac Imported Cum'] = df_vac_groups[[c for c in df_vac_groups.columns if "Vac Imported" in c]].sum(axis=1, skipna=False)
 
     # now convert to daily and interpolate and then normalise to real daily total.
     vac_daily = cum2daily(df_vac_groups)
@@ -790,7 +792,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_daily['Target Rate 1'] = (50000000 - df_vac_groups['Vac Given 1 Cum']) / days_to_target
     vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given 2 Cum']) / days_to_target
 
-    daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
+    #daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
     plot_area(
         df=vac_daily,
         png_prefix='vac_groups_daily',
@@ -798,8 +800,8 @@ def save_plots(df: pd.DataFrame) -> None:
         title='Thailand Daily Vaccinations by Priority Groups',
         legends=[
             # 'Doses per day needed to run out in a week',
-            'Needed to reach 70% 1st Dose in 2021',
-            'Needed to reach 70% Fully Vaccinated in 2021'
+            'Rate for 70% 1st Jab in 2021',
+            'Rate for 70% 2nd Jab in 2021'
         ] + [clean_vac_leg(c, "(1st jab)", "(2nd jab)") for c in daily_cols],  # bar puts the line first?
         legend_cols=2,
         kind='bar',
@@ -811,6 +813,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 2'],
         ma_days=None,
         cmap='tab20_r',
+        periods_to_plot=["30d", "2"],  # too slow to do all 
     )
 
     # # Now turn daily back to cumulative since we now have estimates for every day without dips
