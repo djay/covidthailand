@@ -1635,7 +1635,7 @@ def briefing_province_cases(date, pages):
     return df
 
 
-def briefing_deaths_provinces(dtext, date, total_deaths):
+def briefing_deaths_provinces(dtext, date, total_deaths, file):
     bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
 
     # get rid of extra words in brakets to make easier
@@ -1688,11 +1688,12 @@ def briefing_deaths_provinces(dtext, date, total_deaths):
         last_provs = rest
     dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                           columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
-    assert total_deaths == dfprov['Deaths'].sum() or date in [d("2021-07-20")]
+    msg = f"in {file} only found {dfprov['Deaths'].sum()}/{total_deaths} from {dtext}\n{pcells}"
+    assert total_deaths == dfprov['Deaths'].sum() or date in [d("2021-07-20")], msg
     return dfprov
 
 
-def briefing_deaths_summary(text, date):
+def briefing_deaths_summary(text, date, file):
     title_re = re.compile(r"(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")  # noqa
     if not title_re.search(text):
         return pd.DataFrame(), pd.DataFrame()
@@ -1786,8 +1787,8 @@ def briefing_deaths_summary(text, date):
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
         ] + risk_cols + cm_cols).set_index("Date")
-    dfprov = briefing_deaths_provinces(text, date, deaths_title)
-    print(f"{date.date()} Deaths:", len(dfprov), "|", row.to_string(header=False, index=False))
+    dfprov = briefing_deaths_provinces(text, date, deaths_title, file)
+    print(f"{date.date()} Deaths:", len(dfprov), "|", row.to_string(header=False, index=False), file)
     return row, dfprov
 
 
@@ -1865,7 +1866,7 @@ def briefing_deaths(file, date, pages):
     for i, soup in enumerate(pages):
         text = soup.get_text()
         # Latest version of deaths. Only gives summary info
-        sum, dfprov = briefing_deaths_summary(text, date)
+        sum, dfprov = briefing_deaths_summary(text, date, file)
         if not sum.empty:
             return all, sum, dfprov
 
