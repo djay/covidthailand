@@ -1642,11 +1642,11 @@ def briefing_deaths_provinces(dtext, date, total_deaths, file):
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
     # remove the table header and page title.
-    *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\( \))", text, 1)
+    *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\s*\(\s+\))", text, 1)
 
     # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
     ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
-    if "หญิง" in rest_bullets: # new format on 2021-08-09 - no gender and prov no longer shoved in the middle.
+    if "หญิง" in rest_bullets:  # new format on 2021-08-09 - no gender and prov no longer shoved in the middle.
         rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", rest_bullets, 1)
         *bullets, ptext2 = bullets_re.split(rest_bullets2)
         ptext2, *age_text = re.split("•", ptext2, 1)
