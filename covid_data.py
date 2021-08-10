@@ -850,11 +850,16 @@ def worksheet2df(wb, date=None, **mappings):
             name = remove_suffix(name, "_getSelectableItems")
             df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
         else:
-            df = wb.getWorksheet(name).data
-        if col == "Date":
-            data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
-        elif type(col) != str:
+            try:
+                df = wb.getWorksheet(name).data
+            except KeyError:
+                print(f"Error getting tableau {name}/{col}", date)
+                explore(wb)
+                continue
+
+        if type(col) != str:
             if df.empty:
+                print(f"Error getting tableau {name}/{col}", date)
                 continue
             # if it's not a single value can pass in mapping of cols
             df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
@@ -874,6 +879,8 @@ def worksheet2df(wb, date=None, **mappings):
             res = res.combine_first(df)
         elif df.empty:
             data[col] = [np.nan]
+        elif col == "Date":
+            data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
             data[col] = list(df.loc[0])
             if data[col] == ["%null%"]:
