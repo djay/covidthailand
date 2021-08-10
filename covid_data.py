@@ -1715,6 +1715,7 @@ def briefing_deaths_summary(text, date, file):
                                    "ค่ากลางขอ(?:งอ)?ายุ",
                                    "ามัธยฐานอายุ",
                                    "• ค่ากลาง",
+                                   "ค่ากลางอาย ุ",
                                    ints=False)
     med_age, min_age, max_age, *_ = numbers
 
@@ -1753,7 +1754,7 @@ def briefing_deaths_summary(text, date, file):
         disease: get_next_number(text, *thdiseases, default=0, return_rest=False)
         for disease, thdiseases in diseases.items()
     }
-    assert sum(comorbidity.values()) >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
+    assert sum(comorbidity.values()) >= deaths_title or date in [d("2021-8-10")], f"Missing comorbidity {comorbidity}\n{text}"
 
     risks = {
         "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],

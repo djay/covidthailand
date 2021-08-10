@@ -330,10 +330,10 @@ def save_plots(df: pd.DataFrame) -> None:
         'Positivity Walkins/PUI3',
     ]
     legends = [
-        'Positive Results per PCR Test (Positive Rate)',
-        'Confirmed Cases per PCR Test',
-        'Confirmed Cases per PUI*3',
-        'Walkin Cases per PUI*3'
+        'Positive Results per PCR Test (%) (Positive Rate)',
+        'Confirmed Cases per PCR Test (%)',
+        'Confirmed Cases per PUI*3 (%)',
+        'Walkin Cases per PUI*3 (%)'
     ]
     plot_area(df=df,
               png_prefix='positivity',
