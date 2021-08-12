@@ -800,6 +800,26 @@ def get_cases_by_demographics_api():
 
 def moph_dashboard():
 
+    def skip_func(df, allow_na={}):
+        def is_done(idx_value):
+            if type(idx_value) == list:
+                date, prov = idx_value
+                prov = get_province(prov)
+                idx_value = [date, prov]
+            else:
+                date = idx_value
+            # Assume index of df is in the same order as params
+            if df.empty:
+                return False
+            # allow certain fields null if before set date
+            nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and date >= allow_na.get(c, d("1975-1-1"))]
+            if not nulls:
+                return True
+            else:
+                print(date, "MOPH Dashboard", f"Retry Missing data at {idx_value} for {nulls}. Retry")
+                return False
+        return is_done
+
     def getDailyStats(df):
 
         # def workbooks(df, allow_na={}, **params):
@@ -840,7 +860,7 @@ def moph_dashboard():
             'Hospitalized Hospital': d("2021-01-25"),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
-        for wb, date in workbooks(df, url, allow_na, dates=reversed(list(daterange(d("2021-01-01"), today())))):
+        for wb, date in workbooks(url, skip_func(df, allow_na), dates=reversed(list(daterange(d("2021-01-01"), today())))):
             row = worksheet2df(
                 wb,
                 date,
@@ -913,7 +933,7 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         dates = reversed(list(daterange(d("2021-08-01"), today(), offset=1)))
-        for wb, idx_value in workbooks(df, url, dates=dates, D2_ProvinceBar="province"):
+        for wb, idx_value in workbooks(url, skip_func(df), dates=dates, D2_ProvinceBar="province"):
             date, province = idx_value
             row = worksheet2df(
                 wb,

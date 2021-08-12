@@ -20,6 +20,7 @@ import tableauscraper
 import pandas as pd
 import numpy as np
 import time
+from dateutil.parser import parse as d
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -599,7 +600,7 @@ def worksheet2df(wb, date=None, **mappings):
     return res.combine_first(df.set_index("Date"))
 
 
-def workbooks(df, url, allow_na={}, dates=[], **selects):
+def workbooks(url, skip=None, dates=[], **selects):
 
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
@@ -611,17 +612,6 @@ def workbooks(df, url, allow_na={}, dates=[], **selects):
     idx_value = last_date if not selects else [last_date, None]
     yield wbroot, idx_value  # assume its first from each list?
 
-    def is_done(idx_value):
-        # Assume index of df is in the same order as params
-        if df.empty:
-            return False
-        # allow certain fields null if before set date
-        nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and date >= allow_na.get(c, today())]
-        if not nulls:
-            return True
-        else:
-            print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
-            return False
     wb = wbroot
     if selects:
         ws_name, col_name = list(selects.items()).pop()
@@ -636,13 +626,17 @@ def workbooks(df, url, allow_na={}, dates=[], **selects):
         # Annoying we have to throw away one request before we can get single province
         for value in values:
             idx_value = date if value is None else [date, value]
-            if is_done(idx_value):
+            if skip is not None and skip(idx_value):
                 continue
             if last_date.date() != date.date():
                 # Only switch date if it hasn't been done
-                # TODO: can't seem to skip latest day without it causing problems. why?
+                # TODO: after doing select can't do setParam. have to reload. must be faster way
                 try:
-                    wb = setParameter(wb, "param_date", str(date.date()))
+                    ts = tableauscraper.TableauScraper()
+                    ts.loads(url)
+                    fix_timeouts(ts.session, timeout=15)
+                    wbroot = ts.getWorkbook()
+                    wb = setParameter(wbroot, "param_date", str(date.date()))
                 except requests.exceptions.ReadTimeout:
                     print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
                     break
