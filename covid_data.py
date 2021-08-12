@@ -2491,6 +2491,10 @@ def vaccination_tables(df, date, page, file):
                         groups.insert(i, None)
                 df = add(df, prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
                 df = add(df, prov, [sv, az, pf], alloc3)
+            elif table == "july" and len(numbers) in [13]:
+                # extra table with %  per population for over 60s and totals
+                pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
+                # Same info we already have
             else:
                 assert False
         assert added is None or added > 7
