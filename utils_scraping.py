@@ -6,6 +6,7 @@ import os
 import pickle
 import re
 import urllib.parse
+import copy
 
 from bs4 import BeautifulSoup
 from pptx import Presentation
@@ -15,6 +16,10 @@ from requests.exceptions import Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
+import tableauscraper
+import pandas as pd
+import numpy as np
+import time
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -59,6 +64,10 @@ def fix_timeouts(s, timeout=None):
 s = requests.Session()
 fix_timeouts(s)
 
+
+def today() -> datetime.datetime:
+    """Return today's date and time"""
+    return datetime.datetime.today()
 
 ####################
 # Extraction helpers
@@ -517,3 +526,194 @@ def replace_matcher(matches, replacements=None):
                 return r
         return item
     return replace_match
+
+
+###########################
+# Tableau scraping
+###########################
+
+
+def explore(workbook):
+    print()
+    print()
+    print("storypoints:", workbook.getStoryPoints())
+    print("parameters", workbook.getParameters())
+    for t in workbook.worksheets:
+        print()
+        print(f"worksheet name : {t.name}") #show worksheet name
+        print(t.data) #show dataframe for this worksheet
+        print("filters: ", [f['column'] for f in t.getFilters()])
+        print("selectableItems: ")
+        for f in t.getSelectableItems():
+            print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
+
+
+def worksheet2df(wb, date=None, **mappings):
+    res = pd.DataFrame()
+    data = dict()
+    if date is not None:
+        data["Date"] = [date]
+    for name, col in mappings.items():
+        if "_getSelectableItems" in name:
+            name = remove_suffix(name, "_getSelectableItems")
+            df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
+        else:
+            try:
+                df = wb.getWorksheet(name).data
+            except KeyError:
+                print(f"Error getting tableau {name}/{col}", date)
+                explore(wb)
+                continue
+
+        if type(col) != str:
+            if df.empty:
+                print(f"Error getting tableau {name}/{col}", date)
+                continue
+            # if it's not a single value can pass in mapping of cols
+            df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
+            df['Date'] = pd.to_datetime(df['Date']).dt.normalize()
+            # if one mapping is dict then do pivot
+            pivot = [(k, v) for k, v in col.items() if type(v) != str]
+            if pivot:
+                pivot_cols, pivot_mapping = pivot[0] # can only have one
+                # Any other mapped cols are what are the values of the pivot
+                df = df.pivot(index="Date", columns=pivot_cols)
+                df = df.rename(columns=pivot_mapping)
+                df.columns = df.columns.map(' '.join)
+                df = df.reset_index()
+            df = df.set_index("Date")
+            # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
+            df = df.apply(pd.to_numeric, errors='coerce', axis=1)
+            res = res.combine_first(df)
+        elif df.empty:
+            data[col] = [np.nan]
+        elif col == "Date":
+            data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
+        else:
+            data[col] = list(df.loc[0])
+            if data[col] == ["%null%"]:
+                data[col] = [np.nan]
+    # combine all the single values with any subplots from the dashboard
+    df = pd.DataFrame(data)
+    df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
+    return res.combine_first(df.set_index("Date"))
+
+
+def workbooks(df, url, allow_na={}, dates=[], **selects):
+
+    ts = tableauscraper.TableauScraper()
+    ts.loads(url)
+    fix_timeouts(ts.session, timeout=15)
+    wbroot = ts.getWorkbook()
+    # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
+    # updated = pd.to_datetime(updated, dayfirst=False)
+    last_date = today()
+    idx_value = last_date if not selects else [last_date, None]
+    yield wbroot, idx_value  # assume its first from each list?
+
+    def is_done(idx_value):
+        # Assume index of df is in the same order as params
+        if df.empty:
+            return False
+        # allow certain fields null if before set date
+        nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and date >= allow_na.get(c, today())]
+        if not nulls:
+            return True
+        else:
+            print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
+            return False
+    wb = wbroot
+    if selects:
+        ws_name, col_name = list(selects.items()).pop()
+        items = wb.getWorksheet(ws_name).getSelectableItems()
+        values = [item['values'] for item in items if item['column'] == col_name].pop()
+    else:
+        values = [None]
+
+#    for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
+    for date in dates:
+        # Get list of the possible values from selectable. TODO: allow more than one
+        # Annoying we have to throw away one request before we can get single province
+        for value in values:
+            idx_value = date if value is None else [date, value]
+            if is_done(idx_value):
+                continue
+            if last_date.date() != date.date():
+                # Only switch date if it hasn't been done
+                # TODO: can't seem to skip latest day without it causing problems. why?
+                try:
+                    wb = setParameter(wb, "param_date", str(date.date()))
+                except requests.exceptions.ReadTimeout:
+                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+                    break
+                last_date = date
+
+            if value is not None:
+                try:
+                    wb_val = wb.getWorksheet(ws_name).select(col_name, value)
+                except requests.exceptions.ReadTimeout:
+                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+                    break
+            else:
+                wb_val = wb
+            yield wb_val, idx_value
+
+
+def setParameter(wb, parameterName, value):
+    scraper = wb._scraper
+    tableauscraper.api.delayExecution(scraper)
+    payload = (
+        ("fieldCaption", (None, parameterName)),
+        ("valueString", (None, value)),
+    )
+    r = scraper.session.post(
+        f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
+        files=payload,
+        verify=scraper.verify
+    )   
+    scraper.lastActionTime = time.time()
+    resp = r.json()
+
+    wb.updateFullData(resp)
+    return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
+
+
+# :path: /vizql/w/SATCOVIDDashboard/v/2-dash-tiles-province-w/sessions/B42533EE979D4E389C1F8119C87E70C8-0:0/commands/tabdoc/dashboard-categorical-filter
+# referer: https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w?:size=1200,1050&:embed=y&:showVizHome=n&:bootstrapWhenNotified=y&:tabs=n&:toolbar=n&:apiID=host0
+# dashboard: 2-dash-tiles-province-w
+# qualifiedFieldCaption: province
+# exclude: false
+# filterUpdateType: filter-replace
+# filterValues: ["กรุงเทพมหานคร"]
+
+def setFilter(wb, columnName, values):
+
+    scraper = wb._scraper
+    tableauscraper.api.delayExecution(scraper)
+    payload = (
+        ("dashboard",  scraper.dashboard),
+        ("qualifiedFieldCaption", (None, columnName)),
+        ("exclude", (None, "false")),
+        ("filterValues", (None, json.dumps(values))),
+        ("filterUpdateType", (None, "filter-replace"))
+    )
+    try:
+        r = scraper.session.post(
+            f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/categorical-filter-by-index',
+            files=payload,
+            verify=scraper.verify
+        )
+        scraper.lastActionTime = time.time()
+
+        wb.updateFullData(r)
+        return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, r)
+    except ValueError as e:
+        scraper.logger.error(str(e))
+        return tableauscraper.TableauWorkbook(
+            scraper=scraper, originalData={}, originalInfo={}, data=[]
+        )
+    except tableauscraper.api.APIResponseException as e:
+        wb._scraper.logger.error(str(e))
+        return tableauscraper.TableauWorkbook(
+            scraper=scraper, originalData={}, originalInfo={}, data=[]
+        )

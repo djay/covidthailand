@@ -18,15 +18,13 @@ import numpy as np
 import pandas as pd
 import requests
 from requests.exceptions import ConnectionError
-from tableauscraper import TableauScraper as TS
-import tableauscraper
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH, s
+    web_files, web_links, all_in, NUM_OR_DASH, s, workbooks, worksheet2df
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -799,144 +797,33 @@ def get_cases_by_demographics_api():
 # Dashboards
 ########################
 
-def explore(workbook):
-    print()
-    print()
-    print("storypoints:", workbook.getStoryPoints())
-    print("parameters", workbook.getParameters())
-    for t in workbook.worksheets:
-        print()
-        print(f"worksheet name : {t.name}") #show worksheet name
-        print(t.data) #show dataframe for this worksheet
-        print("filters: ", [f['column'] for f in t.getFilters()])
-        print("selectableItems: ")
-        for f in t.getSelectableItems():
-            print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
-
-
-# def workbooks(df, allow_na={}, **params):
-#     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
-#     ts = TS()
-#     ts.loads(url)
-#     fix_timeouts(ts.session, timeout=15)
-#     workbook = ts.getWorkbook()
-#     # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
-#     # updated = pd.to_datetime(updated, dayfirst=False)
-#     yield workbook, idx_value # assume its first from each list?
-
-#     for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
-#         # Assume index of df is in the same order as params
-#         if not df.empty:
-#             # allow certain fields null if before set date
-#             nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and date >= allow_na.get(c, today())]
-#             if not nulls:
-#                 continue
-#             else:
-#                 print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
-#         try:
-#             wb1 = workbook.setParameter(param_name, idx), date
-#         except requests.exceptions.ReadTimeout:
-#             print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
-#             break
-
-
-def worksheet2df(wb, date=None, **mappings):
-    res = pd.DataFrame()
-    data = dict()
-    if date is not None:
-        data["Date"] = [date]
-    for name, col in mappings.items():
-        if "_getSelectableItems" in name:
-            name = remove_suffix(name, "_getSelectableItems")
-            df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
-        else:
-            try:
-                df = wb.getWorksheet(name).data
-            except KeyError:
-                print(f"Error getting tableau {name}/{col}", date)
-                explore(wb)
-                continue
-
-        if type(col) != str:
-            if df.empty:
-                print(f"Error getting tableau {name}/{col}", date)
-                continue
-            # if it's not a single value can pass in mapping of cols
-            df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
-            df['Date'] = pd.to_datetime(df['Date']).dt.normalize()
-            # if one mapping is dict then do pivot
-            pivot = [(k, v) for k, v in col.items() if type(v) != str]
-            if pivot:
-                pivot_cols, pivot_mapping = pivot[0] # can only have one
-                # Any other mapped cols are what are the values of the pivot
-                df = df.pivot(index="Date", columns=pivot_cols)
-                df = df.rename(columns=pivot_mapping)
-                df.columns = df.columns.map(' '.join)
-                df = df.reset_index()
-            df = df.set_index("Date")
-            # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
-            df = df.apply(pd.to_numeric, errors='coerce', axis=1)
-            res = res.combine_first(df)
-        elif df.empty:
-            data[col] = [np.nan]
-        elif col == "Date":
-            data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
-        else:
-            data[col] = list(df.loc[0])
-            if data[col] == ["%null%"]:
-                data[col] = [np.nan]
-    # combine all the single values with any subplots from the dashboard
-    df = pd.DataFrame(data)
-    df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
-    return res.combine_first(df.set_index("Date"))
-
-
-def setParamater(wb, parameterName, value):
-    scraper = wb._scraper
-    tableauscraper.api.delayExecution(scraper)
-    payload = (
-        ("fieldCaption", (None, parameterName)),
-        ("valueString", (None, value)),
-    )
-    r = scraper.session.post(
-        f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
-        files=payload,
-        verify=scraper.verify
-    )
-    scraper.lastActionTime = time.time()
-    resp = r.json()
-
-    wb.updateFullData(resp)
-    return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
-
 
 def moph_dashboard():
 
     def getDailyStats(df):
 
-        def workbooks(df, allow_na={}, **params):
-            url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
-            ts = TS()
-            ts.loads(url)
-            fix_timeouts(ts.session, timeout=15)
-            workbook = ts.getWorkbook()
-            updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
-            updated = pd.to_datetime(updated, dayfirst=False)
-            yield workbook, updated
-            start = d("2021-01-01")
-            for date in reversed(list(daterange(start, updated))):
-                if not df.empty:
-                    # allow certain fields null if before set date
-                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, start)]
-                    if not nulls:
-                        continue
-                    else:
-                        print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
-                try:
-                    yield setParamater(workbook, "param_date", str(date.date())), date
-                except requests.exceptions.ReadTimeout:
-                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
-                    break
+        # def workbooks(df, allow_na={}, **params):
+        #     ts = TS()
+        #     ts.loads(url)
+        #     fix_timeouts(ts.session, timeout=15)
+        #     workbook = ts.getWorkbook()
+        #     updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
+        #     updated = pd.to_datetime(updated, dayfirst=False)
+        #     yield workbook, updated
+        #     start = d("2021-01-01")
+        #     for date in reversed(list(daterange(start, updated))):
+        #         if not df.empty:
+        #             # allow certain fields null if before set date
+        #             nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, start)]
+        #             if not nulls:
+        #                 continue
+        #             else:
+        #                 print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
+        #         try:
+        #             yield setParamater(workbook, "param_date", str(date.date())), date
+        #         except requests.exceptions.ReadTimeout:
+        #             print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+        #             break
 
         allow_na = {
             "ATK": d("2021-07-31"),
@@ -952,7 +839,8 @@ def moph_dashboard():
             'Hospitalized Severe': d("2021-03-25"),
             'Hospitalized Hospital': d("2021-01-25"),
         }
-        for wb, date in workbooks(df, allow_na, param_date=reversed(list(daterange(d("2021-01-01"), today())))):
+        url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
+        for wb, date in workbooks(df, url, allow_na, dates=reversed(list(daterange(d("2021-01-01"), today())))):
             row = worksheet2df(
                 wb,
                 date,
@@ -1017,44 +905,23 @@ def moph_dashboard():
         ts.loads(url)
         workbook = ts.getWorkbook()
 
-    def by_province():
-
-        def workbooks(df, allow_na={}, **params):
-            url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
-            ts = TS()
-            ts.loads(url)
-            fix_timeouts(ts.session, timeout=15)
-            workbook = ts.getWorkbook()
-            updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
-            updated = pd.to_datetime(updated, dayfirst=False)
-            yield workbook, updated
-            for date in reversed(list(daterange(d("2021-04-01"), updated))):
-                if not df.empty:
-                    # allow certain fields null if before set date
-                    nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, today())]
-                    if not nulls:
-                        continue
-                    else:
-                        print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
-                try:
-                    yield workbook.setParameter("param_date", str(date.date())), date
-                except requests.exceptions.ReadTimeout:
-                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
-                    break
+    def by_province(df):
+        url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
 
         #selectable items - D2_ProvinceBar
         #    province : ['แม่ฮ่องสอน', 'พังงา', 'กระบี่', 'ลำพูน', 'ตราด', 'สตูล', 'พัทลุง', 'พะเยา', 'พิษณุโลก', 'แพร่'] ...
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
-
-        for wb, date in workbooks(df):
+        dates = reversed(list(daterange(d("2021-08-01"), today(), offset=1)))
+        for wb, idx_value in workbooks(df, url, dates=dates, D2_ProvinceBar="province"):
+            date, province = idx_value
             row = worksheet2df(
                 wb,
                 date,
                 D2_VacTL={
                     "DAY(txn_date)-value": "Date",
-                    "SUM(vaccine_1st_dose_acm)-value": "Vac Given 1 Cum",
-                    "SUM(vaccine_2nd_dose_acm)-value": "Vac Given 2 Cum",
+                    "SUM(vaccine_1st_dose_acm)-alias": "Vac Given 1 Cum",
+                    "SUM(vaccine_2nd_dose_acm)-alias": "Vac Given 2 Cum",
                 },
                 D2_Walkin="Cases Walkin",
                 D2_Proact="Cases Proactive",
@@ -1066,7 +933,7 @@ def moph_dashboard():
                     "DAY(txn_date)-value": "Date"
                 },
                 D2_Lab2={
-                    "SUM(cnt_ma14)-value": "Tests",
+                    "SUM(cnt_ma)-value": "Tests",
                     "DAY(txn_date)-value": "Date"
                 },
                 D2_DeathTL={
@@ -1074,15 +941,12 @@ def moph_dashboard():
                     "DAY(txn_date)-value": "Date"
                 },
                 D2_Death="Deaths",
-
-                # D_Hospital="Hospitalized Hospital",
-                # D_HospitalField="Hospitalized Field",
-                # D_Severe="Hospitalized Severe",
-                # D_SevereTube="Hospitalized Respirator",
-                # D_Medic="Hospitalized",
-                # D_Recov="Recovered",
-                # D_ATK="ATK",
             )
+            if province is not None:
+                row['Province'] = get_province(province)
+                df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
+                print(date.date(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+
         return df
 
     # all province case numbers in one go
@@ -1092,11 +956,13 @@ def moph_dashboard():
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
 
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
+    prov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
 
-    #dfprov = by_province()
+    dfprov = by_province(prov)
     daily = getDailyStats(daily)
     export(daily, "moph_dashboard", csv_only=True, dir="json")
-    return daily
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+    return daily, dfprov
 
 
 ########################
@@ -2007,29 +1873,8 @@ def get_cases_by_prov_briefings():
     return date_prov, types
 
 
-def get_cases_by_area_type():
-    dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
-
-    cases_demo, risks_prov = get_cases_by_demographics_api()
-    tweets_prov, twcases = get_cases_by_prov_tweets()
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-
-    cases = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
-    timelineapi = get_cases()
-    cases = cases.combine_first(cases_briefings).combine_first(twcases).combine_first(timelineapi)
-    export(cases, "cases_briefings")
-
-    cases = cases.combine_first(cases_demo)
-
-    dfprov = dfprov.combine_first(
-        briefings_prov).combine_first(
-        tweets_prov).combine_first(
-        risks_prov)  # TODO: check they aggree
-    dfprov = join_provinces(dfprov, on="Province")
-    export(dfprov, "cases_by_province")
-    # Now we can save raw table of provice numbers
-
-    # Reduce down to health areas
+def prov_to_districts(dfprov):
+   # Reduce down to health areas
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
     dfprov_grouped = dfprov_grouped.rename(columns=dict((i, f"Area {i}") for i in DISTRICT_RANGE))
@@ -2049,7 +1894,8 @@ def get_cases_by_area_type():
         col = f"Cases Proactive Area {i}"
         if col not in by_area:
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
-    return cases, by_area
+    return by_area
+ 
 
 
 def get_cases_by_area_api():
@@ -2059,18 +1905,6 @@ def get_cases_by_area_api():
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
     return case_areas
-
-
-def get_cases_by_area():
-    # we will add in the tweet data for the export
-    cases = import_csv("cases_by_area", ["Date"], not USE_CACHE_DATA)
-    case_briefings_tweets, briefings_area = get_cases_by_area_type()
-    case_api = get_cases_by_area_api()  # can be very wrong for the last days
-
-    case_areas = cases.combine_first(briefings_area).combine_first(case_api)
-
-    export(case_areas, "cases_by_area")
-    return case_briefings_tweets.combine_first(case_areas)
 
 
 ##########################################
@@ -2491,7 +2325,7 @@ def vaccination_daily(daily, date, file, page):
                 pregnant = volunteer = 0
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
             assert not any_in(row, None)
-            assert 0.99 <= (sum([i for i in row if i]) / total) <= 1.01
+            assert 0.945 <= (sum([i for i in row if i]) / total) <= 1.01
             df = pd.DataFrame([[date, total] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
@@ -2832,6 +2666,60 @@ def vac_manuf_given(df, page, file, page_num):
     print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
     return df.combine_first(row.set_index("Date"))
 
+def vac_slides_groups(df, page, file, page_num):
+    if "กลุ่มเปา้หมาย" not in page:
+        return
+    # does faily good job
+    table = camelot.read_pdf(file, pages=str(page_num), process_background=False)[0].df
+    table = table[2:]
+    for i in range(1, 7):
+        table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))
+    table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
+    table.loc[:,"group"] = [
+        "Vac Group Medical Staff",
+        "Vac Group Health Volunteer",
+        "Vac Group Other Frontline Staff",
+        "Vac Group Over 60",
+        "Vac Group Risk: Disease",
+        "Vac Group Risk: Pregnant",
+        "Vac Group Risk: Location",
+        "Total"
+    ]
+    table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
+
+
+    # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
+    # village, rest = get_next_numbers(rest, "เจา้หน้าทีด่", until="\n")
+    # disease, rest = get_next_numbers(rest, "ผู้มีโรคเรือ้รัง 7", until="\n")
+    # public, rest = get_next_numbers(rest, "ประชาชนทัว่ไป", until="\n")
+    # over60, rest = get_next_numbers(rest, "ผู้มีอาย ุ60", until="\n")
+    # pregnant, rest = get_next_numbers(rest, "หญิงตัง้ครรภ์", until="\n")
+    # total, rest = get_next_numbers(rest, "รวม", until="\n")
+
+# จ านวนการได้รับวัคซีนโควิด 19 ของประเทศไทย แยกตามกลุ่มเป้าหมาย
+# สะสมตั้งแต่วันที่ 28 กุมภาพันธ์ – 9 สิงหาคม 2564
+
+
+# ที่มา : ฐานข้อมูลกระทรวงสาธารณสุข (MOPH  Immunization Center) ข้อมูล ณ วันที่ 9 สิงหาคม 2564 เวลา 18.00 น.
+
+
+# เขม็ที่ 1 (คน)  เพ่ิมขึน้ (คน) เขม็ที่ 2 (คน)  เพ่ิมขึน้ (คน) เขม็ที่ 3 (คน)  เพ่ิมขึน้ (คน)
+
+
+# บคุลากรทางการแพทยแ์ละสาธารณสุข 832,908           5,042              718,384           4,308              268,022           46,457
+# เจา้หน้าทีด่า่นหน้า 945,171           8,475              560,922           4,676              -                  -
+# อาสาสมัครสาธารณสุขประจ าหมูบ่า้น 530,994           7,943              234,800           3,197              -                  -
+# ผู้มีโรคเรือ้รัง 7 กลุ่มโรค 1,795,485        44,910            306,421           8,472              -                  -
+# ประชาชนทัว่ไป 8,811,064        204,868           2,514,032        72,179            -                  -
+# ผู้มีอาย ุ60 ปขีึน้ไป 3,414,683        78,160            231,332           11,514            -                  -
+# หญิงตัง้ครรภ์ 6,438              991                 454                 138                 -                  -
+
+
+# รวม 16,336,743      350,389           4,566,345        104,484           268,022           46,457
+
+
+# กลุ่มเปา้หมาย
+# จ านวนผู้ที่ไดร้ับวคัซีน
 
 def vac_slides():
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
@@ -2842,6 +2730,7 @@ def vac_slides():
         for i, page in enumerate(parse_file(file), 1):
             # pass
             df = vac_manuf_given(df, page, file, i)
+            #df = vac_slides_groups(df, page, file, i)
     return df
 
 
@@ -3011,36 +2900,53 @@ def get_hospital_resources():
 # - test reports
 #   - top labs over time
 
+
+
 def scrape_and_combine():
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
-    if quick:
-        # Comment out what you don't need to run
-        cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
-        dashboard = moph_dashboard()
-        situation = get_situation()
-        tests = get_tests_by_day()
-        tests_reports = get_test_reports()
-        excess_deaths()
-        pass
-    else:
-        cases_by_area = get_cases_by_area()
-        vac = get_vaccinations()
-        dashboard = moph_dashboard()
-        situation = get_situation()
-        # hospital = get_hospital_resources()
-        tests = get_tests_by_day()
-        tests_reports = get_test_reports()
-        excess_deaths()
+    dashboard, dash_prov = moph_dashboard()
+    vac = get_vaccinations()
+
+    cases_demo, risks_prov = get_cases_by_demographics_api()
+    tweets_prov, twcases = get_cases_by_prov_tweets()
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
+    timelineapi = get_cases()
+
+    situation = get_situation()
+    tests = get_tests_by_day()
+    tests_reports = get_test_reports()
+    excess_deaths()
+    case_api_by_area = get_cases_by_area_api()  # can be very wrong for the last days
+
+    # Export briefings
+    briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
+    briefings = briefings.combine_first(cases_briefings).combine_first(twcases).combine_first(timelineapi)
+    export(briefings, "cases_briefings")
+
+    # Export per province
+    dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
+    dfprov = dfprov.combine_first(
+        dash_prov).combine_first(
+        briefings_prov).combine_first(
+        tweets_prov).combine_first(
+        risks_prov)  # TODO: check they aggree
+    dfprov = join_provinces(dfprov, on="Province")
+    export(dfprov, "cases_by_province")
+
+    # Export per district
+    by_area = prov_to_districts(dfprov)
+
+    cases_by_area = import_csv("cases_by_area", ["Date"], not USE_CACHE_DATA)
+    cases_by_area = cases_by_area.combine_first(by_area).combine_first(case_api_by_area)
+    export(cases_by_area, "cases_by_area")
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in ['tests_reports', 'tests', 'dashboard', 'cases_by_area', 'situation', 'vac']:
-        if f in locals():
-            df = df.combine_first(locals()[f])
+    for f in [tests_reports, tests, dashboard, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac]:
+            df = df.combine_first(f)
     print(df)
 
     if quick:
@@ -3053,6 +2959,7 @@ def scrape_and_combine():
         export(df, "combined", csv_only=True)
         export(get_fuzzy_provinces(), "fuzzy_provinces", csv_only=True)
         return df
+
 
 
 if __name__ == "__main__":
