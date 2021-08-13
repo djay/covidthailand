@@ -559,12 +559,18 @@ def worksheet2df(wb, date=None, **mappings):
             name = remove_suffix(name, "_getSelectableItems")
             df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
         else:
+            error = False
             try:
-                df = wb.getWorksheet(name).data
+                ws = wb.getWorksheet(name).data
             except KeyError:
+                error = True
+            if error:
+                # TODO: handle error getting wb properly earlier
                 print(f"Error getting tableau {name}/{col}", date)
                 explore(wb)
                 continue
+            else:
+                df = ws.data
 
         if type(col) != str:
             if df.empty:
