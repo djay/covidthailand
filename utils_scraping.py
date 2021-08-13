@@ -559,18 +559,13 @@ def worksheet2df(wb, date=None, **mappings):
             name = remove_suffix(name, "_getSelectableItems")
             df = pd.DataFrame({sel['column']: sel['values'] for sel in wb.getWorksheet(name).getSelectableItems()})
         else:
-            error = False
             try:
-                ws = wb.getWorksheet(name)
-            except KeyError:
-                error = True
-            if error or ws is None:
+                df = wb.getWorksheet(name).data
+            except (KeyError, TypeError, AttributeError):
                 # TODO: handle error getting wb properly earlier
                 print(f"Error getting tableau {name}/{col}", date)
                 explore(wb)
                 continue
-            else:
-                df = ws.data
 
         if type(col) != str:
             if df.empty:
@@ -644,16 +639,24 @@ def workbooks(url, skip=None, dates=[], **selects):
                     wbroot = ts.getWorkbook()
                     wb = setParameter(wbroot, "param_date", str(date.date()))
                 except requests.exceptions.ReadTimeout:
-                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+                    print(date, "MOPH Dashboard", "Skip: Param Timeout Error.", wb.cmdResponse)
                     break
+                if not wb.worksheets:
+                    print(date, "MOPH Dashboard", "Skip: Error in setParam.", wb.cmdResponse)
+                    break
+                    
                 last_date = date
 
             if value is not None:
                 try:
                     wb_val = wb.getWorksheet(ws_name).select(col_name, value)
                 except requests.exceptions.ReadTimeout:
-                    print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
+                    print(date, "MOPH Dashboard", "Skip: Select Timeout Error.", wb_val.cmdResponse)
                     break
+                if not wb_val.worksheets:
+                    print(date, "MOPH Dashboard", "Skip: Error in Select.", wb_val.cmdResponse)
+                    break
+
             else:
                 wb_val = wb
             yield wb_val, idx_value
