@@ -1387,6 +1387,9 @@ def briefing_case_types(date, pages, url):
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
             cases, walkins, proactive, *quarantine = numbers
             domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
+            if domestic:
+                assert domestic <= cases
+                assert domestic == walkins + proactive
             quarantine = quarantine[0] if quarantine else 0
             ports, _ = get_next_number(
                 text,
@@ -1397,8 +1400,6 @@ def briefing_case_types(date, pages, url):
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
-            assert domestic <= cases
-            assert domestic == walkins + proactive
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
             if cases2 != cases:
                 # Total cases moved to the bottom

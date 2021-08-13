@@ -649,7 +649,7 @@ def workbooks(url, skip=None, dates=[], **selects):
                     fix_timeouts(ts.session, timeout=15)
                     wbroot = ts.getWorkbook()
                     wb = setParameter(wbroot, "param_date", str(date.date()))
-                except requests.exceptions.ReadTimeout:
+                except requests.exceptions.RequestException:
                     print(date, "MOPH Dashboard", "Skip: Param Timeout Error.", wb.cmdResponse)
                     break
                 if not wb.worksheets:
@@ -661,7 +661,7 @@ def workbooks(url, skip=None, dates=[], **selects):
             if value is not None:
                 try:
                     wb_val = wb.getWorksheet(ws_name).select(col_name, value)
-                except requests.exceptions.ReadTimeout:
+                except requests.exceptions.RequestException:
                     print(date, "MOPH Dashboard", "Skip: Select Timeout Error.", wb_val.cmdResponse)
                     break
                 if not wb_val.worksheets:
@@ -686,6 +686,8 @@ def setParameter(wb, parameterName, value):
         verify=scraper.verify
     )   
     scraper.lastActionTime = time.time()
+    if r.status_code >= 400:
+        raise requests.exceptions.RequestException(r.content)
     resp = r.json()
 
     wb.updateFullData(resp)
