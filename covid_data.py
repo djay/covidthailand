@@ -1386,8 +1386,9 @@ def briefing_case_types(date, pages, url):
         else:
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
             cases, walkins, proactive, *quarantine = numbers
+            domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
             quarantine = quarantine[0] if quarantine else 0
-            ports, rest = get_next_number(
+            ports, _ = get_next_number(
                 text,
                 "ช่องเส้นทางธรรมชาติ",
                 "รายผู้ที่เดินทางมาจากต่างประเทศ",
@@ -1396,7 +1397,15 @@ def briefing_case_types(date, pages, url):
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
-        #proactive += prison  # not sure if they are going to add this category going forward?
+            assert domestic <= cases
+            assert domestic == walkins + proactive
+            cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
+            if cases2 != cases:
+                # Total cases moved to the bottom
+                # cases == domestic
+                cases = cases2
+                assert cases == domestic + imported + prison
+        # proactive += prison  # not sure if they are going to add this category going forward?
 
         assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
@@ -2935,12 +2944,12 @@ def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
 
     cases_demo, risks_prov = get_cases_by_demographics_api()
     tweets_prov, twcases = get_cases_by_prov_tweets()
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     timelineapi = get_cases()
 
     situation = get_situation()
