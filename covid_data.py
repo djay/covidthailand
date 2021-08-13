@@ -802,10 +802,10 @@ def moph_dashboard():
 
     def skip_func(df, allow_na={}):
         def is_done(idx_value):
-            if type(idx_value) == list:
+            if type(idx_value) == tuple:
                 date, prov = idx_value
                 prov = get_province(prov)
-                idx_value = [date, prov]
+                idx_value = (date, prov)
             else:
                 date = idx_value
             # Assume index of df is in the same order as params
@@ -932,8 +932,12 @@ def moph_dashboard():
         #    province : ['แม่ฮ่องสอน', 'พังงา', 'กระบี่', 'ลำพูน', 'ตราด', 'สตูล', 'พัทลุง', 'พะเยา', 'พิษณุโลก', 'แพร่'] ...
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
+        allow_na = {
+            "Tests": today(),  # TODO: because they are 2 days late so need to say allow after instead of before?
+        }
+
         dates = reversed(list(daterange(d("2021-08-01"), today(), offset=1)))
-        for wb, idx_value in workbooks(url, skip_func(df), dates=dates, D2_ProvinceBar="province"):
+        for wb, idx_value in workbooks(url, skip_func(df, allow_na), dates=dates, D2_Province="province"):
             date, province = idx_value
             row = worksheet2df(
                 wb,
@@ -956,11 +960,11 @@ def moph_dashboard():
                     "SUM(cnt_ma)-value": "Tests",
                     "DAY(txn_date)-value": "Date"
                 },
+                D2_Death="Deaths",
                 D2_DeathTL={
                     "AGG(num_death)-value": "Deaths",
                     "DAY(txn_date)-value": "Date"
                 },
-                D2_Death="Deaths",
             )
             if province is not None:
                 row['Province'] = get_province(province)

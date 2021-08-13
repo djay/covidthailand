@@ -586,9 +586,20 @@ def worksheet2df(wb, date=None, **mappings):
             df = df.set_index("Date")
             # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
             df = df.apply(pd.to_numeric, errors='coerce', axis=1)
+            # If it's only some days rest we can assume are 0.0
+            # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
+            start = date - datetime.timedelta(days=30) if date is not None else df.index.min()
+            start = min([start, df.index.min()])
+            # Some data like tests can be a 2 days late
+            end = date - datetime.timedelta(days=2) if date is not None else df.index.max()
+            end = max([end, df.index.max()])
+            all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
+            df = df.reindex(all_days, fill_value=0.0)
+
             res = res.combine_first(df)
         elif df.empty:
-            data[col] = [np.nan]
+            # Seems to mean that this is 0?
+            data[col] = [0.0]
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
@@ -626,7 +637,7 @@ def workbooks(url, skip=None, dates=[], **selects):
         # Get list of the possible values from selectable. TODO: allow more than one
         # Annoying we have to throw away one request before we can get single province
         for value in values:
-            idx_value = date if value is None else [date, value]
+            idx_value = date if value is None else (date, value)
             if skip is not None and skip(idx_value):
                 continue
             if last_date.date() != date.date():
