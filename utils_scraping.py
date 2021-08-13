@@ -561,10 +561,10 @@ def worksheet2df(wb, date=None, **mappings):
         else:
             error = False
             try:
-                ws = wb.getWorksheet(name).data
+                ws = wb.getWorksheet(name)
             except KeyError:
                 error = True
-            if error:
+            if error or ws is None:
                 # TODO: handle error getting wb properly earlier
                 print(f"Error getting tableau {name}/{col}", date)
                 explore(wb)
