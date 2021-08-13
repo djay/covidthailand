@@ -1401,7 +1401,7 @@ def briefing_case_types(date, pages, url):
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
-            if cases2 != cases:
+            if cases2 is not None and cases2 != cases:
                 # Total cases moved to the bottom
                 # cases == domestic
                 cases = cases2
