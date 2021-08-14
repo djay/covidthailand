@@ -1590,7 +1590,7 @@ def briefing_deaths_provinces(dtext, date, total_deaths, file):
     # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
     ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
     if "หญิง" in rest_bullets:  # new format on 2021-08-09 - no gender and prov no longer shoved in the middle.
-        rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", rest_bullets, 1)
+        rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", b1 + rest_bullets, 1)
         *bullets, ptext2 = bullets_re.split(rest_bullets2)
         ptext2, *age_text = re.split("•", ptext2, 1)
     else:
@@ -2973,6 +2973,9 @@ def get_hospital_resources():
 #   - deaths at home
 # - test reports
 #   - top labs over time
+# Public transport usage to determine mobility?
+#   - https://datagov.mot.go.th/dataset/covid-19/resource/71a552d0-0fea-4e05-b78c-42d58aa88db6
+#   - doesn't have pre 2020 dailies though
 
 
 
@@ -2981,8 +2984,8 @@ def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
-    dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
+    dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
 
     cases_demo, risks_prov = get_cases_by_demographics_api()
