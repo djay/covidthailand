@@ -551,25 +551,29 @@ def get_case_details_csv():
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
-    # ensure csv is first pick but we can handle either if one is missing
-    links = sorted([link for link in links if '.php' not in link], key=lambda l: l.split(".")[-1])
+    # get earlier one first
+    links = sorted([link for link in links if '.php' not in link and '.xlsx' not in link], reverse=True)
     # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
-    file, _, _ = next(web_files(next(iter(links)), dir="json", check=True, strip_version=True, appending=True))
-    if file.endswith(".xlsx"):
-        cases = pd.read_excel(file)
-    elif file.endswith(".csv"):
-        cases = pd.read_csv(file)
-        if '�' in cases.loc[0]['risk']:
-            # bad encoding
-            with codecs.open(file, encoding="tis-620") as fp:
-                cases = pd.read_csv(fp)
-    else:
-        raise Exception(f"Unknown filetype for covid19daily {file}")
+    cases = pd.DataFrame()
+    for file, _, _ in web_files(*links, dir="json", check=True, strip_version=True, appending=True):
+        if file.endswith(".xlsx"):
+            continue
+            #cases = pd.read_excel(file)
+        elif file.endswith(".csv"):
+            confirmedcases = pd.read_csv(file)
+            if '�' in confirmedcases.loc[0]['risk']:
+                # bad encoding
+                with codecs.open(file, encoding="tis-620") as fp:
+                    confirmedcases = pd.read_csv(fp)
+            cases = cases.append(confirmedcases)
+        else:
+            raise Exception(f"Unknown filetype for covid19daily {file}")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
-    print("Covid19daily: ", file, cases.last_valid_index())
+    #assert cases.index.max() < 
+    print("Covid19daily: ", file, cases.index.max())
     return cases
 
 
@@ -2984,11 +2988,11 @@ def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
+    cases_demo, risks_prov = get_cases_by_demographics_api()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
 
-    cases_demo, risks_prov = get_cases_by_demographics_api()
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
     situation = get_situation()
@@ -3023,7 +3027,7 @@ def scrape_and_combine():
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
     for f in [tests_reports, tests, dashboard, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac]:
-            df = df.combine_first(f)
+        df = df.combine_first(f)
     print(df)
 
     if quick:
