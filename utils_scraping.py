@@ -543,7 +543,9 @@ def explore(workbook):
         print()
         print(f"worksheet name : {t.name}") #show worksheet name
         print(t.data) #show dataframe for this worksheet
-        print("filters: ", [f['column'] for f in t.getFilters()])
+        print("filters: ")
+        for f in t.getFilters():
+            print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
         print("selectableItems: ")
         for f in t.getSelectableItems():
             print("  ", f['column'], ":", f['values'][:10], '...' if len(f['values']) > 10 else '')
@@ -608,11 +610,15 @@ def worksheet2df(wb, date=None, **mappings):
                 data[col] = [np.nan]
     # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
-    df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
-    return res.combine_first(df.set_index("Date"))
+    if not df.empty:
+        df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
+        res = res.combine_first(df.set_index("Date"))
+    return res
 
 
 def workbooks(url, skip=None, dates=[], **selects):
+    if not dates:
+        dates = [None]
 
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
@@ -622,13 +628,22 @@ def workbooks(url, skip=None, dates=[], **selects):
     # updated = pd.to_datetime(updated, dayfirst=False)
     last_date = today()
     idx_value = last_date if not selects else [last_date, None]
-    yield wbroot, idx_value  # assume its first from each list?
+    if not selects:
+        # Don't need the default wb just one per picked value
+        yield wbroot, idx_value  # assume its first from each list?
 
     wb = wbroot
     if selects:
         ws_name, col_name = list(selects.items()).pop()
         items = wb.getWorksheet(ws_name).getSelectableItems()
-        values = [item['values'] for item in items if item['column'] == col_name].pop()
+        values = [item['values'] for item in items if item['column'] == col_name]
+        if values:
+            values = values[0]
+            meth = "select"
+        else:
+            items = wb.getWorksheet(ws_name).getFilters()
+            values = [item['values'] for item in items if item['column'] == col_name].pop()
+            meth = "setFilter"       
     else:
         values = [None]
 
@@ -640,7 +655,7 @@ def workbooks(url, skip=None, dates=[], **selects):
             idx_value = date if value is None else (date, value)
             if skip is not None and skip(idx_value):
                 continue
-            if last_date.date() != date.date():
+            if date and last_date.date() != date.date():
                 # Only switch date if it hasn't been done
                 # TODO: after doing select can't do setParam. have to reload. must be faster way
                 try:
@@ -650,22 +665,22 @@ def workbooks(url, skip=None, dates=[], **selects):
                     wbroot = ts.getWorkbook()
                     wb = setParameter(wbroot, "param_date", str(date.date()))
                 except requests.exceptions.RequestException:
-                    print(date, "MOPH Dashboard", "Skip: Param Timeout Error.", wb.cmdResponse)
+                    print(date, "MOPH Dashboard", "Skip: Param Timeout Error.")
                     break
                 if not wb.worksheets:
-                    print(date, "MOPH Dashboard", "Skip: Error in setParam.", wb.cmdResponse)
+                    print(date, "MOPH Dashboard", "Skip: Error in setParam.")
                     break
                     
                 last_date = date
 
             if value is not None:
                 try:
-                    wb_val = wb.getWorksheet(ws_name).select(col_name, value)
+                    wb_val = getattr(wb.getWorksheet(ws_name), meth)(col_name, value)
                 except requests.exceptions.RequestException:
-                    print(date, "MOPH Dashboard", "Skip: Select Timeout Error.", wb_val.cmdResponse)
+                    print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
                     break
                 if not wb_val.worksheets:
-                    print(date, "MOPH Dashboard", "Skip: Error in Select.", wb_val.cmdResponse)
+                    print(date, "MOPH Dashboard", "Skip: Error in Select.")
                     break
 
             else:

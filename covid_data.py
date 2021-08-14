@@ -916,14 +916,41 @@ def moph_dashboard():
         df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
         return df
 
-    def getTimelines():
+    def getTimelines(df):
         # Get deaths by prov, date. and other stats - timeline
         #
+        # ['< 10 ปี', '10-19 ปี', '20-29 ปี', '30-39 ปี', '40-49 ปี', '50-59 ปี', '60-69 ปี', '>= 70 ปี', 'ไม่ระบุ']
+
+        # D4_TREND
+        # cases = AGG(stat_count)-alias
+        # severe = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
+        # deaths = AGG(ผู้เสียชีวิต)-alias (and AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value  all patient groups)
+        # cum cases = AGG(stat_accum)-alias
+        # date  = DAY(date)-alias, DAY(date)-value
         url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
         url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
-        ts = TS()
-        ts.loads(url)
-        workbook = ts.getWorkbook()
+        for wb, idx_value in workbooks(url, lambda idx: False, dates=[], D4_CHART="age_range"):
+            row = worksheet2df(
+                wb,
+                None,
+                D4_TREND={
+                    "DAY(date)-value": "Date",
+                    "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
+                    "AGG(stat_count)-alias": "Cases",
+                    "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
+                },
+            )
+            _, age_group = idx_value
+            if not age_group:
+                # TODO: get rid of this first workbook when iterating selects
+                continue
+            age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown")
+            row['Age'] = age_group
+            row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
+            row.columns = [f"{n} Age {v}" for n, v in row.columns]
+            df = row.combine_first(df)
+            print(row.last_valid_index(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+        return df
 
     def by_province(df):
         url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
@@ -982,6 +1009,7 @@ def moph_dashboard():
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
     prov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
 
+    daily = getTimelines(daily)
     dfprov = by_province(prov)
     daily = getDailyStats(daily)
     export(daily, "moph_dashboard", csv_only=True, dir="json")
@@ -2945,8 +2973,8 @@ def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
 
     cases_demo, risks_prov = get_cases_by_demographics_api()
