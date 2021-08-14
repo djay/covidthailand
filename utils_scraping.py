@@ -664,7 +664,7 @@ def workbooks(url, skip=None, dates=[], **selects):
                     fix_timeouts(ts.session, timeout=15)
                     wbroot = ts.getWorkbook()
                     wb = setParameter(wbroot, "param_date", str(date.date()))
-                except requests.exceptions.RequestException:
+                except (requests.exceptions.RequestException, tableauscraper.TableauScraper.TableauException):
                     print(date, "MOPH Dashboard", "Skip: Param Timeout Error.")
                     break
                 if not wb.worksheets:

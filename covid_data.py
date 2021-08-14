@@ -203,12 +203,13 @@ def situation_pui(parsed_pdf, date):
         elif len(numbers) == 6:
             tests_total, pui, asq, active_finding, pui2, pui_port, *rest = numbers
             not_pui = None
+            # TODO latest reports have not_pui in same place as active_finding
         else:
             raise Exception(numbers)
 
         pui = {309371: 313813}.get(pui, pui)  # 2020-07-01
         # TODO: find 1529045 below and see which is correct 20201-04-26
-        pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780] else pui2
+        pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780, 278178, 2774962] else pui2
         assert pui == pui2
     else:
         numbers, _ = get_next_numbers(
@@ -945,11 +946,13 @@ def moph_dashboard():
                 # TODO: get rid of this first workbook when iterating selects
                 continue
             age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown")
+            if row.empty:
+                continue
             row['Age'] = age_group
             row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
             row.columns = [f"{n} Age {v}" for n, v in row.columns]
             df = row.combine_first(df)
-            print(row.last_valid_index(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            print(row.last_valid_index(), "MOPH Ages", age_group, row.loc[row.last_valid_index():].to_string(index=False, header=False))
         return df
 
     def by_province(df):
@@ -1007,13 +1010,18 @@ def moph_dashboard():
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
 
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
-    prov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
-
-    daily = getTimelines(daily)
-    dfprov = by_province(prov)
     daily = getDailyStats(daily)
     export(daily, "moph_dashboard", csv_only=True, dir="json")
+
+    ages = import_csv("moph_dashboard_ages", ["Date"], False, dir="json")  # so we cache it
+    ages = getTimelines(ages)
+    export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
+
+    prov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = by_province(prov)
     export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+
+    daily = daily.combine_first(ages)
     return daily, dfprov
 
 
@@ -2980,8 +2988,8 @@ def scrape_and_combine():
     cases_demo, risks_prov = get_cases_by_demographics_api()
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
-
     situation = get_situation()
+
     tests = get_tests_by_day()
     tests_reports = get_test_reports()
     excess_deaths()
