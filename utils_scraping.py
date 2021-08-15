@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
 import requests
-from requests.exceptions import Timeout, ConnectionError
+from requests.exceptions import RequestException, Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
@@ -21,6 +21,7 @@ import pandas as pd
 import numpy as np
 import time
 from dateutil.parser import parse as d
+from tableauscraper.TableauScraper import TableauException
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -664,7 +665,7 @@ def workbooks(url, skip=None, dates=[], **selects):
                     fix_timeouts(ts.session, timeout=15)
                     wbroot = ts.getWorkbook()
                     wb = setParameter(wbroot, "param_date", str(date.date()))
-                except (requests.exceptions.RequestException, tableauscraper.TableauScraper.TableauException):
+                except (RequestException, TableauException):
                     print(date, "MOPH Dashboard", "Skip: Param Timeout Error.")
                     break
                 if not wb.worksheets:
@@ -676,7 +677,7 @@ def workbooks(url, skip=None, dates=[], **selects):
             if value is not None:
                 try:
                     wb_val = getattr(wb.getWorksheet(ws_name), meth)(col_name, value)
-                except requests.exceptions.RequestException:
+                except (RequestException, TableauException):
                     print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
                     break
                 if not wb_val.worksheets:
