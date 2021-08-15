@@ -123,8 +123,8 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_3.png)
 - Source: [CCSA Daily Briefing ](#dl-briefings) 
 
-![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_est_3.png)
-- Source: [Daily MOPH Situation Reports](#dl-situation-reports) 
+![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_dash_3.png)
+- Source: [MOPH Covid-19 Dashboard](#dl-moph-dashboard) 
 
 ## Excess Deaths <a name="excess-deaths">
 Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
@@ -307,7 +307,53 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - Notes:
   - Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
+## MOPH Covid-19 Dashboard <a name="dl-moph-dashboard">
+- Sources [MOPH Covid-19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/?dashboard=main)
+### [moph_dashboad.json](https://github.com/djay/covidthailand/wiki/moph_dashboard) | [moph_dashboard.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard.csv)
 
+- Schema
+  - Date
+  - ATK
+  - Cases
+  - Cases Area Prison
+  - Cases Imported
+  - Cases Proactive
+  - Cases Walkin
+  - Deaths
+  - Hospitalized
+  - Hospitalized Field
+  - Hospitalized Field HICI
+  - Hospitalized Field Hospitel
+  - Hospitalized Field Other
+  - Hospitalized Hospital
+  - Hospitalized Respirator
+  - Hospitalized Severe
+  - Recovered
+  - Source Cases
+  - Tests
+  - Vac Given {1-3} Cum
+
+### [moph_dashboad_prov.json](https://github.com/djay/covidthailand/wiki/moph_dashboard_prov) | [moph_dashboard_prov.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard_prov.csv)
+
+- Schema
+  - Date
+  - ATK
+  - Cases
+  - Cases Area Prison
+  - Cases Imported
+  - Cases Proactive
+  - Cases Walkin
+  - Deaths
+  - Tests
+  - Vac Given {1-3} Cum
+
+### [moph_dashboad_ages.json](https://github.com/djay/covidthailand/wiki/moph_dashboard_ages) | [moph_dashboard_ages.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard_ages.csv)
+
+- Schema
+  - Date
+  - Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'}
+  - Deaths Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'}
+  - Hospitalized Severe Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'}
 ## Daily Situation Reports <a name="dl-situation-reports">
 Case Types and PUI counts
 
@@ -507,6 +553,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-08-15 - Dashboard parsing for provinces and ages with downloads 
 - 2021-08-02 - Add ATK cases parsing from dashboard and put in case_types plot
 - 2021-07-30 - Add plots for excess deaths
 - 2021-07-18 - Add data on vaccines by manufacturer from vaccine slides

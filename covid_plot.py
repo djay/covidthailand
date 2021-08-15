@@ -900,6 +900,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
+    vac_dash = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="json")
+    vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
     vac = vac.join(get_provinces()['Population'], on='Province')
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100)
 
@@ -1108,6 +1110,21 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               cmap=get_cycle('summer_r', len(cols) + 1))
 
+    # Plot death ages from dashboard data
+    death_cols = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']
+    death_cols = [f"Deaths Age {age}" for age in death_cols]
+    plot_area(df=df,
+              png_prefix='deaths_age_dash',
+              cols_subset=death_cols,
+              title='Thailand Covid Death Age Distribution',
+              kind='area',
+              stacked=True,
+              percent_fig=True,
+              ma_days=7,
+              cmap=get_cycle('summer_r', len(cols) + 1))
+
+
+
     # Excess Deaths
 
     # TODO: look at causes of death
@@ -1259,10 +1276,11 @@ def save_plots(df: pd.DataFrame) -> None:
     # covid_by_region = covid_by_region.set_index(covid_by_region.index - pd.offsets.MonthBegin(1))
     # by_region = by_region.combine_first(covid_by_region.pivot(values="Deaths", columns="region").add_prefix("Covid Deaths "))
 
-    by_age = excess.pipe(cut_ages, [15, 40, 60])
+    by_age = excess.pipe(cut_ages, [10, 20, 30, 40, 50, 60, 70])
     # by_age = excess.pipe(cut_ages, [15, 65, 75, 85])
     new_cols = dict({a: remove_prefix(a, "Deaths Age ") for a in death_cols}, **{"Deaths Age 60-": "60+"})
-    covid_age = deaths_by_age[death_cols].rename(
+    # Get the deaths ages and unstack so can be matched with excess deaths
+    covid_age = df[death_cols].rename(
         columns=new_cols).unstack().to_frame("Deaths").rename_axis(["Age Group", "Date"]).reset_index("Age Group")
     by_age, ages = group_deaths(by_age, "Age Group", covid_age)
 

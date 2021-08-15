@@ -20,7 +20,7 @@ import requests
 from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
-    spread_date_range
+    spread_date_range, cut_ages
 from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
@@ -618,14 +618,17 @@ def get_cases_by_demographics_api():
 
     # age_groups = pd.cut(cases['age'], bins=np.arange(0, 100, 10))
     # cases = get_case_details_csv().reset_index()
-    labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
-    age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], right=True, labels=labels)
-    case_ages = pd.crosstab(cases['Date'], age_groups)
+    #labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    #age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], right=True, labels=labels)
+    age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
+    case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
+    case_ages.columns = [f"Cases Ages {a}" for a in case_ages.columns.tolist()]
 
-    labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
-    age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
-    case_ages2 = pd.crosstab(cases['Date'], age_groups2)
-    case_ages2.columns = case_ages2.columns.tolist()
+    #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+    #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
+    age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
+    case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
+    case_ages2.columns = [f"Cases Ages {a}" for a in case_ages2.columns.tolist()]
 
     cases['risk'].value_counts()
     risks = {}
@@ -866,7 +869,9 @@ def moph_dashboard():
             'Hospitalized Hospital': d("2021-01-23"),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
-        for wb, date in workbooks(url, skip_func(df, allow_na), dates=reversed(list(daterange(d("2021-01-01"), today())))):
+        # new day starts with new info comes in
+        dates = reversed(list(daterange(d("2021-01-01"), today() - relativedelta(hours=7))))
+        for wb, date in workbooks(url, skip_func(df, allow_na), dates=dates):
             row = worksheet2df(
                 wb,
                 date,
@@ -951,7 +956,7 @@ def moph_dashboard():
             if not age_group:
                 # TODO: get rid of this first workbook when iterating selects
                 continue
-            age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown")
+            age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace("<= 70", "70+").replace("< 10", "0-9")
             if row.empty:
                 continue
             row['Age'] = age_group
@@ -973,7 +978,7 @@ def moph_dashboard():
             "Vac Given 3 Cum": d("2021-06-01"),
         }
 
-        dates = reversed(list(daterange(d("2021-08-01"), today(), offset=1)))
+        dates = reversed(list(daterange(d("2021-08-01"), today() - relativedelta(hours=7), offset=1)))
         for wb, idx_value in workbooks(url, skip_func(df, allow_na), dates=dates, D2_Province="province"):
             date, province = idx_value
             row = worksheet2df(
@@ -1023,14 +1028,17 @@ def moph_dashboard():
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
     daily = getDailyStats(daily)
     export(daily, "moph_dashboard", csv_only=True, dir="json")
+    shutil.copy(os.path.join("json", "moph_dashboard.csv"), "api")  # "json" for caching, api so it's downloadable
 
     ages = import_csv("moph_dashboard_ages", ["Date"], False, dir="json")  # so we cache it
     ages = getTimelines(ages)
     export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
+    shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
 
     dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
     dfprov = by_province(dfprov)
     export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+    shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
 
     daily = daily.combine_first(ages)
     return daily, dfprov
@@ -2632,8 +2640,7 @@ def vaccination_reports():
     return vac_daily, vac_prov_reports
 
 
-def get_vaccinations():
-
+def get_vac_coldchain():
     vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
     if not vac_import.empty:
         vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
@@ -2664,6 +2671,13 @@ def get_vaccinations():
     vacct = vacct.fillna(0)
     vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
     vacct = vacct.combine_first(vaccum)
+    return vac_import, vac_delivered, vacct
+
+
+def get_vaccinations():
+    # TODO: replace the vacct per prov data with the dashboard data
+    # TODO: replace the import/delivered data with? 
+    # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
     vac_reports, vac_reports_prov = vaccination_reports()
     #vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
@@ -2672,11 +2686,11 @@ def get_vaccinations():
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
-    vac_prov = vac_prov.combine_first(vac_reports_prov).combine_first(vacct)
+    vac_prov = vac_prov.combine_first(vac_reports_prov)  # .combine_first(vacct)
     if not USE_CACHE_DATA:
         export(vac_prov, "vaccinations", csv_only=True)
 
-    vac_prov = vac_prov.combine_first(vacct)
+    # vac_prov = vac_prov.combine_first(vacct)
 
     # Need the last day we have a full set of data since some provinces can come in late in vac tracker data
     # TODO: could add unknowns
@@ -2696,8 +2710,8 @@ def get_vaccinations():
     vac_timeline = vac_timeline.combine_first(
         vac_reports).combine_first(
         vac_slides_data).combine_first(
-        vac_delivered).combine_first(
-        vac_import).combine_first(
+        # vac_delivered).combine_first(
+        # vac_import).combine_first(
         given_by_area_1).combine_first(
         given_by_area_2).combine_first(
         given_by_area_both).combine_first(
