@@ -859,10 +859,11 @@ def moph_dashboard():
             'Hospitalized Field Other': d("2021-08-08"),
             'Vac Given 1 Cum': d("2021-01-11"),
             'Vac Given 2 Cum': d("2021-01-11"),
+            "Vac Given 3 Cum": d("2021-06-01"),
             'Hospitalized Field': d('2021-04-01'),
             'Hospitalized Respirator': d("2021-03-25"),  # patchy before this
             'Hospitalized Severe': d("2021-03-25"),
-            'Hospitalized Hospital': d("2021-01-25"),
+            'Hospitalized Hospital': d("2021-01-23"),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         for wb, date in workbooks(url, skip_func(df, allow_na), dates=reversed(list(daterange(d("2021-01-01"), today())))):
@@ -895,11 +896,12 @@ def moph_dashboard():
                 },
                 D_Vac_Stack={
                     "DAY(txn_date)-value": "Date",
-                    "Measure Names-alias": {
-                        "ได้รับวัคซีนเข็มที่ 1 สะสม": "1 Cum",
-                        "ได้รับวัคซีนเข็มที่ 2 สะสม": "2 Cum"
+                    "vaccine_plan_group-alias": {
+                        "1": "1 Cum",
+                        "2": "2 Cum",
+                        "3": "3 Cum",
                     },
-                    "Measure Values-value": "Vac Given",
+                    "SUM(vaccine_total_acm)-value": "Vac Given",
                 },
                 D_HospitalField="Hospitalized Field",
                 D_Hospitel="Hospitalized Field Hospitel",
@@ -968,6 +970,7 @@ def moph_dashboard():
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
             "Tests": today(),  # TODO: because they are 2 days late so need to say allow after instead of before?
+            "Vac Given 3 Cum": d("2021-06-01"),
         }
 
         dates = reversed(list(daterange(d("2021-08-01"), today(), offset=1)))
@@ -976,10 +979,14 @@ def moph_dashboard():
             row = worksheet2df(
                 wb,
                 date,
-                D2_VacTL={
+                D2_Vac_Stack={
                     "DAY(txn_date)-value": "Date",
-                    "SUM(vaccine_1st_dose_acm)-alias": "Vac Given 1 Cum",
-                    "SUM(vaccine_2nd_dose_acm)-alias": "Vac Given 2 Cum",
+                    "vaccine_plan_group-alias": {
+                        "1": "1 Cum",
+                        "2": "2 Cum",
+                        "3": "3 Cum",
+                    },
+                    "SUM(vaccine_total_acm)-value": "Vac Given",
                 },
                 D2_Walkin="Cases Walkin",
                 D2_Proact="Cases Proactive",
@@ -1021,8 +1028,8 @@ def moph_dashboard():
     ages = getTimelines(ages)
     export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
 
-    prov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
-    dfprov = by_province(prov)
+    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = by_province(dfprov)
     export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
 
     daily = daily.combine_first(ages)
@@ -2988,9 +2995,9 @@ def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
+    dashboard, dash_prov = moph_dashboard()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
