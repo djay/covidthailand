@@ -2671,6 +2671,15 @@ def get_vac_coldchain():
     vacct = vacct.fillna(0)
     vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
     vacct = vacct.combine_first(vaccum)
+
+    # Their data can have some prov on the last day missing data
+    # Need the last day we have a full set of data since some provinces can come in late in vac tracker data
+    # TODO: could add unknowns
+    counts1 = vacct['Vac Given'].groupby("Date").count()
+    counts2 = vacct['Vac Given Cum'].groupby("Date").count()
+    last_valid = max([counts2[counts1 > 76].last_valid_index(), counts2[counts2 > 76].last_valid_index()])
+    vacct = vacct.loc[:last_valid]
+
     return vac_import, vac_delivered, vacct
 
 
@@ -2680,7 +2689,7 @@ def get_vaccinations():
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
     vac_reports, vac_reports_prov = vaccination_reports()
-    #vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
+    # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
     vac_slides_data = vac_slides()
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
@@ -2692,14 +2701,13 @@ def get_vaccinations():
 
     # vac_prov = vac_prov.combine_first(vacct)
 
-    # Need the last day we have a full set of data since some provinces can come in late in vac tracker data
-    # TODO: could add unknowns
-    counts1 = vac_prov['Vac Given'].groupby("Date").count()
-    counts2 = vac_prov['Vac Given Cum'].groupby("Date").count()
-    last_valid = max([counts2[counts1 > 76].last_valid_index(), counts2[counts2 > 76].last_valid_index()])
-    vac_prov = vac_prov.loc[:last_valid]
+    # Add totals if they are missing
+    # given = vac_prov[[f"Vac Given {d}" for d in range(1, 4)]].sum(axis=1).to_frame("Vac Given")
+    # vac_prov = vac_prov.combine_first(given)
+    given_cum = vac_prov[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1).to_frame("Vac Given Cum")
+    vac_prov = vac_prov.combine_first(given_cum)
 
-    # Get vaccinations by district
+    # Get vaccinations by district # TODO: move this to plot
     vac_prov = join_provinces(vac_prov, "Province")
     given_by_area_1 = area_crosstab(vac_prov, 'Vac Given 1', ' Cum')
     given_by_area_2 = area_crosstab(vac_prov, 'Vac Given 2', ' Cum')
