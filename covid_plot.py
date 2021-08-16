@@ -1079,7 +1079,9 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ages
     plot_area(df=w3_cases, png_prefix='cases_ages2', cols_subset=cols, title='Thailand Covid Cases by Age',
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
-              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap=get_cycle('summer_r', len(cols) + 1))
+              kind='area', stacked=True, percent_fig=True, ma_days=7, 
+              cmap=get_cycle('summer_r', len(cols), extras=["gainsboro"])
+              )
 
     case_ages_cum = w3_cases["2021-04-01":].cumsum()
 
@@ -1126,8 +1128,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area',
               stacked=True,
               percent_fig=True,
+              unknown_name='Unknown', unknown_total='Deaths', unknown_percent=False,
               ma_days=7,
-              cmap=get_cycle('summer_r', len(cols) + 1))
+              cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]))
 
     # Excess Deaths
 

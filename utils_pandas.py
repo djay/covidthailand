@@ -10,6 +10,7 @@ import matplotlib.dates as mdates
 from cycler import Cycler
 import pandas as pd
 import numpy as np
+from matplotlib import colors as mcolors
 
 
 def daterange(start_date, end_date, offset=0):
@@ -328,7 +329,7 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
     return cleaned_df
 
 
-def get_cycle(cmap, n=None, use_index="auto"):
+def get_cycle(cmap, n=None, use_index="auto", extras=[]):
     if isinstance(cmap, Cycler):
         return cmap
     if isinstance(cmap, str):
@@ -351,10 +352,13 @@ def get_cycle(cmap, n=None, use_index="auto"):
             use_index = True
     if use_index:
         ind = np.arange(int(n)) % cmap.N
-        return cycler("color", cmap(ind))
+        colors = cmap(ind)
     else:
         colors = cmap(np.linspace(0, 1, n))
-        return cycler("color", colors)
+    extras = [mcolors.to_rgba(mcolors.CSS4_COLORS[c]) for c in extras]
+    if extras:
+        colors = np.concatenate([colors, extras])
+    return cycler("color", colors)
 
 
 def line_format(label):
