@@ -871,7 +871,7 @@ def moph_dashboard():
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
-        dates = reversed(list(daterange(d("2021-01-01"), today() - relativedelta(hours=7))))
+        dates = reversed(pd.date_range("2021-06-01", today() - relativedelta(hours=7)).to_pydatetime())
         for wb, date in workbooks(url, skip_func(df, allow_na), dates=dates):
             row = worksheet2df(
                 wb,
@@ -966,7 +966,7 @@ def moph_dashboard():
             df = row.combine_first(df)
             print(row.last_valid_index(), "MOPH Ages", age_group, row.loc[row.last_valid_index():].to_string(index=False, header=False))
         df = df.rename(columns={a:a.replace(">= 70", "70+").replace("< 10", "0-9") for a in df.columns})
-        df = df.loc[:, ~df.columns.duplicated()] # remove duplicate columns
+        df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
         return df
 
     def by_province(df):
@@ -981,7 +981,7 @@ def moph_dashboard():
             "Vac Given 3 Cum": d("2021-06-01"),
         }
 
-        dates = reversed(list(daterange(d("2021-08-01"), today() - relativedelta(hours=7), offset=1)))
+        dates = reversed(pd.date_range("2021-08-01", today() - relativedelta(hours=7)).to_pydatetime())
         for wb, idx_value in workbooks(url, skip_func(df, allow_na), dates=dates, D2_Province="province"):
             date, province = idx_value
             row = worksheet2df(

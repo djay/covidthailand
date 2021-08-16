@@ -621,6 +621,9 @@ def worksheet2df(wb, date=None, **mappings):
 def workbooks(url, skip=None, dates=[], **selects):
     if not dates:
         dates = [None]
+    else:
+        start, *_, end = dates
+        print("Checking Tableau Updates from", start, "to", end)
 
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
@@ -645,7 +648,7 @@ def workbooks(url, skip=None, dates=[], **selects):
         else:
             items = wb.getWorksheet(ws_name).getFilters()
             values = [item['values'] for item in items if item['column'] == col_name].pop()
-            meth = "setFilter"       
+            meth = "setFilter"
     else:
         values = [None]
 
