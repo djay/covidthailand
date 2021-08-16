@@ -3016,8 +3016,16 @@ def get_hospital_resources():
 def scrape_and_combine():
     os.makedirs("api", exist_ok=True)
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
+    MAX_DAYS = int(os.environ.get("MAX_DAYS", 1 if USE_CACHE_DATA else 0))
 
-    print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
+    print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\nMAX_DAYS = {MAX_DAYS}\n\n')
+
+    # TODO: replace with cli --data=situation,briefings --start=2021-06-01 --end=2021-07-01
+    # "--data=" to plot only
+    if USE_CACHE_DATA and MAX_DAYS == 0:
+        old = import_csv("combined")
+        old = old.set_index("Date")
+        return old
 
     cases_demo, risks_prov = get_cases_by_demographics_api()
     dashboard, dash_prov = moph_dashboard()

@@ -885,7 +885,7 @@ def save_plots(df: pd.DataFrame) -> None:
         stacked=False,
         percent_fig=False,
         ma_days=None,
-        cmap='Paired_r',
+        cmap='tab20_r',
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
@@ -899,12 +899,13 @@ def save_plots(df: pd.DataFrame) -> None:
               stacked=True,
               percent_fig=False,
               ma_days=None,
-              cmap='tab20',)
+              cmap='tab20_r',)
 
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
     vac_dash = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="json")
     vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
+    vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
     vac = vac.join(get_provinces()['Population'], on='Province')
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100)
 
@@ -1069,7 +1070,8 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df, png_prefix='deaths_w3cfr', cols_subset=cols, title='Thailand Covid CFR since 2021-04-01',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10')
 
-    ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+    #ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+    ages = cut_ages_labels([15, 40, 60], "Cases Age")
     # Put unknowns into ages based on current ratios. But might not be valid for prison unknowns?
     # w3_cases = df[ages + ['Cases', 'Deaths']].pipe(normalise_to_total, ages, "Cases")
     w3_cases = df[ages + ['Cases', 'Deaths']]
@@ -1085,7 +1087,8 @@ def save_plots(df: pd.DataFrame) -> None:
     # CFR * cases = deaths
     for ages_range in age_ranges:
         case_ages_cum[f"Deaths Age {ages_range} Cum"] = df[f"W3 CFR {ages_range}"].rolling(
-            21, min_periods=13, center=True).mean() / 100 * case_ages_cum[f"Age {ages_range}"].rolling(
+            21, min_periods=13,
+            center=True).mean() / 100 * case_ages_cum[f"Cases Age {ages_range.replace('60-', '60+')}"].rolling(
                 7, min_periods=3, center=True).mean()
     deaths_by_age = cum2daily(case_ages_cum)
     death_cols = [f'Deaths Age {age}' for age in age_ranges]
