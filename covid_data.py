@@ -3005,6 +3005,7 @@ def get_hospital_resources():
 
 
 def scrape_and_combine():
+    os.makedirs("api", exist_ok=True)
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
