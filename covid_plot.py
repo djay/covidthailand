@@ -10,7 +10,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
+from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_prefix, remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
@@ -424,11 +424,13 @@ def save_plots(df: pd.DataFrame) -> None:
             'Cases Walkin',
             'Pos XLS',
             'Pos Public',
+            'ATK',
             ]
     legends = ['Confirmed Cases',
                'Walkin Confirmed Cases',
                'Positive Test Results (All)',
-               'Positive Test Results (Public)']
+               'Positive Test Results (Public)',
+               'Antigen Test Kit Positives (ATK/Rapid)']
     plot_area(df=df, png_prefix='cases', cols_subset=cols,
               title='Positive Test results compared to Confirmed Cases', legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap="tab10",
@@ -500,25 +502,25 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive'] # .sub(df['Cases Area Prison'], fill_value=0)
-    df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
-    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison', 'ATK']
+    #df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison']
     plot_area(df=df,
               png_prefix='cases_types',
               cols_subset=cols,
-              title='Thailand Covid Cases by Where Tested (Confirmed + Rapid Tests)',
-              footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test",
+              title='Thailand Covid Cases by Where Tested',
+              #footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test",
               legends=[
                   "Quarantine (Imported)", "Hospital (Walk-ins/Traced)",
                   "Mobile Community Testing (Proactive)",
                   "Prison (Proactive)",
-                  "Rapid Testing (Antigen/ATK)"
+                  # "Rapid Testing (Antigen/ATK)"
               ],
               unknown_name='Cases Unknown',
-              unknown_total='Cases inc ATK',
+              unknown_total='Cases',
               kind='area',
               stacked=True,
               percent_fig=True,
-              actuals=["Cases inc ATK"],
+              actuals=["Cases"],
               ma_days=7,
               cmap="tab10")
 
@@ -532,7 +534,8 @@ def save_plots(df: pd.DataFrame) -> None:
     #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # Thailand Covid Cases by Age
-    cols = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    #cols = ["Age 0-9", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    cols = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Cases Age")
     plot_area(df=df, png_prefix='cases_ages', cols_subset=cols, title='Thailand Covid Cases by Age',
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
               kind='area', stacked=True, percent_fig=True, ma_days=7, cmap=get_cycle('summer_r', len(cols) + 1))

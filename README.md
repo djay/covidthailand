@@ -153,7 +153,7 @@ it's not yet clear which range of years provides the best baseline to compare ag
 
 ## Positive Rate
 
-![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_2.png)
+![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_3.png)
 
 - *NOTE* Walkin Cases/3*PUI seems to give an estimate of positive rate (when cases are high), so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
 - Positive rate is little like fishing in a lake. If you get few nibbles each time you put your line in you can guess that there is few fish in the lake. Less positives per test, less infections likely in the population.
@@ -167,9 +167,9 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 ## PCR Tests in Thailand by day
 
-![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests_2.png)
+![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests_3.png)
 
-![Private and Public Tests](https://github.com/djay/covidthailand/wiki/cases_2.png)
+![Private and Public Positive Results](https://github.com/djay/covidthailand/wiki/cases_3.png)
 
 - [There are more confirmed cases than positives in Thailands testing data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results), this could be for various
   reasons but could make the positive rate lower.
@@ -177,17 +177,17 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 ## PCR Tests by Health District
 
-![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily_2.png)
+![Tests by health area](https://github.com/djay/covidthailand/wiki/tests_area_daily_3.png)
 
 - [Tests by health area: Full Year](https://github.com/djay/covidthailand/wiki/tests_area_daily_all.png)
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
 - Source: [DMSC: Thailand Laboratory testing data](#dl-testing)
 ## Positive Rate by Health District
 
-![Proportion of positive rate contributed by health districts](https://raw.githubusercontent.com/wiki/djay/covidthailand/positivity_area_2.png)
+![Proportion of positive rate contributed by health districts](https://raw.githubusercontent.com/wiki/djay/covidthailand/positivity_area_3.png)
 - Shows if all health districts are testing similarly
 
-![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_2.png)
+![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_3.png)
 - Shows which districts have the highest positive rate
 
 - see also [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_all.png)
@@ -553,6 +553,8 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
   
 ## Change log
+- 2021-08-16 - Move ATK to tests plot and remove from types plot
+- 2021-08-16 - Plots of more age ranges for deaths, excess deaths and cases
 - 2021-08-15 - Dashboard parsing for provinces and ages with downloads 
 - 2021-08-02 - Add ATK cases parsing from dashboard and put in case_types plot
 - 2021-07-30 - Add plots for excess deaths

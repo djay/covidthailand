@@ -565,9 +565,10 @@ def get_case_details_csv():
                 # bad encoding
                 with codecs.open(file, encoding="tis-620") as fp:
                     confirmedcases = pd.read_csv(fp)
-            cases = cases.append(confirmedcases)
+            cases = cases.combine_first(confirmedcases.set_index("No."))
         else:
             raise Exception(f"Unknown filetype for covid19daily {file}")
+    cases = cases.reset_index("No.")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
@@ -622,13 +623,13 @@ def get_cases_by_demographics_api():
     #age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], right=True, labels=labels)
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
-    case_ages.columns = [f"Cases Ages {a}" for a in case_ages.columns.tolist()]
+    case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
 
     #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
     #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
     age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
     case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
-    case_ages2.columns = [f"Cases Ages {a}" for a in case_ages2.columns.tolist()]
+    case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
 
     cases['risk'].value_counts()
     risks = {}
@@ -3018,8 +3019,8 @@ def scrape_and_combine():
 
     print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\n\n')
 
-    dashboard, dash_prov = moph_dashboard()
     cases_demo, risks_prov = get_cases_by_demographics_api()
+    dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
 

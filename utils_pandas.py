@@ -119,9 +119,16 @@ def rearrange(lst, *first):
     return result + [i for i in lst if i is not None]
 
 
-def cut_ages(df, ages=[15, 65, 75, 85], age_col="Age", group_col="Age Group"):
+def cut_ages_labels(ages=[10, 20, 30, 40, 50, 60, 70], prefix=None):
     bins = [0] + ages + [140]
-    labels = [f"{p}-{n-1}" if n else f"{p}+" for p, n in zip(bins[:-1], bins[1:-1] + [None])]
+    prefix = prefix + " " if prefix else ""
+    labels = [f"{prefix}{p}-{n-1}" if n else f"{prefix}{p}+" for p, n in zip(bins[:-1], bins[1:-1] + [None])]
+    return labels
+
+
+def cut_ages(df, ages=[10, 20, 30, 40, 50, 60, 70], age_col="Age", group_col="Age Group"):
+    bins = [0] + ages + [140]
+    labels = cut_ages_labels(ages)
     df[group_col] = pd.cut(df[age_col], bins=bins, labels=labels, right=False)
     return df
 
