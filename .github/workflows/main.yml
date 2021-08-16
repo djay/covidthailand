@@ -20,6 +20,9 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
+      - uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Bangkok"
       - name: Get current date
         id: date
         run: |
