@@ -329,7 +329,7 @@ def clip_dataframe(df_all: pd.DataFrame, cols: Union[str, List[str]], n_rows: in
     return cleaned_df
 
 
-def get_cycle(cmap, n=None, use_index="auto", extras=[]):
+def get_cycle(cmap, n=None, use_index="auto", extras=[], unpair=False):
     if isinstance(cmap, Cycler):
         return cmap
     if isinstance(cmap, str):
@@ -355,6 +355,10 @@ def get_cycle(cmap, n=None, use_index="auto", extras=[]):
         colors = cmap(ind)
     else:
         colors = cmap(np.linspace(0, 1, n))
+    if unpair:
+        colors1 = colors[::2]
+        colors2 = colors[1::2]
+        colors = np.concatenate([colors1, colors2])
     extras = [mcolors.to_rgba(mcolors.CSS4_COLORS[c]) for c in extras]
     if extras:
         colors = np.concatenate([colors, extras])

@@ -742,7 +742,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # Vaccines
     ####################
 
-    def clean_vac_leg(c, first="(Half Vaccinated)", second="(Fully Vaccinated)"):
+    def clean_vac_leg(c, first="(1 Jab)", second="(2 Jabs)"):
         return c.replace(
             ' Cum', '').replace(
             'Vac ', '').replace(
@@ -840,15 +840,17 @@ def save_plots(df: pd.DataFrame) -> None:
             vac_cum[c.replace("1", "Only 1")] = vac_cum[c].sub(vac_cum[c.replace("1", "2")])
             cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
 
-    cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
-    cols_cum = cols_cum  # + ['Available Vaccines Cum']
+    #cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
+    #cols_cum = cols_cum  # + ['Available Vaccines Cum']
+    cols_cum = [c for c in cols if "2" in c] + [c for c in cols if "1" in c]
 
     # TODO: get paired colour map and use do 5 + 5 pairs
     legends = [clean_vac_leg(c) for c in cols_cum]
 
     plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
-              kind='area', stacked=True, percent_fig=True, ma_days=None, cmap='tab20_r',
+              kind='area', stacked=True, percent_fig=True, ma_days=None, 
+              cmap=get_cycle('tab20', len(cols_cum), unpair=True),
               # between=['Available Vaccines Cum'],
               y_formatter=thaipop)
 

@@ -196,15 +196,17 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 # Vaccinations <a name="vaccinations">
 
-<!--
 ## Vaccinations by Priority Groups
+<!--
 
 ![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
+-->
 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
 
+<!--
 ![Vaccinations Groups by Progress towards goals](https://github.com/djay/covidthailand/wiki/vac_groups_goals_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
