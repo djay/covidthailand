@@ -516,7 +516,9 @@ Bureau, Chaeng Watthana"
   - All the above daily sources combined
   - plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
 - Schema: 
-  - See all the above for data definitions
+  - Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'}
+  - Cases Risk {Group}: Categorisation of Risk field from the covid-19-daily dataset  
+  - + See all the above for data definitions
 
 # About
 

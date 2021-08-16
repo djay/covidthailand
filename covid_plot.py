@@ -1129,8 +1129,6 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               cmap=get_cycle('summer_r', len(cols) + 1))
 
-
-
     # Excess Deaths
 
     # TODO: look at causes of death

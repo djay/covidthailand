@@ -71,6 +71,7 @@ def today() -> datetime.datetime:
     """Return today's date and time"""
     return datetime.datetime.today()
 
+
 ####################
 # Extraction helpers
 #####################

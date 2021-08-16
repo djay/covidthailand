@@ -957,7 +957,7 @@ def moph_dashboard():
             if not age_group:
                 # TODO: get rid of this first workbook when iterating selects
                 continue
-            age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace("<= 70", "70+").replace("< 10", "0-9")
+            age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown")
             if row.empty:
                 continue
             row['Age'] = age_group
@@ -965,6 +965,8 @@ def moph_dashboard():
             row.columns = [f"{n} Age {v}" for n, v in row.columns]
             df = row.combine_first(df)
             print(row.last_valid_index(), "MOPH Ages", age_group, row.loc[row.last_valid_index():].to_string(index=False, header=False))
+        df = df.rename(columns={a:a.replace(">= 70", "70+").replace("< 10", "0-9") for a in df.columns})
+        df = df.loc[:, ~df.columns.duplicated()] # remove duplicate columns
         return df
 
     def by_province(df):
