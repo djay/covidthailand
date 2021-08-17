@@ -2511,10 +2511,10 @@ def vaccination_tables(df, date, page, file):
             # fix some number broken in the middle
             line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
             area, *rest = line.split(' ', 1)
-            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม", 'ตั้งแต่วันที่']:  # Extra heading
+            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม", 'ตั้งแต่วันที่', 'หมายเหตุ']:  # Extra heading
                 continue
             if area == "รวม" or not rest:
-                continue  # previously meant end of table. Now part of header. 2021-08-14
+                continue  # previously meant end of table. Now can be part of header. 2021-08-14
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
