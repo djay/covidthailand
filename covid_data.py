@@ -573,7 +573,7 @@ def get_case_details_csv():
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
-    #assert cases.index.max() < 
+    #assert cases.index.max() <
     print("Covid19daily: ", file, cases.index.max())
     return cases
 
@@ -1966,7 +1966,7 @@ def get_cases_by_prov_briefings():
 
 
 def prov_to_districts(dfprov):
-   # Reduce down to health areas
+    # Reduce down to health areas
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
     dfprov_grouped = dfprov_grouped.rename(columns=dict((i, f"Area {i}") for i in DISTRICT_RANGE))
@@ -1987,7 +1987,7 @@ def prov_to_districts(dfprov):
         if col not in by_area:
             by_area[col] = by_area.get(col, pd.Series(index=by_area.index, name=col))
     return by_area
- 
+
 
 
 def get_cases_by_area_api():
@@ -2449,30 +2449,15 @@ def vaccination_tables(df, date, page, file):
         "Vac Given 2 Cum",
         "Vac Given 2 %",
     ]
-    vaccols7x3 = givencols + [
+    givencols3 = givencols + [
         "Vac Given 3 Cum",
         "Vac Given 3 %",
-        "Vac Group Medical Staff 1 Cum",
-        "Vac Group Medical Staff 2 Cum",
-        "Vac Group Medical Staff 3 Cum",
-        "Vac Group Health Volunteer 1 Cum",
-        "Vac Group Health Volunteer 2 Cum",
-        "Vac Group Health Volunteer 3 Cum",
-        "Vac Group Other Frontline Staff 1 Cum",
-        "Vac Group Other Frontline Staff 2 Cum",
-        "Vac Group Other Frontline Staff 3 Cum",
-        "Vac Group Over 60 1 Cum",
-        "Vac Group Over 60 2 Cum",
-        "Vac Group Over 60 3 Cum",
-        "Vac Group Risk: Disease 1 Cum",
-        "Vac Group Risk: Disease 2 Cum",
-        "Vac Group Risk: Disease 3 Cum",
-        "Vac Group Risk: Pregnant 1 Cum",
-        "Vac Group Risk: Pregnant 2 Cum",
-        "Vac Group Risk: Pregnant 3 Cum",
-        "Vac Group Risk: Location 1 Cum",
-        "Vac Group Risk: Location 2 Cum",
-        "Vac Group Risk: Location 3 Cum",
+    ]
+    vaccols7x3 = givencols3 + [
+        f"Vac Group {g} {d} Cum" for g in [
+            "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
+            "Risk: Location"
+        ] for d in range(1, 4)
     ]
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
@@ -2493,7 +2478,7 @@ def vaccination_tables(df, date, page, file):
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
     ]
-    alloc3 = alloc2 + ["Vac Allocated Pfizer"]
+    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer"]
 
     def add(df, prov, numbers, cols):
         if not df.empty:
@@ -2514,7 +2499,7 @@ def vaccination_tables(df, date, page, file):
     _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = max(len(shots.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc"}.get(shot_count)
+        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july"}.get(shot_count)
         if not table and max(len(oldhead.findall(h)) for h in headings):
             table = "old_given"
         elif not table and max(len(july.findall(h)) for h in headings):
@@ -2526,10 +2511,10 @@ def vaccination_tables(df, date, page, file):
             # fix some number broken in the middle
             line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
             area, *rest = line.split(' ', 1)
-            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม"]:  # Extra heading
+            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม", 'ตั้งแต่วันที่']:  # Extra heading
                 continue
             if area == "รวม" or not rest:
-                break
+                continue  # previously meant end of table. Now part of header. 2021-08-14
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
@@ -2572,21 +2557,39 @@ def vaccination_tables(df, date, page, file):
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 df = add(df, prov, row, givencols)
-            elif table == "july" and len(numbers) in [33, 27]:  # from 2021-08-05
+            elif table == "july" and len(numbers) in [33, 27, 21, 22, 17]:  # from 2021-08-05
                 # Actually cumulative totals
-                pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
-                sv, az, pf, total_alloc = alloc
-                assert sv + az + pf == total_alloc
+                if len(numbers) == 21:
+                    # Givens is a single total only 2021-08-16
+                    pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:6], numbers[6:]
+                    givens = [None] * 6  # We don't use the total
+                elif len(numbers) == 22:
+                    # Givens has sinopharm in it too. 2021-08-15
+                    pop, alloc, givens, groups = numbers[0], numbers[1:6], numbers[6:7], numbers[7:]
+                    givens = [None] * 6  # We don't use the total
+                elif len(numbers) == 17:
+                    # No allocations or givens 2021-08-10
+                    pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
+                    givens = [None] * 6
+                    alloc = [None] * 4
+                else:
+                    pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
+                if len(alloc) == 4:
+                    sv, az, pf, total_alloc = alloc
+                    sp = None
+                else:
+                    sv, az, sp, pf, total_alloc = alloc
+                assert total_alloc is None or sum([m for m in [sv, az, pf, sp] if m]) == total_alloc
                 if len(groups) == 15:
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
                 df = add(df, prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
-                df = add(df, prov, [sv, az, pf], alloc3)
+                df = add(df, prov, [sv, az, sp, pf], alloc4)
             elif table == "july" and len(numbers) in [13]:
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
-                # Same info we already have
+                df = add(df, prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
                 assert False
         assert added is None or added > 7
@@ -2620,6 +2623,7 @@ def vaccination_reports():
 
             vac_daily = vaccination_daily(vac_daily, date, file, page)
             vac_daily = vac_problem(vac_daily, date, file, page)
+        assert len(table) == 77 or date < d("2021-08-01")
         print(date, "Vac Tables", len(table), "Provinces parsed", file)
         vac_prov_reports = vac_prov_reports.combine_first(table)
 
@@ -2688,7 +2692,7 @@ def get_vac_coldchain():
 
 def get_vaccinations():
     # TODO: replace the vacct per prov data with the dashboard data
-    # TODO: replace the import/delivered data with? 
+    # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
     vac_reports, vac_reports_prov = vaccination_reports()
@@ -2769,7 +2773,7 @@ def vac_manuf_given(df, page, file, page_num):
             total2 = sv2 + az2
     assert total1 == sv1 + az1 + sp1 + pf1
     #assert total2 == sv2 + az2 + sp2 + pf2
-    assert total3 == sv3 + az3 + sp3 + pf3
+    assert total3 == sv3 + az3 + sp3 + pf3 or date in [d("2021-08-15")]
     row = [date, sv1, az1, sp1, pf1, sv2, az2, sp2, pf2, sv3, az3, sp3, pf3]
     cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer"]]
     row = pd.DataFrame([row], columns=['Date'] + cols)
@@ -2986,6 +2990,8 @@ def get_hospital_resources():
 
 
 # TODO: Additional data sources
+# - new moph apis
+#    - https://covid19.ddc.moph.go.th/
 # - medical supplies (tableux)
 #    - https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1
 #    - is it accurate?
@@ -3029,10 +3035,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    vac = get_vaccinations()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
