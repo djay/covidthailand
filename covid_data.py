@@ -3035,10 +3035,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
-    dashboard, dash_prov = moph_dashboard()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
