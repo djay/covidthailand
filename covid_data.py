@@ -1989,7 +1989,6 @@ def prov_to_districts(dfprov):
     return by_area
 
 
-
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
@@ -2695,9 +2694,9 @@ def get_vaccinations():
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
+    vac_slides_data = vac_slides()
     vac_reports, vac_reports_prov = vaccination_reports()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
-    vac_slides_data = vac_slides()
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
@@ -2777,19 +2776,56 @@ def vac_manuf_given(df, page, file, page_num):
     row = [date, sv1, az1, sp1, pf1, sv2, az2, sp2, pf2, sv3, az3, sp3, pf3]
     cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer"]]
     row = pd.DataFrame([row], columns=['Date'] + cols)
-    print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
+    print(date.date(), "Vac slides Manuf", file, row.to_string(header=False, index=False))
     return df.combine_first(row.set_index("Date"))
 
+
 def vac_slides_groups(df, page, file, page_num):
-    if "กลุ่มเปา้หมาย" not in page:
-        return
+    if "กลุ่มเปา้หมาย" not in page and "บุคลากรท" not in page:
+        return df
+    date = find_thai_date(page)
+
     # does faily good job
-    table = camelot.read_pdf(file, pages=str(page_num), process_background=False)[0].df
-    table = table[2:]
-    for i in range(1, 7):
-        table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))
-    table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
-    table.loc[:,"group"] = [
+    tables = camelot.read_pdf(file, pages=str(page_num), process_background=False)
+    if not tables:
+        # older tables need this
+        tables = camelot.read_pdf(file, pages=str(page_num), process_background=True)
+    if len(tables) == 1:
+        table = tables[0].df
+        table = table[2:]
+        table = table.replace("", np.nan).dropna(axis=1)
+    elif len(tables) == 2:
+        # Older format - 'vaccinations/1623053912700.pdf'
+        table = tables[0].df
+        table.columns = ['group', "1 Cum"]
+        table['2 Cum'] = tables[1].df[1]
+        table = table[1:]  # get rid of headings
+    else:
+        assert date < d("2021-05-07")
+        return df
+    for i in table.columns[1:]:
+        table[i] = pd.to_numeric(table[i].str.replace(r"\D*([0-9\,\.]+|-)-?\D*", r"\1", flags=re.DOTALL,
+                                                      regex=True).str.replace(",", "").str.replace("-", "0").str.strip("-"))
+    if len(table.columns) == 7:
+        # 'vaccinations/1629178178198.pdf'
+        table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
+    elif len(table.columns) == 5:
+        # open 'vaccinations/1628485886373.pdf'
+        table.columns = ["group", "1 Cum", "1", "2 Cum", "2"]
+    elif len(table.columns) == 6:
+        # open 'vaccinations/1626225824236.pdf'
+        table.columns = ["group", "population", "1 Cum", "1", "2 Cum", "2"]
+    elif len(table.columns) == 3:
+        # open 'vaccinations/1623053912700.pdf'
+        table.columns = ["group", "1 Cum", "2 Cum"]
+    else:
+        # some are just copies of the other doc?? 'vaccinations/1626361359705.pdf'
+        return df
+        #assert False
+
+    # TODO : vaccinations/1624693756747.pdf - doesn't parse
+
+    rows = [
         "Vac Group Medical Staff",
         "Vac Group Health Volunteer",
         "Vac Group Other Frontline Staff",
@@ -2797,10 +2833,17 @@ def vac_slides_groups(df, page, file, page_num):
         "Vac Group Risk: Disease",
         "Vac Group Risk: Pregnant",
         "Vac Group Risk: Location",
-        "Total"
+        "Vac Given"
     ]
-    table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
-
+    rows7 = [r for r in rows if "Pregnant" not in r]  # vaccinations/1629178178198.pdf'
+    rows5 = [r for r in rows7 if not any_in(r, "Volunteer", 'Given')]  # 2021-06-06
+    table.loc[:, "group"] = {8: rows, 7: rows7, 5: rows5}.get(len(table), None)
+    table['Date'] = date
+    table = table.pivot(index="Date", values=[c for c in table.columns if "Cum" in c], columns="group")
+    table.columns = [f"{g} {d}" for d, g in table.columns]
+    print(date.date(), "Vac slides Groups", table.to_string(header=False, index=False), file)
+    assert len(table) == 1
+    return df.combine_first(table)
 
     # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
     # village, rest = get_next_numbers(rest, "เจา้หน้าทีด่", until="\n")
@@ -2843,8 +2886,8 @@ def vac_slides():
     for file in files:
         for i, page in enumerate(parse_file(file), 1):
             # pass
+            df = vac_slides_groups(df, page, file, i)
             df = vac_manuf_given(df, page, file, i)
-            #df = vac_slides_groups(df, page, file, i)
     return df
 
 

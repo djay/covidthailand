@@ -151,6 +151,11 @@ def find_thai_date(content, remove=False):
     elif m3 is None:
         return None
     d2, month, year = m3.groups()
+    closest = difflib.get_close_matches(month, THAI_ABBR_MONTHS + THAI_FULL_MONTHS, 1, cutoff=0.75)
+    if not closest:
+        None
+    else:
+        month = closest[0]
     month = (
         THAI_ABBR_MONTHS.index(month) + 1
         if month in THAI_ABBR_MONTHS

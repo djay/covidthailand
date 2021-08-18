@@ -27,6 +27,7 @@ from tableauscraper.TableauScraper import TableauException
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True'
 MAX_DAYS = int(os.environ.get("MAX_DAYS", 1 if USE_CACHE_DATA else 0))
+MIN_DAYS = int(os.environ.get("MIN_DAYS", 0 if USE_CACHE_DATA else 0))
 
 NUM_RE = re.compile(r"\d+(?:\,\d+)*(?:\.\d+)?")
 INT_RE = re.compile(r"\d+(?:\,\d+)*")
@@ -245,6 +246,10 @@ def is_cutshort(file, modified, check):
     if not check and MAX_DAYS and modified and (datetime.datetime.today().astimezone()
                                                 - modified).days > MAX_DAYS and os.path.exists(file):
         print(f"Reached MAX_DAYS={MAX_DAYS}")
+        return True
+    if not check and MIN_DAYS and modified and (datetime.datetime.today().astimezone()
+                                                - modified).days <= MIN_DAYS and os.path.exists(file):
+        print(f"Reached MIN_DAYS={MIN_DAYS}")
         return True
     return False
 
@@ -626,7 +631,11 @@ def workbooks(url, skip=None, dates=[], **selects):
         print("Checking Tableau Updates from", start, "to", end)
 
     ts = tableauscraper.TableauScraper()
-    ts.loads(url)
+    try:
+        ts.loads(url)
+    except (RequestException, TableauException):
+        print("MOPH Dashboard", "Skip: Dashbard load error Error.")  
+        return
     fix_timeouts(ts.session, timeout=15)
     wbroot = ts.getWorkbook()
     # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
