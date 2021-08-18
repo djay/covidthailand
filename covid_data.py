@@ -1612,7 +1612,7 @@ def briefing_deaths_provinces(dtext, date, total_deaths, file):
     # Provinces are split between bullets with disease and risk. Normally bangkok first line above and rest below
     ptext1, b1, rest_bullets = bullets_re.split(table_content, 1)
     if "หญิง" in rest_bullets:  # new format on 2021-08-09 - no gender and prov no longer shoved in the middle.
-        rest_bullets2, gender = re.split("• (?:หญิง|ชาย)", b1 + rest_bullets, 1)
+        rest_bullets2, gender = re.split("• *(?:หญิง|ชาย)", b1 + rest_bullets, 1)
         *bullets, ptext2 = bullets_re.split(rest_bullets2)
         ptext2, *age_text = re.split("•", ptext2, 1)
     else:
@@ -3035,10 +3035,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     dashboard, dash_prov = moph_dashboard()
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
