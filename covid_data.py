@@ -615,12 +615,6 @@ def get_cases_by_demographics_api():
     print("========Covid19Daily Demographics==========")
 
     cases = get_case_details_csv().reset_index()
-    # cases = cases.rename(columns=dict(announce_date="Date"))
-
-    # age_groups = pd.cut(cases['age'], bins=np.arange(0, 100, 10))
-    # cases = get_case_details_csv().reset_index()
-    #labels = ["Age 0-19", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
-    #age_groups = pd.cut(cases['age'], bins=[0, 19, 29, 39, 49, 65, np.inf], right=True, labels=labels)
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
     case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
@@ -2338,7 +2332,7 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|บุคคลที่มีโรคประจ)", page):  # noqa
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19)", page):  # noqa
         return daily
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
@@ -2377,13 +2371,14 @@ def vaccination_daily(daily, date, file, page):
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
     d1_num, rest1 = get_next_numbers(page,
-                                     "เข็ม(?:ท่ี|ที่) 1 จํานวน",
-                                     "ซีนเข็มที่ 1 จ",
-                                     "1  จํานวน",
+                                     r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
+                                     r"ซีนเข็มที่ 1 จ",
+                                     r"1\s*จํานวน",
+                                     r"1 จำนวน",
                                      until=r"(?:2 เข็ม)")
     d2_num, rest2 = get_next_numbers(page,
-                                     "ได้รับวัคซีน 2 เข็ม",
-                                     "ไดรับวัคซีน 2 เข็ม",
+                                     r"ได้รับวัคซีน 2 เข็ม",
+                                     r"ไดรับวัคซีน 2 เข็ม",
                                      until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|3 \(Booster dose\))")
     d3_num, rest3 = get_next_numbers(page, r"3 \(Booster dose\)", until="ดังรูป")
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
@@ -2695,9 +2690,9 @@ def get_vaccinations():
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
+    vac_slides_data = vac_slides()
     vac_reports, vac_reports_prov = vaccination_reports()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
-    vac_slides_data = vac_slides()
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
@@ -2743,8 +2738,11 @@ def vac_manuf_given(df, page, file, page_num):
     if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
         return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
-    title1, daily, title2, doses, *_ = table[0]  # + title3, totals + extras
+    title1, daily, title2, doses, *rest = table[0]  # + title3, totals + extras
     date = find_thai_date(title1)
+    # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
+    if len(rest) == 3:
+        doses = rest[0]  # Assumes header is doses cell
 
     # Sometimes there is an extra date thrown in inside brackets on the subheadings
     # e.g. vaccinations/1624968183817.pdf
@@ -3035,9 +3033,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()

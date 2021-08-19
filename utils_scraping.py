@@ -479,18 +479,18 @@ def split(seq, condition, maxsplit=0):
             last = not last
     yield run
 
-# def nwise(iterable, n=2):
-#     iters = tee(iterable, n)
-#     for i, it in enumerate(iters):
-#         next(islice(it, i, i), None)
-#     return zip(*iters)
-
 
 def pairwise(lst):
     "Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"
     lst = list(lst)
     return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))
 
+
+# def nwise(iterable, n=2):
+#     iters = tee(iterable, n)
+#     for i, it in enumerate(iters):
+#         next(islice(it, i, i), None)
+#     return zip(*iters)
 
 def parse_numbers(lst):
     return [float(i.replace(",", "")) if i != "-" else 0 for i in lst]

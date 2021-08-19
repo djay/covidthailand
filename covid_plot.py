@@ -765,7 +765,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # groups = [c for c in groups if "Pregnant" not in c and "Volunteer" not in c and " 3 " not in c]
     df_vac_groups = df_vac_groups[groups]
 
-    # go backwards to get rid of "dips". ie take later cum value as correct. e.g. 2021-06-21
+    # go backwards to get rid of "dips". ie take later value as correct. e.g. 2021-06-21
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
     df_vac_groups = df_vac_groups.cummin()  # if later corrected down, take that number into past
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])

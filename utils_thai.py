@@ -373,6 +373,7 @@ def prov_regions_wealth(provinces):
     return provinces
 
 
+@functools.lru_cache(maxsize=500, typed=False)
 def get_province(prov, ignore_error=False, cutoff=0.74, split=False):
     prov = remove_prefix(prov.strip().strip(".").replace(" ", ""), "จ.")
     provinces = get_provinces()
