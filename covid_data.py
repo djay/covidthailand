@@ -2738,7 +2738,7 @@ def vac_manuf_given(df, page, file, page_num):
     if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
         return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
-    title1, daily, title2, doses, *rest = table[0]  # + title3, totals + extras
+    title1, daily, title2, doses, *rest = [cell for cell in table[0] if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
     # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
     if len(rest) == 3:
