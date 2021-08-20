@@ -626,7 +626,15 @@ def workbooks(url, skip=None, dates=[], **selects):
         print("Checking Tableau Updates from", start, "to", end)
 
     ts = tableauscraper.TableauScraper()
-    ts.loads(url)
+    try:
+        ts.loads(url)
+    except (RequestException, TableauException):
+        print("MOPH Dashboard", f"Error: Timeout Loading url {url}")
+        return
+    except (KeyError):
+        print("MOPH Dashboard", f"Error: Empty Worksheet url {url}")
+        return
+
     fix_timeouts(ts.session, timeout=15)
     wbroot = ts.getWorkbook()
     # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
