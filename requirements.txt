@@ -14,3 +14,4 @@ numpy
 matplotlib
 pythainlp
 TableauScraper
+pytest

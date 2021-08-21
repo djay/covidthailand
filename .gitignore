@@ -8,6 +8,7 @@
 situation_en
 situation_th
 tests_moph
+!tests/**
 .venv
 __pycache__
 api/

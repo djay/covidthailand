@@ -108,6 +108,9 @@ jobs:
       #       python covid_plot.py
       #   env:
       #       CHECK_NEWER: True 
+      - name: Run tests
+        if:  ${{ github.event_name	!= 'schedule'}}
+        run: pytest
       - name: Scape Covid Data
         id: update
         if: ${{ steps.go.outcome == 'success' }}
