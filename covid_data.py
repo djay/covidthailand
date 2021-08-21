@@ -2138,8 +2138,8 @@ def get_test_reports():
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
                 # Latest file as all the data we need
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
-            assert not data.empty
-            # TODO: assert for pubpriv too. but disappearerd after certain date
+        assert not data.empty
+        # TODO: assert for pubpriv too. but disappearerd after certain date
     # Also need pdf copies because of missing pptx
     for file in test_dav_files(ext=".pdf"):
         pages = parse_file(file, html=False, paged=True)
@@ -3036,11 +3036,11 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
+    dashboard, dash_prov = moph_dashboard()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
