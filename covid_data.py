@@ -2138,6 +2138,8 @@ def get_test_reports():
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
                 # Latest file as all the data we need
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
+            assert not data.empty
+            # TODO: assert for pubpriv too. but disappearerd after certain date
     # Also need pdf copies because of missing pptx
     for file in test_dav_files(ext=".pdf"):
         pages = parse_file(file, html=False, paged=True)

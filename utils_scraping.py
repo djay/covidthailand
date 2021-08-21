@@ -178,18 +178,23 @@ def slide2text(slide):
 
 
 def pptx2chartdata(file):
+
+    def find_charts(shape, i):
+        if not shape.has_chart:
+            for s in getattr(shape, 'shapes', []):  # Group shapes
+                yield from find_charts(s, i)
+            return
+        chart = shape.chart
+        if chart is None:
+            return
+        title = chart.chart_title.text_frame.text if chart.has_title else ""
+        series = dict([(s.name, s.values) for s in chart.series])
+        yield chart, title, series, i
+
     prs = Presentation(file)
     for i, slide in enumerate(prs.slides):
         for shape in slide.shapes:
-            if not shape.has_chart:
-                continue
-            chart = shape.chart
-            if chart is None:
-                continue
-            title = chart.chart_title.text_frame.text if chart.has_title else ""
-            series = dict([(s.name, s.values) for s in chart.series])
-
-            yield chart, title, series, i
+            yield from find_charts(shape, i)
 
 
 ####################
