@@ -957,9 +957,10 @@ def moph_dashboard():
             row['Age'] = age_group
             row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
             row.columns = [f"{n} Age {v}" for n, v in row.columns]
+            row = row.rename(columns={a: a.replace(">= 70", "70+").replace("< 10", "0-9") for a in row.columns})
             df = row.combine_first(df)
-            print(row.last_valid_index(), "MOPH Ages", age_group, row.loc[row.last_valid_index():].to_string(index=False, header=False))
-        df = df.rename(columns={a:a.replace(">= 70", "70+").replace("< 10", "0-9") for a in df.columns})
+            print(row.last_valid_index(), "MOPH Ages", age_group,
+                  row.loc[row.last_valid_index():].to_string(index=False, header=False))
         df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
         return df
 
@@ -3033,8 +3034,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
+    tests_reports = get_test_reports()
+    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
@@ -3043,7 +3045,6 @@ def scrape_and_combine():
     situation = get_situation()
 
     tests = get_tests_by_day()
-    tests_reports = get_test_reports()
     excess_deaths()
     case_api_by_area = get_cases_by_area_api()  # can be very wrong for the last days
 
