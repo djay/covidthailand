@@ -82,7 +82,6 @@ jobs:
       - name: du
         run:  
           du -ha * | sort -h
-          # Get rid of no longer needed cache files
           rm -rf json/confirmed-cases.csv.2*
       - name: skip rest if schedule > 1pm and briefing not ready or already done
         id: go
