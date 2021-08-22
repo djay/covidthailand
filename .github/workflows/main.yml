@@ -82,7 +82,7 @@ jobs:
       - name: du
         run:  
           du -ha * | sort -h
-          rm -rf json/confirmed-cases.csv.2*
+          rm -rf json/confirmed-cases.csv.2* || true
       - name: skip rest if schedule > 1pm and briefing not ready or already done
         id: go
         if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}

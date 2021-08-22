@@ -3079,8 +3079,7 @@ def scrape_and_combine():
     print(df)
 
     if quick:
-        old = import_csv("combined")
-        old = old.set_index("Date")
+        old = import_csv("combined", index=["Date"])
         df = df.combine_first(old)
 
         return df
