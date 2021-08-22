@@ -17,7 +17,7 @@ def find_files(dir, pat):
     for root, dir, files in os.walk(dir_path):
         for file in fnmatch.filter(files, pat):
             base, ext = file.rsplit(".", 1)
-            testdf = pd.DataFrame()
+            testdf = None
 
             csvs = fnmatch.filter(files, f"{base}*.csv")
             if not csvs:
@@ -27,7 +27,7 @@ def find_files(dir, pat):
             for check in csvs:
                 _, func, ext = check.rsplit(".", 2)
                 try:
-                    testdf = import_csv(os.path.join(root, check))
+                    testdf = import_csv(check.rsplit(".", 1)[0], dir=root)
                 except pd.errors.EmptyDataError:
                     pass
                 yield os.path.join(root, file), testdf, func
