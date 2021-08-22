@@ -201,7 +201,7 @@ def export(df, name, csv_only=False, dir="api"):
     )
 
 
-def import_csv(name, index=["Date"], return_empty=False, date_cols=['Date'], dir="api"):
+def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="api"):
     path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
         return pd.DataFrame(columns=index).set_index(index)

@@ -27,7 +27,7 @@ def find_files(dir, pat):
             for check in csvs:
                 _, func, ext = check.rsplit(".", 2)
                 try:
-                    testdf = import_csv(check.rsplit(".", 1)[0], dir=root)
+                    testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
                 except pd.errors.EmptyDataError:
                     pass
                 yield os.path.join(root, file), testdf, func
