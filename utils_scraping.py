@@ -371,9 +371,13 @@ def dav_files(url, username=None, password=None,
         if i > 0 and is_cutshort(target, info["modified"], False):
             break
         if resume_from(target, info["modified"]) >= 0:
-            client.download_file(file, target)
+            def do_dl(file=file, target=target):
+                client.download_file(file, target)
+                return target
+        else:
+            do_dl = lambda target=target: target
         i += 1
-        yield target
+        yield target, do_dl
 
 
 #################

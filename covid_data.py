@@ -2009,7 +2009,8 @@ def test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
 def get_tests_by_day():
     print("========Tests by Day==========")
 
-    file = next(test_dav_files(ext="xlsx"))
+    file, dl = next(test_dav_files(ext="xlsx"))
+    dl()
     tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
     tests.dropna(how="any", inplace=True)  # get rid of totals row
     tests = tests.set_index("Date")
@@ -2047,6 +2048,9 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
 
     # the graph for X period split by health area.
     # Need both pptx and pdf as one pdf is missing
+    if "จำนวนผลบวก" not in series:
+        # 2021-08-24 they added another graph with %
+        return data, raw
     pos = list(series["จำนวนผลบวก"])
     tests = list(series["จำนวนตรวจ"])
     row = pos + tests + [sum(pos), sum(tests)]
@@ -2132,7 +2136,8 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
-    for file in test_dav_files(ext=".pptx"):
+    for file, dl in test_dav_files(ext=".pptx"):
+        dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
             data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
@@ -2141,7 +2146,8 @@ def get_test_reports():
         assert not data.empty
         # TODO: assert for pubpriv too. but disappearerd after certain date
     # Also need pdf copies because of missing pptx
-    for file in test_dav_files(ext=".pdf"):
+    for file, dl in test_dav_files(ext=".pdf"):
+        dl()
         pages = parse_file(file, html=False, paged=True)
         for page in pages:
             data, raw = get_tests_by_area_pdf(file, page, data, raw)
@@ -2335,7 +2341,7 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19)", page):  # noqa
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
@@ -2363,7 +2369,7 @@ def vaccination_daily(daily, date, file, page):
     # TODO: until make more specific to only reports for allocations
     daily = daily.combine_first(df)
 
-    if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย)", page):
+    if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย|กรทำงกำรแพทย์)", page):
         print(date.date(), "Vac Sum (Missing groups)", df.to_string(header=False, index=False), file)
         assert date < d("2021-07-12")
         return daily
@@ -2609,7 +2615,7 @@ def vaccination_reports_files():
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
 
-        def get_file():
+        def get_file(link=link):
             try:
                 file, _, _ = next(iter(web_files(link, dir="vaccinations")))
             except StopIteration:
@@ -2626,8 +2632,8 @@ def vaccination_reports():
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
 
-    for file, date in vaccination_reports_files():
-        if file := file() is None:
+    for link, date, dl in vaccination_reports_files():
+        if (file := dl()) is None:
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         for page in parse_file(file):
@@ -3051,8 +3057,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    vac = get_vaccinations()
     tests_reports = get_test_reports()
+    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     dashboard, dash_prov = moph_dashboard()
