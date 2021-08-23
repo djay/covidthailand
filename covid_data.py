@@ -2594,10 +2594,7 @@ def vaccination_tables(df, date, page, file):
     return df
 
 
-def vaccination_reports():
-    vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
-    vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
-
+def vaccination_reports_files():
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
@@ -2606,15 +2603,33 @@ def vaccination_reports():
                  for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
     links = unique_values(chain(gen_links, links))
     links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
-    # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
-    # Just need the latest
-
-    for file, _, _ in web_files(*links, dir="vaccinations"):
-        table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
-        date = file2date(file)
+    for link in links:
+        date = file2date(link)
         if not date or date <= d("2021-02-27"):
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
+
+        def get_file():
+            try:
+                file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+            except StopIteration:
+                return None
+            return file
+
+        yield link, date, get_file
+                
+
+def vaccination_reports():
+    vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
+    vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
+
+    # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
+    # Just need the latest
+
+    for file, date in vaccination_reports_files():
+        if file := file() is None:
+            continue
+        table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         for page in parse_file(file):
             page_table = vaccination_tables(table, date, page, file)
             table = table.combine_first(page_table)
@@ -2693,8 +2708,8 @@ def get_vaccinations():
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
-    vac_slides_data = vac_slides()
     vac_reports, vac_reports_prov = vaccination_reports()
+    vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
@@ -3036,8 +3051,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    tests_reports = get_test_reports()
     vac = get_vaccinations()
+    tests_reports = get_test_reports()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     dashboard, dash_prov = moph_dashboard()
