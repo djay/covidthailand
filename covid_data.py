@@ -2620,7 +2620,7 @@ def vaccination_reports_files():
         if not date or date <= d("2021-02-27"):
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-        if date < today() - datetime.timedelta(days=MAX_DAYS - 1):
+        if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS - 1):
             break
 
         def get_file(link=link):
