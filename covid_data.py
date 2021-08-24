@@ -21,7 +21,7 @@ from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range, cut_ages
-from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
+from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s, workbooks, worksheet2df
@@ -339,13 +339,18 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
     assert 0 <= a1_w3 <= 25
 
     # time to treatment
-    w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
+    numbers = get_next_numbers(
         parsed_pdf,
         "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย",
         "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม",
         "ถึงวันได้รับรักษา",
         ints=False,
         return_rest=False)
+    if numbers:
+        w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = numbers
+    else:
+        # 'situation_th/situation-no598-230864.pdf'
+        w3_avg, w3_min, w3_max = [np.nan] * 3
     columns = [
         "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg", "W3 Time To Treatment Min",
         "W3 Time To Treatment Max"
@@ -2009,7 +2014,8 @@ def test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
 def get_tests_by_day():
     print("========Tests by Day==========")
 
-    file = next(test_dav_files(ext="xlsx"))
+    file, dl = next(test_dav_files(ext="xlsx"))
+    dl()
     tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
     tests.dropna(how="any", inplace=True)  # get rid of totals row
     tests = tests.set_index("Date")
@@ -2047,6 +2053,9 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
 
     # the graph for X period split by health area.
     # Need both pptx and pdf as one pdf is missing
+    if "จำนวนผลบวก" not in series:
+        # 2021-08-24 they added another graph with %
+        return data, raw
     pos = list(series["จำนวนผลบวก"])
     tests = list(series["จำนวนตรวจ"])
     row = pos + tests + [sum(pos), sum(tests)]
@@ -2132,7 +2141,8 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
-    for file in test_dav_files(ext=".pptx"):
+    for file, dl in test_dav_files(ext=".pptx"):
+        dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
             data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
@@ -2141,7 +2151,8 @@ def get_test_reports():
         assert not data.empty
         # TODO: assert for pubpriv too. but disappearerd after certain date
     # Also need pdf copies because of missing pptx
-    for file in test_dav_files(ext=".pdf"):
+    for file, dl in test_dav_files(ext=".pdf"):
+        dl()
         pages = parse_file(file, html=False, paged=True)
         for page in pages:
             data, raw = get_tests_by_area_pdf(file, page, data, raw)
@@ -2335,7 +2346,7 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19)", page):  # noqa
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
@@ -2359,11 +2370,11 @@ def vaccination_daily(daily, date, file, page):
         "Date",
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
-    ]).set_index("Date")
+    ]).set_index("Date").fillna(value=np.nan)
     # TODO: until make more specific to only reports for allocations
     daily = daily.combine_first(df)
 
-    if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย)", page):
+    if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย|กรทำงกำรแพทย์)", page):
         print(date.date(), "Vac Sum (Missing groups)", df.to_string(header=False, index=False), file)
         assert date < d("2021-07-12")
         return daily
@@ -2434,6 +2445,7 @@ def vaccination_daily(daily, date, file, page):
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
             continue
         daily = daily.combine_first(df)
+    daily = daily.fillna(value=np.nan)
     print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
 
@@ -2594,27 +2606,44 @@ def vaccination_tables(df, date, page, file):
     return df
 
 
-def vaccination_reports():
-    vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
-    vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
-
+def vaccination_reports_files():
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
     url = "https://ddc.moph.go.th/uploads/ckeditor2//files/Daily report "
     gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
                  for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
-    links = unique_values(chain(gen_links, links))
+    links = unique_values(chain(links, gen_links))  # Some were not listed on the site so we guess
     links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
-    # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
-    # Just need the latest
-
-    for file, _, _ in web_files(*links, dir="vaccinations"):
-        table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
-        date = file2date(file)
+    for link in links:
+        date = file2date(link)
         if not date or date <= d("2021-02-27"):
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
+        if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS - 1):
+            break
+
+        def get_file(link=link):
+            try:
+                file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+            except StopIteration:
+                return None
+            return file
+
+        yield link, date, get_file
+                
+
+def vaccination_reports():
+    vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
+    vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
+
+    # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
+    # Just need the latest
+
+    for link, date, dl in vaccination_reports_files():
+        if (file := dl()) is None:
+            continue
+        table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         for page in parse_file(file):
             page_table = vaccination_tables(table, date, page, file)
             table = table.combine_first(page_table)
@@ -2693,8 +2722,8 @@ def get_vaccinations():
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
-    vac_slides_data = vac_slides()
     vac_reports, vac_reports_prov = vaccination_reports()
+    vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     vac_prov_sum = vac_reports_prov.groupby("Date").sum()
