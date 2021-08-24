@@ -940,7 +940,7 @@ def moph_dashboard():
         # cum cases = AGG(stat_accum)-alias
         # date  = DAY(date)-alias, DAY(date)-value
         url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
         for wb, idx_value in workbooks(url, lambda idx: False, dates=[], D4_CHART="age_range"):
             row = worksheet2df(
                 wb,
@@ -3069,11 +3069,11 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
-    dashboard, dash_prov = moph_dashboard()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()

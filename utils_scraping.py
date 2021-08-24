@@ -631,6 +631,7 @@ def workbooks(url, skip=None, dates=[], **selects):
     if not dates:
         dates = [None]
     else:
+        dates = list(dates)
         start, *_, end = dates
         print("Checking Tableau Updates from", start, "to", end)
 
@@ -644,7 +645,7 @@ def workbooks(url, skip=None, dates=[], **selects):
         print("MOPH Dashboard", f"Error: Empty Worksheet url {url}")
         return
 
-    fix_timeouts(ts.session, timeout=60)
+    fix_timeouts(ts.session, timeout=90)
     wbroot = ts.getWorkbook()
     # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
     # updated = pd.to_datetime(updated, dayfirst=False)
@@ -683,7 +684,7 @@ def workbooks(url, skip=None, dates=[], **selects):
                 try:
                     ts = tableauscraper.TableauScraper()
                     ts.loads(url)
-                    fix_timeouts(ts.session, timeout=60)
+                    fix_timeouts(ts.session, timeout=90)
                     wbroot = ts.getWorkbook()
                     wb = setParameter(wbroot, "param_date", str(date.date()))
                 except (RequestException, TableauException):
