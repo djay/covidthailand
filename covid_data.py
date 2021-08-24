@@ -1606,6 +1606,10 @@ def briefing_deaths_provinces(dtext, date, total_deaths, file):
     # get rid of extra words in brakets to make easier
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
+    # remove age breakdown of deaths per provice to make it easier
+    # e.g "60+ปี 58 ราย (85%)" - from 2021-08-24
+    text = re.sub(r"\d+\+ปี *\d+ *(ราย)? *\(\d+%\)", " ", text)
+
     # remove the table header and page title.
     *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\s*\(\s+\))", text, 1)
 
