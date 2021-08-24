@@ -22,6 +22,7 @@ import numpy as np
 import time
 from dateutil.parser import parse as d
 from tableauscraper.TableauScraper import TableauException
+from tableauscraper.api import APIResponseException
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -699,7 +700,7 @@ def workbooks(url, skip=None, dates=[], **selects):
             if value is not None:
                 try:
                     wb_val = getattr(wb.getWorksheet(ws_name), meth)(col_name, value)
-                except (RequestException, TableauException):
+                except (RequestException, TableauException, APIResponseException):
                     print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
                     break
                 if not wb_val.worksheets:
