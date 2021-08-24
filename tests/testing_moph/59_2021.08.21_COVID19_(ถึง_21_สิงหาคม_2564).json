@@ -1,0 +1,154 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Start",
+        "type":"datetime"
+      },
+      {
+        "name":"End",
+        "type":"datetime"
+      },
+      {
+        "name":"Pos Area 1",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 2",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 3",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 4",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 5",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 6",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 7",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 8",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 9",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 10",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 11",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 12",
+        "type":"number"
+      },
+      {
+        "name":"Pos Area 13",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 1",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 2",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 3",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 4",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 5",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 6",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 7",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 8",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 9",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 10",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 11",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 12",
+        "type":"number"
+      },
+      {
+        "name":"Tests Area 13",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Start"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Start":"2021-08-15T00:00:00.000Z",
+      "End":"2021-08-21T00:00:00.000Z",
+      "Pos Area 1":1098.0,
+      "Pos Area 2":3429.0,
+      "Pos Area 3":2588.0,
+      "Pos Area 4":13469.0,
+      "Pos Area 5":16469.0,
+      "Pos Area 6":14777.0,
+      "Pos Area 7":5019.0,
+      "Pos Area 8":3226.0,
+      "Pos Area 9":7322.0,
+      "Pos Area 10":3569.0,
+      "Pos Area 11":3188.0,
+      "Pos Area 12":2931.0,
+      "Pos Area 13":20624.0,
+      "Tests Area 1":27221.0,
+      "Tests Area 2":14632.0,
+      "Tests Area 3":17702.0,
+      "Tests Area 4":38385.0,
+      "Tests Area 5":49608.0,
+      "Tests Area 6":56759.0,
+      "Tests Area 7":21580.0,
+      "Tests Area 8":24074.0,
+      "Tests Area 9":51187.0,
+      "Tests Area 10":16960.0,
+      "Tests Area 11":25055.0,
+      "Tests Area 12":18897.0,
+      "Tests Area 13":57813.0
+    }
+  ]
+}

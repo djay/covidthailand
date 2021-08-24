@@ -2365,7 +2365,7 @@ def vaccination_daily(daily, date, file, page):
         "Date",
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
-    ]).set_index("Date")
+    ]).set_index("Date").fillna(value=pd.np.nan)
     # TODO: until make more specific to only reports for allocations
     daily = daily.combine_first(df)
 
@@ -2440,6 +2440,7 @@ def vaccination_daily(daily, date, file, page):
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
             continue
         daily = daily.combine_first(df)
+    daily = daily.fillna(value=pd.np.nan)
     print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
 

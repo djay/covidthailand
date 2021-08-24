@@ -49,12 +49,16 @@ def dl_files(dir, dl_gen):
         downloads[fname] = (str(date.date()) if date is not None else fname, get_file)
 
     for root, dir, files in os.walk(dir_path):
-        for check in fnmatch.filter(files, "*.csv"):
+        for check in fnmatch.filter(files, "*.json"):
             base, ext = check.rsplit(".", 1)
             try:
-                testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
-            except pd.errors.EmptyDataError:
+                testdf = pd.read_json(os.path.join(root, check), orient="table")
+            except ValueError:
                 testdf = None
+            # try:
+            #     testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
+            # except pd.errors.EmptyDataError:
+            #     testdf = None
             date, get_file = downloads.get(base, (None, None))
             yield date, testdf, get_file
 
@@ -85,23 +89,21 @@ def test_vac_reports(date, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_daily(df, dateutil.parser.parse(date), file, page)
-    assert testdf is not None
-    # export(df, date, dir="tests/vaccination_daily", csv_only=True)
+    # df.to_json(f"tests/vaccination_daily/{date}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, df)
 
 
-def test_pptx():
+def testing_pptx():
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", test_pptx))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", testing_pptx))
 def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
-    data = pd.DataFrame()
-    raw = pd.DataFrame()
+    data, raw = pd.DataFrame(), pd.DataFrame()
     assert dl is not None
     file = dl()
     assert file is not None
     for chart, title, series, pagenum in pptx2chartdata(file):
         data, raw = get_tests_by_area_chart_pptx(input, title, series, data, raw)
-    # export(data, file, dir="testing_moph", csv_only=True)
-    pd.testing.assert_frame_equal(testdf, data)
+    # raw.to_json(f"tests/testing_moph/{fname}.json", orient='table', indent=2)
+    pd.testing.assert_frame_equal(testdf, raw)
