@@ -21,7 +21,7 @@ from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range, cut_ages
-from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
+from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
     web_files, web_links, all_in, NUM_OR_DASH, s, workbooks, worksheet2df
@@ -339,13 +339,18 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
     assert 0 <= a1_w3 <= 25
 
     # time to treatment
-    w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = get_next_numbers(
+    numbers = get_next_numbers(
         parsed_pdf,
         "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิมป่วย",
         "ระยะเวลำเฉล่ียระหว่ำงวันเร่ิม",
         "ถึงวันได้รับรักษา",
         ints=False,
         return_rest=False)
+    if numbers:
+        w1_avg, w1_min, w1_max, w2_avg, w2_min, w2_max, w3_avg, w3_min, w3_max, *_ = numbers
+    else:
+        # 'situation_th/situation-no598-230864.pdf'
+        w3_avg, w3_min, w3_max = [np.nan] * 3
     columns = [
         "Date", "W3 CFR 15-39", "W3 CFR 40-59", "W3 CFR 60-", "W3 Time To Treatment Avg", "W3 Time To Treatment Min",
         "W3 Time To Treatment Max"
@@ -2365,7 +2370,7 @@ def vaccination_daily(daily, date, file, page):
         "Date",
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
-    ]).set_index("Date").fillna(value=pd.np.nan)
+    ]).set_index("Date").fillna(value=np.nan)
     # TODO: until make more specific to only reports for allocations
     daily = daily.combine_first(df)
 
@@ -2440,7 +2445,7 @@ def vaccination_daily(daily, date, file, page):
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
             continue
         daily = daily.combine_first(df)
-    daily = daily.fillna(value=pd.np.nan)
+    daily = daily.fillna(value=np.nan)
     print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
 
@@ -2608,13 +2613,15 @@ def vaccination_reports_files():
     url = "https://ddc.moph.go.th/uploads/ckeditor2//files/Daily report "
     gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
                  for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
-    links = unique_values(chain(gen_links, links))
+    links = unique_values(chain(links, gen_links))  # Some were not listed on the site so we guess
     links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
     for link in links:
         date = file2date(link)
         if not date or date <= d("2021-02-27"):
             continue
         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
+        if date < today() - datetime.timedelta(days=MAX_DAYS - 1):
+            break
 
         def get_file(link=link):
             try:
