@@ -2514,7 +2514,7 @@ def vaccination_tables(df, date, page, file):
 
     def add(prov, numbers, cols):
         assert rows.get((date, prov), None) is None or rows.get((date, prov), None).keys() != cols
-        rows[(date, prov)] = {c: n for c, n in zip(cols, [date, prov] + numbers)}
+        rows[(date, prov)] = {c: n for c, n in zip(cols, [date, prov] + numbers)} | rows.get((date, prov), {})
 
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
@@ -3117,8 +3117,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     cases_demo, risks_prov = get_cases_by_demographics_api()
