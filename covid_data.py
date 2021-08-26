@@ -2352,6 +2352,7 @@ def vac_problem(daily, date, file, page):
 def vaccination_daily(daily, date, file, page):
     if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
+    date = find_thai_date(page)
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
     if date == d("2021-05-06"):
@@ -2455,6 +2456,7 @@ def vaccination_daily(daily, date, file, page):
 
 
 def vaccination_tables(df, date, page, file):
+    date = find_thai_date(page)
     givencols = [
         "Date",
         "Province",
@@ -2494,17 +2496,23 @@ def vaccination_tables(df, date, page, file):
     ]
     alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer"]
 
-    def add(df, prov, numbers, cols):
-        if not df.empty:
-            try:
-                prev = df[cols].loc[[date, prov]]
-            except KeyError:
-                prev = None
-            msg = f"Vac {date} {prov} repeated: {numbers} != {prev}"
-            assert prev in [None, numbers], msg
-        row = [date, prov] + numbers
-        df = df.combine_first(pd.DataFrame([row], columns=cols).set_index(["Date", "Province"]))
-        return df
+    # def add(df, prov, numbers, cols):
+    #     if not df.empty:
+    #         try:
+    #             prev = df[cols].loc[[date, prov]]
+    #         except KeyError:
+    #             prev = None
+    #         msg = f"Vac {date} {prov} repeated: {numbers} != {prev}"
+    #         assert prev in [None, numbers], msg
+    #     row = [date, prov] + numbers
+    #     df = df.combine_first(pd.DataFrame([row], columns=cols).set_index(["Date", "Province"]))
+    #     return df
+
+    rows = {}
+
+    def add(prov, numbers, cols):
+        assert rows.get((date, prov), None) is None or rows.get((date, prov), None).keys() != cols
+        rows[(date, prov)] = {c: n for c, n in zip(cols, [date, prov] + numbers)}
 
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
@@ -2543,34 +2551,34 @@ def vaccination_tables(df, date, page, file):
             added += 1
             if table == "alloc":
                 sv1, sv2, az1, az2 = numbers[3:7]
-                df = add(df, prov, [sv1, sv2, az1, az2, sv1 + sv2, az1 + az2], alloc2_doses)
+                add(prov, [sv1, sv2, az1, az2, sv1 + sv2, az1 + az2], alloc2_doses)
             elif table == "given":
                 if len(numbers) == 16:
                     alloc_sv, alloc_az, *numbers = numbers
-                    df = add(df, prov, [alloc_sv, alloc_az], alloc2)
+                    add(prov, [alloc_sv, alloc_az], alloc2)
                 assert len(numbers) == 14
-                df = add(df, prov, numbers, vaccols5x2)
+                add(prov, numbers, vaccols5x2)
             elif table == "old_given":
                 alloc, target_num, given, perc, *rest = numbers
                 medical, frontline, disease, elders, riskarea, *rest = rest
                 # TODO: #อยู่ระหว่ำง ระบุ กลุ่มเป้ำหมำย - In the process of specifying the target group
                 # unknown = sum(rest)
                 row = [given, perc, 0, 0] + [medical, 0, frontline, 0, disease, 0, elders, 0, riskarea, 0]
-                df = add(df, prov, row, vaccols5x2)
-                df = add(df, prov, [alloc, 0, 0, 0, alloc, 0], alloc2_doses)
+                add(prov, row, vaccols5x2)
+                add(prov, [alloc, 0, 0, 0, alloc, 0], alloc2_doses)
             elif table == "new_given" and len(numbers) == 12:  # e.g. vaccinations/Daily report 2021-05-11.pdf
                 dose1, dose2, *groups = numbers
-                df = add(df, prov, [dose1, None, dose2, None] + groups, vaccols5x2)
+                add(prov, [dose1, None, dose2, None] + groups, vaccols5x2)
             elif table == "new_given" and len(numbers) == 21:  # from 2021-07-20
                 # Actually cumulative totals
                 pop, alloc, givens, groups = numbers[0], numbers[1:4], numbers[4:8], numbers[9:21]
                 sv, az, total_alloc = alloc
-                df = add(df, prov, givens + groups + [pop], vaccols6x2 + ["Vac Population"])
-                df = add(df, prov, [sv, az], alloc2)
+                add(prov, givens + groups + [pop], vaccols6x2 + ["Vac Population"])
+                add(prov, [sv, az], alloc2)
             elif table == "july" and len(numbers) == 5:
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
-                df = add(df, prov, row, givencols)
+                add(prov, row, givencols)
             elif table == "july" and len(numbers) in [33, 27, 21, 22, 17]:  # from 2021-08-05
                 # Actually cumulative totals
                 if len(numbers) == 21:
@@ -2598,23 +2606,28 @@ def vaccination_tables(df, date, page, file):
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
-                df = add(df, prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
-                df = add(df, prov, [sv, az, sp, pf], alloc4)
+                add(prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
+                add(prov, [sv, az, sp, pf], alloc4)
             elif table == "july" and len(numbers) in [13]:
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
-                df = add(df, prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
+                add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
                 assert False
         assert added is None or added > 7
-    return df
+    rows = pd.DataFrame.from_dict(rows, orient='index')
+    rows = rows.set_index(["Date", "Province"]).fillna(np.nan) if not rows.empty else rows
+    if 'Vac Given 1 Cum' in rows.columns:
+        rows['Vac Given Cum'] = rows['Vac Given 1 Cum'] + rows['Vac Given 2 Cum']
+    return df.combine_first(rows) if not rows.empty else df
 
 
 def vaccination_reports_files():
+    # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
-    url = "https://ddc.moph.go.th/uploads/ckeditor2//files/Daily report "
+    url = "https://ddc.moph.go.th/uploads/ckeditor2/files/Daily report "
     gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
                  for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
     links = unique_values(chain(links, gen_links))  # Some were not listed on the site so we guess
@@ -2637,6 +2650,23 @@ def vaccination_reports_files():
         yield link, date, get_file
                 
 
+def vaccination_reports_files2():
+    # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
+    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
+    links = (link for f in folders for link in web_links(f, ext=".pdf"))
+    links = sorted(links, reverse=True)
+    for link in links:
+
+        def get_file(link=link):
+            try:
+                file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+            except StopIteration:
+                return None
+            return file
+
+        yield link, None, get_file
+
+
 def vaccination_reports():
     vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
     vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
@@ -2644,36 +2674,49 @@ def vaccination_reports():
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
 
-    for link, date, dl in vaccination_reports_files():
+    for link, date, dl in vaccination_reports_files2():
         if (file := dl()) is None:
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         for page in parse_file(file):
-            page_table = vaccination_tables(table, date, page, file)
-            table = table.combine_first(page_table)
+            found_date = find_thai_date(page)
+            if date is None:
+                date = found_date
+            table = vaccination_tables(table, date, page, file)
 
             vac_daily = vaccination_daily(vac_daily, date, file, page)
             vac_daily = vac_problem(vac_daily, date, file, page)
-        assert len(table) == 77 or date < d("2021-08-01")
         print(date, "Vac Tables", len(table), "Provinces parsed", file)
+        # TODO: move this into vaccination_tables so can be tested
+        if d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
+            print(date, "Dropping table: too few provinces")
+            continue
+        elif d("2021-04-09") <= date <= d("2021-05-03") and table.groupby("Date").count().iloc[0]['Vac Group Risk: Location 1 Cum'] != 77:
+            #counts = table.groupby("Date").count()
+            #missing_data = counts[counts['Vac Allocated AstraZeneca'] > counts['Vac Group Risk: Location 2 Cum']]
+            # if not missing_data.empty:
+            print(date, "Dropping table: alloc doesn't match prov")
+            continue
+        else:
+            assert len(table) == 77 or date < d("2021-08-01")
         vac_prov_reports = vac_prov_reports.combine_first(table)
 
     # Do cross check we got the same number of allocations to vaccination
-    if not vac_prov_reports.empty:
-        counts = vac_prov_reports.groupby("Date").count()
-        missing_data = counts[counts['Vac Allocated AstraZeneca'] > counts['Vac Group Risk: Location 2 Cum']]
-        # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
-        missing_data = missing_data["2021-04-09": "2021-05-03"]
-        # 2021-05-02 2021-05-01 - use images for just one table??
-        # We will just remove this days
-        vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
-        # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
-        # TODO: only have 76 prov? something going on
-        missing_data = counts[counts['Vac Given 1 Cum'] < 77]["2021-05-04":]
-        vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
+    # if not vac_prov_reports.empty:
+    #     # counts = vac_prov_reports.groupby("Date").count()
+    #     # missing_data = counts[counts['Vac Allocated AstraZeneca'] > counts['Vac Group Risk: Location 2 Cum']]
+    #     # # 2021-04-08 2021-04-06 2021-04-05- 03-02 just not enough given yet
+    #     # missing_data = missing_data["2021-04-09": "2021-05-03"]
+    #     # # 2021-05-02 2021-05-01 - use images for just one table??
+    #     # # We will just remove this days
+    #     # vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
+    #     # # After 2021-05-08 they stopped using allocation table. But cum should now always have 77 provinces
+    #     # # TODO: only have 76 prov? something going on
+    #     # missing_data = counts[counts['Vac Given 1 Cum'] < 77]["2021-05-04":]
+    #     # vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
-        # Just in case coldchain data not working
-        vac_prov_reports['Vac Given Cum'] = vac_prov_reports['Vac Given 1 Cum'] + vac_prov_reports['Vac Given 2 Cum']
+    #     # Just in case coldchain data not working
+    
 
     return vac_daily, vac_prov_reports
 
@@ -3069,9 +3112,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
-    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
