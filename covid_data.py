@@ -1608,7 +1608,9 @@ def briefing_deaths_provinces(dtext, date, total_deaths, file):
 
     # remove age breakdown of deaths per provice to make it easier
     # e.g "60+ปี 58 ราย (85%)" - from 2021-08-24
-    text = re.sub(r"\d+\+ปี *\d+ *(ราย)? *\(\d+%\)", " ", text)
+    text = re.sub(r"([\d-]+\+?\s?ปี? *\d+ *(ราย)? *\(\d+%\))", " ", text)
+    # and '50+ (14)' 2021-08-26
+    text = re.sub(r"([\d]+\+? *\(\d+\))", " ", text)
 
     # remove the table header and page title.
     *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\s*\(\s+\))", text, 1)
@@ -2648,13 +2650,14 @@ def vaccination_reports_files():
             return file
 
         yield link, date, get_file
-                
+
 
 def vaccination_reports_files2():
     # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
     links = sorted(links, reverse=True)
+    count = 0
     for link in links:
 
         def get_file(link=link):
@@ -2663,7 +2666,9 @@ def vaccination_reports_files2():
             except StopIteration:
                 return None
             return file
-
+        count += 1
+        if USE_CACHE_DATA and count > MAX_DAYS:
+            break
         yield link, None, get_file
 
 
@@ -3112,10 +3117,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
