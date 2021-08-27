@@ -628,7 +628,7 @@ def worksheet2df(wb, date=None, **mappings):
     return res
 
 
-def workbooks(url, skip=None, dates=[], **selects):
+def workbooks(url, dates=[], **selects):
     if not dates:
         dates = [None]
     else:
@@ -654,7 +654,7 @@ def workbooks(url, skip=None, dates=[], **selects):
     idx_value = last_date if not selects else [last_date, None]
     if not selects:
         # Don't need the default wb just one per picked value
-        yield wbroot, idx_value  # assume its first from each list?
+        yield (lambda: wbroot), idx_value  # assume its first from each list?
 
     wb = wbroot
     if selects:
@@ -677,39 +677,43 @@ def workbooks(url, skip=None, dates=[], **selects):
         # Annoying we have to throw away one request before we can get single province
         for value in values:
             idx_value = date if value is None else (date, value)
-            if skip is not None and skip(idx_value):
-                continue
-            if date and last_date.date() != date.date():
-                # Only switch date if it hasn't been done
-                # TODO: after doing select can't do setParam. have to reload. must be faster way
-                try:
-                    ts = tableauscraper.TableauScraper()
-                    ts.loads(url)
-                    fix_timeouts(ts.session, timeout=90)
-                    wbroot = ts.getWorkbook()
-                    wb = setParameter(wbroot, "param_date", str(date.date()))
-                except (RequestException, TableauException):
-                    print(date, "MOPH Dashboard", "Skip: Param Timeout Error.")
-                    break
-                if not wb.worksheets:
-                    print(date, "MOPH Dashboard", "Skip: Error in setParam.")
-                    break
-                    
-                last_date = date
 
-            if value is not None:
-                try:
-                    wb_val = getattr(wb.getWorksheet(ws_name), meth)(col_name, value)
-                except (RequestException, TableauException, APIResponseException):
-                    print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
-                    break
-                if not wb_val.worksheets:
-                    print(date, "MOPH Dashboard", "Skip: Error in Select.")
-                    break
+            def get_workbook():
+                nonlocal last_date
+                nonlocal wb
+                if date and last_date.date() != date.date():
+                    # Only switch date if it hasn't been done
+                    # TODO: after doing select can't do setParam. have to reload. must be faster way
+                    try:
+                        ts = tableauscraper.TableauScraper()
+                        ts.loads(url)
+                        fix_timeouts(ts.session, timeout=90)
+                        wbroot = ts.getWorkbook()
+                        wb = setParameter(wbroot, "param_date", str(date.date()))
+                    except (RequestException, TableauException):
+                        print(date, "MOPH Dashboard", "Skip: Param Timeout Error.")
+                        return None
+                    if not wb.worksheets:
+                        print(date, "MOPH Dashboard", "Skip: Error in setParam.")
+                        return None
+                        
+                    last_date = date
 
-            else:
-                wb_val = wb
-            yield wb_val, idx_value
+                if value is not None:
+                    try:
+                        wb_val = getattr(wb.getWorksheet(ws_name), meth)(col_name, value)
+                    except (RequestException, TableauException, APIResponseException):
+                        print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
+                        return None
+                    if not wb_val.worksheets:
+                        print(date, "MOPH Dashboard", "Skip: Error in Select.")
+                        return None
+
+                else:
+                    wb_val = wb
+                return wb_val
+
+            yield get_workbook, idx_value
 
 
 def setParameter(wb, parameterName, value):
