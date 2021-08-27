@@ -810,9 +810,12 @@ def moph_dashboard():
 
     def skip_func(df, allow_na={}):
         def is_done(idx_value):
-            if type(idx_value) == tuple:
+            if type(idx_value) == tuple:  
                 date, prov = idx_value
-                prov = get_province(prov)
+                if df.index.name != "Date": # TODO: make this about provinces
+                    prov = get_province(prov)
+                else:
+                    prov = prov
                 idx_value = (date, prov)
             else:
                 date = idx_value
@@ -856,7 +859,7 @@ def moph_dashboard():
         allow_na = {
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
-            "Tests": d("2021-07-05"),
+            "Tests": today(),
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
@@ -871,7 +874,12 @@ def moph_dashboard():
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
         dates = reversed(pd.date_range("2021-06-01", today() - relativedelta(hours=7)).to_pydatetime())
-        for wb, date in workbooks(url, skip_func(df, allow_na), dates=dates):
+        for get_wb, date in workbooks(url, dates=dates):
+            if skip_func(df, allow_na)(date):
+                continue
+            wb = get_wb()
+            if wb is None:
+                continue
             row = worksheet2df(
                 wb,
                 date,
@@ -941,7 +949,21 @@ def moph_dashboard():
         # date  = DAY(date)-alias, DAY(date)-value
         url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
         url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
-        for wb, idx_value in workbooks(url, lambda idx: False, dates=[], D4_CHART="age_range"):
+        allow_na = {
+            "Deaths": d("2021-01-01"),  
+        }
+        def range2eng(range):
+            return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
+
+        def skip(value):
+            _, range = value
+            return df[f"Cases Age {range2eng(range)}"].get(str(today().date())) is not None
+        for get_wb, idx_value in workbooks(url, dates=[], D4_CHART="age_range"):
+            if skip(idx_value):
+                continue
+            wb = get_wb()
+            if wb is None:
+                continue
             row = worksheet2df(
                 wb,
                 None,
@@ -956,15 +978,14 @@ def moph_dashboard():
             if not age_group:
                 # TODO: get rid of this first workbook when iterating selects
                 continue
-            age_group = age_group.replace(" ปี", "").replace('ไม่ระบุ', "Unknown")
             if row.empty:
                 continue
-            row['Age'] = age_group
+            row['Age'] = range2eng(age_group)
             row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
             row.columns = [f"{n} Age {v}" for n, v in row.columns]
-            row = row.rename(columns={a: a.replace(">= 70", "70+").replace("< 10", "0-9") for a in row.columns})
+            # row = row.rename(columns={a: a.replace(">= 70", "70+").replace("< 10", "0-9") for a in row.columns})
             df = row.combine_first(df)
-            print(row.last_valid_index(), "MOPH Ages", age_group,
+            print(row.last_valid_index(), "MOPH Ages", range2eng(age_group),
                   row.loc[row.last_valid_index():].to_string(index=False, header=False))
         df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
         return df
@@ -978,11 +999,23 @@ def moph_dashboard():
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
             "Tests": today(),  # TODO: because they are 2 days late so need to say allow after instead of before?
-            "Vac Given 3 Cum": d("2021-06-01"),
+            "Vac Given 3 Cum": d("2021-06-15"),
+            # all the non-series will take too long to get historically
+            "Cases Walkin": d("2021-08-01"),
+            "Cases Proactive": d("2021-08-01"),
+            "Cases Area Prison": d("2021-08-01"),
+            "Cases Imported": d("2021-08-01"),
+            "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
+            "Cases": d("2021-06-28"),  # Only Lampang?
         }
 
-        dates = reversed(pd.date_range("2021-08-01", today() - relativedelta(hours=7)).to_pydatetime())
-        for wb, idx_value in workbooks(url, skip_func(df, allow_na), dates=dates, D2_Province="province"):
+        dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
+        for get_wb, idx_value in workbooks(url, dates=dates, D2_Province="province"):
+            if skip_func(df, allow_na)(idx_value):
+                continue
+            wb = get_wb()
+            if wb is None:
+                continue
             date, province = idx_value
             row = worksheet2df(
                 wb,
@@ -3117,9 +3150,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
