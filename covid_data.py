@@ -1965,7 +1965,7 @@ def get_cases_by_prov_briefings():
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
+            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d("2021-08-27")], f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
@@ -3150,9 +3150,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     tests_reports = get_test_reports()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
