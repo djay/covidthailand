@@ -770,7 +770,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df_vac_groups = df_vac_groups.cummin()  # if later corrected down, take that number into past
     df_vac_groups = df_vac_groups.reindex(index=df_vac_groups.index[::-1])
     # We have some missing days so interpolate e.g. 2021-05-04
-    df_vac_groups = df_vac_groups.interpolate()
+    df_vac_groups = df_vac_groups.interpolate(method="time", limit_area="inside")
 
     # TODO: should we use actual Given?
     df_vac_groups['Vac Given Cum'] = df[[f'Vac Given {d} Cum' for d in range(1, 4)]].sum(axis=1, skipna=False)
@@ -786,7 +786,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2', 'Vac Given 3']].combine_first(vac_daily)
     daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group') and ' 3' not in c] + ['Vac Given 3']  # Keep for unknown
     # interpolate to fill gaps and get some values for each group
-    vac_daily[daily_cols] = vac_daily[daily_cols].interpolate()
+    vac_daily[daily_cols] = vac_daily[daily_cols].interpolate(method="time", limit_area="inside")
     # now normalise the filled in days so they add to their real total
     vac_daily = vac_daily.pipe(normalise_to_total, daily_cols, 'Vac Given')
 
@@ -796,6 +796,8 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_daily['Target Rate 2'] = (50000000 * 2 - df_vac_groups['Vac Given 2 Cum']) / days_to_target
 
     #daily_cols = rearrange(daily_cols, 2, 1, 4, 3, 10, 9, 8, 7, 6, 5)
+    daily_cols = [c for c in daily_cols if "2" in c] + [c for c in daily_cols if "1" in c] + [c for c in daily_cols if "3" in c]
+
     plot_area(
         df=vac_daily,
         png_prefix='vac_groups_daily',
@@ -815,7 +817,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 1',
             'Target Rate 2'],
         ma_days=None,
-        cmap='tab20_r',
+        cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
         periods_to_plot=["30d", "2"],  # too slow to do all 
     )
 
@@ -901,7 +903,7 @@ def save_plots(df: pd.DataFrame) -> None:
               stacked=True,
               percent_fig=False,
               ma_days=None,
-              cmap='tab20_r',)
+              cmap='tab20',)
 
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])

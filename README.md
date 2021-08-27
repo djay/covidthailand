@@ -48,6 +48,8 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
 
+![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png)
+
 ![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
 
 - Sources: [CCSA Daily Briefing](#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
@@ -55,6 +57,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - see also
    [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png), 
    [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
+   [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png)
    [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png),
    [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png) and
    [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
@@ -126,29 +129,6 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_dash_3.png)
 - Source: [MOPH Covid-19 Dashboard](#dl-moph-dashboard) 
 
-## Excess Deaths <a name="excess-deaths">
-Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
-- *Note: there are many possible factors alter deaths up or down other than uncounted Covid Deaths*
-
-![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_5y_all.png)
-- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png)
-
-![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
-- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
-
-![Thailand Excess deaths with Covid Deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
-- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
-
-![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
-
-Notes
-- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Links excluding 2019 have additionally been included as 
-it's not yet clear which range of years provides the best baseline to compare against. 
-- Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
-  [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
-- Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
-
-
 # Testing <a name="testing">
 
 ## Positive Rate
@@ -197,16 +177,13 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 # Vaccinations <a name="vaccinations">
 
 ## Vaccinations by Priority Groups
-<!--
 
 ![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
--->
 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](#dl-vac-prov)
 
-<!--
 ![Vaccinations Groups by Progress towards goals](https://github.com/djay/covidthailand/wiki/vac_groups_goals_3.png)
 - Source: [DDC Daily Vaccination Reports](#dl-vac)
 
@@ -218,7 +195,28 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 - see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
--->
+
+# Excess Deaths <a name="excess-deaths">
+Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
+- *Note: there are many possible factors alter deaths up or down other than uncounted Covid Deaths*
+
+![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_5y_all.png)
+- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png)
+
+![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
+- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+
+![Thailand Excess deaths with Covid Deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
+- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
+
+![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
+
+Notes
+- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Links excluding 2019 have additionally been included as 
+it's not yet clear which range of years provides the best baseline to compare against. 
+- Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
+  [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
+- Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
 
 # Downloads
 
