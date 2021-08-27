@@ -908,14 +908,35 @@ def save_plots(df: pd.DataFrame) -> None:
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
     vac_dash = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="json")
-    vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
-    vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
+    # Let's trust the dashboard more but they could both be different
+    vac = vac_dash.combine_first(vac)
+    #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
+    # Add them all up
+    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
     vac = vac.join(get_provinces()['Population'], on='Province')
-    top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Population'] * 100)
+    # Bring in vac populations
+    pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population") # It's not on all data
+    vac = vac.join(pops, rsuffix="2")
 
+
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='vac_top5_doses', cols_subset=cols,
               title='Top Provinces for Vaccination Doses per 100 people',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_top5_doses_1', cols_subset=cols,
+              title='Top Provinces for Vaccination 1st Dose per 100 people',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_top5_doses_2', cols_subset=cols,
+              title='Top Provinces for Vaccination 2nd Dose per 100 people',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
 
