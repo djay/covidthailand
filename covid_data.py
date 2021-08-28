@@ -1646,7 +1646,7 @@ def briefing_deaths_provinces(dtext, date, file):
     # e.g "60+ปี 58 ราย (85%)" - from 2021-08-24
     text = re.sub(r"([\d-]+\+?\s?ปี? *\d+ *(ราย)? *\(\d+%\))", " ", text)
     # and '50+ (14)' 2021-08-26
-    text = re.sub(r"([\d]+\+? *\(\d+\))", " ", text)
+    text = re.sub(r"([\d]+\+?(?:ปี)? *\(\d+\))", " ", text)
 
     # remove the table header and page title.
     *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\s*\(\s+\))", text, 1)
@@ -1963,6 +1963,8 @@ def get_cases_by_prov_briefings():
     vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     for briefing_url, date, get_file in briefing_documents():
         file = get_file()
+        if file is None:
+            continue
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
 

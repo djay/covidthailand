@@ -700,8 +700,9 @@ def workbooks(url, dates=[], **selects):
                     last_date = date
 
                 if value is not None:
+                    param_changer = getattr(wb.getWorksheet(ws_name), meth)
                     try:
-                        wb_val = getattr(wb.getWorksheet(ws_name), meth)(col_name, value)
+                        wb_val = param_changer(col_name, value)
                     except (RequestException, TableauException, APIResponseException):
                         print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
                         return None
