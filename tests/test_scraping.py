@@ -123,7 +123,7 @@ def test_briefing_deaths_provinces(date, testdf, dl):
 
     for i, soup in enumerate(pages):
         text = soup.get_text()
-        df = briefing_deaths_provinces(text, date, file)
+        df = briefing_deaths_provinces(text, dateutil.parser.parse(date), file)
         dfprov = dfprov.combine_first(df)
     # dfprov.to_json(f"tests/briefing_deaths_provinces/{date}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, dfprov)

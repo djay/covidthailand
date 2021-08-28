@@ -1,0 +1,85 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"string"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-06-30",
+      "Province":"Bangkok",
+      "Deaths":35
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Pathum Thani",
+      "Deaths":3
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Samut Prakan",
+      "Deaths":3
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Nakhon Pathom",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Yala",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Songkhla",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Chanthaburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Nakhon Sawan",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Pattani",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Uttaradit",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Ubon Ratchathani",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-06-30",
+      "Province":"Chonburi",
+      "Deaths":1
+    }
+  ]
+}

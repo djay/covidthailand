@@ -1,0 +1,95 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"string"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-07-05",
+      "Province":"Bangkok",
+      "Deaths":17
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Nonthaburi",
+      "Deaths":9
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Samut Prakan",
+      "Deaths":6
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Chachoengsao",
+      "Deaths":3
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Nakhon Pathom",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Narathiwat",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Pattani",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Songkhla",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Samut Sakhon",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Chanthaburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Nakhon Nayok",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Nakhon Sawan",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Rayong",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-07-05",
+      "Province":"Suphan Buri",
+      "Deaths":1
+    }
+  ]
+}

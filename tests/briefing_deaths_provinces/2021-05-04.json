@@ -1,0 +1,95 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"string"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-05-04",
+      "Province":"Bangkok",
+      "Deaths":8
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Nonthaburi",
+      "Deaths":5
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Lamphun",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Samut Prakan",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Chonburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Ubon Ratchathani",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Pathum Thani",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Nakhon Pathom",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Buriram",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Surat Thani",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Nakhon Si Thammarat",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Kamphaeng Phet",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Chai Nat",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-04",
+      "Province":"Nan",
+      "Deaths":1
+    }
+  ]
+}

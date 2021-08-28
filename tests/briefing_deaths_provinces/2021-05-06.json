@@ -1,0 +1,65 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"string"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-05-06",
+      "Province":"Bangkok",
+      "Deaths":6
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Samut Prakan",
+      "Deaths":3
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Nonthaburi",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Chiang Mai",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Samut Sakhon",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Pathum Thani",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Yala",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-05-06",
+      "Province":"Sing Buri",
+      "Deaths":1
+    }
+  ]
+}
