@@ -1633,7 +1633,10 @@ def briefing_province_cases(date, pages):
     return df
 
 
-def briefing_deaths_provinces(dtext, date, total_deaths, file):
+def briefing_deaths_provinces(dtext, date, file):
+    if not deaths_title_re.search(dtext):
+        return pd.DataFrame(columns=["Date","Province"]).set_index(["Date", "Province"])
+
     bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
 
     # get rid of extra words in brakets to make easier
@@ -1692,15 +1695,21 @@ def briefing_deaths_provinces(dtext, date, total_deaths, file):
         last_provs = rest
     dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                           columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
-    msg = f"in {file} only found {dfprov['Deaths'].sum()}/{total_deaths} from {dtext}\n{pcells}"
-    assert total_deaths == dfprov['Deaths'].sum() or date in [d("2021-07-20")], msg
+
+    title_num, _ = get_next_numbers(text, deaths_title_re)
+    day, year, deaths_title, *_ = title_num
+
+    msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
+    assert deaths_title == dfprov['Deaths'].sum() or date in [d("2021-07-20")], msg
     return dfprov
 
 
+deaths_title_re = re.compile(r"(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")  # noqa
+
+
 def briefing_deaths_summary(text, date, file):
-    title_re = re.compile(r"(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")  # noqa
-    if not title_re.search(text):
-        return pd.DataFrame(), pd.DataFrame()
+    if not deaths_title_re.search(text):
+        return pd.DataFrame()
     # Summary of locations, reasons, medium age, etc
 
     # Congenital disease / risk factor The severity of the disease
@@ -1716,6 +1725,9 @@ def briefing_deaths_summary(text, date, file):
                                    ints=False)
     med_age, min_age, max_age, *_ = numbers
 
+    title_num, _ = get_next_numbers(text, deaths_title_re)
+    day, year, deaths_title, *_ = title_num
+
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date == d("2021-08-09"):
         male, female, *_ = genders
@@ -1729,9 +1741,6 @@ def briefing_deaths_summary(text, date, file):
     numbers, *_ = get_next_numbers(text, "ค่ากลางระยะเวลา")
     if numbers:
         period_death_med, period_death_max, *_ = numbers
-
-    title_num, _ = get_next_numbers(text, title_re)
-    day, year, deaths_title, *_ = title_num
 
     text = re.sub(r"([\d]+wk)", "", text)  # remove 20wk pregnant
     diseases = {
@@ -1792,9 +1801,8 @@ def briefing_deaths_summary(text, date, file):
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
         ] + risk_cols + cm_cols).set_index("Date")
-    dfprov = briefing_deaths_provinces(text, date, deaths_title, file)
-    print(f"{date.date()} Deaths:", len(dfprov), "|", row.to_string(header=False, index=False), file)
-    return row, dfprov
+    print(f"{date.date()} Deaths:", row.to_string(header=False, index=False), file)
+    return row
 
 
 def briefing_deaths_cells(cells, date, all):
@@ -1870,10 +1878,13 @@ def briefing_deaths(file, date, pages):
     all = pd.DataFrame()
     for i, soup in enumerate(pages):
         text = soup.get_text()
+
+        sum = briefing_deaths_summary(text, date, file)
         # Latest version of deaths. Only gives summary info
-        sum, dfprov = briefing_deaths_summary(text, date, file)
+        dfprov = briefing_deaths_provinces(text, date, file)
         if not sum.empty:
             return all, sum, dfprov
+
 
         if "วิตของประเทศไทย" not in text:
             continue
@@ -1919,6 +1930,29 @@ def briefing_deaths(file, date, pages):
     return all, sum, dfprov
 
 
+def briefing_documents():
+    url = "http://media.thaigov.go.th/uploads/public_img/source/"
+    start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
+    end = today()
+    links = [f"{url}249764.pdf"]  # named incorrectly
+    links += [f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1)]
+    # for file, text, briefing_url in web_files(*), dir="briefings"):
+
+    for link in reversed(list(links)):
+        date = file2date(link) if "249764.pdf" not in link else d("2021-07-24")
+        if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS):
+            break
+
+        def get_file(link=link):
+            try:
+                file, text, url = next(iter(web_files(link, dir="briefings")))
+            except StopIteration:
+                return None
+            return file
+
+        yield link, date, get_file
+
+
 def get_cases_by_prov_briefings():
     print("========Briefings==========")
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
@@ -1927,15 +1961,10 @@ def get_cases_by_prov_briefings():
     # deaths = import_csv("deaths", ["Date", "Province"], not USE_CACHE_DATA)
     deaths = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
-    url = "http://media.thaigov.go.th/uploads/public_img/source/"
-    start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
-    end = today()
-    links = [f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1)]
-    links += [f"{url}249764.pdf"]  # named incorrectly
-    for file, text, briefing_url in web_files(*reversed(list(links)), dir="briefings"):
+    for briefing_url, date, get_file in briefing_documents():
+        file = get_file()
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
-        date = file2date(file) if "249764.pdf" not in file else d("2021-07-24")
 
         today_types = briefing_case_types(date, pages, briefing_url)
         types = types.combine_first(today_types)
@@ -3201,7 +3230,6 @@ def scrape_and_combine():
         export(df, "combined", csv_only=True)
         export(get_fuzzy_provinces(), "fuzzy_provinces", csv_only=True)
         return df
-
 
 
 if __name__ == "__main__":

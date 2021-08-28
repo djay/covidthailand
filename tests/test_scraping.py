@@ -1,7 +1,9 @@
 import os
 import fnmatch
+
+from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files, vaccination_tables
+from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files, vaccination_tables
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -107,3 +109,21 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
         data, raw = get_tests_by_area_chart_pptx(input, title, series, data, raw)
     # raw.to_json(f"tests/testing_moph/{fname}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, raw)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_provinces", briefing_documents))
+def test_briefing_deaths_provinces(date, testdf, dl):
+    dfprov = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+
+    for i, soup in enumerate(pages):
+        text = soup.get_text()
+        df = briefing_deaths_provinces(text, date, file)
+        dfprov = dfprov.combine_first(df)
+    # dfprov.to_json(f"tests/briefing_deaths_provinces/{date}.json", orient='table', indent=2)
+    pd.testing.assert_frame_equal(testdf, dfprov)
