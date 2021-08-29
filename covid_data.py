@@ -2142,7 +2142,7 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
 
 def get_tests_by_area_pdf(file, page, data, raw):
     start, end = find_date_range(page)
-    if start is None or "เริ่มเปิดบริการ" in page or not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
+    if start is None or any_in(page, "เริ่มเปิดบริการ", "90%") or not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
         return data, raw
     # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
     # no pdf available so data missing

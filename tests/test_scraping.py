@@ -1,9 +1,10 @@
 import os
 import fnmatch
+from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files, vaccination_tables
+from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -99,6 +100,10 @@ def testing_pptx():
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
 
 
+def testing_pdf():
+    return [(file, None, dl) for file, dl in test_dav_files(ext=".pdf")]
+
+
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", testing_pptx))
 def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
@@ -108,7 +113,26 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     for chart, title, series, pagenum in pptx2chartdata(file):
         data, raw = get_tests_by_area_chart_pptx(input, title, series, data, raw)
     # raw.to_json(f"tests/testing_moph/{fname}.json", orient='table', indent=2)
-    pd.testing.assert_frame_equal(testdf, raw)
+    pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
+
+
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", testing_pdf))
+def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
+    data, raw = pd.DataFrame(), pd.DataFrame()
+    if fname is None:
+        # It's a pptx that doesn't have pdf version
+        return
+    assert dl is not None
+    file = dl()
+    assert file is not None
+    pages = parse_file(file, html=False, paged=True)
+    for page in pages:
+        data, raw = get_tests_by_area_pdf(file, page, data, raw)
+    # raw.to_json(f"tests/testing_moph/{fname}.json", orient='table', indent=2)
+    if testdf.index.max() >= dateutil.parser.parse("2021-08-08"):
+        # plots stopped having numbers for positives so aren't scraped
+        return
+    pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_provinces", briefing_documents))
