@@ -3,7 +3,7 @@
     "fields":[
       {
         "name":"Date",
-        "type":"string"
+        "type":"datetime"
       },
       {
         "name":"Province",
@@ -22,227 +22,227 @@
   },
   "data":[
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Bangkok",
       "Deaths":119
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Samut Prakan",
       "Deaths":18
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Pathum Thani",
       "Deaths":16
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Samut Sakhon",
       "Deaths":14
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Nakhon Pathom",
       "Deaths":10
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Pattani",
       "Deaths":5
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Narathiwat",
       "Deaths":4
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Phatthalung",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Yala",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Phuket",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Trang",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Phang Nga",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Ranong",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Chumphon",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Nakhon Ratchasima",
       "Deaths":6
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Ubon Ratchathani",
       "Deaths":3
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Yasothon",
       "Deaths":3
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Maha Sarakham",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Surin",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Nakhon Phanom",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Sisaket",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Nakhon Sawan",
       "Deaths":4
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Bueng Kan",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Roi Et",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Khon Kaen",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Loei",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Tak",
       "Deaths":5
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Uthai Thani",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Kamphaeng Phet",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Phichit",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Uttaradit",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Saraburi",
       "Deaths":10
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Lopburi",
       "Deaths":10
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Ratchaburi",
       "Deaths":8
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Suphan Buri",
       "Deaths":7
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Samut Songkhram",
       "Deaths":6
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Deaths":5
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Chachoengsao",
       "Deaths":3
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Chonburi",
       "Deaths":3
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Rayong",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Chanthaburi",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Sing Buri",
       "Deaths":2
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Prachinburi",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Trat",
       "Deaths":1
     },
     {
-      "Date":"2021-08-28",
+      "Date":"2021-08-28T00:00:00.000Z",
       "Province":"Sa Kaeo",
       "Deaths":1
     }

@@ -3,7 +3,7 @@
     "fields":[
       {
         "name":"Date",
-        "type":"string"
+        "type":"datetime"
       },
       {
         "name":"Province",
@@ -22,127 +22,127 @@
   },
   "data":[
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Bangkok",
       "Deaths":71
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Nonthaburi",
       "Deaths":18
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Samut Sakhon",
       "Deaths":7
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Pathum Thani",
       "Deaths":6
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Nakhon Pathom",
       "Deaths":5
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Samut Prakan",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Narathiwat",
       "Deaths":3
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Pattani",
       "Deaths":3
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Yala",
       "Deaths":2
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Songkhla",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Chachoengsao",
       "Deaths":2
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Trat",
       "Deaths":2
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Prachinburi",
       "Deaths":2
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Sa Kaeo",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Ubon Ratchathani",
       "Deaths":4
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Kanchanaburi",
       "Deaths":3
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Udon Thani",
       "Deaths":2
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Chiang Rai",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Kamphaeng Phet",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Chaiyaphum",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Nakhon Nayok",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Ang Thong",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Nakhon Phanom",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Nakhon Ratchasima",
       "Deaths":1
     },
     {
-      "Date":"2021-07-17",
+      "Date":"2021-07-17T00:00:00.000Z",
       "Province":"Nakhon Sawan",
       "Deaths":1
     }

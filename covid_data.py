@@ -1644,7 +1644,7 @@ def briefing_deaths_provinces(dtext, date, file):
 
     # remove age breakdown of deaths per provice to make it easier
     # e.g "60+ปี 58 ราย (85%)" - from 2021-08-24
-    text = re.sub(r"([\d-]+\+?\s?ปี? *\d+ *(ราย)? *\(\d+%\))", " ", text)
+    text = re.sub(r"([\d-]+\+?\s?(?:ปี)? *\d* *(?:ราย)? *\(\d+%?\))", " ", text)
     # and '50+ (14)' 2021-08-26
     text = re.sub(r"([\d]+\+?(?:ปี)? *\(\d+\))", " ", text)
 

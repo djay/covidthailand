@@ -3,7 +3,7 @@
     "fields":[
       {
         "name":"Date",
-        "type":"string"
+        "type":"datetime"
       },
       {
         "name":"Province",
@@ -22,42 +22,42 @@
   },
   "data":[
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Bangkok",
       "Deaths":6
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Samut Prakan",
       "Deaths":3
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Nonthaburi",
       "Deaths":2
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Chiang Mai",
       "Deaths":2
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Samut Sakhon",
       "Deaths":2
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Pathum Thani",
       "Deaths":1
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Yala",
       "Deaths":1
     },
     {
-      "Date":"2021-05-06",
+      "Date":"2021-05-06T00:00:00.000Z",
       "Province":"Sing Buri",
       "Deaths":1
     }
