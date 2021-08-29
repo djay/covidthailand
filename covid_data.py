@@ -3181,8 +3181,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     vac = get_vaccinations()
     tests_reports = get_test_reports()
     cases_demo, risks_prov = get_cases_by_demographics_api()

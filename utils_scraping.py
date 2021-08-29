@@ -671,6 +671,28 @@ def workbooks(url, dates=[], **selects):
     else:
         values = [None]
 
+    def select(wb, ws_name, meth, name, value, attempt=2):
+        fail = False
+        try:
+            wb = getattr(wb.getWorksheet(ws_name), meth)(name, value) if ws_name else setParameter(wb, name, value)
+        except (RequestException, TableauException, KeyError) as err:
+            print(date, "MOPH Dashboard", f"Retry: {meth}:{name}={value} Timeout Error: {err}")
+            fail = True
+        if not wb.worksheets:
+            print(date, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{name}={value}.")
+            fail = True
+        if fail and attempt > 0:
+            ts = tableauscraper.TableauScraper()
+            ts.loads(url)
+            fix_timeouts(ts.session, timeout=90)
+            wb = ts.getWorkbook()
+            return select(wb, ws_name, meth, name, value, attempt - 1)
+        elif fail:
+            print(date, "MOPH Dashboard", f"Skip: {meth}:{name}={value}. Retries exceeded")
+            return None
+        else:
+            return wb
+
 #    for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
     for date in dates:
         # Get list of the possible values from selectable. TODO: allow more than one
@@ -684,34 +706,14 @@ def workbooks(url, dates=[], **selects):
                 if date and last_date.date() != date.date():
                     # Only switch date if it hasn't been done
                     # TODO: after doing select can't do setParam. have to reload. must be faster way
-                    try:
-                        ts = tableauscraper.TableauScraper()
-                        ts.loads(url)
-                        fix_timeouts(ts.session, timeout=90)
-                        wbroot = ts.getWorkbook()
-                        wb = setParameter(wbroot, "param_date", str(date.date()))
-                    except (RequestException, TableauException):
-                        print(date, "MOPH Dashboard", "Skip: Param Timeout Error.")
+                    wb = select(wb, None, "setParameter", "param_date", str(date.date()))
+                    if wb is None:
                         return None
-                    if not wb.worksheets:
-                        print(date, "MOPH Dashboard", "Skip: Error in setParam.")
-                        return None
-                        
                     last_date = date
 
-                if value is not None:
-                    param_changer = getattr(wb.getWorksheet(ws_name), meth)
-                    try:
-                        wb_val = param_changer(col_name, value)
-                    except (RequestException, TableauException, APIResponseException):
-                        print(date, "MOPH Dashboard", "Skip: Select Timeout Error.")
-                        return None
-                    if not wb_val.worksheets:
-                        print(date, "MOPH Dashboard", "Skip: Error in Select.")
-                        return None
-
-                else:
-                    wb_val = wb
+                wb_val = select(wb, ws_name, meth, col_name, value) if value is not None else wb
+                if wb_val is None:
+                    return None
                 return wb_val
 
             yield get_workbook, idx_value
