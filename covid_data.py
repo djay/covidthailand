@@ -570,6 +570,8 @@ def get_case_details_csv():
                 # bad encoding
                 with codecs.open(file, encoding="tis-620") as fp:
                     confirmedcases = pd.read_csv(fp)
+            first, last, ldate = confirmedcases["No."].iloc[0], confirmedcases["No."].iloc[-1], confirmedcases["announce_date"].iloc[-1]
+            print("Covid19daily:", f"rows={len(confirmedcases)}", f"{last-first}={last}-{first}", ldate, file)
             cases = cases.combine_first(confirmedcases.set_index("No."))
         else:
             raise Exception(f"Unknown filetype for covid19daily {file}")
@@ -579,7 +581,6 @@ def get_case_details_csv():
     cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
     #assert cases.index.max() <
-    print("Covid19daily: ", file, cases.index.max())
     return cases
 
 
@@ -3182,11 +3183,11 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    cases_demo, risks_prov = get_cases_by_demographics_api()
     vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     tests_reports = get_test_reports()
-    cases_demo, risks_prov = get_cases_by_demographics_api()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
