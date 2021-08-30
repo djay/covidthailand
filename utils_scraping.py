@@ -255,7 +255,18 @@ def is_cutshort(file, modified, check):
     return False
 
 
-def web_links(*index_urls, ext=".pdf", dir="html", match=None):
+def url2filename(url, strip_version=False):
+    file = sanitize_filename(url.rsplit("/", 1)[-1])
+    if strip_version and '.' in file:
+        file = ".".join(file.split(".")[:2])
+    return file
+
+
+def links_html_namer(url, _):
+    return "-".join(url.split("/")[2:]) + ".html"
+
+
+def web_links(*index_urls, ext=".pdf", dir="html", match=None, filenamer=links_html_namer):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
@@ -263,20 +274,18 @@ def web_links(*index_urls, ext=".pdf", dir="html", match=None):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
     for index_url in index_urls:
-        for file, index, _ in web_files(index_url, dir=dir, check=True):
+        for file, index, _ in web_files(index_url, dir=dir, check=True, filenamer=filenamer):
             soup = parse_file(file, html=True, paged=False)
             links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
             for link in links:
                 yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename):
     "if check is None, then always download"
     i = 0
     for url in urls:
-        file = sanitize_filename(url.rsplit("/", 1)[-1])
-        if strip_version and '.' in file:
-            file = ".".join(file.split(".")[:2])
+        file = filenamer(url, strip_version)
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
         resumable = False
