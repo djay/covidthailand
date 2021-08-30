@@ -915,9 +915,8 @@ def save_plots(df: pd.DataFrame) -> None:
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
     vac = vac.join(get_provinces()['Population'], on='Province')
     # Bring in vac populations
-    pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population") # It's not on all data
+    pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population")  # It's not on all data
     vac = vac.join(pops, rsuffix="2")
-
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()

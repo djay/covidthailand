@@ -2719,6 +2719,7 @@ def vaccination_reports_files():
 def vaccination_reports_files2():
     # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
+
     links = (link for f in folders for link in web_links(f, ext=".pdf"))
     links = sorted(links, reverse=True)
     count = 0
@@ -3181,9 +3182,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    vac = get_vaccinations()
     tests_reports = get_test_reports()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
@@ -3210,8 +3211,8 @@ def scrape_and_combine():
     dfprov = join_provinces(dfprov, on="Province")
     export(dfprov, "cases_by_province")
 
-    # Export per district
-    by_area = prov_to_districts(dfprov)
+    # Export per district (except tests which are dodgy?)
+    by_area = prov_to_districts(dfprov[[c for c in dfprov.columns if "Tests" not in c]])
 
     cases_by_area = import_csv("cases_by_area", ["Date"], not USE_CACHE_DATA)
     cases_by_area = cases_by_area.combine_first(by_area).combine_first(case_api_by_area)
