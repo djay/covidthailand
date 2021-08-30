@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -44,7 +44,7 @@ def dl_files(dir, dl_gen):
     downloads = {}
     for url, date, get_file in dl_gen():
         fname = sanitize_filename(url.rsplit("/", 1)[-1])
-        fname, _ = fname.rsplit(".", 1)
+        fname, _ = fname.rsplit(".", 1)  # remove ext
         if date is not None:
             sdate = str(date.date())
             downloads[sdate] = (sdate, get_file)
@@ -54,6 +54,12 @@ def dl_files(dir, dl_gen):
     for root, dir, files in os.walk(dir_path):
         for check in fnmatch.filter(files, "*.json"):
             base, ext = check.rsplit(".", 1)
+            # special format of name with .2021-08-01 to help make finding test files easier
+            if "." in base:
+                rest, dateish = base.rsplit(".", 1)
+                if file2date(dateish):
+                    base = rest
+                    # throw away date since rest is file to check against
             try:
                 testdf = pd.read_json(os.path.join(root, check), orient="table")
             except ValueError:
@@ -84,14 +90,14 @@ def dl_files(dir, dl_gen):
 # 2021-07-10          0.0
 # 2021-07-11          0.0
 
-@pytest.mark.parametrize("date, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files))
+@pytest.mark.parametrize("date, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files2))
 def test_vac_reports(date, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
     assert file is not None
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
-        df = vaccination_daily(df, dateutil.parser.parse(date), file, page)
+        df = vaccination_daily(df, None, file, page)
     # df.to_json(f"tests/vaccination_daily/{date}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, df)
 
