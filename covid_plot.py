@@ -867,14 +867,15 @@ def save_plots(df: pd.DataFrame) -> None:
     # 28,538,000 for general population
     # TODO: put in same order and colours as other groups
     goals = [
-        ('Medical Staff', (712000 + 1000000)),
+        ('Health Volunteer', 1000000),
+        ('Medical Staff', 712000),
         ('Other Frontline Staff', 1900000),
-        ('Risk: Location', 28538000),
-        ('Risk: Disease', 5350000),
         ['Over 60', 12500000],
+        ('Risk: Disease', 5350000),
+        ('Risk: Location', 28538000),
     ]
-    for group, goal in goals:
-        for d in [2, 1]:
+    for d in [2, 1]:
+        for group, goal in goals:
             vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
                 f'Vac Group {group} {d} Cum'] / goal * 100
     cols2 = [c for c in vac_cum.columns if " Cum %" in c and "Vac Group " in c]
@@ -889,7 +890,7 @@ def save_plots(df: pd.DataFrame) -> None:
         stacked=False,
         percent_fig=False,
         ma_days=None,
-        cmap='tab20_r',
+        cmap=get_cycle('tab20', len(cols2), unpair=True),
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
