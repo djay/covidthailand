@@ -224,22 +224,34 @@ it's not yet clear which range of years provides the best baseline to compare ag
 - As the differnent sources of the data has increased so has the code needed fetch, extract and
   display this data. All the code is fairly simple python however. It is a fun way to learn scraping
   data and/or pandas and matplotlib.
-- [Find isssue and submit a Pull Request](https://github.com/djay/covidthailand/issues)
-  - 
-- To run the full scrape (warning this will take a long time as it downloads all the documents)
-```
-python -m venv .
-bin/pip install -r requirements.txt
-bin/python covid_plot.py
-```
+- Find a [github issue](https://github.com/djay/covidthailand/issues) and have a go. Many are marked as suitable for begginers
+  - making new plots
+  - improve existing plots
+  - adding tests so it's faster to make future fixes
+  - improving scrapers that miss past data, e.g. vaccination reports
+  - [Spotting breaking updates](https://github.com/djay/covidthailand/issues) and submitting a pull request to revise the scraper
+  - If unsure if you are on the right track, submit a draft pull request and request a review
+- Spotted a problem or got an idea how to improve? [Submit an issue](https://github.com/djay/covidthailand/issues) and then have a go making it happen.
+- Got Questions? [Start a discussion](https://github.com/djay/covidthailand/discussions)
+
+### Running this code
+- To install (requires python >=3.9)
+  ```
+  python -m venv .
+  bin/pip install -r requirements.txt
+  ```
+- To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
+  ```
+  bin/python covid_plot.py
+  ```
 - To get latest files (after inital full download)
-```
-USE_CACHE_DATA=True MAX_DAYS=1 bin/python covid_plot.py
-```
+  ```
+  USE_CACHE_DATA=True MAX_DAYS=1 bin/python covid_plot.py
+  ```
 - To run the tests (will only get docs needed for tests)
-```
-bin/pytest
-```
+  ```
+  bin/pytest
+  ```
 - To add a test
   - Logs from a full scrape can be used to also identify files/dates that are not scraped correctly
   - Add empty file in tests/*scraper_type*/*dl_name*.json
@@ -247,13 +259,15 @@ bin/pytest
   - Run tests. This will download the document, scrape it and compare the results agains the json.
   - If the results are correct there is commented out code in the test to export the data to the 
     test json file.
-  - Note not all scrapers have a test framework setup yet. But follow the existing code to do this.
+  - Only add test data for dates where the format changed and so the scraper had to get updated. See commit history for dates where this happened or use code coverage.
+  - Note not all scrapers have a test framework setup yet. But follow the existing code to do add it or ask for help.
+
 
 # Contributors
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
 - [Peter Scully](https://github.com/pmdscully)
-- Help us? - 
+- join us? - 
 
 # About
 
