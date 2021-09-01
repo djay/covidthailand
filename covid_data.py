@@ -2472,9 +2472,9 @@ def vaccination_daily(daily, date, file, page):
                 total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
             else:
                 total, medical, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = 0
+                pregnant = volunteer = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
-            assert not any_in(row, None)
+            assert not any_in([None], medical, frontline, over60, chronic, area)
             assert 0.945 <= (sum([i for i in row if i]) / total) <= 1.01
             df = pd.DataFrame([[date, total] + row], columns=cols).set_index("Date")
         elif dose == 3:

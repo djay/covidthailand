@@ -98,9 +98,8 @@ def test_vac_reports(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_daily(df, None, file, page)
-    pd.testing.assert_frame_equal(testdf, df)
-    date = str(df.index.max().date())
-    # df.to_json(f"tests/vaccination_daily/{fname}.{date}.json", orient='table', indent=2)
+    # df.to_json(f"tests/vaccination_daily/{fname}.{str(df.index.max().date())}.json", orient='table', indent=2)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
 @pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
@@ -111,8 +110,8 @@ def test_vac_tables(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_tables(df, None, page, file)
-    pd.testing.assert_frame_equal(testdf, df)
     # df.to_json(f"tests/vaccination_tables/{fname}.{str(df.index.max()[0].date())}.json", orient='table', indent=2)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 def testing_pptx():
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
