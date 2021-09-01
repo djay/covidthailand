@@ -865,14 +865,23 @@ def save_plots(df: pd.DataFrame) -> None:
     # 5,350,000 for risk: disease
     # 12,500,000 for risk: over 60
     # 28,538,000 for general population
-    # TODO: put in same order and colours as other groups
+
+    # medical staff  712,000
+    # village health volunteers 1,000,000
+    # frontline workers 1,900,000
+    # underlying diseases 6,347,125
+    # general public  28,634,733
+    # elderly over 60 10,906,142
+    # pregnant 500,000
+    # Target total 50,000,000
     goals = [
         ('Health Volunteer', 1000000),
         ('Medical Staff', 712000),
         ('Other Frontline Staff', 1900000),
-        ['Over 60', 12500000],
-        ('Risk: Disease', 5350000),
-        ('Risk: Location', 28538000),
+        ['Over 60', 10906142],
+        ('Risk: Disease', 6347125),
+        ('Risk: Location', 28634733),
+        ('Risk: Pregnant', 500000),
     ]
     for d in [2, 1]:
         for group, goal in goals:
