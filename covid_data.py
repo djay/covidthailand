@@ -834,29 +834,6 @@ def moph_dashboard():
 
     def getDailyStats(df):
 
-        # def workbooks(df, allow_na={}, **params):
-        #     ts = TS()
-        #     ts.loads(url)
-        #     fix_timeouts(ts.session, timeout=15)
-        #     workbook = ts.getWorkbook()
-        #     updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
-        #     updated = pd.to_datetime(updated, dayfirst=False)
-        #     yield workbook, updated
-        #     start = d("2021-01-01")
-        #     for date in reversed(list(daterange(start, updated))):
-        #         if not df.empty:
-        #             # allow certain fields null if before set date
-        #             nulls = [c for c in df.columns if pd.isna(df[c].get(date)) and date >= allow_na.get(c, start)]
-        #             if not nulls:
-        #                 continue
-        #             else:
-        #                 print(date, "MOPH Dashboard", f"Retry Missing data for {nulls}. Retry")
-        #         try:
-        #             yield setParamater(workbook, "param_date", str(date.date())), date
-        #         except requests.exceptions.ReadTimeout:
-        #             print(date, "MOPH Dashboard", "Timeout Error. Continue another day")
-        #             break
-
         allow_na = {
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
@@ -2475,7 +2452,7 @@ def vaccination_daily(daily, date, file, page):
             return daily
     # assert len(d3_num) == 0 or len(d3_num) == len(d2_num)
 
-    is_risks = re.compile("(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน|ได้รับวัคซีน 2)")
+    is_risks = re.compile(r"(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน|ได้รับวัคซีน 2|7 กลุ)")
 
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2), (3, d3_num, rest3)]:
         cols = [
@@ -3183,8 +3160,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    cases_demo, risks_prov = get_cases_by_demographics_api()
     vac = get_vaccinations()
+    cases_demo, risks_prov = get_cases_by_demographics_api()
     dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     tests_reports = get_test_reports()

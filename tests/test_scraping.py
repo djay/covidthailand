@@ -90,17 +90,29 @@ def dl_files(dir, dl_gen):
 # 2021-07-10          0.0
 # 2021-07-11          0.0
 
-@pytest.mark.parametrize("date, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files2))
-def test_vac_reports(date, testdf, get_file):
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files2))
+def test_vac_reports(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
     assert file is not None
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_daily(df, None, file, page)
-    # df.to_json(f"tests/vaccination_daily/{date}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, df)
+    date = str(df.index.max().date())
+    # df.to_json(f"tests/vaccination_daily/{fname}.{date}.json", orient='table', indent=2)
 
+
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
+def test_vac_tables(fname, testdf, get_file):
+    assert get_file is not None
+    file = get_file()  # Actually download
+    assert file is not None
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    for page in parse_file(file):
+        df = vaccination_tables(df, None, page, file)
+    pd.testing.assert_frame_equal(testdf, df)
+    # df.to_json(f"tests/vaccination_tables/{fname}.{str(df.index.max()[0].date())}.json", orient='table', indent=2)
 
 def testing_pptx():
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
