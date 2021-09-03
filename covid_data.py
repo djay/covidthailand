@@ -2865,7 +2865,9 @@ def vac_manuf_given(df, page, file, page_num):
     if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
         return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
-    title1, daily, title2, doses, *rest = [cell for cell in table[0] if cell.strip()]  # + title3, totals + extras
+    # show be just one col. sometimes there is extra empty ones. 2021-08-03
+    table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
+    title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
     # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
     if len(rest) == 3:
@@ -2904,6 +2906,7 @@ def vac_manuf_given(df, page, file, page_num):
     row = pd.DataFrame([row], columns=['Date'] + cols)
     print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
     return df.combine_first(row.set_index("Date"))
+
 
 def vac_slides_groups(df, page, file, page_num):
     if "กลุ่มเปา้หมาย" not in page:
@@ -2960,12 +2963,22 @@ def vac_slides_groups(df, page, file, page_num):
 # กลุ่มเปา้หมาย
 # จ านวนผู้ที่ไดร้ับวคัซีน
 
-def vac_slides():
+def vac_slides_files():
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
     links = sorted((link for f in folders for link in web_links(f, ext=".pdf")), reverse=True)
-    files = (f for f, _, _ in web_files(*links, dir="vaccinations"))
-    df = pd.DataFrame(columns=['Date']).set_index("Date")
-    for file in files:
+    for link in links:
+
+        def dl_file():
+            file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+            return file
+
+        yield link, None, dl_file
+
+
+def vac_slides():
+    for link, _, get_file in vac_slides_files():
+        file = get_file()
+        df = pd.DataFrame(columns=['Date']).set_index("Date")
         for i, page in enumerate(parse_file(file), 1):
             # pass
             df = vac_manuf_given(df, page, file, i)

@@ -274,9 +274,9 @@ Bureau, Chaeng Watthana"
       "Vac Group {group} {1-2} Cum: Cumulative vaccines given to particular risk group (dose 1 and 2)
 ```
 
-## BORA Monthly Deaths <a name="dl-deaths-all">
+## BORA Monthly Deaths (Excess Deaths) <a name="dl-deaths-all">
 
-### [dealths_all.csv](https://github.com/djay/covidthailand/wiki/deaths_all.csv)
+### [deaths_all.csv](https://github.com/djay/covidthailand/wiki/deaths_all.csv)
 
 - Source: 
    - [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
