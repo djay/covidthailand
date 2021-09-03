@@ -217,7 +217,7 @@ Notes
 it's not yet clear which range of years provides the best baseline to compare against. 
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
-- Source [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
+- Source [Office of Registration Administration, Department of Provincial Administration](downloads#dl-deaths-all)
 
 
 ## How to contribute
