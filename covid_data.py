@@ -2968,7 +2968,7 @@ def vac_slides_files():
     links = sorted((link for f in folders for link in web_links(f, ext=".pdf")), reverse=True)
     for link in links:
 
-        def dl_file():
+        def dl_file(link=link):
             file, _, _ = next(iter(web_files(link, dir="vaccinations")))
             return file
 

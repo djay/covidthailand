@@ -1,0 +1,79 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given Sinovac 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given AstraZeneca 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinopharm 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Pfizer 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given AstraZeneca 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinopharm 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Pfizer 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given AstraZeneca 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinopharm 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Pfizer 3 Cum",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-08-17T00:00:00.000Z",
+      "Vac Given Sinovac 1 Cum":8165350,
+      "Vac Given AstraZeneca 1 Cum":8982285,
+      "Vac Given Sinopharm 1 Cum":1489788,
+      "Vac Given Pfizer 1 Cum":88982,
+      "Vac Given Sinovac 2 Cum":3450819,
+      "Vac Given AstraZeneca 2 Cum":1264314,
+      "Vac Given Sinopharm 2 Cum":641516,
+      "Vac Given Pfizer 2 Cum":25027,
+      "Vac Given Sinovac 3 Cum":0,
+      "Vac Given AstraZeneca 3 Cum":198749,
+      "Vac Given Sinopharm 3 Cum":0,
+      "Vac Given Pfizer 3 Cum":311919
+    }
+  ]
+}

@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -112,6 +112,19 @@ def test_vac_tables(fname, testdf, get_file):
         df = vaccination_tables(df, None, page, file)
     # df.to_json(f"tests/vaccination_tables/{fname}.{str(df.index.max()[0].date())}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", vac_slides_files))
+def test_vac_manuf_given(fname, testdf, get_file):
+    assert get_file is not None
+    file = get_file()  # Actually download
+    assert file is not None
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    for i, page in enumerate(parse_file(file), 1):
+        df = vac_manuf_given(df, page, file, i)
+    # df.to_json(f"tests/vac_manuf_given/{fname}.{str(df.index.max().date())}.json", orient='table', indent=2)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
 
 def testing_pptx():
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
