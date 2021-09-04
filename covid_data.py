@@ -1908,7 +1908,7 @@ def briefing_deaths(file, date, pages):
     return all, sum, dfprov
 
 
-def briefing_documents():
+def briefing_documents(check):
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
     end = today()

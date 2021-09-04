@@ -37,12 +37,12 @@ import dateutil
 #                 yield os.path.join(root, file), testdf, func
 
 
-def dl_files(dir, dl_gen):
+def dl_files(dir, dl_gen, check=False):
     "find csv files and match them to dl files, either by filename or date"
     dir_path = os.path.dirname(os.path.realpath(__file__))
     dir_path = os.path.join(dir_path, dir)
     downloads = {}
-    for url, date, get_file in dl_gen():
+    for url, date, get_file in dl_gen(check):
         fname = sanitize_filename(url.rsplit("/", 1)[-1])
         fname, _ = fname.rsplit(".", 1)  # remove ext
         if date is not None:
@@ -50,7 +50,8 @@ def dl_files(dir, dl_gen):
             downloads[sdate] = (sdate, get_file)
         # put in file so test is identified if no date
         downloads[fname] = (str(date.date()) if date is not None else fname, get_file)
-
+    tests = []
+    missing = False
     for root, dir, files in os.walk(dir_path):
         for check in fnmatch.filter(files, "*.json"):
             base, ext = check.rsplit(".", 1)
@@ -64,12 +65,18 @@ def dl_files(dir, dl_gen):
                 testdf = pd.read_json(os.path.join(root, check), orient="table")
             except ValueError:
                 testdf = None
+                missing = True
             # try:
             #     testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
             # except pd.errors.EmptyDataError:
             #     testdf = None
             date, get_file = downloads.get(base, (None, None))
-            yield date, testdf, get_file
+            tests.append((date, testdf, get_file))
+    if missing and not check:
+        # files not cached yet so try again
+        return dl_files(dir, dl_gen, check=True)
+    else:
+        return tests
 
 
 # @pytest.mark.parametrize("input, testdf, parser", find_files("testing_moph", "*.pptx"))
@@ -90,7 +97,7 @@ def dl_files(dir, dl_gen):
 # 2021-07-11          0.0
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", lambda: vaccination_reports_files2(False)))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files2))
 def test_vac_reports(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
@@ -102,7 +109,7 @@ def test_vac_reports(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", lambda: vaccination_reports_files2(False)))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
 def test_vac_tables(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
@@ -114,7 +121,7 @@ def test_vac_tables(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", lambda: vac_slides_files(False)))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", vac_slides_files))
 def test_vac_manuf_given(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
@@ -126,15 +133,15 @@ def test_vac_manuf_given(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
-def testing_pptx():
+def find_testing_pptx(check):
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
 
 
-def testing_pdf():
+def find_testing_pdf(check):
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pdf")]
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", testing_pptx))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pptx))
 def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
     assert dl is not None
@@ -146,7 +153,7 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", testing_pdf))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pdf))
 def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
     if fname is None:
