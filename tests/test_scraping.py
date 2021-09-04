@@ -53,8 +53,8 @@ def dl_files(dir, dl_gen, check=False):
     tests = []
     missing = False
     for root, dir, files in os.walk(dir_path):
-        for check in fnmatch.filter(files, "*.json"):
-            base, ext = check.rsplit(".", 1)
+        for test in fnmatch.filter(files, "*.json"):
+            base, ext = test.rsplit(".", 1)
             # special format of name with .2021-08-01 to help make finding test files easier
             if "." in base:
                 rest, dateish = base.rsplit(".", 1)
@@ -62,7 +62,7 @@ def dl_files(dir, dl_gen, check=False):
                     base = rest
                     # throw away date since rest is file to check against
             try:
-                testdf = pd.read_json(os.path.join(root, check), orient="table")
+                testdf = pd.read_json(os.path.join(root, test), orient="table")
             except ValueError:
                 testdf = None
                 missing = True
