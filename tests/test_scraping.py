@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -81,7 +81,6 @@ def dl_files(dir, dl_gen):
 #     pd.testing.assert_frame_equal(testdf, data)
 
 
-
 # 021-07-05          0.0
 # 2021-07-06          0.0
 # 2021-07-07          0.0
@@ -90,7 +89,8 @@ def dl_files(dir, dl_gen):
 # 2021-07-10          0.0
 # 2021-07-11          0.0
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files2))
+
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", lambda: vaccination_reports_files2(False)))
 def test_vac_reports(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
@@ -102,7 +102,7 @@ def test_vac_reports(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", lambda: vaccination_reports_files2(False)))
 def test_vac_tables(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
@@ -114,7 +114,7 @@ def test_vac_tables(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", vac_slides_files))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", lambda: vac_slides_files(False)))
 def test_vac_manuf_given(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
@@ -181,3 +181,17 @@ def test_briefing_deaths_provinces(date, testdf, dl):
         dfprov = dfprov.combine_first(df)
     # dfprov.to_json(f"tests/briefing_deaths_provinces/{date}.json", orient='table', indent=2)
     pd.testing.assert_frame_equal(testdf, dfprov)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))
+def test_briefing_case_types(date, testdf, dl):
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+
+    df = briefing_case_types(dateutil.parser.parse(date), pages, file)
+    # df.to_json(f"tests/briefing_case_types/{date}.json", orient='table', indent=2)
+    pd.testing.assert_frame_equal(testdf, df)

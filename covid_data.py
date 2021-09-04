@@ -1487,7 +1487,7 @@ def briefing_case_types(date, pages, url):
             field, _ = get_next_number(text, "รพ.สนาม")
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
             hospitalised = num[0]
-            assert hospital + field == hospitalised
+            assert hospital + field == hospitalised or date in [d("2021-09-04")]
         else:
             hospital, field, severe, respirator, hospitalised = [None] * 5
 
@@ -2666,39 +2666,39 @@ def vaccination_tables(df, date, page, file):
     return df.combine_first(rows) if not rows.empty else df
 
 
-def vaccination_reports_files():
-    # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
-    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
-                        ext=None, match=re.compile("2564"))
-    links = (link for f in folders for link in web_links(f, ext=".pdf"))
-    url = "https://ddc.moph.go.th/uploads/ckeditor2/files/Daily report "
-    gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
-                 for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
-    links = unique_values(chain(links, gen_links))  # Some were not listed on the site so we guess
-    links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
-    for link in links:
-        date = file2date(link)
-        if not date or date <= d("2021-02-27"):
-            continue
-        date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
-        if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS - 1):
-            break
+# def vaccination_reports_files():
+#     # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
+#     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
+#                         ext=None, match=re.compile("2564"))
+#     links = (link for f in folders for link in web_links(f, ext=".pdf"))
+#     url = "https://ddc.moph.go.th/uploads/ckeditor2/files/Daily report "
+#     gen_links = (f"{url}{f.year}-{f.month:02}-{f.day:02}.pdf"
+#                  for f in reversed(list(daterange(d("2021-05-20"), today(), 1))))
+#     links = unique_values(chain(links, gen_links))  # Some were not listed on the site so we guess
+#     links = sorted(links, key=lambda f: date if (date := file2date(f)) is not None else d("2020-01-01"), reverse=True)
+#     for link in links:
+#         date = file2date(link)
+#         if not date or date <= d("2021-02-27"):
+#             continue
+#         date = date - datetime.timedelta(days=1)  # TODO: get actual date from titles. maybe not always be 1 day delay
+#         if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS - 1):
+#             break
 
-        def get_file(link=link):
-            try:
-                file, _, _ = next(iter(web_files(link, dir="vaccinations")))
-            except StopIteration:
-                return None
-            return file
+#         def get_file(link=link):
+#             try:
+#                 file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+#             except StopIteration:
+#                 return None
+#             return file
 
-        yield link, date, get_file
+#         yield link, date, get_file
 
 
-def vaccination_reports_files2():
+def vaccination_reports_files2(check=True):
     # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
 
-    links = (link for f in folders for link in web_links(f, ext=".pdf"))
+    links = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
     links = sorted(links, reverse=True)
     count = 0
     for link in links:
@@ -2963,10 +2963,14 @@ def vac_slides_groups(df, page, file, page_num):
 # กลุ่มเปา้หมาย
 # จ านวนผู้ที่ไดร้ับวคัซีน
 
-def vac_slides_files():
+def vac_slides_files(check=True):
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
-    links = sorted((link for f in folders for link in web_links(f, ext=".pdf")), reverse=True)
+    links = sorted((link for f in folders for link in web_links(f, ext=".pdf", check=check)), reverse=True)
+    count = 0
     for link in links:
+        if USE_CACHE_DATA and count > MAX_DAYS:
+            break
+        count += 1
 
         def dl_file(link=link):
             file, _, _ = next(iter(web_files(link, dir="vaccinations")))
