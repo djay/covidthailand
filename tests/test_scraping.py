@@ -37,10 +37,10 @@ import dateutil
 #                 yield os.path.join(root, file), testdf, func
 
 
-def dl_files(dir, dl_gen, check=False):
+def dl_files(target_dir, dl_gen, check=False):
     "find csv files and match them to dl files, either by filename or date"
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    dir_path = os.path.join(dir_path, dir)
+    dir_path = os.path.join(dir_path, target_dir)
     downloads = {}
     for url, date, get_file in dl_gen(check):
         fname = sanitize_filename(url.rsplit("/", 1)[-1])
@@ -65,16 +65,17 @@ def dl_files(dir, dl_gen, check=False):
                 testdf = pd.read_json(os.path.join(root, test), orient="table")
             except ValueError:
                 testdf = None
-                missing = True
             # try:
             #     testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
             # except pd.errors.EmptyDataError:
             #     testdf = None
             date, get_file = downloads.get(base, (None, None))
+            if get_file is None:
+                missing = True
             tests.append((date, testdf, get_file))
     if missing and not check:
         # files not cached yet so try again
-        return dl_files(dir, dl_gen, check=True)
+        return dl_files(target_dir, dl_gen, check=True)
     else:
         return tests
 
