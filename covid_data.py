@@ -2980,9 +2980,9 @@ def vac_slides_files(check=True):
 
 
 def vac_slides():
+    df = pd.DataFrame(columns=['Date']).set_index("Date")
     for link, _, get_file in vac_slides_files():
         file = get_file()
-        df = pd.DataFrame(columns=['Date']).set_index("Date")
         for i, page in enumerate(parse_file(file), 1):
             # pass
             df = vac_manuf_given(df, page, file, i)
