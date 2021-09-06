@@ -817,14 +817,26 @@ def moph_dashboard():
                     prov = get_province(prov)
                 else:
                     prov = prov
-                idx_value = (date, prov)
+                idx_value = (str(date.date()), prov)
             else:
                 date = idx_value
+                idx_value = str(date.date())
             # Assume index of df is in the same order as params
             if df.empty:
                 return False
+
+            def check_na(column, date):
+                limits = allow_na.get(column, None)
+                maxdate = today()
+                if type(limits) in [tuple, list]:
+                    mindate, maxdate = limits
+                elif limits is None:
+                    mindate = d("1975-1-1")
+                else:
+                    mindate = limits
+                return mindate <= date <= maxdate
             # allow certain fields null if before set date
-            nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and date >= allow_na.get(c, d("1975-1-1"))]
+            nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and check_na(c, date)]
             if not nulls:
                 return True
             else:
@@ -837,13 +849,13 @@ def moph_dashboard():
         allow_na = {
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
-            "Tests": today(),
+            "Tests": (d("2021-07-05"), today() - relativedelta(days=2)),  # TODO: One missing test on 2021-07-04.
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
-            'Vac Given 1 Cum': d("2021-01-11"),
-            'Vac Given 2 Cum': d("2021-01-11"),
-            "Vac Given 3 Cum": d("2021-06-01"),
+            'Vac Given 1 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
+            'Vac Given 2 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
+            "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=2)),
             'Hospitalized Field': d('2021-04-01'),
             'Hospitalized Respirator': d("2021-03-25"),  # patchy before this
             'Hospitalized Severe': d("2021-03-25"),
@@ -976,8 +988,10 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Tests": today(),  # TODO: because they are 2 days late so need to say allow after instead of before?
-            "Vac Given 3 Cum": d("2021-06-15"),
+            "Tests": (d("2021-07-01"), today() - relativedelta(days=2)),  # a few provinces have singe days with one NaN in.
+            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
+            "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
+            "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=2)),
             # all the non-series will take too long to get historically
             "Cases Walkin": d("2021-08-01"),
             "Cases Proactive": d("2021-08-01"),
@@ -3138,8 +3152,6 @@ def get_hospital_resources():
 #    - https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1
 #    - is it accurate?
 #    - no timeseries
-# - offocial moph dashboard (tableux)
-#   - https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line
 # - vaccine imports (unofficial) (getting out of date?)
 #    - https://docs.google.com/spreadsheets/u/1/d/1BaCh5Tbm1EXwh4SeRM9dv-yemK2J5RpO-dz28UVtX3s/htmlview?fbclid=IwAR36L3itMKFv6fq7q-7_CF4WpxtI-QGQAcJ1f62BLen6N6IHc1iq-u-wWNI/export?gid=0&format=csv  # noqa
 # - vaccine dashboard (power BI)
