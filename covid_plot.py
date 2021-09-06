@@ -286,6 +286,8 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
+    dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="json")
+
     # Computed data
     # TODO: has a problem if we have local transmission but no proactive
     # TODO: put somewhere else
@@ -917,9 +919,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
-    vac_dash = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="json")
     # Let's trust the dashboard more but they could both be different
-    vac = vac_dash.combine_first(vac)
+    vac = dash_prov.combine_first(vac)
     #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
     # Add them all up
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
@@ -1019,6 +1020,13 @@ def save_plots(df: pd.DataFrame) -> None:
               percent_fig=False,
               ma_days=7,
               cmap='tab10')
+
+    top5 = cases.pipe(topprov, lambda df: df['Cases Walkin'] / df['Population'] * 100000)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='cases_walkins_prov', cols_subset=cols,
+              title='Thailand Top Provinces with Walkin Cases',
+              # legends=legends,
+              kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
         top5 = cases.pipe(topprov,
