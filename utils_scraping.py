@@ -655,7 +655,7 @@ def workbooks(url, dates=[], **selects):
         print("MOPH Dashboard", f"Error: Empty Worksheet url {url}")
         return
 
-    fix_timeouts(ts.session, timeout=90)
+    fix_timeouts(ts.session, timeout=30)
     wbroot = ts.getWorkbook()
     # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
     # updated = pd.to_datetime(updated, dayfirst=False)
@@ -693,7 +693,7 @@ def workbooks(url, dates=[], **selects):
         if fail and attempt > 0:
             ts = tableauscraper.TableauScraper()
             ts.loads(url)
-            fix_timeouts(ts.session, timeout=90)
+            fix_timeouts(ts.session, timeout=20)
             wb = ts.getWorkbook()
             return select(wb, ws_name, meth, name, value, attempt - 1)
         elif fail:

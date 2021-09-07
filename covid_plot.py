@@ -853,7 +853,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=vac_cum, png_prefix='vac_groups', cols_subset=cols_cum,
               title='Thailand Population Vaccinatated by Priority Groups', legends=legends,
-              kind='area', stacked=True, percent_fig=True, ma_days=None, 
+              kind='area', stacked=True, percent_fig=True, ma_days=None,
               cmap=get_cycle('tab20', len(cols_cum), unpair=True),
               # between=['Available Vaccines Cum'],
               y_formatter=thaipop)
@@ -1021,11 +1021,15 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               cmap='tab10')
 
-    top5 = cases.pipe(topprov, lambda df: df['Cases Walkin'] / df['Population'] * 100000)
+    top5 = cases.pipe(topprov,
+                      increasing(cases_per_capita('Cases Walkin'), 5),
+                      cases_per_capita('Cases Walkin'),
+                      name="Province Cases Walkin (7d MA)",
+                      other_name="Other Provinces",
+                      num=6)
     cols = top5.columns.to_list()
-    plot_area(df=top5, png_prefix='cases_walkins_prov', cols_subset=cols,
+    plot_area(df=top5, png_prefix='cases_walkins_increasing', cols_subset=cols,
               title='Thailand Top Provinces with Walkin Cases',
-              # legends=legends,
               kind='line', stacked=False, percent_fig=False, ma_days=7, cmap='tab10')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
@@ -1045,6 +1049,25 @@ def save_plots(df: pd.DataFrame) -> None:
                   percent_fig=False,
                   ma_days=7,
                   cmap='tab10')
+
+    for direction in [increasing, decreasing]:
+        top5 = cases.pipe(topprov,
+                          direction(cases_per_capita('Hospitalization Severe'), 5),
+                          cases_per_capita('Hospitalization Severe'),
+                          name="Province Active Cases Severe (7d MA)",
+                          other_name="Other Provinces",
+                          num=6)
+        cols = top5.columns.to_list()
+        plot_area(
+            df=top5,
+            png_prefix=f'active_severe_{direction.__name__}',
+            cols_subset=cols,
+            title=f'Thailand Trending {"Up" if direction == increasing else "Down"} Provinces with Severe Active Cases',
+            kind='line',
+            stacked=False,
+            percent_fig=False,
+            ma_days=7,
+            cmap='tab10')
 
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
@@ -1121,7 +1144,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ages
     plot_area(df=w3_cases, png_prefix='cases_ages2', cols_subset=cols, title='Thailand Covid Cases by Age',
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
-              kind='area', stacked=True, percent_fig=True, ma_days=7, 
+              kind='area', stacked=True, percent_fig=True, ma_days=7,
               cmap=get_cycle('summer_r', len(cols), extras=["gainsboro"])
               )
 

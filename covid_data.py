@@ -817,10 +817,10 @@ def moph_dashboard():
                     prov = get_province(prov)
                 else:
                     prov = prov
-                idx_value = (str(date.date()), prov)
+                idx_value = (str(date.date()) if date else None, prov)
             else:
                 date = idx_value
-                idx_value = str(date.date())
+                idx_value = str(date.date()) if date else None
             # Assume index of df is in the same order as params
             if df.empty:
                 return False
@@ -834,7 +834,7 @@ def moph_dashboard():
                     mindate = d("1975-1-1")
                 else:
                     mindate = limits
-                return mindate <= date <= maxdate
+                return date is None or mindate <= date <= maxdate
             # allow certain fields null if before set date
             nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and check_na(c, date)]
             if not nulls:
@@ -942,6 +942,7 @@ def moph_dashboard():
         allow_na = {
             "Deaths": d("2021-01-01"),  
         }
+
         def range2eng(range):
             return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
@@ -976,6 +977,36 @@ def moph_dashboard():
             # row = row.rename(columns={a: a.replace(">= 70", "70+").replace("< 10", "0-9") for a in row.columns})
             df = row.combine_first(df)
             print(row.last_valid_index(), "MOPH Ages", range2eng(age_group),
+                  row.loc[row.last_valid_index():].to_string(index=False, header=False))
+        df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
+        return df
+
+    def get_trends_prov(df):
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
+
+        for get_wb, idx_value in workbooks(url, dates=[], D4_CHART="province"):
+            _, province = idx_value
+            province = get_province(province)
+            date = str(today().date())
+            if not pd.isna(df.get((date, province))):
+                continue
+            if (wb := get_wb()) is None:
+                continue
+            row = worksheet2df(
+                wb,
+                None,
+                D4_TREND={
+                    "DAY(date)-value": "Date",
+                    "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
+                    "AGG(stat_count)-alias": "Cases",
+                    "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
+                },
+            )
+            if row.empty or province is None:
+                continue
+            row['Province'] = province
+            df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
+            print(row.last_valid_index(), "DASH Trend prov",
                   row.loc[row.last_valid_index():].to_string(index=False, header=False))
         df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
         return df
@@ -1064,6 +1095,8 @@ def moph_dashboard():
     shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
 
     dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = get_trends_prov(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
     dfprov = by_province(dfprov)
     export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
     shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
@@ -3173,8 +3206,6 @@ def get_hospital_resources():
 #   - https://datagov.mot.go.th/dataset/covid-19/resource/71a552d0-0fea-4e05-b78c-42d58aa88db6
 #   - doesn't have pre 2020 dailies though
 
-
-
 def scrape_and_combine():
     os.makedirs("api", exist_ok=True)
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
@@ -3189,9 +3220,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    dashboard, dash_prov = moph_dashboard()
     vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
-    dashboard, dash_prov = moph_dashboard()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     tests_reports = get_test_reports()
 

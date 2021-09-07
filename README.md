@@ -52,7 +52,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
 
-![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_prov_30d.png)
+![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_30d.png)
 
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
@@ -102,6 +102,10 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
 
 ![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
+
+![Trending Up Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
+
+![Trending Down Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_decreasing_30d.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is 
