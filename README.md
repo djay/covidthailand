@@ -52,7 +52,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
 
-![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkin_prov_30d.png)
+![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_prov_30d.png)
 
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
