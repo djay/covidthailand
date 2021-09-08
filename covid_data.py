@@ -885,10 +885,10 @@ def moph_dashboard():
                 D_Recov="Recovered",
                 D_Death="Deaths",
                 D_ATK="ATK",
-                D_Lab2={
-                    "SUM(cnt_ma)-value": "Tests",
-                    "DAY(txn_date)-value": "Date"
-                },
+                # D_Lab2={
+                #     "SUM(cnt_ma)-value": "Tests",
+                #     "DAY(txn_date)-value": "Date"
+                # },
                 D_NewTL={
                     "SUM(case_new)-value": "Cases",
                     "DAY(txn_date)-value": "Date"
@@ -1022,7 +1022,7 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Tests": (d("2021-07-01"), today() - relativedelta(days=2)),  # a few provinces have singe days with one NaN in.
+            # "Tests": (d("2021-07-01"), today() - relativedelta(days=2)),  # a few provinces have singe days with one NaN in.
             "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
             "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
             "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=2)),
@@ -3182,6 +3182,7 @@ def get_hospital_resources():
         data = add_data(old, data)
     export(data, "hospital_resources", csv_only=True)
     return data
+
 
 
 # TODO: Additional data sources
