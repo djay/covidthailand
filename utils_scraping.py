@@ -682,7 +682,7 @@ def workbooks(url, dates=[], **selects):
         values = [None]
     # random.shuffle(values)
 
-    def select(wb, cur_index, new_index, ws_name, meth, name, attempt=2, reset=False):
+    def select(wb, cur_index, new_index, attempt=2, reset=False):
         last_date, last_value = cur_index
         date, value = new_index
         try:
@@ -690,21 +690,21 @@ def workbooks(url, dates=[], **selects):
                 setParameter(wb, "param_date", str(date.date()))
             if last_value != value:
                 ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
-                wb = getattr(ws, meth)(name, value)
+                wb = getattr(ws, meth)(col_name, value)
         except (RequestException, TableauException, KeyError) as err:
-            print(date, "MOPH Dashboard", f"Retry: {meth}:{name}={value} Timeout Error: {err}")
+            print(date, "MOPH Dashboard", f"Retry: {meth}:{col_name}={value} Timeout Error: {err}")
             reset = True
         if not wb.worksheets:
-            print(date, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{name}={value}.")
+            print(date, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{col_name}={value}.")
             reset = True
         if reset and attempt > 0:
             ts = tableauscraper.TableauScraper()
             ts.loads(url)
             fix_timeouts(ts.session, timeout=20)
             wb = ts.getWorkbook()
-            return select(wb, cur_index, new_index, ws_name, meth, name, attempt - 1)
+            return select(wb, cur_index, new_index, attempt=attempt - 1)
         elif reset:
-            print(date, "MOPH Dashboard", f"Skip: {meth}:{name}={value}. Retries exceeded")
+            print(date, "MOPH Dashboard", f"Skip: {meth}:{col_name}={value}. Retries exceeded")
             return None
         else:
             return wb
@@ -721,7 +721,7 @@ def workbooks(url, dates=[], **selects):
             def get_workbook(wb=wb, idx_last=idx_last, idx_value=idx_value):
                 nonlocal calls
                 calls += 1
-                return select(wb, idx_last, idx_value, ws_name, meth, col_name, reset=calls % 20 == 0)
+                return select(wb, idx_last, idx_value, reset=calls % 20 == 0)
             idx_last = idx_value
 
             yield get_workbook, date if value is None else (date, value)

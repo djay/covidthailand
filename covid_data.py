@@ -988,8 +988,11 @@ def moph_dashboard():
             _, province = idx_value
             province = get_province(province)
             date = str(today().date())
-            if not pd.isna(df.get((date, province))):
+            try:
+                df.loc[(date, province)]
                 continue
+            except KeyError:
+                pass
             if (wb := get_wb()) is None:
                 continue
             row = worksheet2df(
@@ -1030,6 +1033,7 @@ def moph_dashboard():
             "Cases Imported": d("2021-08-01"),
             "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
             "Cases": d("2021-06-28"),  # Only Lampang?
+            'Hospitalized Severe': today(),  # Comes from the trends data
         }
 
         dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
