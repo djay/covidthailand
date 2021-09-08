@@ -1676,6 +1676,8 @@ def briefing_deaths_provinces(dtext, date, file):
     text = re.sub(r"([\d-]+\+?\s?(?:ปี)? *\d* *(?:ราย)? *\(\d+%?\))", " ", text)
     # and '50+ (14)' 2021-08-26
     text = re.sub(r"([\d]+\+?(?:ปี)? *\(\d+\))", " ", text)
+    # (รายงานหลังเสียชีวิตเกิน 7 วัน 17  )  2021-09-07
+    text = re.sub(r"\( *\S* *\d+ วัน *\d+ *\)", " ", text)
 
     # remove the table header and page title.
     *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\s*\(\s+\))", text, 1)
