@@ -1052,8 +1052,8 @@ def save_plots(df: pd.DataFrame) -> None:
 
     for direction in [increasing, decreasing]:
         top5 = cases.pipe(topprov,
-                          direction(cases_per_capita('Hospitalization Severe'), 5),
-                          cases_per_capita('Hospitalization Severe'),
+                          direction(cases_per_capita('Hospitalized Severe'), 5),
+                          cases_per_capita('Hospitalized Severe'),
                           name="Province Active Cases Severe (7d MA)",
                           other_name="Other Provinces",
                           num=6)
@@ -1062,7 +1062,7 @@ def save_plots(df: pd.DataFrame) -> None:
             df=top5,
             png_prefix=f'active_severe_{direction.__name__}',
             cols_subset=cols,
-            title=f'Thailand Trending {"Up" if direction == increasing else "Down"} Provinces with Severe Active Cases',
+            title=f'Thailand Trending {"Up" if direction == increasing else "Down"} Provinces with Severe Active Cases (per 100,000)',
             kind='line',
             stacked=False,
             percent_fig=False,
