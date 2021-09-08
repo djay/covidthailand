@@ -148,7 +148,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 proactive tests from positive rate is perhaps better for [comparison with other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) they are less random and more likely to be positive as its testing known clusters.
 - Rapid antigen tests are not included in the test data, or in confirmed case numbers (unless they also had a positive PCR test). This is similar to most countries however some like [UK count antigen tests in both tests and confirmed cases](https://coronavirus.data.gov.uk/details/about-data#testing-capacity).
 - This positive rate is based on [DMSC: Thailand Laboratory testing data](downloads#dl-testing). In the [Daily MOPH Situation Reports](downloads#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki). 
-- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case.png) (Positive rate inverted) could be easier to understand.
+- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case_3.png) (Positive rate inverted) could be easier to understand.
 - Sources: [DMSC: Thailand Laboratory testing data](downloads#dl-testing), [Daily situation Reports](downloads#dl-situation-reports)
 
 ## PCR Tests in Thailand by day
