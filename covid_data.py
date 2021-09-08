@@ -982,7 +982,7 @@ def moph_dashboard():
         return df
 
     def get_trends_prov(df):
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
         for get_wb, idx_value in workbooks(url, dates=[], D4_CHART="province"):
             _, province = idx_value

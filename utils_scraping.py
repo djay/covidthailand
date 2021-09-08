@@ -6,7 +6,7 @@ import os
 import pickle
 import re
 import urllib.parse
-import copy
+import random
 
 from bs4 import BeautifulSoup
 from pptx import Presentation
@@ -668,10 +668,11 @@ def workbooks(url, dates=[], **selects):
     wb = wbroot
     if selects:
         ws_name, col_name = list(selects.items()).pop()
-        items = wb.getWorksheet(ws_name).getSelectableItems()
-        values = [item['values'] for item in items if item['column'] == col_name]
+        #items = wb.getWorksheet(ws_name).getSelectableItems()
+        #values = [item['values'] for item in items if item['column'] == col_name]
+        values = wb.getWorksheet(ws_name).getSelectableValues(col_name)
         if values:
-            values = values[0]
+            # values = values[0]
             meth = "select"
         else:
             items = wb.getWorksheet(ws_name).getFilters()
@@ -679,53 +680,51 @@ def workbooks(url, dates=[], **selects):
             meth = "setFilter"
     else:
         values = [None]
+    # random.shuffle(values)
 
-    def select(wb, ws_name, meth, name, value, attempt=2):
-        fail = False
+    def select(wb, cur_index, new_index, ws_name, meth, name, attempt=2, reset=False):
+        last_date, last_value = cur_index
+        date, value = new_index
         try:
-            wb = getattr(wb.getWorksheet(ws_name), meth)(name, value) if ws_name else setParameter(wb, name, value)
+            if (last_date.date() if last_date else None) != (date.date() if date else None):
+                setParameter(wb, "param_date", str(date.date()))
+            if last_value != value:
+                ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
+                wb = getattr(ws, meth)(name, value)
         except (RequestException, TableauException, KeyError) as err:
             print(date, "MOPH Dashboard", f"Retry: {meth}:{name}={value} Timeout Error: {err}")
-            fail = True
+            reset = True
         if not wb.worksheets:
             print(date, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{name}={value}.")
-            fail = True
-        if fail and attempt > 0:
+            reset = True
+        if reset and attempt > 0:
             ts = tableauscraper.TableauScraper()
             ts.loads(url)
             fix_timeouts(ts.session, timeout=20)
             wb = ts.getWorkbook()
-            return select(wb, ws_name, meth, name, value, attempt - 1)
-        elif fail:
+            return select(wb, cur_index, new_index, ws_name, meth, name, attempt - 1)
+        elif reset:
             print(date, "MOPH Dashboard", f"Skip: {meth}:{name}={value}. Retries exceeded")
             return None
         else:
             return wb
 
 #    for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
+    idx_last = (None, None)
+    calls = 0
     for date in dates:
         # Get list of the possible values from selectable. TODO: allow more than one
         # Annoying we have to throw away one request before we can get single province
         for value in values:
-            idx_value = date if value is None else (date, value)
+            idx_value = (date, value)
 
-            def get_workbook():
-                nonlocal last_date
-                nonlocal wb
-                if date and last_date.date() != date.date():
-                    # Only switch date if it hasn't been done
-                    # TODO: after doing select can't do setParam. have to reload. must be faster way
-                    wb = select(wb, None, "setParameter", "param_date", str(date.date()))
-                    if wb is None:
-                        return None
-                    last_date = date
+            def get_workbook(wb=wb, idx_last=idx_last, idx_value=idx_value):
+                nonlocal calls
+                calls += 1
+                return select(wb, idx_last, idx_value, ws_name, meth, col_name, reset=calls % 20 == 0)
+            idx_last = idx_value
 
-                wb_val = select(wb, ws_name, meth, col_name, value) if value is not None else wb
-                if wb_val is None:
-                    return None
-                return wb_val
-
-            yield get_workbook, idx_value
+            yield get_workbook, date if value is None else (date, value)
 
 
 def setParameter(wb, parameterName, value):
