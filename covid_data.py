@@ -2713,6 +2713,10 @@ def vaccination_tables(df, date, page, file):
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
+            elif table == "july" and len(numbers) in [18]:
+                # extra table with %  per population for over 60s and totals - 2021-09-09
+                pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
                 assert False
         assert added is None or added > 7
