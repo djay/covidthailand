@@ -1065,10 +1065,10 @@ def moph_dashboard():
                     "AGG(stat_count)-alias": "Cases",
                     "DAY(txn_date)-value": "Date"
                 },
-                D2_Lab2={
-                    "SUM(cnt_ma)-value": "Tests",
-                    "DAY(txn_date)-value": "Date"
-                },
+                # D2_Lab2={
+                #     "SUM(cnt_ma)-value": "Tests",
+                #     "DAY(txn_date)-value": "Date"
+                # },
                 D2_Death="Deaths",
                 D2_DeathTL={
                     "AGG(num_death)-value": "Deaths",
