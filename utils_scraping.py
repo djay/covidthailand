@@ -562,7 +562,7 @@ def explore(workbook):
     print("parameters", workbook.getParameters())
     for t in workbook.worksheets:
         print()
-        print(f"worksheet name : {t.name}") #show worksheet name
+        print(f"worksheet name : {t.name}")  # show worksheet name
         print(t.data) #show dataframe for this worksheet
         print("filters: ")
         for f in t.getFilters():
@@ -600,9 +600,10 @@ def worksheet2df(wb, date=None, **mappings):
             # if one mapping is dict then do pivot
             pivot = [(k, v) for k, v in col.items() if type(v) != str]
             if pivot:
-                pivot_cols, pivot_mapping = pivot[0] # can only have one
+                pivot_cols, pivot_mapping = pivot[0]  # can only have one
                 # Any other mapped cols are what are the values of the pivot
                 df = df.pivot(index="Date", columns=pivot_cols)
+                df = df.drop(columns=[c for c in df.columns if not any_in(c, *pivot_mapping.keys())])  # Only keep cols we want
                 df = df.rename(columns=pivot_mapping)
                 df.columns = df.columns.map(' '.join)
                 df = df.reset_index()
@@ -691,7 +692,7 @@ def workbooks(url, dates=[], **selects):
             if last_value != value:
                 ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
                 wb = getattr(ws, meth)(col_name, value)
-        except (RequestException, TableauException, KeyError) as err:
+        except (RequestException, TableauException, KeyError, APIResponseException, IndexError) as err:
             print(date, "MOPH Dashboard", f"Retry: {meth}:{col_name}={value} Timeout Error: {err}")
             reset = True
         if not wb.worksheets:
@@ -700,7 +701,7 @@ def workbooks(url, dates=[], **selects):
         if reset and attempt > 0:
             ts = tableauscraper.TableauScraper()
             ts.loads(url)
-            fix_timeouts(ts.session, timeout=20)
+            fix_timeouts(ts.session, timeout=45)
             wb = ts.getWorkbook()
             return select(wb, cur_index, new_index, attempt=attempt - 1)
         elif reset:
