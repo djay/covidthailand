@@ -845,11 +845,14 @@ def moph_dashboard():
         return is_done
 
     def getDailyStats(df):
+        # remove crap from bad pivot
+        df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
 
         allow_na = {
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
-            "Tests": (d("2021-07-05"), today() - relativedelta(days=2)),  # TODO: One missing test on 2021-07-04.
+            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=2)),
+            "Tests": today(),  # its no longer there
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
@@ -885,10 +888,10 @@ def moph_dashboard():
                 D_Recov="Recovered",
                 D_Death="Deaths",
                 D_ATK="ATK",
-                # D_Lab2={
-                #     "SUM(cnt_ma)-value": "Tests",
-                #     "DAY(txn_date)-value": "Date"
-                # },
+                D_Lab2={
+                    "AGG(% ติดเฉลี่ย)-value": "Postitive Rate Dash",
+                    "DAY(txn_date)-value": "Date",
+                },
                 D_NewTL={
                     "SUM(case_new)-value": "Cases",
                     "DAY(txn_date)-value": "Date"
@@ -1022,7 +1025,8 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            # "Tests": (d("2021-07-01"), today() - relativedelta(days=2)),  # a few provinces have singe days with one NaN in.
+            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=2)),
+            "Tests": today(),  # It's no longer there
             "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
             "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
             "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=2)),
@@ -1065,10 +1069,10 @@ def moph_dashboard():
                     "AGG(stat_count)-alias": "Cases",
                     "DAY(txn_date)-value": "Date"
                 },
-                # D2_Lab2={
-                #     "SUM(cnt_ma)-value": "Tests",
-                #     "DAY(txn_date)-value": "Date"
-                # },
+                D2_Lab2={
+                    "AGG(% ติดเฉลี่ย)-value": "Postitive Rate Dash",
+                    "DAY(txn_date)-value": "Date"
+                },
                 D2_Death="Deaths",
                 D2_DeathTL={
                     "AGG(num_death)-value": "Deaths",
@@ -1099,10 +1103,10 @@ def moph_dashboard():
     shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
 
     dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
-    dfprov = get_trends_prov(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
     dfprov = by_province(dfprov)
     export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+    dfprov = get_trends_prov(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
     shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
 
     daily = daily.combine_first(ages)
