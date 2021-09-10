@@ -825,18 +825,28 @@ def moph_dashboard():
             if df.empty:
                 return False
 
-            def check_na(column, date):
+            def is_valid(column, date, idx_value):
                 limits = allow_na.get(column, None)
                 maxdate = today()
+                mins = []
                 if type(limits) in [tuple, list]:
-                    mindate, maxdate = limits
+                    mindate, maxdate, *mins= limits
                 elif limits is None:
                     mindate = d("1975-1-1")
                 else:
                     mindate = limits
-                return date is None or mindate <= date <= maxdate
+                if not(date is None or mindate <= date <= maxdate):
+                    return True
+                val = df[column].get(idx_value)
+                if pd.isna(val):
+                    return False
+                if mins:
+                    return mins[0] <= val
+                else:
+                    return True
+
             # allow certain fields null if before set date
-            nulls = [c for c in df.columns if pd.isna(df[c].get(idx_value)) and check_na(c, date)]
+            nulls = [c for c in df.columns if not is_valid(c, date, idx_value) ]
             if not nulls:
                 return True
             else:
@@ -864,10 +874,10 @@ def moph_dashboard():
             'Vac Given 1 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
             'Vac Given 2 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
             "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=2)),
-            'Hospitalized Field': d('2021-04-01'),
-            'Hospitalized Respirator': d("2021-03-25"),  # patchy before this
+            'Hospitalized Field': (d('2021-04-01'), today(), 1000),
+            'Hospitalized Respirator': (d("2021-03-25"), today(), 5),  # patchy before this
             'Hospitalized Severe': d("2021-03-25"),
-            'Hospitalized Hospital': d("2021-01-23"),
+            'Hospitalized Hospital': (d("2021-01-23"), today(), 1500),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
