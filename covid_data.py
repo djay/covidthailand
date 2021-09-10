@@ -879,7 +879,7 @@ def moph_dashboard():
             "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=2)),
             'Hospitalized Field': (d('2021-04-20'), today(), 100),
             'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
-            'Hospitalized Severe': d("2021-03-25"),
+            'Hospitalized Severe': (d("2021-04-17"), today(), 100),  # try and fix bad values
             'Hospitalized Hospital': (d("2021-01-23"), today(), 1),
             'Recovered': (d('2021-01-01'), today(), 1),
             'Cases Walkin': (d('2021-01-01'), today(), 1),
