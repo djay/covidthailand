@@ -873,7 +873,7 @@ def moph_dashboard():
         # new day starts with new info comes in
         dates = reversed(pd.date_range("2021-01-01", today() - relativedelta(hours=7)).to_pydatetime())
         for get_wb, date in workbooks(url, dates=dates):
-            if skip_func(df, allow_na)(date) and df.loc[str(date.date())]['Recovered'] > 0:
+            if skip_func(df, allow_na)(date) and (df.loc[str(date.date())][['Cases Walkin', 'Recovered']] > 0).all():
                 continue
             wb = get_wb()
             if wb is None:
