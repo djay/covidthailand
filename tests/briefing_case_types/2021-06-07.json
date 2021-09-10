@@ -1,0 +1,84 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Cases",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Walkin",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Proactive",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Imported",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Area Prison",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Hospital",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Field",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Severe",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Respirator",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized",
+        "type":"integer"
+      },
+      {
+        "name":"Recovered",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      },
+      {
+        "name":"Source Cases",
+        "type":"string"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-06-07T00:00:00.000Z",
+      "Cases":2419,
+      "Cases Walkin":1347,
+      "Cases Proactive":949,
+      "Cases Imported":32,
+      "Cases Area Prison":91,
+      "Hospitalized Hospital":20273,
+      "Hospitalized Field":28828,
+      "Hospitalized Severe":1233,
+      "Hospitalized Respirator":355,
+      "Hospitalized":49101,
+      "Recovered":2999,
+      "Deaths":33,
+      "Source Cases":"briefings\/070664.pdf"
+    }
+  ]
+}
