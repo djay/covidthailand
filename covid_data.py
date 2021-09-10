@@ -871,9 +871,9 @@ def moph_dashboard():
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
-        dates = reversed(pd.date_range("2021-06-01", today() - relativedelta(hours=7)).to_pydatetime())
+        dates = reversed(pd.date_range("2021-01-01", today() - relativedelta(hours=7)).to_pydatetime())
         for get_wb, date in workbooks(url, dates=dates):
-            if skip_func(df, allow_na)(date):
+            if skip_func(df, allow_na)(date) and df.loc[str(date.date())]['Recovered'] > 0:
                 continue
             wb = get_wb()
             if wb is None:
@@ -927,10 +927,12 @@ def moph_dashboard():
 
             if row.empty:
                 break
+            assert date >= row.index.max()  # might be something broken with setParam for date
             row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
             df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
             print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
         # We get negative valus for field hosoutal before april
+        assert df[df['Recovered'] == 0.0].empty
         df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
         return df
 

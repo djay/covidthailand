@@ -689,7 +689,7 @@ def workbooks(url, dates=[], **selects):
         date, value = new_index
         try:
             if (last_date.date() if last_date else None) != (date.date() if date else None):
-                setParameter(wb, "param_date", str(date.date()))
+                wb = setParameter(wb, "param_date", str(date.date()))
             if last_value != value:
                 ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
                 wb = getattr(ws, meth)(col_name, value)
