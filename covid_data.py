@@ -837,7 +837,10 @@ def moph_dashboard():
                     mindate = limits
                 if not(date is None or mindate <= date <= maxdate):
                     return True
-                val = df[column].get(idx_value)
+                try:
+                    val = df.loc[idx_value][column]
+                except KeyError:
+                    return False
                 if pd.isna(val):
                     return False
                 if mins:
@@ -874,10 +877,10 @@ def moph_dashboard():
             'Vac Given 1 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
             'Vac Given 2 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
             "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=2)),
-            'Hospitalized Field': (d('2021-04-01'), today(), 1000),
-            'Hospitalized Respirator': (d("2021-03-25"), today(), 5),  # patchy before this
+            'Hospitalized Field': (d('2021-04-20'), today(), 100),
+            'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
             'Hospitalized Severe': d("2021-03-25"),
-            'Hospitalized Hospital': (d("2021-01-23"), today(), 1500),
+            'Hospitalized Hospital': (d("2021-01-23"), today(), 1),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
@@ -1045,7 +1048,7 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=4)),
+            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=5)),
             "Tests": today(),  # It's no longer there
             "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
             "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
