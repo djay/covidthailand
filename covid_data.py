@@ -1560,6 +1560,7 @@ def briefing_case_types(date, pages, url):
         assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
+        hospital, field, severe, respirator, hospitalised = [np.nan] * 5
         numbers, rest = get_next_numbers(text, "อาการหนัก")
         if numbers:
             severe, respirator, *_ = numbers
@@ -1569,12 +1570,11 @@ def briefing_case_types(date, pages, url):
             hospitalised = num[0]
             assert hospital + field == hospitalised or date in [d("2021-09-04")]
         elif "ผู้ป่วยรักษาอยู่" in text:
-            hospital, field, *_ = get_next_numbers(text, "ผู้ป่วยรักษาอยู่", return_rest=False)
             hospitalised, *_ = get_next_numbers(text, "ผู้ป่วยรักษาอยู่", return_rest=False, before=True)
-            assert hospital + field == hospitalised
-            severe, respirator = [np.nan] * 2
-        else:
-            hospital, field, severe, respirator, hospitalised = [np.nan] * 5
+            if date > d("2021-03-31"):  # don't seem to add up before this
+                hospital, *_ = get_next_numbers(text, "ใน รพ.", return_rest=False, until="ราย")
+                field, *_ = get_next_numbers(text, "รพ.สนาม", return_rest=False, until="ราย")
+                assert hospital + field == hospitalised
 
         if date < d("2021-05-18"):
             recovered, _ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)", until="ราย")
