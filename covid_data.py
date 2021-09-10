@@ -847,6 +847,8 @@ def moph_dashboard():
     def getDailyStats(df):
         # remove crap from bad pivot
         df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
+        # somehow we got some dodgy rows. should be no neg cases 2021
+        df = df.drop(df[df['Cases'] == 0.0].index)
 
         allow_na = {
             "ATK": d("2021-07-31"),
