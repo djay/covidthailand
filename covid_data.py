@@ -881,12 +881,14 @@ def moph_dashboard():
             'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
             'Hospitalized Severe': d("2021-03-25"),
             'Hospitalized Hospital': (d("2021-01-23"), today(), 1),
+            'Recovered': (d('2021-01-01'), today(), 1),
+            'Cases Walkin': (d('2021-01-01'), today(), 1),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
         dates = reversed(pd.date_range("2021-01-01", today() - relativedelta(hours=7)).to_pydatetime())
         for get_wb, date in workbooks(url, dates=dates):
-            if skip_func(df, allow_na)(date) and (df.loc[str(date.date())][['Cases Walkin', 'Recovered']] > 0).all():
+            if skip_func(df, allow_na)(date):
                 continue
             wb = get_wb()
             if wb is None:
@@ -1048,7 +1050,7 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=5)),
+            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5)),
             "Tests": today(),  # It's no longer there
             "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
             "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
@@ -1566,8 +1568,13 @@ def briefing_case_types(date, pages, url):
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
             hospitalised = num[0]
             assert hospital + field == hospitalised or date in [d("2021-09-04")]
+        elif "ผู้ป่วยรักษาอยู่" in text:
+            hospital, field, *_ = get_next_numbers(text, "ผู้ป่วยรักษาอยู่", return_rest=False)
+            hospitalised, *_ = get_next_numbers(text, "ผู้ป่วยรักษาอยู่", return_rest=False, before=True)
+            assert hospital + field == hospitalised
+            severe, respirator = [np.nan] * 2
         else:
-            hospital, field, severe, respirator, hospitalised = [None] * 5
+            hospital, field, severe, respirator, hospitalised = [np.nan] * 5
 
         if date < d("2021-05-18"):
             recovered, _ = get_next_number(text, "(เพ่ิมขึ้น|เพิ่มขึ้น)", until="ราย")
@@ -1578,7 +1585,7 @@ def briefing_case_types(date, pages, url):
             if cum_recovered_3rd < recovered:
                 recovered = cum_recovered_3rd
 
-        assert recovered is not None
+        assert not pd.isna(recovered)
 
         deaths, _ = get_next_number(text, "เสียชีวิตสะสม", "เสียชีวติสะสม", "เสียชีวติ", before=True)
         assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
