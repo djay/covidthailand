@@ -874,19 +874,19 @@ def moph_dashboard():
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
-            'Vac Given 1 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
-            'Vac Given 2 Cum': (d("2021-02-28"), today() - relativedelta(days=2)),
-            "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=2)),
+            'Vac Given 1 Cum': (d("2021-02-28"), today() - relativedelta(days=4)),
+            'Vac Given 2 Cum': (d("2021-02-28"), today() - relativedelta(days=4)),
+            "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=4)),
             'Hospitalized Field': (d('2021-04-20'), today(), 100),
             'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
             'Hospitalized Severe': (d("2021-04-17"), today(), 100),  # try and fix bad values
-            'Hospitalized Hospital': (d("2021-01-23"), today(), 1),
+            'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
             'Recovered': (d('2021-01-01'), today(), 1),
             'Cases Walkin': (d('2021-01-01'), today(), 1),
         }
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
         # new day starts with new info comes in
-        dates = reversed(pd.date_range("2021-01-01", today() - relativedelta(hours=7)).to_pydatetime())
+        dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
         for get_wb, date in workbooks(url, dates=dates):
             if skip_func(df, allow_na)(date):
                 continue
@@ -1052,9 +1052,9 @@ def moph_dashboard():
         allow_na = {
             "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5)),
             "Tests": today(),  # It's no longer there
-            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
-            "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
-            "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=3)),
+            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=5)),
+            "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=5)),
+            "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=5)),
             # all the non-series will take too long to get historically
             "Cases Walkin": d("2021-08-01"),
             "Cases Proactive": d("2021-08-01"),
