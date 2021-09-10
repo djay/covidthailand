@@ -615,7 +615,8 @@ def worksheet2df(wb, date=None, **mappings):
             start = date - datetime.timedelta(days=30) if date is not None else df.index.min()
             start = min([start, df.index.min()])
             # Some data like tests can be a 2 days late
-            end = date - datetime.timedelta(days=2) if date is not None else df.index.max()
+            # TODO: Should be able to do better than fixed offset?
+            end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
             end = max([end, df.index.max()])
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
             df = df.reindex(all_days, fill_value=0.0)
@@ -634,7 +635,7 @@ def worksheet2df(wb, date=None, **mappings):
     df = pd.DataFrame(data)
     if not df.empty:
         df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
-        res = res.combine_first(df.set_index("Date"))
+        res = df.set_index("Date").combine_first(res)
     return res
 
 
@@ -758,6 +759,7 @@ def setParameter(wb, parameterName, value):
 # filterValues: ["กรุงเทพมหานคร"]
 
 def setFilter(wb, columnName, values):
+    "setFilter but ignore the listed filter options"
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
