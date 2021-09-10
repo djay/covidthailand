@@ -849,6 +849,9 @@ def moph_dashboard():
         df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
         # somehow we got some dodgy rows. should be no neg cases 2021
         df = df.drop(df[df['Cases'] == 0.0].index)
+        # Fix spelling mistake
+        if 'Postitive Rate Dash' in df.columns:
+            df = df.drop(columns=['Postitive Rate Dash'])
 
         allow_na = {
             "ATK": d("2021-07-31"),
@@ -891,7 +894,7 @@ def moph_dashboard():
                 D_Death="Deaths",
                 D_ATK="ATK",
                 D_Lab2={
-                    "AGG(% ติดเฉลี่ย)-value": "Postitive Rate Dash",
+                    "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
                     "DAY(txn_date)-value": "Date",
                 },
                 D_NewTL={
@@ -1021,17 +1024,20 @@ def moph_dashboard():
 
     def by_province(df):
         url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
+        # Fix spelling mistake
+        if 'Postitive Rate Dash' in df.columns:
+            df = df.drop(columns=['Postitive Rate Dash'])
 
         #selectable items - D2_ProvinceBar
         #    province : ['แม่ฮ่องสอน', 'พังงา', 'กระบี่', 'ลำพูน', 'ตราด', 'สตูล', 'พัทลุง', 'พะเยา', 'พิษณุโลก', 'แพร่'] ...
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=2)),
+            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=4)),
             "Tests": today(),  # It's no longer there
-            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
-            "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=2)),
-            "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=2)),
+            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
+            "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=3)),
+            "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=3)),
             # all the non-series will take too long to get historically
             "Cases Walkin": d("2021-08-01"),
             "Cases Proactive": d("2021-08-01"),
@@ -1072,7 +1078,7 @@ def moph_dashboard():
                     "DAY(txn_date)-value": "Date"
                 },
                 D2_Lab2={
-                    "AGG(% ติดเฉลี่ย)-value": "Postitive Rate Dash",
+                    "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
                     "DAY(txn_date)-value": "Date"
                 },
                 D2_Death="Deaths",
