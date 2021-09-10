@@ -3275,7 +3275,7 @@ def scrape_and_combine():
 
     print("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, dashboard, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac]:
+    for f in [tests_reports, tests, cases_briefings, dashboard, twcases, timelineapi, cases_demo, cases_by_area, situation, vac]:
         df = df.combine_first(f)
     print(df)
 
