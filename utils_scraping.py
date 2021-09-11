@@ -693,7 +693,7 @@ def workbooks(url, dates=[], **selects):
             if last_value != value:
                 ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
                 wb = getattr(ws, meth)(col_name, value)
-        except (RequestException, TableauException, KeyError, APIResponseException, IndexError) as err:
+        except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration) as err:
             print(date, "MOPH Dashboard", f"Retry: {meth}:{col_name}={value} Timeout Error: {err}")
             reset = True
         if not wb.worksheets:
