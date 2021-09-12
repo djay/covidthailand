@@ -907,6 +907,10 @@ def moph_dashboard():
                     "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
                     "DAY(txn_date)-value": "Date",
                 },
+                D_Lab={
+                    "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
+                    "ATTR(txn_date)-alias": "Date",
+                },
                 D_NewTL={
                     "SUM(case_new)-value": "Cases",
                     "DAY(txn_date)-value": "Date"

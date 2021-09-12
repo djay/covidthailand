@@ -614,7 +614,7 @@ def worksheet2df(wb, date=None, **mappings):
             # If it's only some days rest we can assume are 0.0
             # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
             start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
-            start = min([start, df.index.min()])
+            start = max([start, df.index.min()])
             # Some data like tests can be a 2 days late
             # TODO: Should be able to do better than fixed offset?
             end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
@@ -709,10 +709,11 @@ def workbooks(url, **selects):
                             print(next_idx, "MOPH Dashboard", f"Retry: {do_set}={value} Timeout Error: {err}")
                             reset = True
                             break
-                if not wb.worksheets:
-                    print(next_idx, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{col_name}={value}.")
-                    reset = True
-                elif not reset:
+                    if not wb.worksheets:
+                        print(next_idx, "MOPH Dashboard", f"Retry: Missing worksheets in {do_set}={value}.")
+                        reset = True
+                        break
+                if not reset:
                     last_idx = next_idx
                     return wb
                 # Try again
