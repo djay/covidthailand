@@ -7,6 +7,7 @@ import pickle
 import re
 import urllib.parse
 import random
+import itertools
 
 from bs4 import BeautifulSoup
 from pptx import Presentation
@@ -640,97 +641,84 @@ def worksheet2df(wb, date=None, **mappings):
     return res
 
 
-def workbooks(url, dates=[], **selects):
-    if not dates:
-        dates = [None]
-    else:
-        dates = list(dates)
-        start, *_, end = dates
-        print("Checking Tableau Updates from", start, "to", end)
+def workbooks(url, **selects):
+    # if not dates:
+    #     dates = [None]
+    # else:
+    #     dates = list(dates)
+    #     start, *_, end = dates
+    #     print("Checking Tableau Updates from", start, "to", end)
 
-    ts = tableauscraper.TableauScraper()
-    try:
-        ts.loads(url)
-    except (RequestException, TableauException):
-        print("MOPH Dashboard", f"Error: Timeout Loading url {url}")
-        return
-    except (KeyError):
-        print("MOPH Dashboard", f"Error: Empty Worksheet url {url}")
-        return
+    def get_ts():
+        ts = tableauscraper.TableauScraper()
+        try:
+            ts.loads(url)
+        except (RequestException, TableauException, KeyError):
+            print("MOPH Dashboard", f"Error: Timeout Loading url {url}")
+            return
+        fix_timeouts(ts.session, timeout=30)
+        wb = ts.getWorkbook()
+        return wb
+    wb = get_ts()
+    set_value = []
+    for name, values in selects.items():
+        param = next((p for p in wb.getParameters() if p['column'] == name), None)
+        if param is not None:
+            if type(values) == str:
+                selects[name] = param['values']
 
-    fix_timeouts(ts.session, timeout=30)
-    wbroot = ts.getWorkbook()
-    # updated = workbook.getWorksheet("D_UpdateTime").data['max_update_date-alias'][0]
-    # updated = pd.to_datetime(updated, dayfirst=False)
-    last_date = today()
-    idx_value = last_date if not selects else [last_date, None]
-    # if not selects:
-    #     # Don't need the default wb just one per picked value
-    #     yield (lambda: wbroot), idx_value  # assume its first from each list?
+            def do_set(wb, value, name=name):
+                value = value if type(value) != datetime.datetime else str(value.date())
+                return setParameter(wb, name, value)
 
-    wb = wbroot
-    if selects:
-        ws_name, col_name = list(selects.items()).pop()
-        #items = wb.getWorksheet(ws_name).getSelectableItems()
-        #values = [item['values'] for item in items if item['column'] == col_name]
-        values = wb.getWorksheet(ws_name).getSelectableValues(col_name)
-        if values:
-            # values = values[0]
+            set_value.append(do_set)
+            continue
+        ws = wb.getWorksheet(name)
+        svalues = ws.getSelectableValues(values)
+        if svalues:
+            selects[name] = svalues
             meth = "select"
         else:
-            items = wb.getWorksheet(ws_name).getFilters()
-            values = [item['values'] for item in items if item['column'] == col_name].pop()
+            items = ws.getFilters()
+            selects[name] = next(item['values'] for item in items if item['column'] == values)
             meth = "setFilter"
-    else:
-        values = [None]
-    # random.shuffle(values)
 
-    def select(wb, cur_index, new_index, attempt=2, reset=False):
-        last_date, last_value = cur_index
-        date, value = new_index
-        try:
-            if last_value != value:
-                ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
-                wb = getattr(ws, meth)(col_name, value)
-            if (last_date.date() if last_date else None) != (date.date() if date else None):
-                wb = setParameter(wb, "param_date", str(date.date()))
-        except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration) as err:
-            print(date, "MOPH Dashboard", f"Retry: {meth}:{col_name}={value} Timeout Error: {err}")
-            reset = True
-        if not wb.worksheets:
-            print(date, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{col_name}={value}.")
-            reset = True
-        if reset and attempt > 0:
-            ts = tableauscraper.TableauScraper()
-            try:
-                ts.loads(url)                    
-                fix_timeouts(ts.session, timeout=45)
-                wb = ts.getWorkbook()
-            except:
-                pass  # retry with old wb
-            return select(wb, cur_index, new_index, attempt=attempt - 1)
-        elif reset:
-            print(date, "MOPH Dashboard", f"Skip: {meth}:{col_name}={value}. Retries exceeded")
-            return None
-        else:
-            return wb
+        # weird bug where sometimes .getWorksheet doesn't work or missign data
+        def do_set(wb, value, name=name, values=values, meth=meth):
+            ws = next(ws for ws in wb.worksheets if ws.name == name)
+            return getattr(ws, meth)(values, value)
+
+        set_value.append(do_set)
 
 #    for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
-    idx_last = (None, None)
-    calls = 0
-    for date in dates:
-        # Get list of the possible values from selectable. TODO: allow more than one
-        # Annoying we have to throw away one request before we can get single province
-        for value in values:
-            idx_value = (date, value)
-
-            def get_workbook(wb=wb, idx_last=tuple(idx_last), idx_value=tuple(idx_value)):
-                nonlocal calls
-                calls += 1
-                return select(wb, idx_last, idx_value, reset=calls % 20 == 0)
-
-            yield get_workbook, date if value is None else (date, value)
-            idx_last = tuple(idx_value)  # Ensure its a copy
+    last_idx = [None] * len(selects)
+    for next_idx in itertools.product(*selects.values()):
+        def get_workbook(wb=wb, next_idx=next_idx):
+            nonlocal last_idx
+            reset = False
+            for _ in range(3):
+                if reset:
+                    wb = get_ts()
+                    if wb is None:
+                        continue
+                for do_set, last_value, value in zip(set_value, last_idx, next_idx):
+                    if last_value != value:
+                        try:
+                            wb = do_set(wb, value)
+                        except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration) as err:
+                            print(next_idx, "MOPH Dashboard", f"Retry: {do_set}={value} Timeout Error: {err}")
+                            reset = True
+                            break
+                if not wb.worksheets:
+                    print(next_idx, "MOPH Dashboard", f"Retry: Missing worksheets in {meth}:{col_name}={value}.")
+                    reset = True
+                elif not reset:
+                    last_idx = next_idx
+                    return wb
+                # Try again
+            print(next_idx, "MOPH Dashboard", f"Skip: {meth}:{col_name}={value}. Retries exceeded")
+            return None
+        yield get_workbook, next_idx
 
 
 def setParameter(wb, parameterName, value):

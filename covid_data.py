@@ -24,7 +24,7 @@ from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, e
 from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH, s, workbooks, worksheet2df
+    web_files, web_links, all_in, NUM_OR_DASH, s, workbooks, worksheet2df, explore
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -809,53 +809,48 @@ def get_cases_by_demographics_api():
 
 def moph_dashboard():
 
-    def skip_func(df, allow_na={}):
-        def is_done(idx_value):
-            if type(idx_value) == tuple:  
-                date, prov = idx_value
-                if df.index.name != "Date": # TODO: make this about provinces
-                    prov = get_province(prov)
-                else:
-                    prov = prov
-                idx_value = (str(date.date()) if date else None, prov)
+    def skip_valid(df, idx_value, allow_na={}):
+        
+        if type(idx_value) == tuple:  
+            date, prov = idx_value
+            idx_value = (str(date.date()) if date else None, prov)
+        else:
+            date = idx_value
+            idx_value = str(date.date()) if date else None
+        # Assume index of df is in the same order as params
+        if df.empty:
+            return False
+
+        def is_valid(column, date, idx_value):
+            limits = allow_na.get(column, None)
+            maxdate = today()
+            mins = []
+            if type(limits) in [tuple, list]:
+                mindate, maxdate, *mins= limits
+            elif limits is None:
+                mindate = d("1975-1-1")
             else:
-                date = idx_value
-                idx_value = str(date.date()) if date else None
-            # Assume index of df is in the same order as params
-            if df.empty:
-                return False
-
-            def is_valid(column, date, idx_value):
-                limits = allow_na.get(column, None)
-                maxdate = today()
-                mins = []
-                if type(limits) in [tuple, list]:
-                    mindate, maxdate, *mins= limits
-                elif limits is None:
-                    mindate = d("1975-1-1")
-                else:
-                    mindate = limits
-                if not(date is None or mindate <= date <= maxdate):
-                    return True
-                try:
-                    val = df.loc[idx_value][column]
-                except KeyError:
-                    return False
-                if pd.isna(val):
-                    return False
-                if mins:
-                    return mins[0] <= val
-                else:
-                    return True
-
-            # allow certain fields null if before set date
-            nulls = [c for c in df.columns if not is_valid(c, date, idx_value) ]
-            if not nulls:
+                mindate = limits
+            if not(date is None or mindate <= date <= maxdate):
                 return True
-            else:
-                print(date, "MOPH Dashboard", f"Retry Missing data at {idx_value} for {nulls}. Retry")
+            try:
+                val = df.loc[idx_value][column]
+            except KeyError:
                 return False
-        return is_done
+            if pd.isna(val):
+                return False
+            if mins:
+                return mins[0] <= val
+            else:
+                return True
+
+        # allow certain fields null if before set date
+        nulls = [c for c in df.columns if not is_valid(c, date, idx_value) ]
+        if not nulls:
+            return True
+        else:
+            print(date, "MOPH Dashboard", f"Retry Missing data at {idx_value} for {nulls}. Retry")
+            return False
 
     def getDailyStats(df):
         # remove crap from bad pivot
@@ -887,11 +882,11 @@ def moph_dashboard():
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
         # new day starts with new info comes in
         dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
-        for get_wb, date in workbooks(url, dates=dates):
-            if skip_func(df, allow_na)(date):
+        for get_wb, date in workbooks(url, param_date=dates):
+            date = next(iter(date))
+            if skip_valid(df, date, allow_na):
                 continue
-            wb = get_wb()
-            if wb is None:
+            if (wb := get_wb()) is None:
                 continue
             row = worksheet2df(
                 wb,
@@ -972,10 +967,10 @@ def moph_dashboard():
             return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
         def skip(value):
-            _, range = value
-            return df[f"Cases Age {range2eng(range)}"].get(str(today().date())) is not None
-        for get_wb, idx_value in workbooks(url, dates=[], D4_CHART="age_range"):
-            if skip(idx_value):
+            return df[f"Cases Age {range2eng(value)}"].get(str(today().date())) is not None
+        for get_wb, idx_value in workbooks(url, D4_CHART="age_range"):
+            age_group = next(iter(idx_value))
+            if skip(age_group):
                 continue
             wb = get_wb()
             if wb is None:
@@ -990,7 +985,6 @@ def moph_dashboard():
                     "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
                 },
             )
-            _, age_group = idx_value
             if not age_group:
                 # TODO: get rid of this first workbook when iterating selects
                 continue
@@ -1009,9 +1003,8 @@ def moph_dashboard():
     def get_trends_prov(df):
         url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
-        for get_wb, idx_value in workbooks(url, dates=[], D4_CHART="province"):
-            _, province = idx_value
-            province = get_province(province)
+        for get_wb, idx_value in workbooks(url, D4_CHART="province"):
+            province = get_province(next(idx_value))
             date = str(today().date())
             try:
                 df.loc[(date, province)]
@@ -1050,7 +1043,7 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5), 0.01),
+            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5), 0.001),
             "Tests": today(),  # It's no longer there
             "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=5), 1),
             "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=5)),
@@ -1066,12 +1059,12 @@ def moph_dashboard():
         }
 
         dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
-        for get_wb, idx_value in workbooks(url, dates=dates, D2_Province="province"):
+        for get_wb, idx_value in workbooks(url, param_date=dates, D2_Province="province"):
             date, province = idx_value
             if province is None:
                 continue
             province = get_province(province)
-            if skip_func(df, allow_na)(idx_value):
+            if skip_valid(df, (date, province), allow_na):
                 continue
             wb = get_wb()
             if wb is None:
@@ -1101,6 +1094,10 @@ def moph_dashboard():
                     "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
                     "DAY(txn_date)-value": "Date"
                 },
+                D2_Lab={
+                    "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
+                    "ATTR(txn_date)-alias": "Date",
+                },
                 D2_Death="Deaths",
                 D2_DeathTL={
                     "AGG(num_death)-value": "Deaths",
@@ -1123,12 +1120,6 @@ def moph_dashboard():
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
 
 
-    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
-    dfprov = by_province(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
-    dfprov = get_trends_prov(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
-    shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
 
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
     daily = getDailyStats(daily)
@@ -1139,6 +1130,13 @@ def moph_dashboard():
     ages = getTimelines(ages)
     export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
     shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
+
+    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = by_province(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+    dfprov = get_trends_prov(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
+    shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
 
     daily = daily.combine_first(ages)
     return daily, dfprov
