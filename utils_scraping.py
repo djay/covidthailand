@@ -612,12 +612,13 @@ def worksheet2df(wb, date=None, **mappings):
             df = df.apply(pd.to_numeric, errors='coerce', axis=1)
             # If it's only some days rest we can assume are 0.0
             # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
-            start = date - datetime.timedelta(days=30) if date is not None else df.index.min()
+            start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
             start = min([start, df.index.min()])
             # Some data like tests can be a 2 days late
             # TODO: Should be able to do better than fixed offset?
             end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
             end = max([end, df.index.max()])
+            assert date is None or end <= date 
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
             df = df.reindex(all_days, fill_value=0.0)
 
@@ -663,9 +664,9 @@ def workbooks(url, dates=[], **selects):
     # updated = pd.to_datetime(updated, dayfirst=False)
     last_date = today()
     idx_value = last_date if not selects else [last_date, None]
-    if not selects:
-        # Don't need the default wb just one per picked value
-        yield (lambda: wbroot), idx_value  # assume its first from each list?
+    # if not selects:
+    #     # Don't need the default wb just one per picked value
+    #     yield (lambda: wbroot), idx_value  # assume its first from each list?
 
     wb = wbroot
     if selects:
@@ -688,11 +689,11 @@ def workbooks(url, dates=[], **selects):
         last_date, last_value = cur_index
         date, value = new_index
         try:
-            if (last_date.date() if last_date else None) != (date.date() if date else None):
-                wb = setParameter(wb, "param_date", str(date.date()))
             if last_value != value:
                 ws = next(iter([ws for ws in wb.worksheets if ws.name == ws_name]))  # weird bug where sometimes .getWorksheet doesn't work or missign data
                 wb = getattr(ws, meth)(col_name, value)
+            if (last_date.date() if last_date else None) != (date.date() if date else None):
+                wb = setParameter(wb, "param_date", str(date.date()))
         except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration) as err:
             print(date, "MOPH Dashboard", f"Retry: {meth}:{col_name}={value} Timeout Error: {err}")
             reset = True
@@ -701,9 +702,12 @@ def workbooks(url, dates=[], **selects):
             reset = True
         if reset and attempt > 0:
             ts = tableauscraper.TableauScraper()
-            ts.loads(url)
-            fix_timeouts(ts.session, timeout=45)
-            wb = ts.getWorkbook()
+            try:
+                ts.loads(url)                    
+                fix_timeouts(ts.session, timeout=45)
+                wb = ts.getWorkbook()
+            except:
+                pass  # retry with old wb
             return select(wb, cur_index, new_index, attempt=attempt - 1)
         elif reset:
             print(date, "MOPH Dashboard", f"Skip: {meth}:{col_name}={value}. Retries exceeded")
@@ -720,13 +724,13 @@ def workbooks(url, dates=[], **selects):
         for value in values:
             idx_value = (date, value)
 
-            def get_workbook(wb=wb, idx_last=idx_last, idx_value=idx_value):
+            def get_workbook(wb=wb, idx_last=tuple(idx_last), idx_value=tuple(idx_value)):
                 nonlocal calls
                 calls += 1
                 return select(wb, idx_last, idx_value, reset=calls % 20 == 0)
-            idx_last = idx_value
 
             yield get_workbook, date if value is None else (date, value)
+            idx_last = tuple(idx_value)  # Ensure its a copy
 
 
 def setParameter(wb, parameterName, value):

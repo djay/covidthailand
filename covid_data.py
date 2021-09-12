@@ -884,7 +884,7 @@ def moph_dashboard():
             'Recovered': (d('2021-01-01'), today(), 1),
             'Cases Walkin': (d('2021-01-01'), today(), 1),
         }
-        url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles-w"
+        url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
         # new day starts with new info comes in
         dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
         for get_wb, date in workbooks(url, dates=dates):
@@ -963,7 +963,7 @@ def moph_dashboard():
         # cum cases = AGG(stat_accum)-alias
         # date  = DAY(date)-alias, DAY(date)-value
         url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
         allow_na = {
             "Deaths": d("2021-01-01"),  
         }
@@ -1040,7 +1040,7 @@ def moph_dashboard():
         return df
 
     def by_province(df):
-        url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
+        url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province"
         # Fix spelling mistake
         if 'Postitive Rate Dash' in df.columns:
             df = df.drop(columns=['Postitive Rate Dash'])
@@ -1050,9 +1050,9 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5)),
+            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5), 0.01),
             "Tests": today(),  # It's no longer there
-            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=5)),
+            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=5), 1),
             "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=5)),
             "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=5)),
             # all the non-series will take too long to get historically
@@ -1067,12 +1067,15 @@ def moph_dashboard():
 
         dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
         for get_wb, idx_value in workbooks(url, dates=dates, D2_Province="province"):
+            date, province = idx_value
+            if province is None:
+                continue
+            province = get_province(province)
             if skip_func(df, allow_na)(idx_value):
                 continue
             wb = get_wb()
             if wb is None:
                 continue
-            date, province = idx_value
             row = worksheet2df(
                 wb,
                 date,
@@ -1104,10 +1107,12 @@ def moph_dashboard():
                     "DAY(txn_date)-value": "Date"
                 },
             )
-            if province is not None:
-                row['Province'] = get_province(province)
-                df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
-                print(date.date(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            row['Province'] = province
+            df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
+            print(date.date(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            if USE_CACHE_DATA:
+                # Save as we go to help debugging
+                export(df, "moph_dashboard_prov", csv_only=True, dir="json")
 
         return df
 
@@ -1116,6 +1121,14 @@ def moph_dashboard():
 
     # 5 kinds cases stats for last 30 days
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
+
+
+    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = by_province(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+    dfprov = get_trends_prov(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
+    shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
 
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
     daily = getDailyStats(daily)
@@ -1126,13 +1139,6 @@ def moph_dashboard():
     ages = getTimelines(ages)
     export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
     shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
-
-    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
-    dfprov = by_province(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
-    dfprov = get_trends_prov(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
-    shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
 
     daily = daily.combine_first(ages)
     return daily, dfprov
