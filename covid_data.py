@@ -864,7 +864,7 @@ def moph_dashboard():
         allow_na = {
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
-            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=2)),
+            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=4)),
             "Tests": today(),  # its no longer there
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),

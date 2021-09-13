@@ -649,7 +649,7 @@ def workbooks(url, **selects):
     #     start, *_, end = dates
     #     print("Checking Tableau Updates from", start, "to", end)
 
-    def get_ts():
+    def do_reset():
         ts = tableauscraper.TableauScraper()
         try:
             ts.loads(url)
@@ -659,46 +659,50 @@ def workbooks(url, **selects):
         fix_timeouts(ts.session, timeout=30)
         wb = ts.getWorkbook()
         return wb
-    wb = get_ts()
+    wb = do_reset()
     set_value = []
+    # match the params to iterate to param, filter or select
     for name, values in selects.items():
         param = next((p for p in wb.getParameters() if p['column'] == name), None)
         if param is not None:
             if type(values) == str:
                 selects[name] = param['values']
 
-            def do_set(wb, value, name=name):
+            def do_param(wb, value, name=name):
                 value = value if type(value) != datetime.datetime else str(value.date())
                 return setParameter(wb, name, value)
 
-            set_value.append(do_set)
+            set_value.append(do_param)
             continue
-        ws = wb.getWorksheet(name)
+        ws = next(ws for ws in wb.worksheets if ws.name == name)
         svalues = ws.getSelectableValues(values)
         if svalues:
             selects[name] = svalues
-            meth = "select"
+
+            # weird bug where sometimes .getWorksheet doesn't work or missign data
+            def do_select(wb, value, name=name, values=values):
+                ws = next(ws for ws in wb.worksheets if ws.name == name)
+                return ws.select(values, value)
+            set_value.append(do_select)
         else:
             items = ws.getFilters()
             selects[name] = next(item['values'] for item in items if item['column'] == values)
-            meth = "setFilter"
 
-        # weird bug where sometimes .getWorksheet doesn't work or missign data
-        def do_set(wb, value, name=name, values=values, meth=meth):
-            ws = next(ws for ws in wb.worksheets if ws.name == name)
-            return getattr(ws, meth)(values, value)
+            # weird bug where sometimes .getWorksheet doesn't work or missign data
+            def do_filter(wb, value, name=name, values=values):
+                ws = next(ws for ws in wb.worksheets if ws.name == name)
+                return ws.setFilter(values, value)
+            set_value.append(do_filter)
 
-        set_value.append(do_set)
-
-#    for param_name, idx_value in zip(param.keys(), itertools.product(params.values()):
     last_idx = [None] * len(selects)
+    # Get all combinations of the values of params, select or filter
     for next_idx in itertools.product(*selects.values()):
         def get_workbook(wb=wb, next_idx=next_idx):
             nonlocal last_idx
             reset = False
             for _ in range(3):
                 if reset:
-                    wb = get_ts()
+                    wb = do_reset()
                     if wb is None:
                         continue
                 for do_set, last_value, value in zip(set_value, last_idx, next_idx):
@@ -706,18 +710,18 @@ def workbooks(url, **selects):
                         try:
                             wb = do_set(wb, value)
                         except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration) as err:
-                            print(next_idx, "MOPH Dashboard", f"Retry: {do_set}={value} Timeout Error: {err}")
+                            print(next_idx, "MOPH Dashboard", f"Retry: {do_set.__name__}={value} Timeout Error: {err}")
                             reset = True
                             break
                     if not wb.worksheets:
-                        print(next_idx, "MOPH Dashboard", f"Retry: Missing worksheets in {do_set}={value}.")
+                        print(next_idx, "MOPH Dashboard", f"Retry: Missing worksheets in {do_set.__name__}={value}.")
                         reset = True
                         break
                 if not reset:
                     last_idx = next_idx
                     return wb
                 # Try again
-            print(next_idx, "MOPH Dashboard", f"Skip: {meth}:{col_name}={value}. Retries exceeded")
+            print(next_idx, "MOPH Dashboard", f"Skip: {next_idx}. Retries exceeded")
             return None
         yield get_workbook, next_idx
 
