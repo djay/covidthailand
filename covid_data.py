@@ -1114,7 +1114,11 @@ def moph_dashboard():
     # 5 kinds cases stats for last 30 days
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
 
-
+    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = get_trends_prov(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
+    dfprov = by_province(dfprov)
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
 
     daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
     daily = getDailyStats(daily)
@@ -1124,15 +1128,9 @@ def moph_dashboard():
     ages = import_csv("moph_dashboard_ages", ["Date"], False, dir="json")  # so we cache it
     ages = getTimelines(ages)
     export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
+
     shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
-
-    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
-    dfprov = by_province(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
-    dfprov = get_trends_prov(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
     shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
-
     daily = daily.combine_first(ages)
     return daily, dfprov
 

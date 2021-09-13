@@ -1050,9 +1050,12 @@ def save_plots(df: pd.DataFrame) -> None:
                   ma_days=7,
                   cmap='tab10')
 
-    for direction in [increasing, decreasing]:
+    def top(func, _):
+        return func
+
+    for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
         top5 = cases.pipe(topprov,
-                          direction(cases_per_capita('Hospitalized Severe'), 5),
+                          direction(cases_per_capita('Hospitalized Severe'), 7),
                           cases_per_capita('Hospitalized Severe'),
                           name="Province Active Cases Severe (7d MA)",
                           other_name="Other Provinces",
@@ -1062,7 +1065,7 @@ def save_plots(df: pd.DataFrame) -> None:
             df=top5,
             png_prefix=f'active_severe_{direction.__name__}',
             cols_subset=cols,
-            title=f'Thailand Trending {"Up" if direction == increasing else "Down"} Provinces with Severe Active Cases (per 100,000)',
+            title=f'Thailand {title}Provinces with Severe Active Cases (per 100,000)',
             kind='line',
             stacked=False,
             percent_fig=False,
