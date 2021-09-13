@@ -8,6 +8,7 @@ import re
 import urllib.parse
 import random
 import itertools
+import json
 
 from bs4 import BeautifulSoup
 from pptx import Presentation
@@ -761,7 +762,7 @@ def setFilter(wb, columnName, values):
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
     payload = (
-        ("dashboard",  scraper.dashboard),
+        ("dashboard", scraper.dashboard),
         ("qualifiedFieldCaption", (None, columnName)),
         ("exclude", (None, "false")),
         ("filterValues", (None, json.dumps(values))),
@@ -769,7 +770,7 @@ def setFilter(wb, columnName, values):
     )
     try:
         r = scraper.session.post(
-            f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/categorical-filter-by-index',
+            f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/dashboard-categorical-filter',
             files=payload,
             verify=scraper.verify
         )

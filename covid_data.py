@@ -869,9 +869,9 @@ def moph_dashboard():
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
-            'Vac Given 1 Cum': (d("2021-02-28"), today() - relativedelta(days=4)),
-            'Vac Given 2 Cum': (d("2021-02-28"), today() - relativedelta(days=4)),
-            "Vac Given 3 Cum": (d("2021-06-01"), today() - relativedelta(days=4)),
+            'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+            'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+            "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=4)),
             'Hospitalized Field': (d('2021-04-20'), today(), 100),
             'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
             'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
@@ -962,22 +962,17 @@ def moph_dashboard():
         # cum cases = AGG(stat_accum)-alias
         # date  = DAY(date)-alias, DAY(date)-value
         url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
-        allow_na = {
-            "Deaths": d("2021-01-01"),  
-        }
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
+        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend?:isGuestRedirectFromVizportal=y&:embed=y"
 
         def range2eng(range):
             return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
-        def skip(value):
-            return df[f"Cases Age {range2eng(value)}"].get(str(today().date())) is not None
         for get_wb, idx_value in workbooks(url, D4_CHART="age_range"):
             age_group = next(iter(idx_value))
-            if skip(age_group):
-                continue
-            wb = get_wb()
-            if wb is None:
+            age_group = range2eng(age_group)
+            skip = df[f"Cases Age {age_group}"].get(str(today().date())) is not None
+            if skip or (wb := get_wb()) is None:
                 continue
             row = worksheet2df(
                 wb,
@@ -989,15 +984,11 @@ def moph_dashboard():
                     "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
                 },
             )
-            if not age_group:
-                # TODO: get rid of this first workbook when iterating selects
-                continue
             if row.empty:
                 continue
-            row['Age'] = range2eng(age_group)
+            row['Age'] = age_group
             row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
             row.columns = [f"{n} Age {v}" for n, v in row.columns]
-            # row = row.rename(columns={a: a.replace(">= 70", "70+").replace("< 10", "0-9") for a in row.columns})
             df = row.combine_first(df)
             print(row.last_valid_index(), "MOPH Ages", range2eng(age_group),
                   row.loc[row.last_valid_index():].to_string(index=False, header=False))
@@ -1008,7 +999,7 @@ def moph_dashboard():
         url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
         for get_wb, idx_value in workbooks(url, D4_CHART="province"):
-            province = get_province(next(idx_value))
+            province = get_province(next(iter(idx_value)))
             date = str(today().date())
             try:
                 df.loc[(date, province)]
@@ -1049,9 +1040,9 @@ def moph_dashboard():
         allow_na = {
             "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5), 0.001),
             "Tests": today(),  # It's no longer there
-            "Vac Given 1 Cum": (d("2021-03-01"), today() - relativedelta(days=5), 1),
-            "Vac Given 2 Cum": (d("2021-03-01"), today() - relativedelta(days=5)),
-            "Vac Given 3 Cum": (d("2021-06-15"), today() - relativedelta(days=5)),
+            "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=5), 1),
+            "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
+            "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
             # all the non-series will take too long to get historically
             "Cases Walkin": d("2021-08-01"),
             "Cases Proactive": d("2021-08-01"),
