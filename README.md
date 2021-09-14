@@ -105,7 +105,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Trending Up Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
 
-![Trending Down Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_decreasing_30d.png)
+![Top Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is 
@@ -190,7 +190,10 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 - Source: [DDC Daily Vaccination Reports](downloads#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](downloads#dl-vac-prov)
 
-![Vaccinations Groups by Progress towards goals](https://github.com/djay/covidthailand/wiki/vac_groups_goals_3.png)
+![Progress towards Full Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_full_3.png)
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+![Progress towards Half Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_half_3.png)
 - Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 ![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)

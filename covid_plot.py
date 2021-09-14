@@ -753,7 +753,7 @@ def save_plots(df: pd.DataFrame) -> None:
             ' 1', " " + first).replace(
             ' 2', " " + second).replace(
             'Given 3', "3rd Booster").replace(
-            'Risk: Location', 'Under 60')
+            'Risk: Location', 'Aged 18-59')
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
@@ -893,15 +893,27 @@ def save_plots(df: pd.DataFrame) -> None:
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
         df=vac_cum,
-        png_prefix='vac_groups_goals',
-        cols_subset=cols2,
-        title='Thailand Vaccination Goal Progress (to 70% of population)',
-        legends=legends,
+        png_prefix='vac_groups_goals_full',
+        cols_subset=cols2[:7],
+        title='Thailand Full Vaccination Progress',
+        legends=legends[:7],
         kind='line',
         stacked=False,
         percent_fig=False,
         ma_days=None,
         cmap=get_cycle('tab20', len(cols2), unpair=True),
+    )
+    plot_area(
+        df=vac_cum,
+        png_prefix='vac_groups_goals_half',
+        cols_subset=cols2[7:],
+        title='Thailand Half Vaccination Progress',
+        legends=legends[7:],
+        kind='line',
+        stacked=False,
+        percent_fig=False,
+        ma_days=None,
+        cmap=get_cycle('tab20', len(cols2), unpair=True, start=7),  # TODO: seems to be getting wrong colors
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
@@ -1055,11 +1067,11 @@ def save_plots(df: pd.DataFrame) -> None:
 
     for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
         top5 = cases.pipe(topprov,
-                          direction(cases_per_capita('Hospitalized Severe'), 7),
+                          direction(cases_per_capita('Hospitalized Severe'), 5),
                           cases_per_capita('Hospitalized Severe'),
                           name="Province Active Cases Severe (7d MA)",
                           other_name="Other Provinces",
-                          num=6)
+                          num=8)
         cols = top5.columns.to_list()
         plot_area(
             df=top5,
