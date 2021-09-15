@@ -1785,13 +1785,19 @@ def briefing_deaths_summary(text, date, file):
                                    "• ค่ากลาง",
                                    "ค่ากลางอาย ุ",
                                    ints=False)
-    med_age, min_age, max_age, *_ = numbers
+    if numbers:
+        med_age, min_age, max_age, *_ = numbers
+    else:
+        # 2021-09-15 no medium
+        numbers = get_next_numbers(text, "อายุระหว่าง", until="ปี", return_rest=False)
+        min_age, max_age = numbers
+        med_age = None
 
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
-    if genders and date == d("2021-08-09"):
+    if genders and date != d("2021-08-09"):
         male, female, *_ = genders
         if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
             # They sometimes reorder them
@@ -1816,7 +1822,8 @@ def briefing_deaths_summary(text, date, file):
         "Heart disease": ["โรคหัวใจ"],
         "Bedridden": ["ติดเตียง"],
         "Pregnant": ["ตั้งครรภ์"],
-        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว"],
+        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั"],
+        # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
     comorbidity = {
         disease: get_next_number(text, *thdiseases, default=0, return_rest=False)
@@ -1826,7 +1833,8 @@ def briefing_deaths_summary(text, date, file):
 
     risks = {
         "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
-        "Others": ["คนอื่นๆ", "คนอ่ืนๆ"],
+        "Others": ["คนอื่นๆ", "คนอ่ืนๆ", "คนรู้จัก"],
+        "Residence": ["อาศัย"],
         "Location": [
             "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพ้ืนที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด", "อาศัย/เข้าพ้ืนที่ระบาด",
             "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด"
