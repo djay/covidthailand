@@ -196,8 +196,8 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 ![Progress towards Half Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_half_3.png)
 - Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
-![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
-![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
+![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_30d.png)
+![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_30d.png)
 - Source: [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](downloads#dl-vac-prov)
 
 ![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
