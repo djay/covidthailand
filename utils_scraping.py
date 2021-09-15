@@ -706,6 +706,7 @@ def workbooks(url, **selects):
                     wb = do_reset()
                     if wb is None:
                         continue
+                    last_idx = (None,) * len(last_idx)  # need to reset filters etc
                 for do_set, last_value, value in zip(set_value, last_idx, next_idx):
                     if last_value != value:
                         try:
@@ -718,9 +719,10 @@ def workbooks(url, **selects):
                         print(next_idx, "MOPH Dashboard", f"Retry: Missing worksheets in {do_set.__name__}={value}.")
                         reset = True
                         break
-                if not reset:
-                    last_idx = next_idx
-                    return wb
+                if reset:
+                    continue
+                last_idx = next_idx
+                return wb
                 # Try again
             print(next_idx, "MOPH Dashboard", f"Skip: {next_idx}. Retries exceeded")
             return None
