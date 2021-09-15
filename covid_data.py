@@ -864,7 +864,7 @@ def moph_dashboard():
         allow_na = {
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
-            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=4)),
+            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=5)),
             "Tests": today(),  # its no longer there
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
@@ -971,7 +971,7 @@ def moph_dashboard():
         for get_wb, idx_value in workbooks(url, D4_CHART="age_range"):
             age_group = next(iter(idx_value))
             age_group = range2eng(age_group)
-            skip = df[f"Cases Age {age_group}"].get(str(today().date())) is not None
+            skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
             if skip or (wb := get_wb()) is None:
                 continue
             row = worksheet2df(
