@@ -336,7 +336,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                         if resumable:
                             # TODO: should we revert to last version instead?
                             print(f"Error downloading: {file}: resumable file incomplete")
-                        else:    
+                        else:
                             print(f"Error downloading: {file}: skipping")
                             remove = True  # TODO: if we leave it without check it will never get fixed
                             continue
@@ -620,7 +620,7 @@ def worksheet2df(wb, date=None, **mappings):
             # TODO: Should be able to do better than fixed offset?
             end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
             end = max([end, df.index.max()])
-            assert date is None or end <= date 
+            assert date is None or end <= date
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
             df = df.reindex(all_days, fill_value=0.0)
 
@@ -690,9 +690,10 @@ def workbooks(url, **selects):
             selects[name] = next(item['values'] for item in items if item['column'] == values)
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
-            def do_filter(wb, value, name=name, values=values):
-                ws = next(ws for ws in wb.worksheets if ws.name == name)
-                return ws.setFilter(values, value)
+            def do_filter(wb, value, ws_name=name, filter_name=values):
+                ws = next(ws for ws in wb.worksheets if ws.name == ws_name)
+                # return ws.setFilter(values, value)
+                return setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
 
     last_idx = [None] * len(selects)
@@ -706,7 +707,7 @@ def workbooks(url, **selects):
                     wb = do_reset()
                     if wb is None:
                         continue
-                    last_idx = (None,) * len(last_idx)  # need to reset filters etc
+                    reset = False
                 for do_set, last_value, value in zip(set_value, last_idx, next_idx):
                     if last_value != value:
                         try:
@@ -720,6 +721,7 @@ def workbooks(url, **selects):
                         reset = True
                         break
                 if reset:
+                    last_idx = (None,) * len(last_idx)  # need to reset filters etc
                     continue
                 last_idx = next_idx
                 return wb
@@ -740,7 +742,7 @@ def setParameter(wb, parameterName, value):
         f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
         files=payload,
         verify=scraper.verify
-    )   
+    )
     scraper.lastActionTime = time.time()
     if r.status_code >= 400:
         raise requests.exceptions.RequestException(r.content)
@@ -758,14 +760,34 @@ def setParameter(wb, parameterName, value):
 # filterUpdateType: filter-replace
 # filterValues: ["กรุงเทพมหานคร"]
 
-def setFilter(wb, columnName, values):
-    "setFilter but ignore the listed filter options"
+
+# visualIdPresModel: {"worksheet":"D4_CHART","dashboard":"4-dash-trend-w"}
+# globalFieldName: [sqlproxy.0ti7s471dkws67105310p0g3vagu].[none:age_range:nk]
+# membershipTarget: filter
+# filterUpdateType: filter-delta
+# filterAddIndices: []
+# filterRemoveIndices: [2]
+def setFilter(wb, ws_name, columnName, values):
+    "setFilter but ignore the listed filter options. also gets around wrong ordinal value which makes index value incorrect"
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
+    ws = next(ws for ws in wb.worksheets if ws.name == ws_name)
+
+    filter = next(
+        {
+            "globalFieldName": t["globalFieldName"],
+    #            "index": t["values"].index(value) + t["ordinal"]
+        }
+        for t in ws.getFilters()
+        if t["column"] == columnName
+    )
+
     payload = (
         ("dashboard", scraper.dashboard),
+        ("globalFieldName", (None, filter["globalFieldName"])),
         ("qualifiedFieldCaption", (None, columnName)),
+        ("membershipTarget", (None, "filter")),
         ("exclude", (None, "false")),
         ("filterValues", (None, json.dumps(values))),
         ("filterUpdateType", (None, "filter-replace"))
@@ -778,8 +800,20 @@ def setFilter(wb, columnName, values):
         )
         scraper.lastActionTime = time.time()
 
-        wb.updateFullData(r)
-        return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, r)
+        if r.status_code >= 400:
+            raise requests.exceptions.RequestException(r.content)
+        resp = r.json()
+        errors = [
+            res['commandReturn']['commandValidationPresModel']['errorMessage']
+            for res in resp['vqlCmdResponse']['cmdResultList']
+            if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
+        ]
+        if errors:
+            wb._scraper.logger.error(str(", ".join(errors)))
+            raise tableauscraper.api.APIResponseException(", ".join(errors))
+
+        wb.updateFullData(resp)
+        return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
     except ValueError as e:
         scraper.logger.error(str(e))
         return tableauscraper.TableauWorkbook(
