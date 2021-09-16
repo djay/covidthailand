@@ -11,6 +11,7 @@ from cycler import Cycler
 import pandas as pd
 import numpy as np
 from matplotlib import colors as mcolors
+import mpld3
 
 
 def daterange(start_date, end_date, offset=0):
@@ -278,11 +279,13 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     if other_name:
         df[name] = df[name].fillna(other_name)
         # TODO: sum() might have to be configurable?
-        df = df.groupby(["Date", name]).sum().reset_index()  # condense all the "other" fields
+        # TODO: we only really need to do this for one value not all the individual values
+        df = df.groupby(["Date", name]).sum(min_count=1).reset_index()  # condense all the "other" fields
     # apply the value function to get all the values
     values = df.set_index(["Date", name]).groupby(level=name, group_keys=False).apply(valuefunc).rename(0).reset_index()
-    # put the provinces into cols
-    series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="sum")
+    # put the provinces into cols. use max to ensure NA aren't included. Should only be one value anyway?
+    # TODO: is aggfunc=lambda df: df.sum(skipna=False) better?
+    series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="max")
 
     cols = list(top5[name])  # in right order
     if other_name:
@@ -454,3 +457,88 @@ def set_time_series_labels_2(df, ax):
 
     # Adjust tick label format last, else it may sometimes not be applied correctly
     ax.figure.autofmt_xdate(rotation=0, ha='center')
+
+class HighlightLines(mpld3.plugins.PluginBase):
+    """A plugin to highlight lines on hover"""
+
+    JAVASCRIPT = """
+    mpld3.register_plugin("linehighlight", LineHighlightPlugin);
+    LineHighlightPlugin.prototype = Object.create(mpld3.Plugin.prototype);
+    LineHighlightPlugin.prototype.constructor = LineHighlightPlugin;
+    LineHighlightPlugin.prototype.requiredProps = ["line_ids"];
+    LineHighlightPlugin.prototype.defaultProps = {alpha_bg:0.3, alpha_fg:1.0}
+    function LineHighlightPlugin(fig, props){
+        mpld3.Plugin.call(this, fig, props);
+    };
+
+    LineHighlightPlugin.prototype.draw = function(){
+      for(var i=0; i<this.props.line_ids.length; i++){
+         var obj = mpld3.get_element(this.props.line_ids[i], this.fig),
+             alpha_fg = this.props.alpha_fg;
+             alpha_bg = this.props.alpha_bg;
+         obj.elements()
+             .on("mouseover", function(d, i){
+                            d3.select(this).transition().duration(50)
+                              .style("stroke-opacity", alpha_fg); })
+             .on("mouseout", function(d, i){
+                            d3.select(this).transition().duration(200)
+                              .style("stroke-opacity", alpha_bg); });
+      }
+    };
+    """
+
+    def __init__(self, lines):
+        self.lines = lines
+        self.dict_ = {"type": "linehighlight",
+                      "line_ids": [mpld3.utils.get_id(line) for line in lines],
+                      "alpha_bg": lines[0].get_alpha(),
+                      "alpha_fg": 1.0}
+
+# write value at nearest x 
+# - https://stackoverflow.com/questions/34886070/multiseries-line-chart-with-mouseover-tooltip/34887578#34887578
+# - https://stackoverflow.com/questions/21417298/d3js-chart-with-crosshair-as-tooltip-how-to-add-2-lines-which-intersect-at-curs
+# - https://stackoverflow.com/questions/32783433/d3-multiples-with-linked-focus-mouseover-tooltip-crosshair-focus-line-not-fitti
+# - http://jsfiddle.net/Nivaldo/79fxL/
+# - https://jsfiddle.net/gerardofurtado/ayta89cz/5/
+class MousePositionDatePlugin(mpld3.plugins.PluginBase):
+    """Plugin for displaying mouse position with a datetime x axis."""
+
+    JAVASCRIPT = """
+    mpld3.register_plugin("mousepositiondate", MousePositionDatePlugin);
+    MousePositionDatePlugin.prototype = Object.create(mpld3.Plugin.prototype);
+    MousePositionDatePlugin.prototype.constructor = MousePositionDatePlugin;
+    MousePositionDatePlugin.prototype.requiredProps = [];
+    MousePositionDatePlugin.prototype.defaultProps = {
+    fontsize: 12,
+    xfmt: "%Y-%m-%d %H:%M:%S",
+    yfmt: ".3g"
+    };
+    function MousePositionDatePlugin(fig, props) {
+    mpld3.Plugin.call(this, fig, props);
+    }
+    MousePositionDatePlugin.prototype.draw = function() {
+    var fig = this.fig;
+    var xfmt = d3.time.format(this.props.xfmt);
+    var yfmt = d3.format(this.props.yfmt);
+    var coords = fig.canvas.append("text").attr("class", "mpld3-coordinates").style("text-anchor", "end").style("font-size", this.props.fontsize).attr("x", this.fig.width - 5).attr("y", this.fig.height - 5);
+    for (var i = 0; i < this.fig.axes.length; i++) {
+      var update_coords = function() {
+        var ax = fig.axes[i];
+        return function() {
+          var pos = d3.mouse(this);
+          x = ax.xdom.invert(pos[0]);
+          y = ax.ydom.invert(pos[1]);
+          coords.text("(" + xfmt(x) + ", " + yfmt(y) + ")");
+        };
+      }();
+      fig.axes[i].baseaxes.on("mousemove", update_coords).on("mouseout", function() {
+        coords.text("");
+      });
+    }
+    };
+    """
+    def __init__(self, fontsize=14, xfmt="%Y-%m-%d %H:%M:%S", yfmt=".3g"):
+        self.dict_ = {"type": "mousepositiondate",
+                      "fontsize": fontsize,
+                      "xfmt": xfmt,
+                      "yfmt": yfmt}
