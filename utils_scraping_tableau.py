@@ -92,8 +92,8 @@ def workbook_flatten(wb, date=None, **mappings):
 
             res = res.combine_first(df)
         elif df.empty:
-            # TODO: Seems to mean that this is 0?
-            data[col] = [np.nan]
+            # TODO: Seems to mean that this is 0? Should be confirgurable?
+            data[col] = [0.0]
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
