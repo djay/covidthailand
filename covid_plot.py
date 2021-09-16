@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+import mpld3
 
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
-    rearrange, set_time_series_labels_2, topprov
+    rearrange, set_time_series_labels_2, topprov, HighlightLines, MousePositionDatePlugin
 from utils_scraping import remove_prefix, remove_suffix
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
@@ -184,9 +185,9 @@ def plot_area(df: pd.DataFrame,
             continue
 
         if percent_fig:
-            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
+            fig, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
         else:
-            f, a0 = plt.subplots(figsize=[20, 12])
+            fig, a0 = plt.subplots(figsize=[20, 12])
         # plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
         a0.set_prop_cycle(None)
 
@@ -207,7 +208,7 @@ def plot_area(df: pd.DataFrame,
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
-            df_plot.plot(ax=a0,
+            lines = df_plot.plot(ax=a0,
                          y=c,
                          use_index=True,
                          linewidth=width,
@@ -217,6 +218,10 @@ def plot_area(df: pd.DataFrame,
                          legend=c not in actuals,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
+            tooltip = mpld3.plugins.LineLabelTooltip(lines.get_lines()[0], c not in actuals)
+            mpld3.plugins.connect(plt.gcf(), tooltip)
+            # mpld3.plugins.connect(plt.gcf(), HighlightLines(lines.get_lines()))
+
         if box_cols and type(box_cols[0]) != list:
             box_cols = [box_cols]
         elif not box_cols:
@@ -271,8 +276,14 @@ def plot_area(df: pd.DataFrame,
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path)
         print("Plot:", path)
-        plt.close()
 
+        mpld3.plugins.connect(fig, MousePositionDatePlugin())
+        html_str = mpld3.fig_to_html(fig)
+        with open(f"outputs_html/{png_prefix}_{suffix}.html", "w") as Html_file:
+            Html_file.write(html_str)
+
+        # TODO: before publish page rewrite images to includes - https://www.johnwmillr.com/interactive-plots-in-jekyll/
+        plt.close()
     return None
 
 
@@ -590,7 +601,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               kind='area',
               stacked=True,
-              percent_fig=False,
+              percent_fig=True,
               ma_days=7,
               cmap='tab20')
 
@@ -623,7 +634,7 @@ def save_plots(df: pd.DataFrame) -> None:
               '(excludes some proactive tests)',
               kind='area',
               stacked=True,
-              percent_fig=False,
+              percent_fig=True,
               ma_days=7,
               cmap='tab20')
 
@@ -889,6 +900,7 @@ def save_plots(df: pd.DataFrame) -> None:
         for group, goal in goals:
             vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
                 f'Vac Group {group} {d} Cum'] / goal * 100
+            # TODO: calc prediction. 14day trajectory till end of the year. calc eoy and interpolate
     cols2 = [c for c in vac_cum.columns if " Cum %" in c and "Vac Group " in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
@@ -1141,7 +1153,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     # Work out Death ages from CFR from situation reports
     age_ranges = ["15-39", "40-59", "60-"]
