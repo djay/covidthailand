@@ -21,10 +21,11 @@ from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range, cut_ages
-from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, fix_timeouts, get_next_number, get_next_numbers, \
+from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
     strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH, s, workbooks, worksheet2df, explore
+    web_files, web_links, all_in, NUM_OR_DASH, s
+from utils_scraping_tableau import workbook_flatten, workbook_iterate, workbook_explore
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -882,13 +883,13 @@ def moph_dashboard():
         url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
         # new day starts with new info comes in
         dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
-        for get_wb, date in workbooks(url, param_date=dates):
+        for get_wb, date in workbook_iterate(url, param_date=dates):
             date = next(iter(date))
             if skip_valid(df, date, allow_na):
                 continue
             if (wb := get_wb()) is None:
                 continue
-            row = worksheet2df(
+            row = workbook_flatten(
                 wb,
                 date,
                 D_New="Cases",
@@ -968,13 +969,13 @@ def moph_dashboard():
         def range2eng(range):
             return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
-        for get_wb, idx_value in workbooks(url, D4_CHART="age_range"):
+        for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range"):
             age_group = next(iter(idx_value))
             age_group = range2eng(age_group)
             skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
             if skip or (wb := get_wb()) is None:
                 continue
-            row = worksheet2df(
+            row = workbook_flatten(
                 wb,
                 None,
                 D4_TREND={
@@ -998,7 +999,7 @@ def moph_dashboard():
     def get_trends_prov(df):
         url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
-        for get_wb, idx_value in workbooks(url, D4_CHART="province"):
+        for get_wb, idx_value in workbook_iterate(url, D4_CHART="province"):
             province = get_province(next(iter(idx_value)))
             date = str(today().date())
             try:
@@ -1008,7 +1009,7 @@ def moph_dashboard():
                 pass
             if (wb := get_wb()) is None:
                 continue
-            row = worksheet2df(
+            row = workbook_flatten(
                 wb,
                 None,
                 D4_TREND={
@@ -1054,7 +1055,7 @@ def moph_dashboard():
         }
 
         dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
-        for get_wb, idx_value in workbooks(url, param_date=dates, D2_Province="province"):
+        for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
             date, province = idx_value
             if province is None:
                 continue
@@ -1064,7 +1065,7 @@ def moph_dashboard():
             wb = get_wb()
             if wb is None:
                 continue
-            row = worksheet2df(
+            row = workbook_flatten(
                 wb,
                 date,
                 D2_Vac_Stack={
