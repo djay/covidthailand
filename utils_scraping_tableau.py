@@ -88,7 +88,10 @@ def workbook_flatten(wb, date=None, **mappings):
             end = max([end, df.index.max()])
             assert date is None or end <= date
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
-            df = df.reindex(all_days, fill_value=0.0)
+            try:
+                df = df.reindex(all_days, fill_value=0.0)
+            except ValueError:
+                return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
 
             res = res.combine_first(df)
         elif df.empty:
