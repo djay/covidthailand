@@ -279,7 +279,7 @@ def plot_area(df: pd.DataFrame,
 
         mpld3.plugins.connect(fig, MousePositionDatePlugin())
         html_str = mpld3.fig_to_html(fig)
-        with open(f"outputs_html/{png_prefix}_{suffix}.html", "w") as Html_file:
+        with open(f"outputs/{png_prefix}_{suffix}.html", "w") as Html_file:
             Html_file.write(html_str)
 
         # TODO: before publish page rewrite images to includes - https://www.johnwmillr.com/interactive-plots-in-jekyll/
