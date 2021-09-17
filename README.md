@@ -238,17 +238,41 @@ it's not yet clear which range of years provides the best baseline to compare ag
   - improve existing plots
   - adding tests so it's faster to make future fixes
   - improving scrapers that miss past data, e.g. vaccination reports
-  - [Spotting breaking updates](https://github.com/djay/covidthailand/issues) and submitting a pull request to revise the scraper
+  - [Spotting breaking updates](https://github.com/djay/covidthailand/actions) and submitting a pull request to revise the scraper
   - If unsure if you are on the right track, submit a draft pull request and request a review
 - Spotted a problem or got an idea how to improve? [Submit an issue](https://github.com/djay/covidthailand/issues) and then have a go making it happen.
-- Got Questions? [Start a discussion](https://github.com/djay/covidthailand/discussions)
+- Got Questions? [Ask on discord](https://discord.gg/8F9cGenCFc) or [Start a discussion](https://github.com/djay/covidthailand/discussions) or comment on an issue
 
-### Running this code
+### Adding tests
 - To install (requires python >=3.9)
   ```
   python -m venv .
   bin/pip install -r requirements.txt
   ```
+
+- To run the tests (will only get docs needed for tests)
+  ```
+  bin/pytest
+  ```
+- To add a test
+  - Only add test data for dates where the format changed and so the scraper had to get updated. See commit history for dates where this happened or use code coverage.
+  - Logs from a full scrape can be used to also identify files/dates that are not scraped correctly
+     - if you are trying to add in past regression tests you can also use [```git blame covid_data.py```](https://github.com/djay/covidthailand/blame/45ab729d5cdba862de2c5940264f790a5504907a/covid_data.py) on the scraping function to see the dates that lines were added or changed. in some cases comments indicated important dates where code had to change. 
+  - Add empty file in tests/*scraper_type*/*dl_name*.json
+     - for some tests can be use date of file instead or filename.date.json (the date is ignored but helps for readability)
+  - Run tests. This will download just the document needed for that test, scrape it and compare the results agains the json.
+     - of course this will fail but you can look at the generated data and compare it to the original file or other sources to make sure it loosk right
+  - If the results are correct there is commented out code in the test to export the data to the 
+    test json file.
+    - if you are using vscode to run pytests you need to refresh the tests list at this point for some reason
+  - Note not all scrapers have a test framework setup yet. But follow the existing code to do add it or ask for help.
+
+# Running full code (warning will take a long time)
+You can just use the test framework without a full download if want to work on scraping.
+
+- to download only the files that interest you first you can commented out or rearrange the lines in covid_data.scrape_and_combine
+- to work on plots you can download the csv files from the website into the api directory and set env MAX_DAYS=0
+
 - To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
   ```
   bin/python covid_plot.py
@@ -257,21 +281,6 @@ it's not yet clear which range of years provides the best baseline to compare ag
   ```
   USE_CACHE_DATA=True MAX_DAYS=1 bin/python covid_plot.py
   ```
-- To run the tests (will only get docs needed for tests)
-  ```
-  bin/pytest
-  ```
-- To add a test
-  - Logs from a full scrape can be used to also identify files/dates that are not scraped correctly
-  - Add empty file in tests/*scraper_type*/*dl_name*.json
-     - for some tests can be use date of file instead
-  - Run tests. This will download the document, scrape it and compare the results agains the json.
-  - If the results are correct there is commented out code in the test to export the data to the 
-    test json file.
-  - Only add test data for dates where the format changed and so the scraper had to get updated. See commit history for dates where this happened or use code coverage.
-  - Note not all scrapers have a test framework setup yet. But follow the existing code to do add it or ask for help.
-
-
 # Contributors
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
