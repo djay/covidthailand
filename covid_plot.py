@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+from dateutil.relativedelta import relativedelta
 
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
@@ -153,7 +154,7 @@ def plot_area(df: pd.DataFrame,
 
 # drop any rows containing 'NA' if they are in the specified columns (=subset of all columns)
 # df_clean = clip_dataframe(df_all=df, cols=cols, n_rows=10)
-    last_date_unknown = df[cols].last_valid_index()  # last date with some data (inc unknown)
+    last_date_unknown = df[cols + actuals].last_valid_index()  # last date with some data (inc unknown)
     if clean_end:
         df_clean = df.loc[:last_date_unknown]
     else:
@@ -206,8 +207,8 @@ def plot_area(df: pd.DataFrame,
 
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
-            width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else None
-            df_plot.plot(ax=a0,
+            width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else 2
+            lines = df_plot.plot(ax=a0,
                          y=c,
                          use_index=True,
                          linewidth=width,
@@ -217,6 +218,11 @@ def plot_area(df: pd.DataFrame,
                          legend=c not in actuals,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
+
+        # If actuals are after cols then they are future predictions. put in a line to show today
+        if actuals and df[cols].last_valid_index() < df[actuals].last_valid_index():
+            a0.axvline(df[cols].last_valid_index(), color='grey', linestyle='--', lw=1)
+
         if box_cols and type(box_cols[0]) != list:
             box_cols = [box_cols]
         elif not box_cols:
@@ -889,31 +895,56 @@ def save_plots(df: pd.DataFrame) -> None:
         for group, goal in goals:
             vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
                 f'Vac Group {group} {d} Cum'] / goal * 100
-    cols2 = [c for c in vac_cum.columns if " Cum %" in c and "Vac Group " in c]
+
+    for group, goal in goals:
+        # calc prediction. 14day trajectory till end of the year. calc eoy and interpolate
+        v = vac_cum[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)']
+        rate = (v.loc[v.last_valid_index()] - v.loc[v.last_valid_index() - relativedelta(days=14)]) / 14
+        future_dates = pd.date_range(v.last_valid_index(), v.last_valid_index() + relativedelta(days=90), name="Date")
+        perc = pd.RangeIndex(1, 92) * rate + v.loc[v.last_valid_index()]
+        future = pd.DataFrame(perc, columns=[f'Vac Group {group} 1 Pred'], index=future_dates)
+        vac_cum = vac_cum.combine_first(future)
+
+        # 2nd dose is 1st dose from 2 months previous
+        # TODO: factor in 2 months vs 3 months AZ?
+        last_2m = v[v.last_valid_index() - relativedelta(days=60): v.last_valid_index()]
+        v2 = pd.concat([last_2m, future[f'Vac Group {group} 1 Pred'].iloc[1:31]], axis=0)
+        start_pred = vac_cum[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)'].loc[v.last_valid_index()]
+        perc2 = v2 - v2[v2.index.min()] + start_pred
+        perc2.index = future_dates
+        vac_cum = vac_cum.combine_first(perc2.to_frame(f'Vac Group {group} 2 Pred'))
+
+    cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c]
+    actuals = [c for c in vac_cum.columns if " 2 Pred" in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
         df=vac_cum,
         png_prefix='vac_groups_goals_full',
-        cols_subset=cols2[:7],
+        cols_subset=cols2,
         title='Thailand Full Vaccination Progress',
-        legends=legends[:7],
+        legends=legends,
         kind='line',
         stacked=False,
         percent_fig=False,
+        actuals=actuals,
         ma_days=None,
-        cmap=get_cycle('tab20', len(cols2), unpair=True),
+        cmap=get_cycle('tab20', 14, unpair=True)[7:],
     )
+    cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c]
+    actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
+    legends = [clean_vac_leg(c) for c in cols2]
     plot_area(
         df=vac_cum,
         png_prefix='vac_groups_goals_half',
-        cols_subset=cols2[7:],
+        cols_subset=cols2,
         title='Thailand Half Vaccination Progress',
-        legends=legends[7:],
+        legends=legends,
         kind='line',
         stacked=False,
         percent_fig=False,
+        actuals=actuals,
         ma_days=None,
-        cmap=get_cycle('tab20', len(cols2), unpair=True, start=7),  # TODO: seems to be getting wrong colors
+        cmap=get_cycle('tab20', 14, unpair=True, start=7),  # TODO: seems to be getting wrong colors
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
