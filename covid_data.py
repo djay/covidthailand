@@ -2552,6 +2552,7 @@ def vaccination_daily(daily, date, file, page):
         cols = [
             "Date",
             f"Vac Given {dose} Cum",
+            f"Vac Group Medical All {dose} Cum",
             f"Vac Group Medical Staff {dose} Cum",
             f"Vac Group Health Volunteer {dose} Cum",
             f"Vac Group Other Frontline Staff {dose} Cum",
@@ -2564,10 +2565,11 @@ def vaccination_daily(daily, date, file, page):
         if len(numbers) in [6, 8] and is_risks.search(rest):
             if len(numbers) == 8:
                 total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
+                med_all = medical + volunteer
             else:
-                total, medical, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = None
-            row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
+                total, med_all, frontline, over60, chronic, area = numbers
+                pregnant = volunteer = medical = None
+            row = [med_all, medical, volunteer, frontline, over60, chronic, pregnant, area]
             assert not any_in([None], medical, frontline, over60, chronic, area)
             assert 0.945 <= (sum([i for i in row if i]) / total) <= 1.01
             df = pd.DataFrame([[date, total] + row], columns=cols).set_index("Date")
