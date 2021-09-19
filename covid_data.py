@@ -2566,13 +2566,16 @@ def vaccination_daily(daily, date, file, page):
             if len(numbers) == 8:
                 total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
                 med_all = medical + volunteer
+                if date in [d("2021-08-11")] and dose == 2:
+                    frontline = None  # Wrong value for dose2
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
                 pregnant = volunteer = medical = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
-            assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
-            total_row = sum(i for i in [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area] if i)
-            assert 0.945 <= (total_row / total) <= 1.01
+            if date not in [d("2021-08-11")]:
+                assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area]
+                assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:

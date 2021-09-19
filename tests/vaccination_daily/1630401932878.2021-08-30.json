@@ -38,6 +38,18 @@
         "type":"integer"
       },
       {
+        "name":"Vac Group Medical All 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical All 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical All 3 Cum",
+        "type":"integer"
+      },
+      {
         "name":"Vac Group Medical Staff 1 Cum",
         "type":"integer"
       },
@@ -126,9 +138,12 @@
       "Vac Group Health Volunteer 1 Cum":647453,
       "Vac Group Health Volunteer 2 Cum":336050,
       "Vac Group Health Volunteer 3 Cum":0,
+      "Vac Group Medical All 1 Cum":1525302,
+      "Vac Group Medical All 2 Cum":1110269,
+      "Vac Group Medical All 3 Cum":589381,
       "Vac Group Medical Staff 1 Cum":877849,
       "Vac Group Medical Staff 2 Cum":774219,
-      "Vac Group Medical Staff 3 Cum":589381,
+      "Vac Group Medical Staff 3 Cum":0,
       "Vac Group Other Frontline Staff 1 Cum":1060583,
       "Vac Group Other Frontline Staff 2 Cum":683892,
       "Vac Group Other Frontline Staff 3 Cum":0,
