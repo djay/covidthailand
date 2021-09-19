@@ -2569,15 +2569,16 @@ def vaccination_daily(daily, date, file, page):
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
                 pregnant = volunteer = medical = None
-            row = [med_all, medical, volunteer, frontline, over60, chronic, pregnant, area]
-            assert not any_in([None], medical, frontline, over60, chronic, area)
-            assert 0.945 <= (sum([i for i in row if i]) / total) <= 1.01
-            df = pd.DataFrame([[date, total] + row], columns=cols).set_index("Date")
+            row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
+            assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
+            total_row = sum(i for i in [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area] if i)
+            assert 0.945 <= (total_row / total) <= 1.01
+            df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [0] * 6
+                numbers = numbers + [0] * 7
             else:
-                numbers = [0] * 8
+                numbers = [0] * 9
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
@@ -3274,9 +3275,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
-    vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     tests_reports = get_test_reports()
 
