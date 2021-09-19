@@ -1000,6 +1000,24 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
               )
 
+    top5 = vac.pipe(topprov, lambda df: -df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
+                    lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
+                    other_name=None, num=7)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_low_doses_1', cols_subset=cols,
+              title='Lowesst Provinces for Vaccination 1st Dose per 100 people',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
+    top5 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
+                    lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
+                    other_name=None, num=7)
+    cols = top5.columns.to_list()
+    plot_area(df=top5, png_prefix='vac_low_doses_2', cols_subset=cols,
+              title='Lowest Provinces for Vaccination 2nd Dose per 100 people',
+              kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              )
+
     #######################
     # Cases by provinces
     #######################

@@ -185,10 +185,10 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 ## Vaccinations by Priority Groups
 
 ![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](downloads#dl-vac-prov)
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac), [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](downloads#dl-vac-prov)
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 ![Progress towards Full Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_full_3.png)
 - Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
@@ -198,13 +198,14 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_30d.png)
 ![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_30d.png)
-- Source: [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](downloads#dl-vac-prov)
+![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_30d.png)
+![Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_30d.png)
+- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 ![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
-- Source: [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](downloads#dl-vac-prov)
+- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 - see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
-
 
 # Excess Deaths <a name="excess-deaths">
 Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
