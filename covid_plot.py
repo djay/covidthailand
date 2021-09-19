@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
-from utils_scraping import remove_prefix, remove_suffix
+from utils_scraping import remove_prefix, remove_suffix, any_in
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
@@ -759,7 +759,9 @@ def save_plots(df: pd.DataFrame) -> None:
             ' 1', " " + first).replace(
             ' 2', " " + second).replace(
             'Given 3', "3rd Booster").replace(
-            'Risk: Location', 'Aged 18-59')
+            'Risk: Location', 'Aged 18-59').replace(
+            'All', 'Staff & Volunteers'
+            )
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
@@ -793,6 +795,8 @@ def save_plots(df: pd.DataFrame) -> None:
     # bring in any daily figures we might have collected first
     vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2', 'Vac Given 3']].combine_first(vac_daily)
     daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group') and ' 3' not in c] + ['Vac Given 3']  # Keep for unknown
+    # We have "Medical All" instead
+    daily_cols = [c for c in daily_cols if not any_in(c, "Medical Staff", "Volunteer")]
     # interpolate to fill gaps and get some values for each group
     vac_daily[daily_cols] = vac_daily[daily_cols].interpolate(method="time", limit_area="inside")
     # now normalise the filled in days so they add to their real total
@@ -853,6 +857,8 @@ def save_plots(df: pd.DataFrame) -> None:
     #cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
     #cols_cum = cols_cum  # + ['Available Vaccines Cum']
     cols_cum = [c for c in cols if "2" in c] + [c for c in cols if "1" in c]
+    # We have "Medical All" instead
+    cols_cum = [c for c in cols_cum if not any_in(c, "Medical Staff", "Volunteer")]
 
     # TODO: get paired colour map and use do 5 + 5 pairs
     legends = [clean_vac_leg(c) for c in cols_cum]
@@ -883,8 +889,9 @@ def save_plots(df: pd.DataFrame) -> None:
     # pregnant 500,000
     # Target total 50,000,000
     goals = [
-        ('Health Volunteer', 1000000),
-        ('Medical Staff', 712000),
+        ('Medical All', 1000000 + 712000),
+        # ('Health Volunteer', 1000000),
+        # ('Medical Staff', 712000),
         ('Other Frontline Staff', 1900000),
         ['Over 60', 10906142],
         ('Risk: Disease', 6347125),
@@ -901,8 +908,8 @@ def save_plots(df: pd.DataFrame) -> None:
         v = vac_cum[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)']
         rate = (v.loc[v.last_valid_index()] - v.loc[v.last_valid_index() - relativedelta(days=14)]) / 14
         future_dates = pd.date_range(v.last_valid_index(), v.last_valid_index() + relativedelta(days=90), name="Date")
-        perc = pd.RangeIndex(1, 92) * rate + v.loc[v.last_valid_index()]
-        future = pd.DataFrame(perc, columns=[f'Vac Group {group} 1 Pred'], index=future_dates)
+        perc = (pd.RangeIndex(1, 92) * rate + v.loc[v.last_valid_index()])
+        future = pd.DataFrame(perc, columns=[f'Vac Group {group} 1 Pred'], index=future_dates).clip(upper=100)
         vac_cum = vac_cum.combine_first(future)
 
         # 2nd dose is 1st dose from 2 months previous
@@ -910,7 +917,7 @@ def save_plots(df: pd.DataFrame) -> None:
         last_2m = v[v.last_valid_index() - relativedelta(days=60): v.last_valid_index()]
         v2 = pd.concat([last_2m, future[f'Vac Group {group} 1 Pred'].iloc[1:31]], axis=0)
         start_pred = vac_cum[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)'].loc[v.last_valid_index()]
-        perc2 = v2 - v2[v2.index.min()] + start_pred
+        perc2 = (v2 - v2[v2.index.min()] + start_pred).clip(upper=100)
         perc2.index = future_dates
         vac_cum = vac_cum.combine_first(perc2.to_frame(f'Vac Group {group} 2 Pred'))
 
@@ -928,7 +935,7 @@ def save_plots(df: pd.DataFrame) -> None:
         percent_fig=False,
         actuals=actuals,
         ma_days=None,
-        cmap=get_cycle('tab20', 14, unpair=True)[7:],
+        cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
     )
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
@@ -944,7 +951,7 @@ def save_plots(df: pd.DataFrame) -> None:
         percent_fig=False,
         actuals=actuals,
         ma_days=None,
-        cmap=get_cycle('tab20', 14, unpair=True, start=7),  # TODO: seems to be getting wrong colors
+        cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
