@@ -1258,6 +1258,7 @@ def parse_unofficial_tweet(df, date, text, url):
 
 
 def parse_moph_tweet(df, date, text, url):
+    "https://twitter.com/thaimoph"
     cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
     prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
@@ -2551,6 +2552,7 @@ def vaccination_daily(daily, date, file, page):
         cols = [
             "Date",
             f"Vac Given {dose} Cum",
+            f"Vac Group Medical All {dose} Cum",
             f"Vac Group Medical Staff {dose} Cum",
             f"Vac Group Health Volunteer {dose} Cum",
             f"Vac Group Other Frontline Staff {dose} Cum",
@@ -2563,18 +2565,23 @@ def vaccination_daily(daily, date, file, page):
         if len(numbers) in [6, 8] and is_risks.search(rest):
             if len(numbers) == 8:
                 total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
+                med_all = medical + volunteer
+                if date in [d("2021-08-11")] and dose == 2:
+                    frontline = None  # Wrong value for dose2
             else:
-                total, medical, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = None
+                total, med_all, frontline, over60, chronic, area = numbers
+                pregnant = volunteer = medical = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
-            assert not any_in([None], medical, frontline, over60, chronic, area)
-            assert 0.945 <= (sum([i for i in row if i]) / total) <= 1.01
-            df = pd.DataFrame([[date, total] + row], columns=cols).set_index("Date")
+            if date not in [d("2021-08-11")]:
+                assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area]
+                assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
+            df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [0] * 6
+                numbers = numbers + [0] * 7
             else:
-                numbers = [0] * 8
+                numbers = [0] * 9
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
@@ -3271,9 +3278,9 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     dashboard, dash_prov = moph_dashboard()
-    vac = get_vaccinations()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     tests_reports = get_test_reports()
 
