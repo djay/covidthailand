@@ -760,7 +760,8 @@ def save_plots(df: pd.DataFrame) -> None:
             ' 2', " " + second).replace(
             'Given 3', "3rd Booster").replace(
             'Risk: Location', 'Aged 18-59').replace(
-            'All', 'Staff & Volunteers'
+            'All', 'Staff & Volunteers').replace(
+            'Risk: Disease', 'Risk Disease under 60'
             )
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
@@ -1030,7 +1031,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_pivot = cases_pivot.reindex(all_days).fillna(0)  # put in missing days with NaN
     cases = cases.set_index(["Date", "Province"]).combine_first(cases_pivot.unstack().to_frame("Cases"))
     cases = join_provinces(cases, "Province", ["Health District Number", "region"])  # to fill in missing health districts
-    cases = cases.fillna(0)  # all the other values
+    # cases = cases.fillna(0)  # all the other values
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
 
@@ -1197,7 +1198,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, png_prefix='deaths_by_area', cols_subset=cols,
               title='Thailand Covid Deaths by health District', legends=AREA_LEGEND,
-              kind='area', stacked=True, percent_fig=False, ma_days=7, cmap='tab20')
+              kind='area', stacked=True, percent_fig=True, ma_days=7, cmap='tab20')
 
     # Work out Death ages from CFR from situation reports
     age_ranges = ["15-39", "40-59", "60-"]

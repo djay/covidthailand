@@ -94,6 +94,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 ([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) 
    - [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
    - [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
+- [IHME Policy Briefing PDFs](http://www.healthdata.org/covid/updates) provide a lot of detail on the current situation in a country and what factors are that drive their predictions.
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
 
 
