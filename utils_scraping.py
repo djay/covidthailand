@@ -3,6 +3,7 @@ import dateutil
 from io import StringIO
 from itertools import compress, cycle
 import os
+from pathlib import Path
 import pickle
 import re
 import urllib.parse
@@ -15,6 +16,7 @@ from requests.exceptions import RequestException, Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
+from webdav3.exceptions import NoConnection, ResponseErrorCode
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -357,29 +359,43 @@ def dav_files(url, username=None, password=None,
     }
     client = Client(options)
     fix_timeouts(client.session)
-    # important we get them sorted newest files first as we only fill in NaN from each additional file
-    files = sorted(
-        client.list(get_info=True),
-        key=lambda info: dateutil.parser.parse(info["modified"]),
-        reverse=True,
-    )
-    i = 0
-    for info in files:
-        file = info["path"].split("/")[-1]
-        if not any([ext == file[-len(ext):] for ext in ext.split()]):
-            continue
-        target = os.path.join(dir, file)
-        os.makedirs(os.path.dirname(target), exist_ok=True)
-        if i > 0 and is_cutshort(target, info["modified"], False):
-            break
-        if resume_from(target, info["modified"]) >= 0:
-            def do_dl(file=file, target=target):
-                client.download_file(file, target)
-                return target
-        else:
-            do_dl = lambda target=target: target
-        i += 1
-        yield target, do_dl
+    use_cache = False
+    try:
+        client_list = client.list(get_info=True),
+    except (NoConnection, ResponseErrorCode):
+        client_list = [
+            {
+                "path": f"{file}",
+                "modified": f"{datetime.datetime.fromtimestamp(file.stat().st_mtime, tz=datetime.timezone.utc):%d/%m/%y %H:%M:%S %Z}"
+            }
+            for file in Path(dir).glob('**/*') if file.is_file()
+        ]
+        use_cache = True
+    finally:
+        # important we get them sorted newest files first as we only fill in NaN from each additional file
+        files = sorted(
+            client_list,
+            key=lambda info: dateutil.parser.parse(info["modified"]),
+            reverse=True,
+        )
+        i = 0
+        for info in files:
+            file = info["path"].split("/")[-1]
+            *_, file = info["path"].rsplit("/", 1)
+            if not any([ext == file[-len(ext):] for ext in ext.split()]):
+                continue
+            target = os.path.join(dir, file)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            if i > 0 and is_cutshort(target, info["modified"], False):
+                break
+            if not use_cache and resume_from(target, info["modified"]) >= 0:
+                def do_dl(file=file, target=target):
+                    client.download_file(file, target)
+                    return target
+            else:
+                do_dl = lambda target=target: target
+            i += 1
+            yield target, do_dl
 
 
 #################
