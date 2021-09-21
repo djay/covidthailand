@@ -3,7 +3,7 @@
 *.pdf
 *.xlsx
 *.pptx
-.vscode
+.vscode/settings.json
 .idea
 situation_en
 situation_th
@@ -17,3 +17,4 @@ json/
 tweets/
 .env
 vaccinations/
+outputs/*.html

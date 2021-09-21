@@ -1,0 +1,73 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "covidthailand - full",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "env": {
+                "USE_CACHE_DATA":"False"
+            }
+        },
+        {
+            "name": "covidthailand - quick 1",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "USE_CACHE_DATA":"True",
+                "MAX_DAYS":"1",
+                // "TIKA_VERSION":"1.23"
+            }
+        },
+        {
+            "name": "covidthailand - quick 10",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "env": {
+                "USE_CACHE_DATA":"True",
+                "MAX_DAYS":"10",
+                // "TIKA_VERSION":"1.23"
+            }
+        },
+        {
+            "name": "covidthailand - quick custom",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "env": {
+                "USE_CACHE_DATA":"True",
+                "MAX_DAYS":"100",
+                "MIN_DAYS":"90",
+                // "TIKA_VERSION":"1.23"
+            }
+        },
+        {
+            "name": "covidthailand - plot",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "env": {
+                "USE_CACHE_DATA":"True",
+                "MAX_DAYS":"0",
+                // "TIKA_VERSION":"1.23"
+            }
+        }
+    ]
+
+}
