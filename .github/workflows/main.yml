@@ -3,6 +3,9 @@ on:
   push:
     branches-ignore:
       - "releases/**"
+  pull_request:
+    branches-ignore:
+      - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
     - cron: "20 00 * * *" # 08:00 Unofficial tweet
     - cron: "00 01 * * *" # 08:00 Unofficial tweet
