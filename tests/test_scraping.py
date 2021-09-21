@@ -211,6 +211,17 @@ def test_briefing_deaths_summary(date, testdf, dl):
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))
 def test_briefing_case_types(date, testdf, dl):
+    """
+    The following json files check code that was added by corresponding commits.
+
+    tests/briefing_case_types/{2021-05-17,\
+                               2021-06-25,\
+                               2021-08-13}.json
+
+    2021-05-17 8998d907: fix parsing briefings
+    2021-06-25 5d054122: parse vac in briefing
+    2021-08-13 74aa7877: fix parse briefing cases
+    """
     assert dl is not None
     file = dl()
     assert file is not None
