@@ -11,32 +11,6 @@ from utils_pandas import export, import_csv
 import dateutil
 
 
-# def write_csv(df, input, parser_name):
-#     export(df, f"{input.rsplit('.', 1)[0]}.{parser_name}", csv_only=True)
-
-
-# def find_files(dir, pat):
-#     dir_path = os.path.dirname(os.path.realpath(__file__))
-#     dir_path = os.path.join(dir_path, dir)
-#     for root, dir, files in os.walk(dir_path):
-#         for file in fnmatch.filter(files, pat):
-#             base, ext = file.rsplit(".", 1)
-#             testdf = None
-
-#             csvs = fnmatch.filter(files, f"{base}*.csv")
-#             if not csvs:
-#                 yield os.path.join(root, file), testdf, None
-#                 continue
-
-#             for check in csvs:
-#                 _, func, ext = check.rsplit(".", 2)
-#                 try:
-#                     testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
-#                 except pd.errors.EmptyDataError:
-#                     pass
-#                 yield os.path.join(root, file), testdf, func
-
-
 def dl_files(target_dir, dl_gen, check=False):
     "find csv files and match them to dl files, either by filename or date"
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -80,13 +54,14 @@ def dl_files(target_dir, dl_gen, check=False):
         return tests
 
 
-# @pytest.mark.parametrize("input, testdf, parser", find_files("testing_moph", "*.pptx"))
-# def test_pptx(input, testdf, parser):
-#     data = pd.DataFrame()
-#     raw = pd.DataFrame()
-#     for chart, title, series, pagenum in pptx2chartdata(input):
-#         data, raw = get_tests_by_area_chart_pptx(input, title, series, data, raw)
-#     pd.testing.assert_frame_equal(testdf, data)
+def write_scrape_data_back_to_test(df, dir, fname=None):
+    "Use this when you are sure the scrapped data is correct"
+    date = str(df.index.max().date())
+    if fname:
+        # .{date} is ignored but helps to when fname doesn't have date in it
+        df.to_json(f"tests/{dir}/{fname}.{date}.json", orient='table', indent=2)
+    else:
+        df.to_json(f"tests/{dir}/{date}.json", orient='table', indent=2)
 
 
 # 021-07-05          0.0
@@ -106,7 +81,7 @@ def test_vac_reports(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_daily(df, None, file, page)
-    # df.to_json(f"tests/vaccination_daily/{fname}.{str(df.index.max().date())}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(df, "vaccination_daily", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
@@ -118,7 +93,7 @@ def test_vac_tables(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_tables(df, None, page, file)
-    # df.to_json(f"tests/vaccination_tables/{fname}.{str(df.index.max()[0].date())}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(df, "vaccination_tables", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
@@ -130,7 +105,7 @@ def test_vac_manuf_given(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for i, page in enumerate(parse_file(file), 1):
         df = vac_manuf_given(df, page, file, i)
-    # df.to_json(f"tests/vac_manuf_given/{fname}.{str(df.index.max().date())}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
@@ -150,7 +125,7 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     assert file is not None
     for chart, title, series, pagenum in pptx2chartdata(file):
         data, raw = get_tests_by_area_chart_pptx(input, title, series, data, raw)
-    # raw.to_json(f"tests/testing_moph/{fname}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(raw, "testing_moph", fname)
     pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
 
 
@@ -166,7 +141,7 @@ def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     pages = parse_file(file, html=False, paged=True)
     for page in pages:
         data, raw = get_tests_by_area_pdf(file, page, data, raw)
-    # raw.to_json(f"tests/testing_moph/{fname}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(raw, "testing_moph", fname)
     if testdf.index.max() >= dateutil.parser.parse("2021-08-08"):
         # plots stopped having numbers for positives so aren't scraped
         return
@@ -187,7 +162,7 @@ def test_briefing_deaths_provinces(date, testdf, dl):
         text = soup.get_text()
         df = briefing_deaths_provinces(text, dateutil.parser.parse(date), file)
         dfprov = dfprov.combine_first(df)
-    # dfprov.to_json(f"tests/briefing_deaths_provinces/{date}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(raw, "briefing_deaths_provinces")
     pd.testing.assert_frame_equal(testdf, dfprov, check_dtype=False)
 
 
@@ -205,7 +180,7 @@ def test_briefing_deaths_summary(date, testdf, dl):
         text = soup.get_text()
         df = briefing_deaths_summary(text, dateutil.parser.parse(date), file)
         dfprov = dfprov.combine_first(df)
-    # dfprov.to_json(f"tests/briefing_deaths_summary/{date}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(dfprov, "briefing_deaths_summary")
     pd.testing.assert_frame_equal(testdf, dfprov, check_dtype=False)
 
 
@@ -230,5 +205,5 @@ def test_briefing_case_types(date, testdf, dl):
     pages = [BeautifulSoup(page, 'html.parser') for page in pages]
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, file)
-    # df.to_json(f"tests/briefing_case_types/{date}.json", orient='table', indent=2)
+    # write_scrape_data_back_to_test(df, "briefing_case_types")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
