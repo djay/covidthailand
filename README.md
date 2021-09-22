@@ -243,16 +243,17 @@ it's not yet clear which range of years provides the best baseline to compare ag
   - [Spotting breaking updates](https://github.com/djay/covidthailand/actions) and submitting a pull request to revise the scraper
   - If unsure if you are on the right track, submit a draft pull request and request a review
 - Spotted a problem or got an idea how to improve? [Submit an issue](https://github.com/djay/covidthailand/issues) and then have a go making it happen.
-- Got Questions? [Ask on discord](https://discord.gg/8F9cGenCFc) or [Start a discussion](https://github.com/djay/covidthailand/discussions) or comment on an issue
+- Got Questions? [Start a discussion](https://github.com/djay/covidthailand/discussions) or comment on an issue
 
-### Adding tests
+### Install
 - To install (requires python >=3.9)
   ```
   python -m venv .
   bin/pip install -r requirements.txt
   ```
+### Adding tests
 
-- To run the tests (will only get docs needed for tests)
+- To run the tests (will only get files needed for tests)
   ```
   bin/pytest
   ```
@@ -269,6 +270,19 @@ it's not yet clear which range of years provides the best baseline to compare ag
     - if you are using vscode to run pytests you need to refresh the tests list at this point for some reason
   - Note not all scrapers have a test framework setup yet. But follow the existing code to do add it or ask for help.
 
+# Running just plots (or latest files)
+- copy all the csv files from downloads and put then in a dir called api
+- copy the moph_* files from api and also put them in a dir called "json"
+- To get latest files
+  ```
+  USE_CACHE_DATA=True MAX_DAYS=1 bin/python covid_plot.py
+  ```
+- To do just plots
+  ```
+  USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
+  ```
+- For debugging, to do just one part of the scraping first, rearrange lines in covid_data.py/scrape_and_combine
+
 # Running full code (warning will take a long time)
 You can just use the test framework without a full download if want to work on scraping.
 
@@ -278,10 +292,6 @@ You can just use the test framework without a full download if want to work on s
 - To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
   ```
   bin/python covid_plot.py
-  ```
-- To get latest files (after inital full download)
-  ```
-  USE_CACHE_DATA=True MAX_DAYS=1 bin/python covid_plot.py
   ```
 # Contributors
 - [Dylan Jay](https://github.com/djay)
