@@ -114,17 +114,21 @@ def workbook_flatten(wb, date=None, **mappings):
 def workbook_iterate(url, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
-    def do_reset():
+    def do_reset(attempt=0):
+        if attempt == 3:
+            return None
         ts = tableauscraper.TableauScraper()
         try:
             ts.loads(url)
         except (RequestException, TableauException, KeyError):
             print("MOPH Dashboard", f"Error: Timeout Loading url {url}")
-            return
+            return do_reset(attempt=attempt + 1)
         fix_timeouts(ts.session, timeout=30)
         wb = ts.getWorkbook()
         return wb
     wb = do_reset()
+    if wb is None:
+        return
     set_value = []
     # match the params to iterate to param, filter or select
     for name, values in selects.items():
