@@ -1,0 +1,144 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Age Median",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Age Min",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Age Max",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Male",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Female",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Family",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Others",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Residence",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Location",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Crowds",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Work",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk HCW",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Unknown",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Hypertension",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Diabetes",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Hyperlipidemia",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Lung disease",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Obesity",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Cerebrovascular",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Kidney disease",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Heart disease",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Bedridden",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Pregnant",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity None",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-09-23T00:00:00.000Z",
+      "Deaths":131,
+      "Deaths Age Median":71.0,
+      "Deaths Age Min":2.0,
+      "Deaths Age Max":104.0,
+      "Deaths Male":64,
+      "Deaths Female":67,
+      "Deaths Risk Family":10,
+      "Deaths Risk Others":60,
+      "Deaths Risk Residence":56,
+      "Deaths Risk Location":0,
+      "Deaths Risk Crowds":0,
+      "Deaths Risk Work":89,
+      "Deaths Risk HCW":0,
+      "Deaths Risk Unknown":0,
+      "Deaths Comorbidity Hypertension":64,
+      "Deaths Comorbidity Diabetes":15,
+      "Deaths Comorbidity Hyperlipidemia":11,
+      "Deaths Comorbidity Lung disease":0,
+      "Deaths Comorbidity Obesity":5,
+      "Deaths Comorbidity Cerebrovascular":0,
+      "Deaths Comorbidity Kidney disease":6,
+      "Deaths Comorbidity Heart disease":0,
+      "Deaths Comorbidity Bedridden":1,
+      "Deaths Comorbidity Pregnant":0,
+      "Deaths Comorbidity None":13
+    }
+  ]
+}

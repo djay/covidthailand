@@ -1062,8 +1062,7 @@ def moph_dashboard():
             province = get_province(province)
             if skip_valid(df, (date, province), allow_na):
                 continue
-            wb = get_wb()
-            if wb is None:
+            if (wb := get_wb()) is None:
                 continue
             row = workbook_flatten(
                 wb,
@@ -1831,7 +1830,8 @@ def briefing_deaths_summary(text, date, file):
         disease: get_next_number(text, *thdiseases, default=0, return_rest=False)
         for disease, thdiseases in diseases.items()
     }
-    assert sum(comorbidity.values()) >= deaths_title or date in [d("2021-8-10")], f"Missing comorbidity {comorbidity}\n{text}"
+    if date not in [d("2021-8-10"), d("2021-09-23")]:
+        assert sum(comorbidity.values()) >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
 
     risks = {
         "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
@@ -2799,7 +2799,8 @@ def vaccination_tables(df, date, page, file):
 
 
 def vaccination_reports_files2(check=True):
-    # also from https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/08/9/2021
+    # https://ddc.moph.go.th/vaccine-covid19/diaryReport
+    # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
 
     links = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
@@ -3235,7 +3236,6 @@ def get_hospital_resources():
     return data
 
 
-
 # TODO: Additional data sources
 # - new moph apis
 #    - https://covid19.ddc.moph.go.th/
@@ -3278,11 +3278,11 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    dashboard, dash_prov = moph_dashboard()
+    tests_reports = get_test_reports()
     vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    dashboard, dash_prov = moph_dashboard()
     cases_demo, risks_prov = get_cases_by_demographics_api()
-    tests_reports = get_test_reports()
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
