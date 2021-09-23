@@ -248,8 +248,8 @@ it's not yet clear which range of years provides the best baseline to compare ag
 ### Install
 - To install (requires python >=3.9)
   ```
-  python -m venv .
-  bin/pip install -r requirements.txt
+  python -m venv .venv
+  .venv/bin/pip install -r requirements.txt
   ```
 ### Adding tests
 
@@ -270,7 +270,7 @@ it's not yet clear which range of years provides the best baseline to compare ag
     - if you are using vscode to run pytests you need to refresh the tests list at this point for some reason
   - Note not all scrapers have a test framework setup yet. But follow the existing code to do add it or ask for help.
 
-# Running just plots (or latest files)
+### Running just plots (or latest files)
 - copy all the csv files from downloads and put then in a dir called api
 - copy the moph_* files from api and also put them in a dir called "json"
 - To get latest files
@@ -283,7 +283,7 @@ it's not yet clear which range of years provides the best baseline to compare ag
   ```
 - For debugging, to do just one part of the scraping first, rearrange lines in covid_data.py/scrape_and_combine
 
-# Running full code (warning will take a long time)
+### Running full code (warning will take a long time)
 You can just use the test framework without a full download if want to work on scraping.
 
 - to download only the files that interest you first you can commented out or rearrange the lines in covid_data.scrape_and_combine
