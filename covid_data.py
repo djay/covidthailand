@@ -2049,11 +2049,12 @@ def get_cases_by_prov_briefings():
         prov = briefing_province_cases(date, pages)
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
-        for i, page in enumerate(pages):
-            text = page.get_text()
-            # Might throw out totals since doesn't include all prov
-            # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
-            types = vac_briefing_totals(types, date, file, page, text)
+        # TODO: This should be redundant now with dashboard having early info on vac progress.
+        # for i, page in enumerate(pages):
+        #     text = page.get_text()
+        #     # Might throw out totals since doesn't include all prov
+        #     # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
+        #     types = vac_briefing_totals(types, date, file, page, text)
 
         if not today_types.empty:
             wrong_deaths_report = date in [
