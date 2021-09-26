@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -206,4 +206,22 @@ def test_briefing_case_types(date, testdf, dl):
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, file)
     # write_scrape_data_back_to_test(df, "briefing_case_types")
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("vac_briefing_totals", briefing_documents))
+def test_vac_briefing_totals(date, testdf, dl):
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+    date = dateutil.parser.parse(date)
+
+    for i, soup in enumerate(pages):
+        text = soup.get_text()
+        df = vac_briefing_totals(df, date, file, soup, text)
+    # write_scrape_data_back_to_test(df, "vac_briefing_totals")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
