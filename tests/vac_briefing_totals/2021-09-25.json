@@ -7,7 +7,7 @@
       },
       {
         "name":"Vac Given",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given Cum",
@@ -15,15 +15,15 @@
       },
       {
         "name":"Vac Given 1",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given 2",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given 3",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given 1 Cum",
@@ -50,11 +50,11 @@
   "data":[
     {
       "Date":"2021-09-24T00:00:00.000Z",
-      "Vac Given":0,
+      "Vac Given":null,
       "Vac Given Cum":47296431,
-      "Vac Given 1":0,
-      "Vac Given 2":0,
-      "Vac Given 3":0,
+      "Vac Given 1":null,
+      "Vac Given 2":null,
+      "Vac Given 3":null,
       "Vac Given 1 Cum":29998440,
       "Vac Given 2 Cum":16673867,
       "Vac Given 3 Cum":624124,
