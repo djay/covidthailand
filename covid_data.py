@@ -386,6 +386,8 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         not_pui = None
     elif len(numbers) == 6:  # > 2021-05-10
         tests_total, pui, asq, active_finding, pui2, screened = numbers
+        if date == d("2021-09-26"):
+            pui = pui2  # 3,142,338 != 3,138,544
         assert pui == pui2
         not_pui = None
     else:
@@ -447,22 +449,38 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
     return dfpui
 
 
-def get_thai_situation():
-    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+def get_thai_situation_files(check=True):
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
         ext=".pdf",
         dir="situation_th"
     )
-    for file, _, _ in web_files(*links, dir="situation_th"):
+    count = 0
+    for link in links:
+        if USE_CACHE_DATA and count > MAX_DAYS:
+            break
+        count += 1
+
+        def dl_file(link=link):
+            file, _, _ = next(iter(web_files(link, dir="situation_th")))
+            return file
+
+        date = file2date(link)
+        yield link, date, dl_file
+
+
+def get_thai_situation():
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    for link, date, dl_file in get_thai_situation_files():
+        file = dl_file()
+
         parsed_pdf = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
             continue
         if "Situation Total number of PUI" in parsed_pdf:
             # english report mixed up? - situation-no171-220663.pdf
             continue
-        date = file2date(file)
         results = situation_pui_th(results, parsed_pdf, date, file)
         results = situation_pui_th_death(results, parsed_pdf, date, file)
 
@@ -2146,7 +2164,7 @@ def get_cases_by_area_api():
 # Testing data
 ##########################################
 
-def test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
+def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
                    username="wbioWZAQfManokc",
                    password="null",
                    ext=".pdf .pptx",
@@ -2157,7 +2175,7 @@ def test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
 def get_tests_by_day():
     print("========Tests by Day==========")
 
-    file, dl = next(test_dav_files(ext="xlsx"))
+    file, dl = next(get_test_dav_files(ext="xlsx"))
     dl()
     tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
     tests.dropna(how="any", inplace=True)  # get rid of totals row
@@ -2284,7 +2302,7 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
-    for file, dl in test_dav_files(ext=".pptx"):
+    for file, dl in get_test_dav_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
             data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
@@ -2294,7 +2312,7 @@ def get_test_reports():
         assert not data.empty
         # TODO: assert for pubpriv too. but disappearerd after certain date
     # Also need pdf copies because of missing pptx
-    for file, dl in test_dav_files(ext=".pdf"):
+    for file, dl in get_test_dav_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
         for page in pages:

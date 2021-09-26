@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -110,11 +110,11 @@ def test_vac_manuf_given(fname, testdf, get_file):
 
 
 def find_testing_pptx(check):
-    return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
+    return [(file, None, dl) for file, dl in get_test_dav_files(ext=".pptx")]
 
 
 def find_testing_pdf(check):
-    return [(file, None, dl) for file, dl in test_dav_files(ext=".pdf")]
+    return [(file, None, dl) for file, dl in get_test_dav_files(ext=".pdf")]
 
 
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pptx))
@@ -228,4 +228,17 @@ def test_vac_briefing_totals(date, testdf, dl):
         text = soup.get_text()
         df = vac_briefing_totals(df, date, file, soup, text)
     # write_scrape_data_back_to_test(df, "vac_briefing_totals")
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("situation_pui_th", get_thai_situation_files))
+def test_situation_pui_th(date, testdf, dl):
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    file = dl()
+    date = dateutil.parser.parse(date)
+
+    parsed_pdf = parse_file(file, html=False, paged=False)
+    df = situation_pui_th(results, parsed_pdf, date, file)
+
+    # write_scrape_data_back_to_test(df, "situation_pui_th")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
