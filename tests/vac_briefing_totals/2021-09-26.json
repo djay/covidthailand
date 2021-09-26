@@ -1,0 +1,74 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 1",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 4",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 4 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Source Vac Given",
+        "type":"string"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-09-25T00:00:00.000Z",
+      "Vac Given":112215,
+      "Vac Given Cum":50101055,
+      "Vac Given 1":40659,
+      "Vac Given 2":67821,
+      "Vac Given 3":3735,
+      "Vac Given 4":0,
+      "Vac Given 1 Cum":31352795,
+      "Vac Given 2 Cum":17667069,
+      "Vac Given 3 Cum":1080391,
+      "Vac Given 4 Cum":800,
+      "Source Vac Given":"briefings\/260964.pdf"
+    }
+  ]
+}

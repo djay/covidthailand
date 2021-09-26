@@ -2438,7 +2438,8 @@ def vac_briefing_totals(df, date, file, page, text):
     else:
         total = sum(cums)
     assert len(cums) == len(daily)
-    assert len(cums) < 4
+    # data on fourth doses was added starting with briefing of the 26th
+    assert len(cums) < 5
 
     # We need given totals to ensure we use these over other api given totals
     row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [file]

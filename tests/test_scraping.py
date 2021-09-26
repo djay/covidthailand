@@ -55,16 +55,16 @@ def dl_files(target_dir, dl_gen, check=False):
 
 
 def write_scrape_data_back_to_test(df, dir, fname=None):
-    "Use this when you are sure the scrapped data is correct"
+    "Use this when you are sure the scraped data is correct"
     date = str(df.index.max().date())
     if fname:
-        # .{date} is ignored but helps to when fname doesn't have date in it
+        # .{date} is ignored but helps to have when fname doesn't have date in it
         df.to_json(f"tests/{dir}/{fname}.{date}.json", orient='table', indent=2)
     else:
         df.to_json(f"tests/{dir}/{date}.json", orient='table', indent=2)
 
 
-# 021-07-05          0.0
+# 2021-07-05          0.0
 # 2021-07-06          0.0
 # 2021-07-07          0.0
 # 2021-07-08          0.0
@@ -211,6 +211,10 @@ def test_briefing_case_types(date, testdf, dl):
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("vac_briefing_totals", briefing_documents))
 def test_vac_briefing_totals(date, testdf, dl):
+    """
+    2021-09-25.json: checks special case for lack of daily vacc data that day
+    2021-09-26.json: checks fix for fourth dose being added to briefing
+    """
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     assert dl is not None
     file = dl()
