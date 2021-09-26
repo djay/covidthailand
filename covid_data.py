@@ -2427,8 +2427,12 @@ def vac_briefing_totals(df, date, file, page, text):
         return df
     rest, *_ = rest.split("หายป่วยแล้ว")
     total, _ = get_next_number(rest, "ฉีดแล้ว", "ฉีดแลว้", until="โดส")
+    # reason there's no data for this date is that over 1 million doses were given: "ข้อมูลการให้บริการวัคซีนวันที่ 24 ก.ย. 64 อยู่ระหว่างตรวจสอบข้อมูล เนื่องจากมีผู้เข้ามารับวัคซีน มากกว่า 1 ล้านโดส"
+    if date == datetime.datetime(2021, 9, 25):
+        daily = [0, 0, 0]
+    else:
+        daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
     cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
-    daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
     if total:
         assert 0.99 <= sum(cums) / total <= 1.01
     else:
@@ -3017,7 +3021,7 @@ def vac_manuf_given(df, page, file, page_num):
 def vac_slides_groups(df, page, file, page_num):
     if "กลุ่มเปา้หมาย" not in page:
         return
-    # does faily good job
+    # does fairly good job
     table = camelot.read_pdf(file, pages=str(page_num), process_background=False)[0].df
     table = table[2:]
     for i in range(1, 7):
