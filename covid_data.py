@@ -2447,18 +2447,25 @@ def vac_briefing_totals(df, date, file, page, text):
     if not numbers:
         return df
     rest, *_ = rest.split("หายป่วยแล้ว")
-    total, _ = get_next_number(rest, "ฉีดแล้ว", "ฉีดแลว้", until="โดส")
-    # reason there's no data for this date is that over 1 million doses were given: 
+    # the reason there's no data for 2021-9-24 is that over 1 million doses were
+    # given and they couldn't tabulate the data in time for briefing of 2021-9-25:
     # "ข้อมูลการให้บริการวัคซีนวันที่ 24 ก.ย. 64 อยู่ระหว่างตรวจสอบข้อมูล เนื่องจากมีผู้เข้ามารับวัคซีน มากกว่า 1 ล้านโดส"
     if date == datetime.datetime(2021, 9, 25):
-        daily = [np.nan, np.nan, np.nan]
+        # use numpy's Not a Number value to avoid borking the plots with 0s
+        total = np.nan
+        cums = daily = [np.nan, np.nan, np.nan]
     else:
+        total, _ = get_next_number(rest, "ฉีดแล้ว", "ฉีดแลว้", until="โดส")
         daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
-    cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
-    if total:
-        assert 0.99 <= sum(cums) / total <= 1.01
-    else:
-        total = sum(cums)
+        # on the first date that fourth doses were reported, 0 daily doses were
+        # displayed despite there suddenly being 800 cumulative fourth doses:
+        if date == datetime.datetime(2021, 9, 26):
+            daily[3] = np.nan
+        cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
+        if total:
+            assert 0.99 <= sum(cums) / total <= 1.01
+        else:
+            total = sum(cums)
     assert len(cums) == len(daily)
     # data on fourth doses was added starting with briefing of the 26th
     assert len(cums) < 5
