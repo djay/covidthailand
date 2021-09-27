@@ -37,7 +37,7 @@ def dl_files(target_dir, dl_gen, check=False):
                     # throw away date since rest is file to check against
             try:
                 testdf = pd.read_json(os.path.join(root, test), orient="table")
-            except ValueError:
+            except (ValueError, TypeError):
                 testdf = None
             # try:
             #     testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
