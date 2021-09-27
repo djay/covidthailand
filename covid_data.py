@@ -455,7 +455,7 @@ def get_thai_situation_files(check=True):
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
         ext=".pdf",
         dir="situation_th",
-        check=check,
+        check=True,
     )
     count = 0
     for link in links:

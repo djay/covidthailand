@@ -242,6 +242,7 @@ def test_vac_briefing_totals(date, testdf, dl):
 def test_situation_pui_th(date, testdf, dl):
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     file = dl()
+    assert dl is not None
     date = dateutil.parser.parse(date)
 
     parsed_pdf = parse_file(file, html=False, paged=False)
