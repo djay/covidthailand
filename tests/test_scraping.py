@@ -45,6 +45,8 @@ def dl_files(target_dir, dl_gen, check=False):
             #     testdf = None
             date, get_file = downloads.get(base, (None, None))
             if get_file is None:
+                if check:
+                    raise Exception(f"Can't match test file {dir_path}/{test} to any downloadable file")
                 missing = True
             tests.append((date, testdf, get_file))
     if missing and not check:
@@ -117,7 +119,7 @@ def find_testing_pdf(check):
     return [(file, None, dl) for file, dl in test_dav_files(ext=".pdf")]
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pptx))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pptx", find_testing_pptx))
 def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
     assert dl is not None
@@ -129,7 +131,7 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pdf))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pdf", find_testing_pdf))
 def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
     if fname is None:
