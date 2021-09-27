@@ -7,35 +7,35 @@
       },
       {
         "name":"Vac Given",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given Cum",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given 1",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given 2",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given 3",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given 1 Cum",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given 2 Cum",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Given 3 Cum",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Source Vac Given",
@@ -49,16 +49,16 @@
   },
   "data":[
     {
-      "Date":"2021-09-24T00:00:00.000Z",
-      "Vac Given":null,
-      "Vac Given Cum":null,
-      "Vac Given 1":null,
-      "Vac Given 2":null,
-      "Vac Given 3":null,
-      "Vac Given 1 Cum":null,
-      "Vac Given 2 Cum":null,
-      "Vac Given 3 Cum":null,
-      "Source Vac Given":"briefings\/250964.pdf"
+      "Date":"2021-09-23T00:00:00.000Z",
+      "Vac Given":626896,
+      "Vac Given Cum":47296431,
+      "Vac Given 1":256541,
+      "Vac Given 2":369868,
+      "Vac Given 3":487,
+      "Vac Given 1 Cum":29998440,
+      "Vac Given 2 Cum":16673867,
+      "Vac Given 3 Cum":624124,
+      "Source Vac Given":"briefings\/240964.pdf"
     }
   ]
 }
