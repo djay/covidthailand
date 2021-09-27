@@ -463,8 +463,10 @@ def get_thai_situation_files(check=True):
         count += 1
 
         def dl_file(link=link):
-            file, _, _ = next(iter(web_files(link, dir="situation_th")))
-            return file
+            for file, _, _ in web_files(link, dir="situation_th"):
+                return file  # Just want first
+            # Missing file
+            return None
 
         date = file2date(link)
         yield link, date, dl_file
@@ -473,7 +475,8 @@ def get_thai_situation_files(check=True):
 def get_thai_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
     for link, date, dl_file in get_thai_situation_files():
-        file = dl_file()
+        if (file := dl_file()) is None:
+            continue
 
         parsed_pdf = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
@@ -3303,6 +3306,7 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    situation = get_situation()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     vac = get_vaccinations()
@@ -3311,7 +3315,6 @@ def scrape_and_combine():
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
-    situation = get_situation()
 
     tests = get_tests_by_day()
     excess_deaths()
