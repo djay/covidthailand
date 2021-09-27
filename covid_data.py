@@ -454,7 +454,8 @@ def get_thai_situation_files(check=True):
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
         ext=".pdf",
-        dir="situation_th"
+        dir="situation_th",
+        check=check,
     )
     count = 0
     for link in links:
@@ -463,7 +464,7 @@ def get_thai_situation_files(check=True):
         count += 1
 
         def dl_file(link=link):
-            for file, _, _ in web_files(link, dir="situation_th"):
+            for file, _, _ in web_files(link, dir="situation_th", check=check):
                 return file  # Just want first
             # Missing file
             return None
