@@ -56,9 +56,14 @@ def dl_files(target_dir, dl_gen, check=False):
         return tests
 
 
-def write_scrape_data_back_to_test(df, dir, fname=None):
+def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
     "Use this when you are sure the scraped data is correct"
-    date = str(df.index.max().date())
+    if fname and "/" in fname:
+        *_, fname = fname.rsplit("/", 1)
+    if date is None:
+        date = str(df.index.max().date())
+    else:
+        date = str(date.date())
     if fname:
         # .{date} is ignored but helps to have when fname doesn't have date in it
         df.to_json(f"tests/{dir}/{fname}.{date}.json", orient='table', indent=2)
@@ -229,7 +234,7 @@ def test_vac_briefing_totals(date, testdf, dl):
     for i, soup in enumerate(pages):
         text = soup.get_text()
         df = vac_briefing_totals(df, date, file, soup, text)
-    # write_scrape_data_back_to_test(df, "vac_briefing_totals")
+    # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
