@@ -2458,8 +2458,6 @@ def vac_briefing_totals(df, date, file, page, text):
         daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
         # on the first date that fourth doses were reported, 0 daily doses were
         # displayed despite there suddenly being 800 cumulative fourth doses:
-        if date == datetime.datetime(2021, 9, 26):
-            daily[3] = np.nan
         cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
         if total:
             assert 0.99 <= sum(cums) / total <= 1.01

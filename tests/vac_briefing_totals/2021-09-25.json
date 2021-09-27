@@ -7,7 +7,7 @@
       },
       {
         "name":"Vac Given",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given Cum",
@@ -15,19 +15,15 @@
       },
       {
         "name":"Vac Given 1",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given 2",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given 3",
-        "type":"integer"
-      },
-      {
-        "name":"Vac Given 4",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Given 1 Cum",
@@ -40,10 +36,6 @@
       {
         "name":"Vac Given 3 Cum",
         "type":"number"
-      },
-      {
-        "name":"Vac Given 4 Cum",
-        "type":"integer"
       },
       {
         "name":"Source Vac Given",
