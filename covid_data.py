@@ -832,8 +832,8 @@ def get_cases_by_demographics_api():
 def moph_dashboard():
 
     def skip_valid(df, idx_value, allow_na={}):
-        
-        if type(idx_value) == tuple:  
+
+        if type(idx_value) == tuple:
             date, prov = idx_value
             idx_value = (str(date.date()) if date else None, prov)
         else:
@@ -848,7 +848,7 @@ def moph_dashboard():
             maxdate = today()
             mins = []
             if type(limits) in [tuple, list]:
-                mindate, maxdate, *mins= limits
+                mindate, maxdate, *mins = limits
             elif limits is None:
                 mindate = d("1975-1-1")
             else:
@@ -867,7 +867,7 @@ def moph_dashboard():
                 return True
 
         # allow certain fields null if before set date
-        nulls = [c for c in df.columns if not is_valid(c, date, idx_value) ]
+        nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
         if not nulls:
             return True
         else:
@@ -1717,7 +1717,7 @@ def briefing_province_cases(date, pages):
 
 def briefing_deaths_provinces(dtext, date, file):
     if not deaths_title_re.search(dtext):
-        return pd.DataFrame(columns=["Date","Province"]).set_index(["Date", "Province"])
+        return pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
 
     bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
 
@@ -1978,7 +1978,6 @@ def briefing_deaths(file, date, pages):
         if not sum.empty:
             return all, sum, dfprov
 
-
         if "วิตของประเทศไทย" not in text:
             continue
         orig = None
@@ -2153,7 +2152,6 @@ def prov_to_districts(dfprov):
     return by_area
 
 
-
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
@@ -2168,10 +2166,10 @@ def get_cases_by_area_api():
 ##########################################
 
 def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-                   username="wbioWZAQfManokc",
-                   password="null",
-                   ext=".pdf .pptx",
-                   dir="testing_moph"):
+                       username="wbioWZAQfManokc",
+                       password="null",
+                       ext=".pdf .pptx",
+                       dir="testing_moph"):
     return dav_files(url, username, password, ext, dir)
 
 
@@ -2904,7 +2902,6 @@ def vaccination_reports():
     #     # vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
     #     # Just in case coldchain data not working
-    
 
     return vac_daily, vac_prov_reports
 
@@ -3057,7 +3054,7 @@ def vac_slides_groups(df, page, file, page_num):
     for i in range(1, 7):
         table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))
     table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
-    table.loc[:,"group"] = [
+    table.loc[:, "group"] = [
         "Vac Group Medical Staff",
         "Vac Group Health Volunteer",
         "Vac Group Other Frontline Staff",
@@ -3068,7 +3065,6 @@ def vac_slides_groups(df, page, file, page_num):
         "Total"
     ]
     table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
-
 
     # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
     # village, rest = get_next_numbers(rest, "เจา้หน้าทีด่", until="\n")
