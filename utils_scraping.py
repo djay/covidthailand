@@ -442,7 +442,8 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
         print(f"Getting {limit} tweets")
         try:
             resp = tw.get_tweets(userid, count=limit).contents
-        except requests.exceptions.RequestException:
+        except Exception:
+            # Either requests exception or intermittent Exception("ID User Not Found!")
             resp = []
         for tweet in sorted(resp, key=lambda t: t['id']):
             date = tweet['created_at'].date()
