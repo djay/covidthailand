@@ -274,7 +274,7 @@ def get_en_situation():
         date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
             continue  # TODO: can manually put in numbers before this
-        parsed_pdf = parsed_pdf.replace("DDC Thailand 1", "")  # footer put in teh wrong place
+        parsed_pdf = parsed_pdf.replace("DDC Thailand 1", "")  # footer put in the wrong place
 
         pui = situation_pui(parsed_pdf, date)
         cases = situation_cases_cum(parsed_pdf, date)
@@ -386,6 +386,8 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         not_pui = None
     elif len(numbers) == 6:  # > 2021-05-10
         tests_total, pui, asq, active_finding, pui2, screened = numbers
+        if date == d("2021-09-26"):
+            pui = pui2  # 3,142,338 != 3,138,544
         assert pui == pui2
         not_pui = None
     else:
@@ -447,22 +449,42 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
     return dfpui
 
 
-def get_thai_situation():
-    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+def get_thai_situation_files(check=True):
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
         ext=".pdf",
-        dir="situation_th"
+        dir="situation_th",
+        check=True,
     )
-    for file, _, _ in web_files(*links, dir="situation_th"):
+    count = 0
+    for link in links:
+        if USE_CACHE_DATA and count > MAX_DAYS:
+            break
+        count += 1
+
+        def dl_file(link=link):
+            for file, _, _ in web_files(link, dir="situation_th", check=check):
+                return file  # Just want first
+            # Missing file
+            return None
+
+        date = file2date(link)
+        yield link, date, dl_file
+
+
+def get_thai_situation():
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    for link, date, dl_file in get_thai_situation_files():
+        if (file := dl_file()) is None:
+            continue
+
         parsed_pdf = parse_file(file, html=False, paged=False)
         if "situation" not in os.path.basename(file):
             continue
         if "Situation Total number of PUI" in parsed_pdf:
             # english report mixed up? - situation-no171-220663.pdf
             continue
-        date = file2date(file)
         results = situation_pui_th(results, parsed_pdf, date, file)
         results = situation_pui_th_death(results, parsed_pdf, date, file)
 
@@ -635,7 +657,7 @@ def get_cases_by_demographics_api():
     cases['risk'].value_counts()
     risks = {}
     risks['สถานบันเทิง'] = "Entertainment"
-    risks['อยู่ระหว่างการสอบสวน'] = "Investigating"  # Under investication
+    risks['อยู่ระหว่างการสอบสวน'] = "Investigating"  # Under investigation
     risks['การค้นหาผู้ป่วยเชิงรุกและค้นหาผู้ติดเชื้อในชุมชน'] = "Proactive Search"
     risks['State Quarantine'] = 'Imported'
     risks['ไปสถานที่ชุมชน เช่น ตลาดนัด สถานที่ท่องเที่ยว'] = "Community"
@@ -654,11 +676,11 @@ def get_cases_by_demographics_api():
     risks['บุคลากรด้านการแพทย์และสาธารณสุข'] = "Work"
     risks['ระบุไม่ได้'] = "Unknown"
     risks['อื่นๆ'] = "Unknown"
-    risks['พิธีกรรมทางศาสนา'] = "Community"  # Religous
+    risks['พิธีกรรมทางศาสนา'] = "Community"  # Religious
     risks['Cluster บ่อนพัทยา/ชลบุรี'] = "Entertainment"  # gambling rayong
     risks['ผู้ที่เดินทางมาจากต่างประเทศ และเข้า HQ/AHQ'] = "Imported"
     risks['Cluster บ่อนไก่อ่างทอง'] = "Entertainment"  # cockfighting
-    risks['Cluster จันทบุรี'] = "Entertainment"  # Chanthaburi - gambing?
+    risks['Cluster จันทบุรี'] = "Entertainment"  # Chanthaburi - gambling?
     risks['Cluster โรงงาน Big Star'] = "Work"  # Factory
     r = {
         27: 'Cluster ชลบุรี:Entertainment',  # Chonburi - gambling
@@ -691,7 +713,7 @@ def get_cases_by_demographics_api():
         20210510.3: 'สัมผัสใกล้ชิดผู้ป่วยยืนยันก่อนหน้า:Contact',
         # Cluster Chonburi Daikin Company, 3
         20210510.4: 'Cluster ชลบุรี บริษัทไดกิ้น:Work',
-        20210510.5: 'ร้านอาหาร:Entertainment',  # resturant
+        20210510.5: 'ร้านอาหาร:Entertainment',  # restaurant
         # touch the infected person confirm Under investigation, 5
         20210510.6: 'สัมผัสผู้ติดเชื้อยืนยัน อยู่ระหว่างสอบสวน:Contact',
         # touch the infected person confirm Under investigation, 5
@@ -706,7 +728,7 @@ def get_cases_by_demographics_api():
         20210512.1: 'Cluster คลองเตย:Community',  # klongtoey cluster
         20210512.2: 'อยู่ระหว่างสอบสวนโรค:Investigating',
         20210512.3: 'อื่น ๆ:Unknown',  # Other
-        # African gem merchants dining after ramandan
+        # African gem merchants dining after Ramadan
         20210512.4: 'Cluster จันทบุรี (ชาวกินี ):Entertainment',
         20210516.0: 'Cluster เรือนจำกลางคลองเปรม:Prison',  # 894
         20210516.1: 'Cluster ตลาดสี่มุมเมือง:Community',  # 344 Four Corners Market
@@ -811,8 +833,8 @@ def get_cases_by_demographics_api():
 def moph_dashboard():
 
     def skip_valid(df, idx_value, allow_na={}):
-        
-        if type(idx_value) == tuple:  
+
+        if type(idx_value) == tuple:
             date, prov = idx_value
             idx_value = (str(date.date()) if date else None, prov)
         else:
@@ -827,7 +849,7 @@ def moph_dashboard():
             maxdate = today()
             mins = []
             if type(limits) in [tuple, list]:
-                mindate, maxdate, *mins= limits
+                mindate, maxdate, *mins = limits
             elif limits is None:
                 mindate = d("1975-1-1")
             else:
@@ -846,7 +868,7 @@ def moph_dashboard():
                 return True
 
         # allow certain fields null if before set date
-        nulls = [c for c in df.columns if not is_valid(c, date, idx_value) ]
+        nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
         if not nulls:
             return True
         else:
@@ -866,7 +888,7 @@ def moph_dashboard():
             "ATK": d("2021-07-31"),
             "Cases Area Prison": d("2021-05-12"),
             "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=5)),
-            "Tests": today(),  # its no longer there
+            "Tests": today(),  # it's no longer there
             'Hospitalized Field HICI': d("2021-08-08"),
             'Hospitalized Field Hospitel': d("2021-08-08"),
             'Hospitalized Field Other': d("2021-08-08"),
@@ -946,7 +968,7 @@ def moph_dashboard():
             row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
             df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
             print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
-        # We get negative valus for field hosoutal before april
+        # We get negative values for field hospital before April
         assert df[df['Recovered'] == 0.0].empty
         df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
         return df
@@ -1192,7 +1214,7 @@ def excess_deaths():
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
         export(df, "deaths_all", csv_only=True, dir="json")
-        shutil.copy(os.path.join("json", "deaths_all.csv"), "api")  # "json" for cachine, api so it's downloadable
+        shutil.copy(os.path.join("json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
 
     return df
 
@@ -1324,7 +1346,7 @@ def parse_case_prov_tweet(walkins, proactive, date, text, url):
 def get_cases_by_prov_tweets():
     print("========RB Tweets==========")
     # These are published early so quickest way to get data
-    # previously also used to get per provice case stats but no longer published
+    # previously also used to get per province case stats but no longer published
 
     # Get tweets
     # 2021-03-01 and 2021-03-05 are missing
@@ -1368,7 +1390,7 @@ def get_cases_by_prov_tweets():
     for date, tweet in sorted(breaking.items(), reverse=True):
         text, url = tweet
         if date in officials:
-            # do unoffical tweets if no official tweet
+            # do unofficial tweets if no official tweet
             continue
         df = df.pipe(parse_unofficial_tweet, date, text, url)
 
@@ -1424,7 +1446,7 @@ def briefing_case_detail_lines(soup):
         nl = " *\n* *"
         nu = "(?:[0-9]+)"
         is_pcell = re.compile(rf"({provish}(?:{nl}\({provish}\))?{nl}\( *{nu} *ราย *\))")
-        lines = pairwise(islice(is_pcell.split("\n".join(cells)), 1, None))  # beacause can be split over <p>
+        lines = pairwise(islice(is_pcell.split("\n".join(cells)), 1, None))  # because can be split over <p>
         yield title, lines
 
 
@@ -1454,7 +1476,7 @@ def briefing_case_detail(date, pages):
 
             for prov_num, line in lines:
                 # for prov in provs: # TODO: should really be 1. make split only split 1.
-                # TODO: sometimes cells/data seperated by "-" 2021-01-03
+                # TODO: sometimes cells/data separated by "-" 2021-01-03
 
                 prov, num = prov_num.strip().split("(", 1)
                 prov = get_province(prov)
@@ -1666,12 +1688,12 @@ def briefing_province_cases(date, pages):
             if NUM_OR_DASH.search(parts[0]):
                 linenum, prov, *parts = parts
             else:
-                # for some reason the line number doesn't show up? but its there in the pdf...
+                # for some reason the line number doesn't show up? but it's there in the pdf...
                 break
             numbers, parts = parts[:9], parts[9:]
             thai = prov.strip().strip(" ี").strip(" ์").strip(" ิ")
             if thai in ['กทม. และปรมิ ณฑล', 'รวมจงัหวดัอนื่ๆ(']:
-                # bangkok + subrubrs, resst of thailand
+                # bangkok + suburbs, rest of thailand
                 break
             prov = get_province(thai)
             numbers = parse_numbers(numbers)
@@ -1696,14 +1718,14 @@ def briefing_province_cases(date, pages):
 
 def briefing_deaths_provinces(dtext, date, file):
     if not deaths_title_re.search(dtext):
-        return pd.DataFrame(columns=["Date","Province"]).set_index(["Date", "Province"])
+        return pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
 
     bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
 
-    # get rid of extra words in brakets to make easier
+    # get rid of extra words in brackets to make easier
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
 
-    # remove age breakdown of deaths per provice to make it easier
+    # remove age breakdown of deaths per province to make it easier
     # e.g "60+ปี 58 ราย (85%)" - from 2021-08-24
     text = re.sub(r"([\d-]+\+?\s?(?:ปี)? *\d* *(?:ราย)? *\(\d+%?\))", " ", text)
     # and '50+ (14)' 2021-08-26
@@ -1929,7 +1951,7 @@ def briefing_deaths_table(orig, date, all):
     df['age'] = pd.to_numeric(df['age'], errors="coerce")
     df = df.dropna(subset=["death_num"])
     df['Date'] = date
-    df['gender'] = df['gender'].map(parse_gender)  # TODO: handle mispelling
+    df['gender'] = df['gender'].map(parse_gender)  # TODO: handle misspelling
     df = df.set_index("death_num")
     df = join_provinces(df, "Province")
     all = all.append(df, verify_integrity=True)
@@ -1956,7 +1978,6 @@ def briefing_deaths(file, date, pages):
         dfprov = briefing_deaths_provinces(text, date, file)
         if not sum.empty:
             return all, sum, dfprov
-
 
         if "วิตของประเทศไทย" not in text:
             continue
@@ -1998,7 +2019,7 @@ def briefing_deaths(file, date, pages):
         print(f"{date.date()} Deaths: ", sum.to_string(header=False, index=False))
         dfprov = all[["Date", 'Province']].value_counts().to_frame("Deaths")
 
-    # calculate per provice counts
+    # calculate per province counts
     return all, sum, dfprov
 
 
@@ -2050,11 +2071,11 @@ def get_cases_by_prov_briefings():
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
         # TODO: This should be redundant now with dashboard having early info on vac progress.
-        # for i, page in enumerate(pages):
-        #     text = page.get_text()
-        #     # Might throw out totals since doesn't include all prov
-        #     # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
-        #     types = vac_briefing_totals(types, date, file, page, text)
+        for i, page in enumerate(pages):
+            text = page.get_text()
+            # Might throw out totals since doesn't include all prov
+            # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
+            types = vac_briefing_totals(types, date, file, page, text)
 
         if not today_types.empty:
             wrong_deaths_report = date in [
@@ -2063,7 +2084,7 @@ def get_cases_by_prov_briefings():
                 d("2021-03-17"),  # 15th and 17th no details of death
                 d("2021-03-15"),
                 d("2021-02-24"),  # 02-24 infographic is image
-                d("2021-02-19"),  # 02-19 death deatils is graphic (the doctor)
+                d("2021-02-19"),  # 02-19 death details is graphic (the doctor)
                 d("2021-02-15"),  # no details of deaths (2)
                 d("2021-02-10"),  # no details of deaths (1)
             ] or date < d("2021-02-01")  # TODO: check out why later
@@ -2132,7 +2153,6 @@ def prov_to_districts(dfprov):
     return by_area
 
 
-
 def get_cases_by_area_api():
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
@@ -2146,18 +2166,18 @@ def get_cases_by_area_api():
 # Testing data
 ##########################################
 
-def test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-                   username="wbioWZAQfManokc",
-                   password="null",
-                   ext=".pdf .pptx",
-                   dir="testing_moph"):
+def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
+                       username="wbioWZAQfManokc",
+                       password="null",
+                       ext=".pdf .pptx",
+                       dir="testing_moph"):
     return dav_files(url, username, password, ext, dir)
 
 
 def get_tests_by_day():
     print("========Tests by Day==========")
 
-    file, dl = next(test_dav_files(ext="xlsx"))
+    file, dl = next(get_test_dav_files(ext="xlsx"))
     dl()
     tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
     tests.dropna(how="any", inplace=True)  # get rid of totals row
@@ -2284,7 +2304,7 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
-    for file, dl in test_dav_files(ext=".pptx"):
+    for file, dl in get_test_dav_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
             data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
@@ -2292,9 +2312,9 @@ def get_test_reports():
                 # Latest file as all the data we need
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
         assert not data.empty
-        # TODO: assert for pubpriv too. but disappearerd after certain date
+        # TODO: assert for pubpriv too. but disappeared after certain date
     # Also need pdf copies because of missing pptx
-    for file, dl in test_dav_files(ext=".pdf"):
+    for file, dl in get_test_dav_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
         for page in pages:
@@ -2426,20 +2446,31 @@ def vac_briefing_totals(df, date, file, page, text):
     if not numbers:
         return df
     rest, *_ = rest.split("หายป่วยแล้ว")
-    total, _ = get_next_number(rest, "ฉีดแล้ว", "ฉีดแลว้", until="โดส")
-    cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
-    daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
-    if total:
-        assert 0.99 <= sum(cums) / total <= 1.01
+    # the reason there's no data for 2021-9-24 is that over 1 million doses were
+    # given and they couldn't tabulate the data in time for briefing of 2021-9-25:
+    # "ข้อมูลการให้บริการวัคซีนวันที่ 24 ก.ย. 64 อยู่ระหว่างตรวจสอบข้อมูล เนื่องจากมีผู้เข้ามารับวัคซีน มากกว่า 1 ล้านโดส"
+    if date == datetime.datetime(2021, 9, 25):
+        # use numpy's Not a Number value to avoid breaking the plots with 0s
+        total = np.nan
+        cums = daily = [np.nan, np.nan, np.nan]
     else:
-        total = sum(cums)
+        total, _ = get_next_number(rest, "ฉีดแล้ว", "ฉีดแลว้", until="โดส")
+        daily = [int(d.replace(",", "")) for d in re.findall(r"\+([\d,]+) *ราย", rest)]
+        # on the first date that fourth doses were reported, 0 daily doses were
+        # displayed despite there suddenly being 800 cumulative fourth doses:
+        cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
+        if total:
+            assert 0.99 <= sum(cums) / total <= 1.01
+        else:
+            total = sum(cums)
     assert len(cums) == len(daily)
-    assert len(cums) < 4
+    # data on fourth doses was added starting with briefing of the 26th
+    assert len(cums) < 5
 
     # We need given totals to ensure we use these over other api given totals
     row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [file]
     columns = ["Date", "Vac Given", "Vac Given Cum"]
-    columns += [f"Vac Given {d}" for d in range(1, len(cums) + 1)]
+    columns += [f"Vac Given {d}" for d in range(1, len(daily) + 1)]
     columns += [f"Vac Given {d} Cum" for d in range(1, len(cums) + 1)]
     columns += ["Source Vac Given"]
     vac = pd.DataFrame([row], columns=columns).set_index("Date")
@@ -2870,7 +2901,6 @@ def vaccination_reports():
     #     # vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
     #     # Just in case coldchain data not working
-    
 
     return vac_daily, vac_prov_reports
 
@@ -2902,7 +2932,7 @@ def get_vac_coldchain():
     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
-    vacct = vacct.loc[:today() - datetime.timedelta(days=1)]  # Todays data is incomplete
+    vacct = vacct.loc[:today() - datetime.timedelta(days=1)]  # Today's data is incomplete
     vacct = vacct.fillna(0)
     vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
     vacct = vacct.combine_first(vaccum)
@@ -3017,13 +3047,13 @@ def vac_manuf_given(df, page, file, page_num):
 def vac_slides_groups(df, page, file, page_num):
     if "กลุ่มเปา้หมาย" not in page:
         return
-    # does faily good job
+    # does fairly good job
     table = camelot.read_pdf(file, pages=str(page_num), process_background=False)[0].df
     table = table[2:]
     for i in range(1, 7):
         table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))
     table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
-    table.loc[:,"group"] = [
+    table.loc[:, "group"] = [
         "Vac Group Medical Staff",
         "Vac Group Health Volunteer",
         "Vac Group Other Frontline Staff",
@@ -3034,7 +3064,6 @@ def vac_slides_groups(df, page, file, page_num):
         "Total"
     ]
     table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
-
 
     # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
     # village, rest = get_next_numbers(rest, "เจา้หน้าทีด่", until="\n")
@@ -3240,7 +3269,7 @@ def get_hospital_resources():
 # TODO: Additional data sources
 # - new moph apis
 #    - https://covid19.ddc.moph.go.th/
-# - medical supplies (tableux)
+# - medical supplies (tableau)
 #    - https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1
 #    - is it accurate?
 #    - no timeseries
@@ -3279,6 +3308,7 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    situation = get_situation()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     vac = get_vaccinations()
@@ -3287,7 +3317,6 @@ def scrape_and_combine():
 
     tweets_prov, twcases = get_cases_by_prov_tweets()
     timelineapi = get_cases()
-    situation = get_situation()
 
     tests = get_tests_by_day()
     excess_deaths()
@@ -3304,7 +3333,7 @@ def scrape_and_combine():
         briefings_prov).combine_first(
         dash_prov).combine_first(
         tweets_prov).combine_first(
-        risks_prov)  # TODO: check they aggree
+        risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
     export(dfprov, "cases_by_province")
 

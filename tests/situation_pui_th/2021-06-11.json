@@ -1,0 +1,54 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Tested Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Tested PUI Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Tested Proactive Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Tested Quarantine Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Tested PUI Walkin Private Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Tested PUI Walkin Public Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Tested PUI Walkin Cum",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-06-11T00:00:00.000Z",
+      "Tested Cum":2528317,
+      "Tested PUI Cum":2100035,
+      "Tested Proactive Cum":345734,
+      "Tested Quarantine Cum":82548,
+      "Tested PUI Walkin Private Cum":499819,
+      "Tested PUI Walkin Public Cum":1594377,
+      "Tested PUI Walkin Cum":2094196
+    }
+  ]
+}
