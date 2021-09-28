@@ -2449,7 +2449,7 @@ def vac_briefing_totals(df, date, file, page, text):
     # the reason there's no data for 2021-9-24 is that over 1 million doses were
     # given and they couldn't tabulate the data in time for briefing of 2021-9-25:
     # "ข้อมูลการให้บริการวัคซีนวันที่ 24 ก.ย. 64 อยู่ระหว่างตรวจสอบข้อมูล เนื่องจากมีผู้เข้ามารับวัคซีน มากกว่า 1 ล้านโดส"
-    if date == datetime.datetime(2021, 9, 25):
+    if date >= datetime.datetime(2021, 9, 25):
         # use numpy's Not a Number value to avoid breaking the plots with 0s
         total = np.nan
         cums = daily = [np.nan, np.nan, np.nan]
@@ -2459,6 +2459,8 @@ def vac_briefing_totals(df, date, file, page, text):
         # on the first date that fourth doses were reported, 0 daily doses were
         # displayed despite there suddenly being 800 cumulative fourth doses:
         cums = [int(d.replace(",", "")) for d in re.findall(r"สะสม *([\d,]+) *ราย", rest)]
+        if date in [d("2021-09-28")]:
+            cums[0] = 31811342  # mistype. 31,8,310 - https://twitter.com/thaimoph/status/1442771132717797377
         if total:
             assert 0.99 <= sum(cums) / total <= 1.01
         else:
