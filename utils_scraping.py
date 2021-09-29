@@ -312,7 +312,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 r = s.get(url, timeout=5, stream=True, headers=resume_header, allow_redirects=True)
             except (Timeout, ConnectionError):
                 r = None
-            if r is not None and r.status_code == 200:
+            if r is not None and r.status_code < 300:
                 print(f"Download: {file} {modified}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 mode = "w+b" if resume_byte_pos > 0 else "wb"
@@ -324,19 +324,22 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
                                 print(".", end="")
-                    except (Timeout, ConnectionError):
+                    except (Timeout, ConnectionError) as e:
                         if resumable:
                             # TODO: should we revert to last version instead?
                             print(f"Error downloading: {file}: resumable file incomplete")
                         else:
-                            print(f"Error downloading: {file}: skipping")
+                            print(f"Error downloading: {file}: skipping. {str(e)}")
                             remove = True  # TODO: if we leave it without check it will never get fixed
                             continue
                 print("")
             elif os.path.exists(file):
                 print(f"Error downloading: {file}: using cache")
+            elif r is not None:
+                print(f"Error downloading: {file}: skipping. bad response {r.status_code}, {r.content}")
+                continue
             else:
-                print(f"Error downloading: {file}: skipping")
+                print(f"Error downloading: {file}: skipping. error with initial request")
                 continue
         with open(file, "rb") as f:
             content = f.read()

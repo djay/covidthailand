@@ -59,8 +59,7 @@ def dl_files(target_dir, dl_gen, check=False):
 def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
     "Use this when you are sure the scraped data is correct"
     if fname is not None:
-        *_, fname = fname.rsplit("/", 1)
-        fname, *_ = fname.rsplit(".", 1)  # get rid of extension
+        fname = os.path.splitext(os.path.basename(fname))[0]
     if date is None:
         date = str(df.index.max().date())
     else:
