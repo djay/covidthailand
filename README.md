@@ -12,7 +12,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 **NEW** [Excess Deaths](#excess-deaths)
 
 ## Disclaimer
-*Data offered here is offered as is with no guarentees. As much as possible government reportsk
+*Data offered here is offered as is with no guarantees. As much as possible government reports
 and data feeds have been used effort has gone into making this data collection accurate and timely.
 This sites only intention is to give an accurate representation of all the available Covid data for Thailand in one place.*
 
@@ -81,14 +81,14 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Unoffcial Estimated Infections based on Deaths/IFR
+## Unofficial Estimated Infections based on Deaths/IFR
 
 ![Estimated Infections Thailand](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
 
 - Due to the Asymptomatic nature of Covid all countries have more infections than can be confirmed via testing.
-- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for thailand) gives an estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths.
+- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for Thailand) gives an estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths.
 - This doesn't mean there is not enough testing being done in Thailand. [Positive rate](#positive-rate) is another indication of testing effectiveness.
-- More detail models with predictions that take into account factors like [Goggle mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) to predict infections based on adherence to social distancing measures.
+- More detailed models with predictions that take into account factors like [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) to predict infections based on adherence to social distancing measures.
    - [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/) ([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)), 
    - [IHME Covid Model](https://covid19.healthdata.org/thailand) 
 ([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA)) 
@@ -104,9 +104,9 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
 
-![Trending Up Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
+![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
 
-![Top Severe Hospitaliztions](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
+![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is 
@@ -158,7 +158,7 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 
 ![Private and Public Positive Results](https://github.com/djay/covidthailand/wiki/cases_3.png)
 
-- [There are more confirmed cases than positives in Thailands testing data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results), this could be for various
+- [There are more confirmed cases than positives in Thailand's testing data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results), this could be for various
   reasons but could make the positive rate lower.
 - Sources: [Daily situation Reports](downloads#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
 
@@ -232,10 +232,10 @@ it's not yet clear which range of years provides the best baseline to compare ag
 
 
 ## How to contribute
-- As the differnent sources of the data has increased so has the code needed fetch, extract and
+- As the different sources of the data has increased so has the code needed fetch, extract and
   display this data. All the code is fairly simple python however. It is a fun way to learn scraping
   data and/or pandas and matplotlib.
-- Find a [github issue](https://github.com/djay/covidthailand/issues) and have a go. Many are marked as suitable for begginers
+- Find a [github issue](https://github.com/djay/covidthailand/issues) and have a go. Many are marked as suitable for beginners
   - making new plots
   - improve existing plots
   - adding tests so it's faster to make future fixes
@@ -263,30 +263,31 @@ it's not yet clear which range of years provides the best baseline to compare ag
      - if you are trying to add in past regression tests you can also use [```git blame covid_data.py```](https://github.com/djay/covidthailand/blame/45ab729d5cdba862de2c5940264f790a5504907a/covid_data.py) on the scraping function to see the dates that lines were added or changed. in some cases comments indicated important dates where code had to change. 
   - Add empty file in tests/*scraper_type*/*dl_name*.json
      - for some tests can be use date of file instead or filename.date.json (the date is ignored but helps for readability)
-  - Run tests. This will download just the document needed for that test, scrape it and compare the results agains the json.
-     - of course this will fail but you can look at the generated data and compare it to the original file or other sources to make sure it loosk right
-  - If the results are correct there is commented out code in the test to export the data to the 
+  - Run tests. This will download just the document needed for that test, scrape it and compare the results against the json.
+     - of course this will fail but you can look at the generated data and compare it to the original file or other sources to make sure it looks right
+  - If the results are correct there is commented out code in the test function to export the data to the 
     test json file.
     - if you are using vscode to run pytests you need to refresh the tests list at this point for some reason
-  - Note not all scrapers have a test framework setup yet. But follow the existing code to do add it or ask for help.
+  - Note that not all scrapers have a test framework setup yet. But follow the existing code to add one or ask for help.
 
 ### Running just plots (or latest files)
-- copy all the csv files from downloads and put then in a dir called api
-- copy the moph_* files from api and also put them in a dir called "json"
 - To get latest files
   ```
-  USE_CACHE_DATA=True MAX_DAYS=1 bin/python covid_plot.py
+  wget --recursive --level=1 --accept="*.csv" --no-host-directories --cut-dirs=2 https://github.com/djay/covidthailand/blob/main/downloads.md
+  mv --no-target-directory wiki api
+  mkdir --parents json
+  cp api/{deaths_all.csv,moph_*} json
   ```
 - To do just plots
   ```
   USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
   ```
-- For debugging, to do just one part of the scraping first, rearrange lines in covid_data.py/scrape_and_combine
+- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
 
 ### Running full code (warning will take a long time)
-You can just use the test framework without a full download if want to work on scraping.
+You can just use the test framework without a full download if you want to work on scraping.
 
-- to download only the files that interest you first you can commented out or rearrange the lines in covid_data.scrape_and_combine
+- to download only the files that interest you first, you can comment out or rearrange the lines in covid_data.scrape_and_combine
 - to work on plots you can download the csv files from the website into the api directory and set env MAX_DAYS=0
 
 - To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
@@ -297,7 +298,7 @@ You can just use the test framework without a full download if want to work on s
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
 - [Peter Scully](https://github.com/pmdscully)
-- join us? - 
+- join us?
 
 # About
 
@@ -340,12 +341,12 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - 2021-07-10 - Put actuals on main case plots
 - 2021-06-29 - Use coldchain data to plot deliveries and province vac data
 - 2021-06-22 - Add trending provinces for contact cases
-- 2021-06-12 - Add vacination daily and improve cumulative vaccinations
+- 2021-06-12 - Add vaccination daily and improve cumulative vaccinations
 - 2021-06-05 - update vaccination reports to parse summary timeline data only (missing source)
 - 2021-06-30 - death reasons and hospitalisation critical plots
-- 2021-05-21 - Estimate of Infections from Deaths
-- 2021-05-18 - Include prisons as seperate province/health district (because briefings do)
-- 2021-05-15 - improve highest positive rate plot to show top 5 only.
+- 2021-05-21 - Estimate of infections from deaths
+- 2021-05-18 - Include prisons as separate province/health district (because briefings do)
+- 2021-05-15 - improve highest positive rate plot to show top 5 only
 - 2021-05-10 - parse unofficial RB tweet to get cases and deaths earlier
 - 2021-05-07 - add trending up and down provinces for cases
 - 2021-05-06 - add top 5 fully vaccinated provinces
