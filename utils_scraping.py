@@ -302,6 +302,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             modified = None
         if i > 0 and is_cutshort(file, modified, check):
             break
+        remove = False
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
             resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0  # go back 10% in case end of data changed (e.g csv)
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
@@ -310,9 +311,18 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 # TODO: handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Will speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
                 r = s.get(url, timeout=5, stream=True, headers=resume_header, allow_redirects=True)
-            except (Timeout, ConnectionError):
+            except (Timeout, ConnectionError) as e:
+                print(f"Error downloading: {file}: {str(e)}")
                 r = None
-            if r is not None and r.status_code < 300:
+            if r is None or r.status_code >= 300:
+                if os.path.exists(file):
+                    print(f"Error downloading: {file}: using cache. bad response {r.status_code}, {r.content}")
+                elif r is not None:
+                    print(f"Error downloading: {file}: skipping. bad response {r.status_code}, {r.content}")
+                    continue
+                else:
+                    continue
+            else:
                 print(f"Download: {file} {modified}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 mode = "w+b" if resume_byte_pos > 0 else "wb"
@@ -327,20 +337,15 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                     except (Timeout, ConnectionError) as e:
                         if resumable:
                             # TODO: should we revert to last version instead?
-                            print(f"Error downloading: {file}: resumable file incomplete")
+                            print(f"Error downloading: {file}: resumable file incomplete {str(e)}")
+                            continue
                         else:
                             print(f"Error downloading: {file}: skipping. {str(e)}")
-                            remove = True  # TODO: if we leave it without check it will never get fixed
-                            continue
+                            remove = True
                 print("")
-            elif os.path.exists(file):
-                print(f"Error downloading: {file}: using cache")
-            elif r is not None:
-                print(f"Error downloading: {file}: skipping. bad response {r.status_code}, {r.content}")
-                continue
-            else:
-                print(f"Error downloading: {file}: skipping. error with initial request")
-                continue
+        if remove:
+            os.remove(file)  # if we leave it without check it will never get fixed
+            continue
         with open(file, "rb") as f:
             content = f.read()
         i += 1
