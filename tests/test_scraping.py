@@ -58,8 +58,9 @@ def dl_files(target_dir, dl_gen, check=False):
 
 def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
     "Use this when you are sure the scraped data is correct"
-    if fname and "/" in fname:
+    if fname is not None:
         *_, fname = fname.rsplit("/", 1)
+        fname, *_ = fname.rsplit(".", 1)  # get rid of extension
     if date is None:
         date = str(df.index.max().date())
     else:
@@ -248,5 +249,5 @@ def test_situation_pui_th(date, testdf, dl):
     parsed_pdf = parse_file(file, html=False, paged=False)
     df = situation_pui_th(results, parsed_pdf, date, file)
 
-    # write_scrape_data_back_to_test(df, "situation_pui_th")
+    # write_scrape_data_back_to_test(df, "situation_pui_th", fname=file)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
