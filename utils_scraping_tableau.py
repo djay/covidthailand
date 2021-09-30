@@ -185,7 +185,7 @@ def workbook_iterate(url, **selects):
                     if last_value != value:
                         try:
                             wb = do_set(wb, value)
-                        except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration) as err:
+                        except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration, TypeError) as err:
                             print(next_idx, "MOPH Dashboard", f"Retry: {do_set.__name__}={value} Timeout Error: {err}")
                             reset = True
                             break
