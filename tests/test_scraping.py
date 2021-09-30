@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, test_dav_files, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -37,7 +37,7 @@ def dl_files(target_dir, dl_gen, check=False):
                     # throw away date since rest is file to check against
             try:
                 testdf = pd.read_json(os.path.join(root, test), orient="table")
-            except ValueError:
+            except (ValueError, TypeError):
                 testdf = None
             # try:
             #     testdf = import_csv(check.rsplit(".", 1)[0], dir=root, index=["Date"])
@@ -45,6 +45,8 @@ def dl_files(target_dir, dl_gen, check=False):
             #     testdf = None
             date, get_file = downloads.get(base, (None, None))
             if get_file is None:
+                if check:
+                    raise Exception(f"Can't match test file {dir_path}/{test} to any downloadable file")
                 missing = True
             tests.append((date, testdf, get_file))
     if missing and not check:
@@ -54,17 +56,22 @@ def dl_files(target_dir, dl_gen, check=False):
         return tests
 
 
-def write_scrape_data_back_to_test(df, dir, fname=None):
-    "Use this when you are sure the scrapped data is correct"
-    date = str(df.index.max().date())
+def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
+    "Use this when you are sure the scraped data is correct"
+    if fname is not None:
+        fname = os.path.splitext(os.path.basename(fname))[0]
+    if date is None:
+        date = str(df.index.max().date())
+    else:
+        date = str(date.date())
     if fname:
-        # .{date} is ignored but helps to when fname doesn't have date in it
+        # .{date} is ignored but helps to have when fname doesn't have date in it
         df.to_json(f"tests/{dir}/{fname}.{date}.json", orient='table', indent=2)
     else:
         df.to_json(f"tests/{dir}/{date}.json", orient='table', indent=2)
 
 
-# 021-07-05          0.0
+# 2021-07-05          0.0
 # 2021-07-06          0.0
 # 2021-07-07          0.0
 # 2021-07-08          0.0
@@ -110,14 +117,14 @@ def test_vac_manuf_given(fname, testdf, get_file):
 
 
 def find_testing_pptx(check):
-    return [(file, None, dl) for file, dl in test_dav_files(ext=".pptx")]
+    return [(file, None, dl) for file, dl in get_test_dav_files(ext=".pptx")]
 
 
 def find_testing_pdf(check):
-    return [(file, None, dl) for file, dl in test_dav_files(ext=".pdf")]
+    return [(file, None, dl) for file, dl in get_test_dav_files(ext=".pdf")]
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pptx))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pptx", find_testing_pptx))
 def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
     assert dl is not None
@@ -129,7 +136,7 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph", find_testing_pdf))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pdf", find_testing_pdf))
 def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
     if fname is None:
@@ -206,4 +213,40 @@ def test_briefing_case_types(date, testdf, dl):
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, file)
     # write_scrape_data_back_to_test(df, "briefing_case_types")
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("vac_briefing_totals", briefing_documents))
+def test_vac_briefing_totals(date, testdf, dl):
+    """
+    2021-09-25.json: checks special case for lack of daily vacc data that day
+    2021-09-26.json: checks fix for fourth dose being added to briefing
+    """
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+    date = dateutil.parser.parse(date)
+
+    for i, soup in enumerate(pages):
+        text = soup.get_text()
+        df = vac_briefing_totals(df, date, file, soup, text)
+    # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("situation_pui_th", get_thai_situation_files))
+def test_situation_pui_th(date, testdf, dl):
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    file = dl()
+    assert dl is not None
+    date = dateutil.parser.parse(date)
+
+    parsed_pdf = parse_file(file, html=False, paged=False)
+    df = situation_pui_th(results, parsed_pdf, date, file)
+
+    # write_scrape_data_back_to_test(df, "situation_pui_th", fname=file)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)

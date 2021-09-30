@@ -1,0 +1,64 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 1",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Source Vac Given",
+        "type":"string"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-08-07T00:00:00.000Z",
+      "Vac Given":198527,
+      "Vac Given Cum":20478635,
+      "Vac Given 1":155992,
+      "Vac Given 2":31445,
+      "Vac Given 3":11090,
+      "Vac Given 1 Cum":15843283,
+      "Vac Given 2 Cum":4438168,
+      "Vac Given 3 Cum":197184,
+      "Source Vac Given":"briefings\/080864.pdf"
+    }
+  ]
+}

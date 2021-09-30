@@ -119,7 +119,7 @@ jobs:
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest
-      - name: Scape Covid Data
+      - name: Scrape Covid Data
         id: update
         if: ${{ steps.go.outcome == 'success' }}
         run: |

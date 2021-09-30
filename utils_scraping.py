@@ -302,17 +302,26 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             modified = None
         if i > 0 and is_cutshort(file, modified, check):
             break
+        remove = False
+        err = ""
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
             resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0  # go back 10% in case end of data changed (e.g csv)
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
 
             try:
-                # TODO: handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
-                # Will speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
+                # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
+                # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
                 r = s.get(url, timeout=5, stream=True, headers=resume_header, allow_redirects=True)
-            except (Timeout, ConnectionError):
+            except (Timeout, ConnectionError) as e:
+                err = str(e)
                 r = None
-            if r is not None and r.status_code == 200:
+            if r is None or r.status_code >= 300:
+                err = f"bad response {r.status_code}, {r.content}" if r is not None else err
+                if not os.path.exists(file):
+                    print(f"Error downloading: {file}: skipping. {err}")
+                    continue
+                print(f"Error downloading: {file}: using cache. {err}")
+            else:
                 print(f"Download: {file} {modified}", end="")
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 mode = "w+b" if resume_byte_pos > 0 else "wb"
@@ -324,20 +333,18 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
                                 print(".", end="")
-                    except (Timeout, ConnectionError):
+                    except (Timeout, ConnectionError) as e:
                         if resumable:
                             # TODO: should we revert to last version instead?
-                            print(f"Error downloading: {file}: resumable file incomplete")
-                        else:
-                            print(f"Error downloading: {file}: skipping")
-                            remove = True  # TODO: if we leave it without check it will never get fixed
+                            print(f"Error downloading: {file}: resumable file incomplete {str(e)}")
                             continue
+                        else:
+                            print(f"Error downloading: {file}: skipping. {str(e)}")
+                            remove = True
                 print("")
-            elif os.path.exists(file):
-                print(f"Error downloading: {file}: using cache")
-            else:
-                print(f"Error downloading: {file}: skipping")
-                continue
+        if remove:
+            os.remove(file)  # if we leave it without check it will never get fixed
+            continue
         with open(file, "rb") as f:
             content = f.read()
         i += 1
@@ -442,7 +449,8 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
         print(f"Getting {limit} tweets")
         try:
             resp = tw.get_tweets(userid, count=limit).contents
-        except requests.exceptions.RequestException:
+        except Exception:
+            # Either requests exception or intermittent Exception("ID User Not Found!")
             resp = []
         for tweet in sorted(resp, key=lambda t: t['id']):
             date = tweet['created_at'].date()
