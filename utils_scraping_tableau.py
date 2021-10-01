@@ -120,8 +120,9 @@ def workbook_iterate(url, **selects):
         ts = tableauscraper.TableauScraper()
         try:
             ts.loads(url)
-        except (RequestException, TableauException, KeyError):
-            print("MOPH Dashboard", f"Error: Timeout Loading url {url}")
+        except Exception as err:
+            # ts library fails in all sorts of weird ways depending on the data sent back
+            print("MOPH Dashboard", f"Error: Exception TS loads url {url}: {str(err)}")
             return do_reset(attempt=attempt + 1)
         fix_timeouts(ts.session, timeout=30)
         wb = ts.getWorkbook()
@@ -185,8 +186,8 @@ def workbook_iterate(url, **selects):
                     if last_value != value:
                         try:
                             wb = do_set(wb, value)
-                        except (RequestException, TableauException, KeyError, APIResponseException, IndexError, StopIteration, TypeError) as err:
-                            print(next_idx, "MOPH Dashboard", f"Retry: {do_set.__name__}={value} Timeout Error: {err}")
+                        except Exception as err:
+                            print(next_idx, "MOPH Dashboard", f"Retry: {do_set.__name__}={value} Error: {err}")
                             reset = True
                             break
                     if not wb.worksheets:
