@@ -4,7 +4,11 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf
+from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, \
+                       briefing_documents, get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
+                       get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
+                       vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
+                       situation_pui_en
 import pandas as pd
 import pytest
 from utils_pandas import export, import_csv
@@ -249,4 +253,18 @@ def test_situation_pui_th(date, testdf, dl):
     df = situation_pui_th(results, parsed_pdf, date, file)
 
     # write_scrape_data_back_to_test(df, "situation_pui_th", fname=file)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("situation_pui_en", get_english_situation_files))
+def test_situation_pui_en(date, testdf, dl):
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    file = dl()
+    assert dl is not None
+    date = dateutil.parser.parse(date)
+
+    parsed_pdf = parse_file(file, html=False, paged=False)
+    df = situation_pui_en(parsed_pdf, date)
+
+    # write_scrape_data_back_to_test(df, "situation_pui_en", fname=file)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
