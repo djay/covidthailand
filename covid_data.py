@@ -192,7 +192,7 @@ def situation_cases_new(parsed_pdf, date):
     ).set_index("Date")
 
 
-def situation_pui(parsed_pdf, date):
+def situation_pui_en(parsed_pdf, date):
     numbers, _ = get_next_numbers(
         parsed_pdf, "Total +number of laboratory tests",
         until="Sought medical services on their own at hospitals",
@@ -209,6 +209,8 @@ def situation_pui(parsed_pdf, date):
             raise Exception(numbers)
 
         pui = {309371: 313813}.get(pui, pui)  # 2020-07-01
+        if date == d("2021-09-26"):
+            pui = pui2 = 3_112_896  # use thai report for this date
         # TODO: find 1529045 below and see which is correct 20201-04-26
         pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780, 278178, 2774962] else pui2
         assert pui == pui2
@@ -242,6 +244,8 @@ def situation_pui(parsed_pdf, date):
         pui_walkin, *_ = numbers
         pui_walkin_private, pui_walkin_public = None, None
         pui_walkin = {853189: 85191}.get(pui_walkin, pui_walkin)  # by taking away other numbers
+    if date == d("2021-09-26"):
+        pui_walkin = 3_106_624  # use thai report for this date
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and 5000000 > pui_walkin > 0)
     assert pui_walkin_public is None or (5000000 > pui_walkin_public > 10000)
     assert pui is None or pui > 0, f"Invalid pui situation_en {date}"
@@ -264,19 +268,43 @@ def situation_pui(parsed_pdf, date):
     ).set_index("Date")
 
 
+def get_english_situation_files(check=True):
+    dir = "situation_en"
+    links = web_links(
+        "https://ddc.moph.go.th/viralpneumonia/eng/situation.php",
+        ext=".pdf",
+        dir=dir,
+        check=True,
+    )
+
+    for count, link in enumerate(links):
+        if USE_CACHE_DATA and count > MAX_DAYS:
+            break
+
+        def dl_file(link=link):
+            for file, _, _ in web_files(link, dir=dir, check=check):
+                return file  # Just want first
+            # Missing file
+            return None
+
+        date = file2date(link)
+        yield link, date, dl_file
+
+
 def get_en_situation():
     results = pd.DataFrame(columns=["Date"]).set_index("Date")
-    url = "https://ddc.moph.go.th/viralpneumonia/eng/situation.php"
-    for file, _, _ in web_files(*web_links(url, ext=".pdf", dir="situation_en"), dir="situation_en"):
-        parsed_pdf = parse_file(file, html=False, paged=False).replace("\u200b", "")
+    for link, date, dl_file in get_english_situation_files():
+        if (file := dl_file()) is None:
+            continue
+
         if "situation" not in os.path.basename(file):
             continue
-        date = file2date(file)
         if date <= dateutil.parser.parse("2020-01-30"):
             continue  # TODO: can manually put in numbers before this
+        parsed_pdf = parse_file(file, html=False, paged=False).replace("\u200b", "")
         parsed_pdf = parsed_pdf.replace("DDC Thailand 1", "")  # footer put in the wrong place
 
-        pui = situation_pui(parsed_pdf, date)
+        pui = situation_pui_en(parsed_pdf, date)
         cases = situation_cases_cum(parsed_pdf, date)
         new_cases = situation_cases_new(parsed_pdf, date)
         row = pui.combine_first(cases).combine_first(new_cases)
