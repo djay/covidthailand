@@ -209,6 +209,8 @@ def situation_pui(parsed_pdf, date):
             raise Exception(numbers)
 
         pui = {309371: 313813}.get(pui, pui)  # 2020-07-01
+        if date == d("2021-09-26"):
+            pui = pui2 = 3_112_896  # use thai report for this date
         # TODO: find 1529045 below and see which is correct 20201-04-26
         pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780, 278178, 2774962] else pui2
         assert pui == pui2
@@ -242,6 +244,8 @@ def situation_pui(parsed_pdf, date):
         pui_walkin, *_ = numbers
         pui_walkin_private, pui_walkin_public = None, None
         pui_walkin = {853189: 85191}.get(pui_walkin, pui_walkin)  # by taking away other numbers
+    if date == d("2021-09-26"):
+        pui_walkin = 3_106_624  # use thai report for this date
     assert pui_walkin is None or pui is None or (pui_walkin <= pui and 5000000 > pui_walkin > 0)
     assert pui_walkin_public is None or (5000000 > pui_walkin_public > 10000)
     assert pui is None or pui > 0, f"Invalid pui situation_en {date}"
