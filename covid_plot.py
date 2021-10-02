@@ -78,12 +78,9 @@ def plot_area(df: pd.DataFrame,
         "figure.titlesize": 30,
         "figure.titleweight": "bold",
         "axes.titlesize": 28,
-        "legend.fontsize": 24,
+        "legend.fontsize": 16,
         "axes.prop_cycle": get_cycle(cmap),
     })
-
-    if len(cols) > 6:
-        plt.rcParams.update({"legend.fontsize": 18})
 
     if actuals:
         # display the originals dashed along side MA
@@ -253,7 +250,7 @@ def plot_area(df: pd.DataFrame,
 
         leg = a0.legend(handles=handles,
                         labels=legends,
-                        loc=legend_pos,
+                        loc="upper left",
                         frameon=True,
                         edgecolor="black",
                         fancybox=True,
