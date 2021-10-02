@@ -269,14 +269,18 @@ def plot_area(df: pd.DataFrame,
 
         if percent_fig:
             a1.set_prop_cycle(None)
+            a1.tick_params(direction='out', length=6, width=1, color='lightgrey')
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
             a1.set_ylabel('Percent')
             a1.xaxis.label.set_visible(False)
-            a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+        a0_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
         if y_formatter is not None:
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+        a0.tick_params(direction='out', length=6, width=1, color='lightgrey')
             
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
