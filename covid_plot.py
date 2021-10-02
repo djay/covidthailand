@@ -129,16 +129,16 @@ def plot_area(df: pd.DataFrame,
             df[f'{unknown_name}{ma_suffix} (%)'] = 0
         perccols = [f'{c} (%)' for c in perccols]
 
-    title = f'{title}\n'
-
+    subtitle = ''
     if ma_days:
-        title = title + f'({ma_days} day rolling average) '
-    if is_dates:
-        title += f"Last Data: {last_update.date().strftime('%d %b %Y')}\n"
-    else:
-        title += f"Last Data: {last_update}\n"
+        subtitle = f'{ma_days}-Day Rolling Average - '
 
-    title += 'https://djay.github.io/covidthailand - (CC BY)'
+    subtitle += 'https://djay.github.io/covidthailand'
+
+    if is_dates:
+        subtitle += f" - Last Data: {last_update.date()}"
+    else:
+        subtitle += f" - Last Data: {last_update}"
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
@@ -237,7 +237,8 @@ def plot_area(df: pd.DataFrame,
         if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
 
-        a0.set_title(label=title)
+        f.suptitle(title)
+        a0.set_title(label=subtitle)
         if footnote:
             plt.annotate(footnote, (0.99, 0), (0, -50),
                          xycoords='axes fraction',
