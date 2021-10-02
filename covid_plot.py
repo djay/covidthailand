@@ -1250,15 +1250,16 @@ def save_plots(df: pd.DataFrame) -> None:
               percent_fig=False,
               ma_days=None,
               cmap='tab10')
-    plot_area(df=deaths_by_age,
-              png_prefix='deaths_age_est',
-              cols_subset=death_cols,
-              title='Thailand Covid Death Age Distribution\nEstimation from smoothed CFR from daily situation reports',
-              kind='area',
-              stacked=True,
-              percent_fig=True,
-              ma_days=None,
-              cmap=get_cycle('summer_r', len(cols) + 1))
+    # don't use this chart anymore since we can get this data from the dashboard
+    # plot_area(df=deaths_by_age,
+    #           png_prefix='deaths_age_est',
+    #           cols_subset=death_cols,
+    #           title='Thailand Covid Death Age Distribution\nEstimation from smoothed CFR from daily situation reports',
+    #           kind='area',
+    #           stacked=True,
+    #           percent_fig=True,
+    #           ma_days=None,
+    #           cmap=get_cycle('summer_r', len(cols) + 1))
 
     # Plot death ages from dashboard data
     death_cols = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']
