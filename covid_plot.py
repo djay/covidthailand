@@ -11,7 +11,7 @@ from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
+from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_prefix, remove_suffix, any_in
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
@@ -263,16 +263,15 @@ def plot_area(df: pd.DataFrame,
         for line in leg.get_lines():
             line.set_linewidth(4.0)
 
-        if unknown_total:
-            a0.set_ylabel(unknown_total)
         a0.xaxis.label.set_visible(False)
 
         if percent_fig:
             a1.set_prop_cycle(None)
+            a1.yaxis.set_major_formatter(FuncFormatter(perc_format))
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
-            a1.set_ylabel('Percent')
             a1.xaxis.label.set_visible(False)
-            a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
         if y_formatter is not None:
