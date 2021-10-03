@@ -24,7 +24,7 @@ def plot_area(df: pd.DataFrame,
               title: str,
               footnote: str = None,
               legends: List[str] = None,
-              legend_pos: str = None,
+              legend_pos: str = 'upper left',
               legend_cols: int = 1,
               kind: str = 'line',
               stacked=False,
@@ -77,14 +77,11 @@ def plot_area(df: pd.DataFrame,
         "font.size": 20,
         "figure.titlesize": 30,
         "figure.titleweight": "bold",
-        "legend.fontsize": 16,
+        "legend.fontsize": 18,
         "xtick.labelsize": 20,
         "ytick.labelsize": 20,
         "axes.prop_cycle": get_cycle(cmap),
     })
-
-    if len(cols) > 6:
-        plt.rcParams.update({"legend.fontsize": 18})
 
     if actuals:
         # display the originals dashed along side MA
