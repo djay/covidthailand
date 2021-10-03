@@ -78,7 +78,7 @@ def plot_area(df: pd.DataFrame,
         "figure.titlesize": 30,
         "figure.titleweight": "bold",
         "axes.titlesize": 28,
-        "legend.fontsize": 16,
+        "legend.fontsize": 18,
         "axes.prop_cycle": get_cycle(cmap),
     })
 
