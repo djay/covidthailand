@@ -1,0 +1,4 @@
+[flake8]
+ignore = E265
+max-complexity = 32
+max-line-length = 128
