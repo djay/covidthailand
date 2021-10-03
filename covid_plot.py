@@ -74,11 +74,12 @@ def plot_area(df: pd.DataFrame,
     orig_cols = cols
 
     plt.rcParams.update({
-        "font.size": 24,
+        "font.size": 20,
         "figure.titlesize": 30,
         "figure.titleweight": "bold",
-        "axes.titlesize": 28,
-        "legend.fontsize": 24,
+        "legend.fontsize": 16,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "axes.prop_cycle": get_cycle(cmap),
     })
 
