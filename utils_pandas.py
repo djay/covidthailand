@@ -101,8 +101,8 @@ def human_format(num: float, pos: int) -> str:
         magnitude += 1
         num /= 1000.0
     # add more suffixes if you need them
-    suffix = ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
-    return f'{num:.1f}{suffix}'
+    suffix = ['', 'k', 'M', 'G', 'T', 'P'][magnitude]
+    return f'{num:.1f}{suffix}'.replace(".0", "")
 
 
 def perc_format(num: float, pos: int) -> str:
