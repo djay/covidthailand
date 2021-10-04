@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
-from utils_scraping import remove_prefix, remove_suffix, any_in
+from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
@@ -287,18 +287,18 @@ def plot_area(df: pd.DataFrame,
         if y_formatter is not None:
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=1, color='lightgrey')
-            
+
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path)
-        print("Plot:", path)
+        logger.info("Plot: {}", path)
         plt.close()
 
     return None
 
 
 def save_plots(df: pd.DataFrame) -> None:
-    print('======== Generating Plots ==========')
+    logger.info('======== Generating Plots ==========')
 
     # matplotlib global settings
     matplotlib.use('AGG')

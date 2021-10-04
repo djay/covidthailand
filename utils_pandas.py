@@ -13,6 +13,7 @@ import numpy as np
 from matplotlib import colors as mcolors
 import mpld3
 
+from utils_scraping import logger
 
 def daterange(start_date, end_date, offset=0):
     "return a range of dates from start_date until before end_date. Offset extends range by offset days"
@@ -33,7 +34,7 @@ def add_data(data, df):
     try:
         data = data.append(df, verify_integrity=True)
     except ValueError:
-        print('detected duplicates; dropping only the duplicate rows')
+        logger.info('detected duplicates; dropping only the duplicate rows')
         idx_names = data.index.names
         if [None] != idx_names:
             data = data.reset_index()
@@ -182,7 +183,7 @@ def fuzzy_join(a,
 
 
 def export(df, name, csv_only=False, dir="api"):
-    print(f"Exporting: {name}")
+    logger.info("Exporting: {}", name)
     df = df.reset_index()
     for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
         df[c] = df[c].dt.strftime('%Y-%m-%d')
@@ -206,7 +207,7 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="ap
     path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
         return pd.DataFrame(columns=index).set_index(index)
-    print("Importing CSV:", path)
+    logger.info("Importing CSV: {}", path)
     old = pd.read_csv(path)
     for c in date_cols:
         old[c] = pd.to_datetime(old[c])
