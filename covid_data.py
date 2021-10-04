@@ -2066,7 +2066,7 @@ def briefing_documents(check=True):
 
         def get_file(link=link):
             try:
-                file, text, url = next(iter(web_files(link, dir="briefings")))
+                file, text, url = next(iter(web_files(link, dir="inputs/briefings")))
             except StopIteration:
                 return None
             return file
@@ -2198,7 +2198,7 @@ def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
                        username="wbioWZAQfManokc",
                        password="null",
                        ext=".pdf .pptx",
-                       dir="testing_moph"):
+                       dir="inputs/testing_moph"):
     return dav_files(url, username, password, ext, dir)
 
 
@@ -2872,7 +2872,7 @@ def vaccination_reports_files2(check=True):
 
         def get_file(link=link):
             try:
-                file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
             except StopIteration:
                 return None
             return file
@@ -3138,7 +3138,7 @@ def vac_slides_files(check=True):
         count += 1
 
         def dl_file(link=link):
-            file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+            file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
             return file
 
         yield link, None, dl_file
