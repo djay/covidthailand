@@ -268,7 +268,7 @@ def situation_pui_en(parsed_pdf, date):
     ).set_index("Date")
 
 
-def get_english_situation_files(check=True):
+def get_english_situation_files(check=False):
     dir = "situation_en"
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/eng/situation.php",
@@ -477,7 +477,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
     return dfpui
 
 
-def get_thai_situation_files(check=True):
+def get_thai_situation_files(check=False):
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
