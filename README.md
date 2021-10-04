@@ -298,6 +298,7 @@ You can just use the test framework without a full download if you want to work 
 - [Dylan Jay](https://github.com/djay)
 - [Vincent Casagrande](https://github.com/flyingvince)
 - [Peter Scully](https://github.com/pmdscully)
+- [Jonathan Barratt](https://github.com/reduxionist) sponsored by [Intelligent-Bytes](https://github.com/intelligent-bytes)
 - join us?
 
 # About

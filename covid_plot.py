@@ -11,7 +11,7 @@ from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, import_csv, increasing, normalise_to_total, \
+from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, import_csv, increasing, normalise_to_total, \
     rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_prefix, remove_suffix, any_in
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
@@ -24,7 +24,7 @@ def plot_area(df: pd.DataFrame,
               title: str,
               footnote: str = None,
               legends: List[str] = None,
-              legend_pos: str = None,
+              legend_pos: str = 'upper left',
               legend_cols: int = 1,
               kind: str = 'line',
               stacked=False,
@@ -74,16 +74,14 @@ def plot_area(df: pd.DataFrame,
     orig_cols = cols
 
     plt.rcParams.update({
-        "font.size": 24,
+        "font.size": 20,
         "figure.titlesize": 30,
         "figure.titleweight": "bold",
-        "axes.titlesize": 28,
-        "legend.fontsize": 24,
+        "legend.fontsize": 18,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "axes.prop_cycle": get_cycle(cmap),
     })
-
-    if len(cols) > 6:
-        plt.rcParams.update({"legend.fontsize": 18})
 
     if actuals:
         # display the originals dashed along side MA
@@ -129,16 +127,16 @@ def plot_area(df: pd.DataFrame,
             df[f'{unknown_name}{ma_suffix} (%)'] = 0
         perccols = [f'{c} (%)' for c in perccols]
 
-    title = f'{title}\n'
-
+    subtitle = ''
     if ma_days:
-        title = title + f'({ma_days} day rolling average) '
-    if is_dates:
-        title += f"Last Data: {last_update.date().strftime('%d %b %Y')}\n"
-    else:
-        title += f"Last Data: {last_update}\n"
+        subtitle = f'{ma_days}-Day Rolling Average - '
 
-    title += 'https://djay.github.io/covidthailand - (CC BY)'
+    subtitle += 'https://djay.github.io/covidthailand'
+
+    if is_dates:
+        subtitle += f" - Last Data: {last_update.date()}"
+    else:
+        subtitle += f" - Last Data: {last_update}"
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
@@ -237,7 +235,8 @@ def plot_area(df: pd.DataFrame,
         if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
 
-        a0.set_title(label=title)
+        f.suptitle(title)
+        a0.set_title(label=subtitle)
         if footnote:
             plt.annotate(footnote, (0.99, 0), (0, -50),
                          xycoords='axes fraction',
@@ -263,20 +262,23 @@ def plot_area(df: pd.DataFrame,
         for line in leg.get_lines():
             line.set_linewidth(4.0)
 
-        if unknown_total:
-            a0.set_ylabel(unknown_total)
         a0.xaxis.label.set_visible(False)
 
         if percent_fig:
             a1.set_prop_cycle(None)
+            a1.yaxis.set_major_formatter(FuncFormatter(perc_format))
+            a1.tick_params(direction='out', length=6, width=1, color='lightgrey')
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
-            a1.set_ylabel('Percent')
             a1.xaxis.label.set_visible(False)
-            a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
+            a1_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+        a0_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
         if y_formatter is not None:
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+        a0.tick_params(direction='out', length=6, width=1, color='lightgrey')
             
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
