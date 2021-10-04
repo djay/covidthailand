@@ -299,7 +299,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="json")
+    dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
 
     # Computed data
     # TODO: has a problem if we have local transmission but no proactive
@@ -1311,7 +1311,7 @@ def save_plots(df: pd.DataFrame) -> None:
         result = result.dropna(subset=['PScore'])
         return result.drop(columns=["Month"])
 
-    excess = import_csv("deaths_all", dir="json", date_cols=[])
+    excess = import_csv("deaths_all", dir="inputs/json", date_cols=[])
     excess = join_provinces(excess, 'Province', ['region', 'Health District Number'])
     years5 = list(range(2015, 2020))
     years3 = [2015, 2016, 2017, 2018]
