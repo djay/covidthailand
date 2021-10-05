@@ -1,15 +1,12 @@
 import itertools
 import json
-from utils_scraping import any_in, fix_timeouts, remove_suffix
+from utils_scraping import any_in, fix_timeouts
 import tableauscraper
 import pandas as pd
 import numpy as np
 import time
-from tableauscraper.TableauScraper import TableauException
-from tableauscraper.api import APIResponseException
 import datetime
 import requests
-from requests.exceptions import RequestException
 
 
 ###########################

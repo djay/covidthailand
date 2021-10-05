@@ -3,14 +3,13 @@ import functools
 import dateutil
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from itertools import chain, islice
+from itertools import islice
 import json
 import os
 import re
 import copy
 import codecs
 import shutil
-import time
 
 from bs4 import BeautifulSoup
 import camelot
@@ -22,10 +21,9 @@ from requests.exceptions import ConnectionError
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range, cut_ages
 from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
-    strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH, s
-from utils_scraping_tableau import workbook_flatten, workbook_iterate, workbook_explore
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
+    strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s
+from utils_scraping_tableau import workbook_flatten, workbook_iterate
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS

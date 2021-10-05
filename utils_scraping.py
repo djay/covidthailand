@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
 import requests
-from requests.exceptions import RequestException, Timeout, ConnectionError
+from requests.exceptions import Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
