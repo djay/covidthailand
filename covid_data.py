@@ -1242,7 +1242,7 @@ def excess_deaths():
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
         export(df, "deaths_all", csv_only=True, dir="inputs/json")
-        shutil.copy(os.path.join("json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
+        shutil.copy(os.path.join("inputs", "json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
 
     return df
 
@@ -2397,7 +2397,7 @@ def get_vaccination_coldchain(request_json, join_prov=False):
             r = requests.post(url, json=post, timeout=120)
         except requests.exceptions.ReadTimeout:
             print("Timeout so using cached", request_json)
-            with open(os.path.join("json", request_json), ) as fp:
+            with open(os.path.join("inputs", "json", request_json), ) as fp:
                 data = fp.read()
         else:
             _, _, data = r.text.split("\n")
@@ -2405,10 +2405,10 @@ def get_vaccination_coldchain(request_json, join_prov=False):
         if any(resp for resp in data['dataResponse'] if 'errorStatus' in resp):
             # raise Exception(resp['errorStatus']['reasonStr'])
             # read from cache if possible
-            with open(os.path.join("json", request_json)) as fp:
+            with open(os.path.join("inputs", "json", request_json)) as fp:
                 data = json.load(fp)
         else:
-            with open(os.path.join("json", request_json), "w") as fp:
+            with open(os.path.join("inputs", "json", request_json), "w") as fp:
                 fp.write(data)
         for resp in (resp for resp in data['dataResponse'] if 'errorStatus' in resp):
             # raise Exception(resp['errorStatus']['reasonStr'])
@@ -2464,7 +2464,7 @@ def get_vaccination_coldchain(request_json, join_prov=False):
 # ผลการใหบ้ริการ ณ วนัที ่23 มิถุนายน 2564 เวลา 18.00 น.
 
 
-def vac_briefing_totals(df, date, file, page, text):
+def vac_briefing_totals(df, date, url, page, text):
     if not re.search("(รายงานสถานการณ์|ระลอกใหม่ เมษายน ประเทศไทย ตั้งแต่วันที่)", text):
         return df
     if not re.search("(ผู้รับวัคซีน|ผูรั้บวัคซีน)", text):
@@ -2498,7 +2498,7 @@ def vac_briefing_totals(df, date, file, page, text):
     assert len(cums) < 5
 
     # We need given totals to ensure we use these over other api given totals
-    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [file]
+    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [url]
     columns = ["Date", "Vac Given", "Vac Given Cum"]
     columns += [f"Vac Given {d}" for d in range(1, len(daily) + 1)]
     columns += [f"Vac Given {d} Cum" for d in range(1, len(cums) + 1)]
@@ -3025,7 +3025,7 @@ def get_vaccinations():
     return vac_timeline
 
 
-def vac_manuf_given(df, page, file, page_num):
+def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
     if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
@@ -3150,7 +3150,7 @@ def vac_slides():
         file = get_file()
         for i, page in enumerate(parse_file(file), 1):
             # pass
-            df = vac_manuf_given(df, page, file, i)
+            df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
     return df
 

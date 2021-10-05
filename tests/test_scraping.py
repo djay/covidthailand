@@ -115,7 +115,7 @@ def test_vac_manuf_given(fname, testdf, get_file):
     assert file is not None
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for i, page in enumerate(parse_file(file), 1):
-        df = vac_manuf_given(df, page, file, i)
+        df = vac_manuf_given(df, page, file, i, "")
     # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
@@ -215,7 +215,7 @@ def test_briefing_case_types(date, testdf, dl):
     pages = parse_file(file, html=True, paged=True)
     pages = [BeautifulSoup(page, 'html.parser') for page in pages]
 
-    df = briefing_case_types(dateutil.parser.parse(date), pages, file)
+    df = briefing_case_types(dateutil.parser.parse(date), pages, "")
     # write_scrape_data_back_to_test(df, "briefing_case_types")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
@@ -237,7 +237,7 @@ def test_vac_briefing_totals(date, testdf, dl):
 
     for i, soup in enumerate(pages):
         text = soup.get_text()
-        df = vac_briefing_totals(df, date, file, soup, text)
+        df = vac_briefing_totals(df, date, "", soup, text)
     # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
