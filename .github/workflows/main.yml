@@ -1,8 +1,8 @@
 name: Update Thailand Covid Data
 on:
-  # push:
-  #   branches-ignore:
-  #     - "releases/**"
+  push:
+    branches:
+      - master
   pull_request:
     branches-ignore:
       - "releases/**"
