@@ -263,7 +263,7 @@ def get_provinces():
 
 def prov_mapping_subdistricts(provinces):
     url = "https://raw.githubusercontent.com/codesanook/thailand-administrative-division-province-district-subdistrict-sql/master/source-data.csv"  # noqa
-    file, _, _ = next(web_files(url, dir="json", check=False))
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
     subs = pd.read_csv(file)
     subs = subs.groupby(['AMPHOE_T', 'CHANGWAT_T']).count().reset_index()
     subs['AMPHOE_T'] = subs['AMPHOE_T'].str.replace(r"^อ. ", "", regex=True)
@@ -300,7 +300,7 @@ def prov_mapping_from_cases(provinces):
 def prov_mapping_from_kristw(provinces):
     # bring in some appreviations
     lupurl = "https://raw.githubusercontent.com/kristw/gridmap-layout-thailand/master/src/input/provinces.csv"
-    file, _ = next(web_files(lupurl, dir="json", check=False))
+    file, _ = next(web_files(lupurl, dir="inputs/json", check=False))
     abr = pd.read_csv(file)
     on_enname = abr.merge(provinces, right_index=True, left_on="enName")
     provinces = provinces.combine_first(

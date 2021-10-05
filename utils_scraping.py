@@ -260,7 +260,7 @@ def links_html_namer(url, _):
     return "-".join(url.split("/")[2:]) + ".html"
 
 
-def web_links(*index_urls, ext=".pdf", dir="html", match=None, filenamer=links_html_namer, check=True):
+def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
@@ -428,8 +428,8 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
 
     tw = TwitterScraper()
-    filename = os.path.join("tweets", f"tweets2_{userid}.pickle")
-    os.makedirs("tweets", exist_ok=True)
+    filename = os.path.join("inputs", "tweets", f"tweets2_{userid}.pickle")
+    os.makedirs("inputs/tweets", exist_ok=True)
     try:
         with open(filename, "rb") as fp:
             tweets = pickle.load(fp)
