@@ -153,21 +153,15 @@ jobs:
       - name: Make cached docs bundle
         run: |
            tar --exclude="inputs/.git" -czvf inputs.tar.gz inputs    
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.3
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: Upload Cached docs to existing release
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: svenstaro/upload-release-action@v2
         with:
-            upload_url: ${{ steps.get_release.outputs.upload_url }}
-            asset_path: ./inputs.tar.gz
-            asset_name: inputs.tar.gz
-            asset_content_type: application/tar+gzip      
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./inputs.tar.gz
+          asset_name: inputs.tar.gz
+          tag: 1.0
+          overwrite: true
+          body: "Updated docs"
       # - name: Push cached docs to repo
       #   run: |
       #     cd inputs
