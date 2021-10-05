@@ -269,7 +269,7 @@ def situation_pui_en(parsed_pdf, date):
 
 
 def get_english_situation_files(check=False):
-    dir = "situation_en"
+    dir = "inputs/situation_en"
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/eng/situation.php",
         ext=".pdf",
@@ -482,7 +482,7 @@ def get_thai_situation_files(check=False):
         "https://ddc.moph.go.th/viralpneumonia/situation.php",
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
         ext=".pdf",
-        dir="situation_th",
+        dir="inputs/situation_th",
         check=True,
     )
     count = 0
@@ -492,7 +492,7 @@ def get_thai_situation_files(check=False):
         count += 1
 
         def dl_file(link=link):
-            for file, _, _ in web_files(link, dir="situation_th", check=check):
+            for file, _, _ in web_files(link, dir="inputs/situation_th", check=check):
                 return file  # Just want first
             # Missing file
             return None
@@ -520,7 +520,7 @@ def get_thai_situation():
 
 
 def get_situation_today():
-    _, page, _ = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="situation_th", check=True))
+    _, page, _ = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="inputs/situation_th", check=True))
     text = BeautifulSoup(page, 'html.parser').get_text()
     numbers, rest = get_next_numbers(text, "ผู้ป่วยเข้าเกณฑ์เฝ้าระวัง")
     pui_cum, pui = numbers[:2]
@@ -585,7 +585,7 @@ def get_cases():
     print("========Covid19 Timeline==========")
     try:
         file, text, url = next(
-            web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="json", check=True))
+            web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="inputs/json", check=True))
     except ConnectionError:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
@@ -603,7 +603,7 @@ def get_case_details_csv():
     if False:
         return get_case_details_api()
     url = "https://data.go.th/dataset/covid-19-daily"
-    file, text, _ = next(web_files(url, dir="json", check=True))
+    file, text, _ = next(web_files(url, dir="inputs/json", check=True))
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
     apis = json.loads(data)
     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
@@ -611,7 +611,7 @@ def get_case_details_csv():
     links = sorted([link for link in links if '.php' not in link and '.xlsx' not in link], reverse=True)
     # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
     cases = pd.DataFrame()
-    for file, _, _ in web_files(*links, dir="json", check=True, strip_version=True, appending=True):
+    for file, _, _ in web_files(*links, dir="inputs/json", check=True, strip_version=True, appending=True):
         if file.endswith(".xlsx"):
             continue
             #cases = pd.read_excel(file)
@@ -641,7 +641,7 @@ def get_case_details_api():
     url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit={chunk}&q=&offset="
     records = []
 
-    cases = import_csv("covid-19", ["_id"], dir="json")
+    cases = import_csv("covid-19", ["_id"], dir="inputs/json")
     lastid = cases.last_valid_index() if cases.last_valid_index() else 0
     data = None
     while data is None or len(data) == chunk:
@@ -654,7 +654,7 @@ def get_case_details_api():
         # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
         cases = cases.combine_first(df.set_index("_id"))
         lastid += chunk - 1
-    export(cases, "covid-19", csv_only=True, dir="json")
+    export(cases, "covid-19", csv_only=True, dir="inputs/json")
     cases = cases.set_index("Date")
     print("Covid19daily: ", "covid-19", cases.last_valid_index())
 
@@ -1089,7 +1089,7 @@ def moph_dashboard():
         #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
         # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
         allow_na = {
-            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=5), 0.001),
+            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=6), 0.001),
             "Tests": today(),  # It's no longer there
             "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=5), 1),
             "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
@@ -1154,7 +1154,7 @@ def moph_dashboard():
             print(date.date(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
             if USE_CACHE_DATA:
                 # Save as we go to help debugging
-                export(df, "moph_dashboard_prov", csv_only=True, dir="json")
+                export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
 
         return df
 
@@ -1164,23 +1164,23 @@ def moph_dashboard():
     # 5 kinds cases stats for last 30 days
     url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
 
-    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="json")  # so we cache it
+    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     dfprov = get_trends_prov(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")  # Speeds up things locally
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="inputs/json")  # Speeds up things locally
     dfprov = by_province(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="json")
+    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
 
-    daily = import_csv("moph_dashboard", ["Date"], False, dir="json")  # so we cache it
+    daily = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
     daily = getDailyStats(daily)
-    export(daily, "moph_dashboard", csv_only=True, dir="json")
-    shutil.copy(os.path.join("json", "moph_dashboard.csv"), "api")  # "json" for caching, api so it's downloadable
+    export(daily, "moph_dashboard", csv_only=True, dir="inputs/json")
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")  # "json" for caching, api so it's downloadable
 
-    ages = import_csv("moph_dashboard_ages", ["Date"], False, dir="json")  # so we cache it
+    ages = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
     ages = getTimelines(ages)
-    export(ages, "moph_dashboard_ages", csv_only=True, dir="json")
+    export(ages, "moph_dashboard_ages", csv_only=True, dir="inputs/json")
 
-    shutil.copy(os.path.join("json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
-    shutil.copy(os.path.join("json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
     daily = daily.combine_first(ages)
     return daily, dfprov
 
@@ -1196,7 +1196,7 @@ def excess_deaths():
     rows = []
     provinces = pd.read_csv('province_mapping.csv', header=0)
     index = ["Year", "Month", "Province", "Gender", "Age"]
-    df = import_csv("deaths_all", index, date_cols=[], dir="json")
+    df = import_csv("deaths_all", index, date_cols=[], dir="inputs/json")
     counts = df.reset_index(["Gender", "Age"]).groupby(["Year", "Month"]).count()
     if df.empty:
         lyear, lmonth = 2015, 0
@@ -1241,8 +1241,8 @@ def excess_deaths():
             print()
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
-        export(df, "deaths_all", csv_only=True, dir="json")
-        shutil.copy(os.path.join("json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
+        export(df, "deaths_all", csv_only=True, dir="inputs/json")
+        shutil.copy(os.path.join("inputs", "json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
 
     return df
 
@@ -2066,7 +2066,7 @@ def briefing_documents(check=True):
 
         def get_file(link=link):
             try:
-                file, text, url = next(iter(web_files(link, dir="briefings")))
+                file, text, url = next(iter(web_files(link, dir="inputs/briefings")))
             except StopIteration:
                 return None
             return file
@@ -2198,7 +2198,7 @@ def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
                        username="wbioWZAQfManokc",
                        password="null",
                        ext=".pdf .pptx",
-                       dir="testing_moph"):
+                       dir="inputs/testing_moph"):
     return dav_files(url, username, password, ext, dir)
 
 
@@ -2397,7 +2397,7 @@ def get_vaccination_coldchain(request_json, join_prov=False):
             r = requests.post(url, json=post, timeout=120)
         except requests.exceptions.ReadTimeout:
             print("Timeout so using cached", request_json)
-            with open(os.path.join("json", request_json), ) as fp:
+            with open(os.path.join("inputs", "json", request_json), ) as fp:
                 data = fp.read()
         else:
             _, _, data = r.text.split("\n")
@@ -2405,10 +2405,10 @@ def get_vaccination_coldchain(request_json, join_prov=False):
         if any(resp for resp in data['dataResponse'] if 'errorStatus' in resp):
             # raise Exception(resp['errorStatus']['reasonStr'])
             # read from cache if possible
-            with open(os.path.join("json", request_json)) as fp:
+            with open(os.path.join("inputs", "json", request_json)) as fp:
                 data = json.load(fp)
         else:
-            with open(os.path.join("json", request_json), "w") as fp:
+            with open(os.path.join("inputs", "json", request_json), "w") as fp:
                 fp.write(data)
         for resp in (resp for resp in data['dataResponse'] if 'errorStatus' in resp):
             # raise Exception(resp['errorStatus']['reasonStr'])
@@ -2464,7 +2464,7 @@ def get_vaccination_coldchain(request_json, join_prov=False):
 # ผลการใหบ้ริการ ณ วนัที ่23 มิถุนายน 2564 เวลา 18.00 น.
 
 
-def vac_briefing_totals(df, date, file, page, text):
+def vac_briefing_totals(df, date, url, page, text):
     if not re.search("(รายงานสถานการณ์|ระลอกใหม่ เมษายน ประเทศไทย ตั้งแต่วันที่)", text):
         return df
     if not re.search("(ผู้รับวัคซีน|ผูรั้บวัคซีน)", text):
@@ -2498,7 +2498,7 @@ def vac_briefing_totals(df, date, file, page, text):
     assert len(cums) < 5
 
     # We need given totals to ensure we use these over other api given totals
-    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [file]
+    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [url]
     columns = ["Date", "Vac Given", "Vac Given Cum"]
     columns += [f"Vac Given {d}" for d in range(1, len(daily) + 1)]
     columns += [f"Vac Given {d} Cum" for d in range(1, len(cums) + 1)]
@@ -2872,7 +2872,7 @@ def vaccination_reports_files2(check=True):
 
         def get_file(link=link):
             try:
-                file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
             except StopIteration:
                 return None
             return file
@@ -3025,10 +3025,10 @@ def get_vaccinations():
     return vac_timeline
 
 
-def vac_manuf_given(df, page, file, page_num):
+def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
-    if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
+    if "AstraZeneca" not in page or file <= "inputs/vaccinations/1620104912165.pdf":  # 2021-03-21
         return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
     # show be just one col. sometimes there is extra empty ones. 2021-08-03
@@ -3138,7 +3138,7 @@ def vac_slides_files(check=True):
         count += 1
 
         def dl_file(link=link):
-            file, _, _ = next(iter(web_files(link, dir="vaccinations")))
+            file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
             return file
 
         yield link, None, dl_file
@@ -3150,7 +3150,7 @@ def vac_slides():
         file = get_file()
         for i, page in enumerate(parse_file(file), 1):
             # pass
-            df = vac_manuf_given(df, page, file, i)
+            df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
     return df
 
@@ -3163,7 +3163,7 @@ def vac_slides():
 def get_ifr():
     # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _, _ = next(web_files(url, dir="json", check=False))
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):
@@ -3279,7 +3279,7 @@ def get_hospital_resources():
     rows = []
     for page in range(0, 2000, 1000):
         every_district = f"https://services8.arcgis.com/241MQ9HtPclWYOzM/arcgis/rest/services/Hospital_Data_Dashboard/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset={page}&resultRecordCount=1000&cacheHint=true"  # noqa: E501
-        file, content, _ = next(web_files(every_district, dir="json", check=True))
+        file, content, _ = next(web_files(every_district, dir="inputs/json", check=True))
         jcontent = json.loads(content)
         rows.extend([x['attributes'] for x in jcontent['features']])
 
