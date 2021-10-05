@@ -85,7 +85,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
         run: |
-          tar -xzvf inputs.tar.gz   
+          tar -xzvf inputs.tar.gz
+          rm inputs.tar.gz   
       - name: du
         run: |
           du -ha * | sort -h
