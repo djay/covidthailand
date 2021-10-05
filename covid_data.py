@@ -3028,7 +3028,7 @@ def get_vaccinations():
 def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
-    if "AstraZeneca" not in page or file <= "vaccinations/1620104912165.pdf":  # 2021-03-21
+    if "AstraZeneca" not in page or file <= "inputs/vaccinations/1620104912165.pdf":  # 2021-03-21
         return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
     # show be just one col. sometimes there is extra empty ones. 2021-08-03
