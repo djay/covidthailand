@@ -54,7 +54,7 @@ jobs:
           echo  "'${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
       - name: Cache multiple paths
         if: ${{ steps.go1.outcome == 'success' }}
-        uses: actions/cache@v2
+        uses: pat-s/always-upload-cache@v2.1.5
         with:
           path: |
             **/*.pdf
