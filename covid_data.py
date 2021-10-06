@@ -2648,9 +2648,9 @@ def vaccination_daily(daily, date, file, page):
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [0] * 7
-            else:
-                numbers = [0] * 9
+                numbers = numbers + [0] * 8
+            elif len(numbers) == 0:
+                numbers = [0] * 10
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
@@ -2731,14 +2731,18 @@ def vaccination_tables(df, date, page, file):
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
     oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+    def in_heading(pat):
+        return max(len(pat.findall(h)) for h in headings)
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
-        shot_count = max(len(shots.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july"}.get(shot_count)
-        if not table and max(len(oldhead.findall(h)) for h in headings):
+        shot_count = in_heading(shots)
+        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july", 16: "july"}.get(shot_count)
+        if not table and in_heading(oldhead):
             table = "old_given"
-        elif not table and max(len(july.findall(h)) for h in headings):
+        elif not table and in_heading(july) and in_heading(re.compile("ร้อยละ")):  # new % table
+            table = "percent"
+        elif not table and in_heading(july):
             table = "july"
         elif not table:
             continue
@@ -2793,7 +2797,7 @@ def vaccination_tables(df, date, page, file):
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 add(prov, row, givencols)
-            elif table == "july" and len(numbers) in [33, 27, 21, 22, 17]:  # from 2021-08-05
+            elif table == "july" and len(numbers) in [31, 33, 27, 21, 22, 17]:  # from 2021-08-05
                 # Actually cumulative totals
                 if len(numbers) == 21:
                     # Givens is a single total only 2021-08-16
@@ -2808,8 +2812,13 @@ def vaccination_tables(df, date, page, file):
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
                     givens = [None] * 6
                     alloc = [None] * 4
-                else:  # 2021-08-06
+                elif len(numbers) == 27:  # 2021-08-06
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
+                elif len(numbers) == 31:  # 2021-10-05
+                    pop, givens, groups = numbers[0], numbers[1:5], numbers[7:]
+                    alloc = [None] * 5
+                else:
+                    assert False
                 if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
                     sp = None
@@ -2820,14 +2829,16 @@ def vaccination_tables(df, date, page, file):
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
+                if len(groups) < 24:
+                    groups = groups + [np.nan] * 3  # students
                 add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
                 add(prov, [sv, az, sp, pf], alloc4)
-            elif table == "july" and len(numbers) in [13]:  # 2021-08-10
+            elif table == "percent" and len(numbers) in [13]:  # 2021-08-10
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
-            elif table == "july" and len(numbers) in [18]:
-                # extra table with %  per population for over 60s and totals - 2021-09-09
+            elif table == "percent" and len(numbers) in [18, 22]:
+                # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
                 pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
