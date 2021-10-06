@@ -2583,7 +2583,10 @@ def vaccination_daily(daily, date, file, page):
         return daily
 
     def clean_num(numbers):
-        return [n for n in numbers if n not in (60, 17, 12, 7)]
+        if len(numbers) > 8:
+            return [n for n in numbers if n not in (60, 17, 12, 7)]
+        else:
+            return [n for n in numbers if n not in (60, 7)]
 
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
