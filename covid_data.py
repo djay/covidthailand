@@ -2620,27 +2620,30 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Disease {dose} Cum",
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
+            f"Vac Group Student {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
             if num_len >= 8:
-                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *others = numbers
+                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *student = numbers
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
-                # if something was captured into *others then hope it was the addition of students on 2021-10-06 or else...
-                if (others_len := len(others)):
-                    if others_len == 1:
-                        others = others[0]
+                # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
+                if (student_len := len(student)):
+                    if student_len == 1:
+                        student = student[0]
                     else:
-                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, others)
+                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
+                else:
+                    student = None
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = medical = None
-            row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
+                pregnant = volunteer = medical = student = None
+            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
                 assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
-                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area]
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
                 assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
@@ -2679,12 +2682,13 @@ def vaccination_tables(df, date, page, file):
         "Vac Given 3 Cum",
         "Vac Given 3 %",
     ]
-    vaccols7x3 = givencols3 + [
+    vaccols8x3 = givencols3 + [
         f"Vac Group {g} {d} Cum" for g in [
             "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
-            "Risk: Location"
+            "Risk: Location", "Student"
         ] for d in range(1, 4)
     ]
+    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]  # Student vaccination figures did not exist prior to 2021-10-06
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
 
@@ -3095,6 +3099,7 @@ def vac_slides_groups(df, page, file, page_num):
         "Vac Group Risk: Disease",
         "Vac Group Risk: Pregnant",
         "Vac Group Risk: Location",
+        "Vac Group Student"
         "Total"
     ]
     table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
