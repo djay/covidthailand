@@ -2799,7 +2799,7 @@ def vaccination_tables(df, date, page, file):
                     # Givens is a single total only 2021-08-16
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:6], numbers[6:]
                     givens = [None] * 6  # We don't use the total
-                elif len(numbers) == 22:
+                elif len(numbers) == 22 and date < datetime.datetime(2021, 10, 5):
                     # Givens has sinopharm in it too. 2021-08-15
                     pop, alloc, givens, groups = numbers[0], numbers[1:6], numbers[6:7], numbers[7:]
                     givens = [None] * 6  # We don't use the total
@@ -2820,7 +2820,7 @@ def vaccination_tables(df, date, page, file):
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
-                add(prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
+                add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
                 add(prov, [sv, az, sp, pf], alloc4)
             elif table == "july" and len(numbers) in [13]:
                 # extra table with %  per population for over 60s and totals
