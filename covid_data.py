@@ -2583,7 +2583,7 @@ def vaccination_daily(daily, date, file, page):
         return daily
 
     def clean_num(numbers):
-        return [n for n in numbers if n not in [60, 7]]
+        return [n for n in numbers if n not in (60, 17, 12, 7)]
 
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
@@ -2622,12 +2622,18 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Location {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
-        if len(numbers) in [6, 8] and is_risks.search(rest):
-            if len(numbers) == 8:
-                total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
+        if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
+            if num_len >= 8:
+                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *others = numbers
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
+                # if something was captured into *others then hope it was the addition of students on 2021-10-06 or else...
+                if (others_len := len(others)):
+                    if others_len == 1:
+                        others = others[0]
+                    else:
+                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, others)
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
                 pregnant = volunteer = medical = None
@@ -3336,10 +3342,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     situation = get_situation()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
-    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
