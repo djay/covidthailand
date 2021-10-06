@@ -26,6 +26,18 @@
         "type":"integer"
       },
       {
+        "name":"Vac Group 12-17 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group 12-17 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group 12-17 3 Cum",
+        "type":"number"
+      },
+      {
         "name":"Vac Group Health Volunteer 1 Cum",
         "type":"integer"
       },
@@ -35,7 +47,7 @@
       },
       {
         "name":"Vac Group Health Volunteer 3 Cum",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Group Medical All 1 Cum",
@@ -59,7 +71,7 @@
       },
       {
         "name":"Vac Group Medical Staff 3 Cum",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Group Other Frontline Staff 1 Cum",
@@ -71,7 +83,7 @@
       },
       {
         "name":"Vac Group Other Frontline Staff 3 Cum",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Group Over 60 1 Cum",
@@ -83,7 +95,7 @@
       },
       {
         "name":"Vac Group Over 60 3 Cum",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Group Risk: Disease 1 Cum",
@@ -95,7 +107,7 @@
       },
       {
         "name":"Vac Group Risk: Disease 3 Cum",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Group Risk: Location 1 Cum",
@@ -107,7 +119,7 @@
       },
       {
         "name":"Vac Group Risk: Location 3 Cum",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Vac Group Risk: Pregnant 1 Cum",
@@ -119,7 +131,7 @@
       },
       {
         "name":"Vac Group Risk: Pregnant 3 Cum",
-        "type":"integer"
+        "type":"number"
       }
     ],
     "primaryKey":[
@@ -135,30 +147,33 @@
       "Vac Given 1 Cum":17068105,
       "Vac Given 2 Cum":4826641,
       "Vac Given 3 Cum":394073,
+      "Vac Group 12-17 1 Cum":null,
+      "Vac Group 12-17 2 Cum":null,
+      "Vac Group 12-17 3 Cum":null,
       "Vac Group Health Volunteer 1 Cum":546984,
       "Vac Group Health Volunteer 2 Cum":247273,
-      "Vac Group Health Volunteer 3 Cum":0,
+      "Vac Group Health Volunteer 3 Cum":null,
       "Vac Group Medical All 1 Cum":1384454,
       "Vac Group Medical All 2 Cum":973858,
       "Vac Group Medical All 3 Cum":394073,
       "Vac Group Medical Staff 1 Cum":837470,
       "Vac Group Medical Staff 2 Cum":726585,
-      "Vac Group Medical Staff 3 Cum":0,
+      "Vac Group Medical Staff 3 Cum":null,
       "Vac Group Other Frontline Staff 1 Cum":962125,
       "Vac Group Other Frontline Staff 2 Cum":null,
-      "Vac Group Other Frontline Staff 3 Cum":0,
+      "Vac Group Other Frontline Staff 3 Cum":null,
       "Vac Group Over 60 1 Cum":3574077,
       "Vac Group Over 60 2 Cum":268686,
-      "Vac Group Over 60 3 Cum":0,
+      "Vac Group Over 60 3 Cum":null,
       "Vac Group Risk: Disease 1 Cum":1882606,
       "Vac Group Risk: Disease 2 Cum":329672,
-      "Vac Group Risk: Disease 3 Cum":0,
+      "Vac Group Risk: Disease 3 Cum":null,
       "Vac Group Risk: Location 1 Cum":9251308,
       "Vac Group Risk: Location 2 Cum":2679164,
-      "Vac Group Risk: Location 3 Cum":0,
+      "Vac Group Risk: Location 3 Cum":null,
       "Vac Group Risk: Pregnant 1 Cum":7935,
       "Vac Group Risk: Pregnant 2 Cum":574,
-      "Vac Group Risk: Pregnant 3 Cum":0
+      "Vac Group Risk: Pregnant 3 Cum":null
     }
   ]
 }

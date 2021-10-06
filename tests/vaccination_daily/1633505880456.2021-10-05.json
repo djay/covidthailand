@@ -26,6 +26,18 @@
         "type":"integer"
       },
       {
+        "name":"Vac Group 12-17 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group 12-17 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group 12-17 3 Cum",
+        "type":"integer"
+      },
+      {
         "name":"Vac Group Health Volunteer 1 Cum",
         "type":"integer"
       },
@@ -135,6 +147,9 @@
       "Vac Given 1 Cum":33505887,
       "Vac Given 2 Cum":21595916,
       "Vac Given 3 Cum":1554444,
+      "Vac Group 12-17 1 Cum":29047,
+      "Vac Group 12-17 2 Cum":83,
+      "Vac Group 12-17 3 Cum":0,
       "Vac Group Health Volunteer 1 Cum":724163,
       "Vac Group Health Volunteer 2 Cum":614167,
       "Vac Group Health Volunteer 3 Cum":67688,
