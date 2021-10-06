@@ -2740,7 +2740,7 @@ def vaccination_tables(df, date, page, file):
         table = {12: "new_given", 10: "given", 6: "alloc", 14: "july", 16: "july"}.get(shot_count)
         if not table and in_heading(oldhead):
             table = "old_given"
-        elif not table and in_heading(july) and in_heading(re.compile("ร้อยละ")):  # new % table
+        elif not table and in_heading(july) and in_heading(re.compile(r"(?:ร้อยละ|รอ้ยละ)")) and date > d("2021-08-01"):  # new % table
             table = "percent"
         elif not table and in_heading(july):
             table = "july"
@@ -2812,7 +2812,7 @@ def vaccination_tables(df, date, page, file):
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
                     givens = [None] * 6
                     alloc = [None] * 4
-                elif len(numbers) == 27:  # 2021-08-06
+                elif len(numbers) in [27, 33]:  # 2021-08-06, # 2021-08-05
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
                 elif len(numbers) == 31:  # 2021-10-05
                     pop, givens, groups = numbers[0], numbers[1:5], numbers[7:]
