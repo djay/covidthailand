@@ -64,7 +64,10 @@ def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
     if fname is not None:
         fname = os.path.splitext(os.path.basename(fname))[0]
     if date is None:
-        date = str(df.index.max().date())
+        latest = df.index.max()
+        if type(latest) == tuple:
+            latest = latest[0]  # Assume date is always first
+        date = str(latest.date())
     else:
         date = str(date.date())
     if fname:

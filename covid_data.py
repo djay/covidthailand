@@ -2808,21 +2808,21 @@ def vaccination_tables(df, date, page, file):
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
                     givens = [None] * 6
                     alloc = [None] * 4
-                else:
+                else:  # 2021-08-06
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
-                if len(alloc) == 4:
+                if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
                     sp = None
-                else:
+                else:  # 2021-08-15
                     sv, az, sp, pf, total_alloc = alloc
                 assert total_alloc is None or sum([m for m in [sv, az, pf, sp] if m]) == total_alloc
-                if len(groups) == 15:
+                if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
                 add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
                 add(prov, [sv, az, sp, pf], alloc4)
-            elif table == "july" and len(numbers) in [13]:
+            elif table == "july" and len(numbers) in [13]:  # 2021-08-10
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
