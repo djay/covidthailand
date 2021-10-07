@@ -395,7 +395,8 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         r"ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
         r"นวนการตรวจทาง\S+องปฏิบัติการ",
         "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
-        until="(?:โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลเอกชน)"
+        until=r"(?:โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลเอกชน)",
+        require_until=True
     )
     # cases = None
 
@@ -425,7 +426,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         )
         if len(numbers) > 0:
             pui, *rest = numbers
-    if date > dateutil.parser.parse("2020-03-26") and not numbers:
+    if d("2020-03-26") < date < d("2021-10-06") and not numbers:
         raise Exception(f"Problem finding PUI numbers for date {date}")
     elif not numbers:
         return dfpui
@@ -469,7 +470,9 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         [(date,) + row],
         columns=["Date"] + cols
     ).set_index("Date")
-    assert check_cum(df, dfpui, cols)
+    if date < d("2021-10-05"):
+        # stopped publishing most data
+        assert check_cum(df, dfpui, cols)
     dfpui = dfpui.combine_first(df)
     print(date.date(), file, df.to_string(header=False, index=False))
     return dfpui
@@ -3361,8 +3364,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    vac = get_vaccinations()
     situation = get_situation()
+    vac = get_vaccinations()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()

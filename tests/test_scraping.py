@@ -255,7 +255,7 @@ def test_situation_pui_th(date, testdf, dl):
     parsed_pdf = parse_file(file, html=False, paged=False)
     df = situation_pui_th(results, parsed_pdf, date, file)
 
-    # write_scrape_data_back_to_test(df, "situation_pui_th", fname=file)
+    # write_scrape_data_back_to_test(df, "situation_pui_th", fname=file, date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
