@@ -4,14 +4,13 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_case_types, briefing_deaths, briefing_deaths_provinces, briefing_deaths_summary, \
-                       briefing_documents, get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
+from covid_data import briefing_case_types, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, \
+                       get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
                        get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
                        vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
                        situation_pui_en
 import pandas as pd
 import pytest
-from utils_pandas import export, import_csv
 import dateutil
 
 
@@ -96,7 +95,7 @@ def test_vac_reports(fname, testdf, get_file):
     for page in parse_file(file):
         df = vaccination_daily(df, None, file, page)
     # write_scrape_data_back_to_test(df, "vaccination_daily", fname)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
 
 
 @pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
@@ -107,6 +106,7 @@ def test_vac_tables(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
         df = vaccination_tables(df, None, page, file)
+        df = df.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vaccination_tables", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
