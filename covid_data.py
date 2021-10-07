@@ -191,6 +191,7 @@ def situation_cases_new(parsed_pdf, date):
 
 
 def situation_pui_en(parsed_pdf, date):
+    parsed_pdf = parsed_pdf.replace("DDC Thailand 1", "")  # 2021-10-04
     numbers, _ = get_next_numbers(
         parsed_pdf, "Total +number of laboratory tests",
         until="Sought medical services on their own at hospitals",
@@ -211,6 +212,7 @@ def situation_pui_en(parsed_pdf, date):
             pui = pui2 = 3_112_896  # use thai report for this date
         # TODO: find 1529045 below and see which is correct 20201-04-26
         pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780, 278178, 2774962] else pui2
+        pui2 = pui if date in [d("2021-10-04")] else pui2
         assert pui == pui2
     else:
         numbers, _ = get_next_numbers(
