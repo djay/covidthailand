@@ -2583,7 +2583,10 @@ def vaccination_daily(daily, date, file, page):
         return daily
 
     def clean_num(numbers):
-        return [n for n in numbers if n not in [60, 7]]
+        if len(numbers) > 8:
+            return [n for n in numbers if n not in (60, 17, 12, 7)]
+        else:
+            return [n for n in numbers if n not in (60, 7)]
 
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
@@ -2620,28 +2623,37 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Disease {dose} Cum",
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
+            f"Vac Group 12-17 {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
-        if len(numbers) in [6, 8] and is_risks.search(rest):
-            if len(numbers) == 8:
-                total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
+        if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
+            if num_len >= 8:
+                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *student = numbers
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
+                # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
+                if (student_len := len(student)):
+                    if student_len == 1:
+                        student = student[0]
+                    else:
+                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
+                else:
+                    student = None
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = medical = None
-            row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
+                pregnant = volunteer = medical = student = None
+            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
                 assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
-                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area]
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
                 assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [0] * 7
-            else:
-                numbers = [0] * 9
+                numbers = numbers + [np.nan] * 8
+            elif len(numbers) == 0:
+                numbers = [np.nan] * 10
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
@@ -2673,12 +2685,13 @@ def vaccination_tables(df, date, page, file):
         "Vac Given 3 Cum",
         "Vac Given 3 %",
     ]
-    vaccols7x3 = givencols3 + [
+    vaccols8x3 = givencols3 + [
         f"Vac Group {g} {d} Cum" for g in [
             "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
-            "Risk: Location"
+            "Risk: Location", "12-17"
         ] for d in range(1, 4)
     ]
+    vaccols7x3 = [col for col in vaccols8x3 if "12-17" not in col]  # Student vaccination figures did not exist prior to 2021-10-06
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
 
@@ -2721,14 +2734,18 @@ def vaccination_tables(df, date, page, file):
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
     oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+    def in_heading(pat):
+        return max(len(pat.findall(h)) for h in headings)
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
-        shot_count = max(len(shots.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july"}.get(shot_count)
-        if not table and max(len(oldhead.findall(h)) for h in headings):
+        shot_count = in_heading(shots)
+        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july", 16: "july"}.get(shot_count)
+        if not table and in_heading(oldhead):
             table = "old_given"
-        elif not table and max(len(july.findall(h)) for h in headings):
+        elif not table and in_heading(july) and in_heading(re.compile(r"(?:ร้อยละ|รอ้ยละ)")) and date > d("2021-08-01"):  # new % table
+            table = "percent"
+        elif not table and in_heading(july):
             table = "july"
         elif not table:
             continue
@@ -2783,13 +2800,13 @@ def vaccination_tables(df, date, page, file):
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 add(prov, row, givencols)
-            elif table == "july" and len(numbers) in [33, 27, 21, 22, 17]:  # from 2021-08-05
+            elif table == "july" and len(numbers) in [31, 33, 27, 21, 22, 17]:  # from 2021-08-05
                 # Actually cumulative totals
                 if len(numbers) == 21:
                     # Givens is a single total only 2021-08-16
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:6], numbers[6:]
                     givens = [None] * 6  # We don't use the total
-                elif len(numbers) == 22:
+                elif len(numbers) == 22 and date < datetime.datetime(2021, 10, 5):
                     # Givens has sinopharm in it too. 2021-08-15
                     pop, alloc, givens, groups = numbers[0], numbers[1:6], numbers[6:7], numbers[7:]
                     givens = [None] * 6  # We don't use the total
@@ -2798,26 +2815,33 @@ def vaccination_tables(df, date, page, file):
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
                     givens = [None] * 6
                     alloc = [None] * 4
-                else:
+                elif len(numbers) in [27, 33]:  # 2021-08-06, # 2021-08-05
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
-                if len(alloc) == 4:
+                elif len(numbers) == 31:  # 2021-10-05
+                    pop, givens, groups = numbers[0], numbers[1:5], numbers[7:]
+                    alloc = [None] * 5
+                else:
+                    assert False
+                if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
                     sp = None
-                else:
+                else:  # 2021-08-15
                     sv, az, sp, pf, total_alloc = alloc
                 assert total_alloc is None or sum([m for m in [sv, az, pf, sp] if m]) == total_alloc
-                if len(groups) == 15:
+                if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
-                add(prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
+                if len(groups) < 24:
+                    groups = groups + [np.nan] * 3  # students
+                add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
                 add(prov, [sv, az, sp, pf], alloc4)
-            elif table == "july" and len(numbers) in [13]:
+            elif table == "percent" and len(numbers) in [13]:  # 2021-08-10
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
-            elif table == "july" and len(numbers) in [18]:
-                # extra table with %  per population for over 60s and totals - 2021-09-09
+            elif table == "percent" and len(numbers) in [18, 22]:
+                # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
                 pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
@@ -3089,6 +3113,7 @@ def vac_slides_groups(df, page, file, page_num):
         "Vac Group Risk: Disease",
         "Vac Group Risk: Pregnant",
         "Vac Group Risk: Location",
+        "Vac Group 12-17"
         "Total"
     ]
     table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
@@ -3336,10 +3361,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     situation = get_situation()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
-    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 

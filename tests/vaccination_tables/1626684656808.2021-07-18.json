@@ -1,0 +1,734 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Vac Given 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given 1 %",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given 2 %",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Amnat Charoen",
+      "Vac Given 1 Cum":35001.0,
+      "Vac Given 1 %":9.2,
+      "Vac Given 2 Cum":7704.0,
+      "Vac Given 2 %":2.0,
+      "Vac Given Cum":42705.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Ang Thong",
+      "Vac Given 1 Cum":24938.0,
+      "Vac Given 1 %":8.5,
+      "Vac Given 2 Cum":8965.0,
+      "Vac Given 2 %":3.1,
+      "Vac Given Cum":33903.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Bangkok",
+      "Vac Given 1 Cum":3682133.0,
+      "Vac Given 1 %":47.8,
+      "Vac Given 2 Cum":937511.0,
+      "Vac Given 2 %":12.2,
+      "Vac Given Cum":4619644.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Bueng Kan",
+      "Vac Given 1 Cum":27865.0,
+      "Vac Given 1 %":6.5,
+      "Vac Given 2 Cum":7440.0,
+      "Vac Given 2 %":1.7,
+      "Vac Given Cum":35305.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Buriram",
+      "Vac Given 1 Cum":244210.0,
+      "Vac Given 1 %":15.4,
+      "Vac Given 2 Cum":115392.0,
+      "Vac Given 2 %":7.3,
+      "Vac Given Cum":359602.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chachoengsao",
+      "Vac Given 1 Cum":151149.0,
+      "Vac Given 1 %":20.1,
+      "Vac Given 2 Cum":23187.0,
+      "Vac Given 2 %":3.1,
+      "Vac Given Cum":174336.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chai Nat",
+      "Vac Given 1 Cum":20900.0,
+      "Vac Given 1 %":6.2,
+      "Vac Given 2 Cum":6413.0,
+      "Vac Given 2 %":1.9,
+      "Vac Given Cum":27313.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chaiyaphum",
+      "Vac Given 1 Cum":62740.0,
+      "Vac Given 1 %":5.5,
+      "Vac Given 2 Cum":22658.0,
+      "Vac Given 2 %":2.0,
+      "Vac Given Cum":85398.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chanthaburi",
+      "Vac Given 1 Cum":77144.0,
+      "Vac Given 1 %":13.1,
+      "Vac Given 2 Cum":30840.0,
+      "Vac Given 2 %":5.3,
+      "Vac Given Cum":107984.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chiang Mai",
+      "Vac Given 1 Cum":211674.0,
+      "Vac Given 1 %":12.2,
+      "Vac Given 2 Cum":83856.0,
+      "Vac Given 2 %":4.8,
+      "Vac Given Cum":295530.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chiang Rai",
+      "Vac Given 1 Cum":123001.0,
+      "Vac Given 1 %":10.5,
+      "Vac Given 2 Cum":31634.0,
+      "Vac Given 2 %":2.7,
+      "Vac Given Cum":154635.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chonburi",
+      "Vac Given 1 Cum":315691.0,
+      "Vac Given 1 %":15.4,
+      "Vac Given 2 Cum":112600.0,
+      "Vac Given 2 %":5.5,
+      "Vac Given Cum":428291.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Chumphon",
+      "Vac Given 1 Cum":46016.0,
+      "Vac Given 1 %":8.5,
+      "Vac Given 2 Cum":11359.0,
+      "Vac Given 2 %":2.1,
+      "Vac Given Cum":57375.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Kalasin",
+      "Vac Given 1 Cum":45229.0,
+      "Vac Given 1 %":4.6,
+      "Vac Given 2 Cum":15223.0,
+      "Vac Given 2 %":1.6,
+      "Vac Given Cum":60452.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Kamphaeng Phet",
+      "Vac Given 1 Cum":38798.0,
+      "Vac Given 1 %":5.3,
+      "Vac Given 2 Cum":11204.0,
+      "Vac Given 2 %":1.5,
+      "Vac Given Cum":50002.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Kanchanaburi",
+      "Vac Given 1 Cum":45738.0,
+      "Vac Given 1 %":5.4,
+      "Vac Given 2 Cum":14189.0,
+      "Vac Given 2 %":1.7,
+      "Vac Given Cum":59927.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Khon Kaen",
+      "Vac Given 1 Cum":111259.0,
+      "Vac Given 1 %":6.1,
+      "Vac Given 2 Cum":35795.0,
+      "Vac Given 2 %":1.9,
+      "Vac Given Cum":147054.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Krabi",
+      "Vac Given 1 Cum":88015.0,
+      "Vac Given 1 %":17.5,
+      "Vac Given 2 Cum":25529.0,
+      "Vac Given 2 %":5.1,
+      "Vac Given Cum":113544.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Lampang",
+      "Vac Given 1 Cum":37348.0,
+      "Vac Given 1 %":5.1,
+      "Vac Given 2 Cum":15696.0,
+      "Vac Given 2 %":2.1,
+      "Vac Given Cum":53044.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Lamphun",
+      "Vac Given 1 Cum":25103.0,
+      "Vac Given 1 %":6.0,
+      "Vac Given 2 Cum":6774.0,
+      "Vac Given 2 %":1.6,
+      "Vac Given Cum":31877.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Loei",
+      "Vac Given 1 Cum":41384.0,
+      "Vac Given 1 %":6.5,
+      "Vac Given 2 Cum":10919.0,
+      "Vac Given 2 %":1.7,
+      "Vac Given Cum":52303.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Lopburi",
+      "Vac Given 1 Cum":45518.0,
+      "Vac Given 1 %":6.0,
+      "Vac Given 2 Cum":18282.0,
+      "Vac Given 2 %":2.4,
+      "Vac Given Cum":63800.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Mae Hong Son",
+      "Vac Given 1 Cum":16616.0,
+      "Vac Given 1 %":6.8,
+      "Vac Given 2 Cum":6457.0,
+      "Vac Given 2 %":2.6,
+      "Vac Given Cum":23073.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Maha Sarakham",
+      "Vac Given 1 Cum":56805.0,
+      "Vac Given 1 %":5.9,
+      "Vac Given 2 Cum":15682.0,
+      "Vac Given 2 %":1.6,
+      "Vac Given Cum":72487.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Mukdahan",
+      "Vac Given 1 Cum":60852.0,
+      "Vac Given 1 %":17.3,
+      "Vac Given 2 Cum":14479.0,
+      "Vac Given 2 %":4.1,
+      "Vac Given Cum":75331.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nakhon Nayok",
+      "Vac Given 1 Cum":33507.0,
+      "Vac Given 1 %":12.3,
+      "Vac Given 2 Cum":13234.0,
+      "Vac Given 2 %":4.9,
+      "Vac Given Cum":46741.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nakhon Pathom",
+      "Vac Given 1 Cum":127104.0,
+      "Vac Given 1 %":11.3,
+      "Vac Given 2 Cum":27564.0,
+      "Vac Given 2 %":2.4,
+      "Vac Given Cum":154668.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nakhon Phanom",
+      "Vac Given 1 Cum":45059.0,
+      "Vac Given 1 %":6.2,
+      "Vac Given 2 Cum":14845.0,
+      "Vac Given 2 %":2.0,
+      "Vac Given Cum":59904.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nakhon Ratchasima",
+      "Vac Given 1 Cum":244398.0,
+      "Vac Given 1 %":9.1,
+      "Vac Given 2 Cum":128696.0,
+      "Vac Given 2 %":4.8,
+      "Vac Given Cum":373094.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nakhon Sawan",
+      "Vac Given 1 Cum":57336.0,
+      "Vac Given 1 %":5.4,
+      "Vac Given 2 Cum":20290.0,
+      "Vac Given 2 %":1.9,
+      "Vac Given Cum":77626.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nakhon Si Thammarat",
+      "Vac Given 1 Cum":122030.0,
+      "Vac Given 1 %":7.7,
+      "Vac Given 2 Cum":34752.0,
+      "Vac Given 2 %":2.2,
+      "Vac Given Cum":156782.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nan",
+      "Vac Given 1 Cum":32860.0,
+      "Vac Given 1 %":6.9,
+      "Vac Given 2 Cum":7703.0,
+      "Vac Given 2 %":1.6,
+      "Vac Given Cum":40563.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Narathiwat",
+      "Vac Given 1 Cum":96055.0,
+      "Vac Given 1 %":11.9,
+      "Vac Given 2 Cum":21415.0,
+      "Vac Given 2 %":2.7,
+      "Vac Given Cum":117470.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nong Bua Lamphu",
+      "Vac Given 1 Cum":27818.0,
+      "Vac Given 1 %":5.3,
+      "Vac Given 2 Cum":7870.0,
+      "Vac Given 2 %":1.5,
+      "Vac Given Cum":35688.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nong Khai",
+      "Vac Given 1 Cum":76299.0,
+      "Vac Given 1 %":14.7,
+      "Vac Given 2 Cum":17161.0,
+      "Vac Given 2 %":3.3,
+      "Vac Given Cum":93460.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Nonthaburi",
+      "Vac Given 1 Cum":431394.0,
+      "Vac Given 1 %":26.8,
+      "Vac Given 2 Cum":156202.0,
+      "Vac Given 2 %":9.7,
+      "Vac Given Cum":587596.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Pathum Thani",
+      "Vac Given 1 Cum":279234.0,
+      "Vac Given 1 %":18.2,
+      "Vac Given 2 Cum":66207.0,
+      "Vac Given 2 %":4.3,
+      "Vac Given Cum":345441.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Pattani",
+      "Vac Given 1 Cum":72338.0,
+      "Vac Given 1 %":9.7,
+      "Vac Given 2 Cum":17596.0,
+      "Vac Given 2 %":2.4,
+      "Vac Given Cum":89934.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phang Nga",
+      "Vac Given 1 Cum":80036.0,
+      "Vac Given 1 %":28.0,
+      "Vac Given 2 Cum":22738.0,
+      "Vac Given 2 %":7.9,
+      "Vac Given Cum":102774.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phatthalung",
+      "Vac Given 1 Cum":41101.0,
+      "Vac Given 1 %":7.8,
+      "Vac Given 2 Cum":14077.0,
+      "Vac Given 2 %":2.7,
+      "Vac Given Cum":55178.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phayao",
+      "Vac Given 1 Cum":33891.0,
+      "Vac Given 1 %":7.2,
+      "Vac Given 2 Cum":11339.0,
+      "Vac Given 2 %":2.4,
+      "Vac Given Cum":45230.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phetchabun",
+      "Vac Given 1 Cum":65784.0,
+      "Vac Given 1 %":6.6,
+      "Vac Given 2 Cum":20039.0,
+      "Vac Given 2 %":2.0,
+      "Vac Given Cum":85823.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phetchaburi",
+      "Vac Given 1 Cum":89083.0,
+      "Vac Given 1 %":17.7,
+      "Vac Given 2 Cum":25760.0,
+      "Vac Given 2 %":5.1,
+      "Vac Given Cum":114843.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phichit",
+      "Vac Given 1 Cum":31732.0,
+      "Vac Given 1 %":5.9,
+      "Vac Given 2 Cum":11457.0,
+      "Vac Given 2 %":2.1,
+      "Vac Given Cum":43189.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phitsanulok",
+      "Vac Given 1 Cum":70172.0,
+      "Vac Given 1 %":6.7,
+      "Vac Given 2 Cum":22843.0,
+      "Vac Given 2 %":2.2,
+      "Vac Given Cum":93015.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phra Nakhon Si Ayutthaya",
+      "Vac Given 1 Cum":72466.0,
+      "Vac Given 1 %":7.9,
+      "Vac Given 2 Cum":20611.0,
+      "Vac Given 2 %":2.2,
+      "Vac Given Cum":93077.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phrae",
+      "Vac Given 1 Cum":26357.0,
+      "Vac Given 1 %":6.0,
+      "Vac Given 2 Cum":7982.0,
+      "Vac Given 2 %":1.8,
+      "Vac Given Cum":34339.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Phuket",
+      "Vac Given 1 Cum":399552.0,
+      "Vac Given 1 %":73.0,
+      "Vac Given 2 Cum":319657.0,
+      "Vac Given 2 %":58.4,
+      "Vac Given Cum":719209.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Prachinburi",
+      "Vac Given 1 Cum":53849.0,
+      "Vac Given 1 %":9.3,
+      "Vac Given 2 Cum":16670.0,
+      "Vac Given 2 %":2.9,
+      "Vac Given Cum":70519.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Prachuap Khiri Khan",
+      "Vac Given 1 Cum":75960.0,
+      "Vac Given 1 %":13.1,
+      "Vac Given 2 Cum":23075.0,
+      "Vac Given 2 %":4.0,
+      "Vac Given Cum":99035.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Ranong",
+      "Vac Given 1 Cum":74470.0,
+      "Vac Given 1 %":32.6,
+      "Vac Given 2 Cum":20886.0,
+      "Vac Given 2 %":9.1,
+      "Vac Given Cum":95356.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Vac Given 1 Cum":66203.0,
+      "Vac Given 1 %":7.2,
+      "Vac Given 2 Cum":18688.0,
+      "Vac Given 2 %":2.0,
+      "Vac Given Cum":84891.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Rayong",
+      "Vac Given 1 Cum":111476.0,
+      "Vac Given 1 %":11.5,
+      "Vac Given 2 Cum":35709.0,
+      "Vac Given 2 %":3.7,
+      "Vac Given Cum":147185.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Roi Et",
+      "Vac Given 1 Cum":67866.0,
+      "Vac Given 1 %":5.2,
+      "Vac Given 2 Cum":23472.0,
+      "Vac Given 2 %":1.8,
+      "Vac Given Cum":91338.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Sa Kaeo",
+      "Vac Given 1 Cum":69277.0,
+      "Vac Given 1 %":11.8,
+      "Vac Given 2 Cum":18476.0,
+      "Vac Given 2 %":3.2,
+      "Vac Given Cum":87753.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Sakon Nakhon",
+      "Vac Given 1 Cum":67100.0,
+      "Vac Given 1 %":5.9,
+      "Vac Given 2 Cum":21943.0,
+      "Vac Given 2 %":1.9,
+      "Vac Given Cum":89043.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Samut Prakan",
+      "Vac Given 1 Cum":507696.0,
+      "Vac Given 1 %":26.3,
+      "Vac Given 2 Cum":95259.0,
+      "Vac Given 2 %":4.9,
+      "Vac Given Cum":602955.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Samut Sakhon",
+      "Vac Given 1 Cum":235763.0,
+      "Vac Given 1 %":24.7,
+      "Vac Given 2 Cum":123579.0,
+      "Vac Given 2 %":13.0,
+      "Vac Given Cum":359342.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Samut Songkhram",
+      "Vac Given 1 Cum":22926.0,
+      "Vac Given 1 %":11.2,
+      "Vac Given 2 Cum":8754.0,
+      "Vac Given 2 %":4.3,
+      "Vac Given Cum":31680.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Saraburi",
+      "Vac Given 1 Cum":70297.0,
+      "Vac Given 1 %":9.8,
+      "Vac Given 2 Cum":25366.0,
+      "Vac Given 2 %":3.5,
+      "Vac Given Cum":95663.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Satun",
+      "Vac Given 1 Cum":28989.0,
+      "Vac Given 1 %":8.8,
+      "Vac Given 2 Cum":12719.0,
+      "Vac Given 2 %":3.8,
+      "Vac Given Cum":41708.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Sing Buri",
+      "Vac Given 1 Cum":25380.0,
+      "Vac Given 1 %":11.8,
+      "Vac Given 2 Cum":7190.0,
+      "Vac Given 2 %":3.3,
+      "Vac Given Cum":32570.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Sisaket",
+      "Vac Given 1 Cum":78617.0,
+      "Vac Given 1 %":5.4,
+      "Vac Given 2 Cum":23777.0,
+      "Vac Given 2 %":1.6,
+      "Vac Given Cum":102394.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Songkhla",
+      "Vac Given 1 Cum":178874.0,
+      "Vac Given 1 %":12.0,
+      "Vac Given 2 Cum":50669.0,
+      "Vac Given 2 %":3.4,
+      "Vac Given Cum":229543.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Sukhothai",
+      "Vac Given 1 Cum":38988.0,
+      "Vac Given 1 %":6.5,
+      "Vac Given 2 Cum":12773.0,
+      "Vac Given 2 %":2.1,
+      "Vac Given Cum":51761.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Suphan Buri",
+      "Vac Given 1 Cum":56512.0,
+      "Vac Given 1 %":6.6,
+      "Vac Given 2 Cum":17737.0,
+      "Vac Given 2 %":2.1,
+      "Vac Given Cum":74249.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Surat Thani",
+      "Vac Given 1 Cum":201255.0,
+      "Vac Given 1 %":17.6,
+      "Vac Given 2 Cum":82217.0,
+      "Vac Given 2 %":7.2,
+      "Vac Given Cum":283472.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Surin",
+      "Vac Given 1 Cum":77146.0,
+      "Vac Given 1 %":5.5,
+      "Vac Given 2 Cum":22013.0,
+      "Vac Given 2 %":1.6,
+      "Vac Given Cum":99159.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Tak",
+      "Vac Given 1 Cum":103026.0,
+      "Vac Given 1 %":17.5,
+      "Vac Given 2 Cum":57001.0,
+      "Vac Given 2 %":9.7,
+      "Vac Given Cum":160027.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Trang",
+      "Vac Given 1 Cum":56688.0,
+      "Vac Given 1 %":8.6,
+      "Vac Given 2 Cum":14986.0,
+      "Vac Given 2 %":2.3,
+      "Vac Given Cum":71674.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Trat",
+      "Vac Given 1 Cum":28541.0,
+      "Vac Given 1 %":11.4,
+      "Vac Given 2 Cum":6271.0,
+      "Vac Given 2 %":2.5,
+      "Vac Given Cum":34812.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Ubon Ratchathani",
+      "Vac Given 1 Cum":107366.0,
+      "Vac Given 1 %":5.7,
+      "Vac Given 2 Cum":33755.0,
+      "Vac Given 2 %":1.8,
+      "Vac Given Cum":141121.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Udon Thani",
+      "Vac Given 1 Cum":102954.0,
+      "Vac Given 1 %":6.6,
+      "Vac Given 2 Cum":34508.0,
+      "Vac Given 2 %":2.2,
+      "Vac Given Cum":137462.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Uthai Thani",
+      "Vac Given 1 Cum":28024.0,
+      "Vac Given 1 %":8.4,
+      "Vac Given 2 Cum":9314.0,
+      "Vac Given 2 %":2.8,
+      "Vac Given Cum":37338.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Vac Given 1 Cum":29640.0,
+      "Vac Given 1 %":6.5,
+      "Vac Given 2 Cum":9487.0,
+      "Vac Given 2 %":2.1,
+      "Vac Given Cum":39127.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Yala",
+      "Vac Given 1 Cum":62851.0,
+      "Vac Given 1 %":11.5,
+      "Vac Given 2 Cum":13025.0,
+      "Vac Given 2 %":2.4,
+      "Vac Given Cum":75876.0
+    },
+    {
+      "Date":"2021-07-18T00:00:00.000Z",
+      "Province":"Yasothon",
+      "Vac Given 1 Cum":31632.0,
+      "Vac Given 1 %":5.9,
+      "Vac Given 2 Cum":9352.0,
+      "Vac Given 2 %":1.7,
+      "Vac Given Cum":40984.0
+    }
+  ]
+}
