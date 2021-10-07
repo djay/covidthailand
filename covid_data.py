@@ -2628,7 +2628,7 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Disease {dose} Cum",
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
-            f"Vac Group 12-17 {dose} Cum",
+            f"Vac Group Student {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
@@ -2693,10 +2693,10 @@ def vaccination_tables(df, date, page, file):
     vaccols8x3 = givencols3 + [
         f"Vac Group {g} {d} Cum" for g in [
             "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
-            "Risk: Location", "12-17"
+            "Risk: Location", "Student"
         ] for d in range(1, 4)
     ]
-    vaccols7x3 = [col for col in vaccols8x3 if "12-17" not in col]  # Student vaccination figures did not exist prior to 2021-10-06
+    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]  # Student vaccination figures did not exist prior to 2021-10-06
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
 
@@ -3118,7 +3118,7 @@ def vac_slides_groups(df, page, file, page_num):
         "Vac Group Risk: Disease",
         "Vac Group Risk: Pregnant",
         "Vac Group Risk: Location",
-        "Vac Group 12-17"
+        "Vac Group Student"
         "Total"
     ]
     table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
@@ -3366,8 +3366,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    situation = get_situation()
     vac = get_vaccinations()
+    situation = get_situation()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()

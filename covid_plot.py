@@ -859,12 +859,12 @@ def save_plots(df: pd.DataFrame) -> None:
     # We want people vaccinated not total doses
     for c in groups:
         if "1" in c:
-            vac_cum[c.replace("1", "Only 1")] = vac_cum[c].sub(vac_cum[c.replace("1", "2")])
-            cols.extend([c.replace("1", "2"), c.replace("1", "Only 1")])
+            vac_cum[c.replace(" 1 Cum", " Only 1 Cum")] = vac_cum[c].sub(vac_cum[c.replace(" 1 Cum", " 2 Cum")])
+            cols.extend([c.replace(" 1 Cum", " 2 Cum"), c.replace(" 1 Cum", " Only 1 Cum")])
 
     #cols_cum = rearrange(cols, 1, 2, 3, 4, 9, 10, 7, 8, )
     #cols_cum = cols_cum  # + ['Available Vaccines Cum']
-    cols_cum = [c for c in cols if "2" in c] + [c for c in cols if "1" in c]
+    cols_cum = [c for c in cols if " 2 Cum" in c] + [c for c in cols if " 1 Cum" in c]
     # We have "Medical All" instead
     cols_cum = [c for c in cols_cum if not any_in(c, "Medical Staff", "Volunteer")]
 
