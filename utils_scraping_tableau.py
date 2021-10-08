@@ -158,7 +158,8 @@ def workbook_iterate(url, **selects):
         else:
             items = ws.getFilters()
             # TODO: allow filter to manual list of values
-            selects[name] = next(item['values'] for item in items if item['column'] == values)
+            selects[name] = next((item['values'] for item in items if item['column'] == values), [])
+            # TODO: should raise an error if there is no matching filter?
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):
