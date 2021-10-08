@@ -143,8 +143,14 @@ def previous_date(end, day):
 
 
 def find_thai_date(content, remove=False):
-    "find thai date like '17 เม.ย. 2563' "
-    thai_date = re.compile(r"([0-9]+) *([^ ]+) *(25[0-9][0-9])")
+    """find thai date like
+    >>> print(find_thai_date('17 เม.ย. 2563')) 
+    2020-04-17 00:00:00
+    >>> print(find_thai_date('28 กุมภำพันธ์  – 18 กรกฎำคม 2564'))
+    2021-07-18 00:00:00 
+    """
+
+    thai_date = re.compile(r"([0-9]+)\s*([^ ]+)\s*(25[0-9][0-9])")
     m3 = thai_date.search(content)
     if m3 is None and remove:
         return None, content

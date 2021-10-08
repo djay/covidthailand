@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
 import requests
-from requests.exceptions import RequestException, Timeout, ConnectionError
+from requests.exceptions import Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser
 from webdav3.client import Client
@@ -112,7 +112,7 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False):
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -126,6 +126,9 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         found = ahead if before else behind
         if until is not None:
             found, *rest = re.split(until, found, 1)  # TODO: how to put it back togeather if behind=True?
+            if not rest and require_until:
+                # in this case return nothing since end didn't find a match
+                continue
             rest = until + (rest[0] if rest else "")
         else:
             rest = ""

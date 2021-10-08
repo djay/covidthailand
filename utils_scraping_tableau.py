@@ -1,15 +1,12 @@
 import itertools
 import json
-from utils_scraping import any_in, fix_timeouts, remove_suffix
+from utils_scraping import any_in, fix_timeouts
 import tableauscraper
 import pandas as pd
 import numpy as np
 import time
-from tableauscraper.TableauScraper import TableauException
-from tableauscraper.api import APIResponseException
 import datetime
 import requests
-from requests.exceptions import RequestException
 
 
 ###########################
@@ -161,7 +158,8 @@ def workbook_iterate(url, **selects):
         else:
             items = ws.getFilters()
             # TODO: allow filter to manual list of values
-            selects[name] = next(item['values'] for item in items if item['column'] == values)
+            selects[name] = next((item['values'] for item in items if item['column'] == values), [])
+            # TODO: should raise an error if there is no matching filter?
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):

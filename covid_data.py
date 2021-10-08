@@ -3,14 +3,13 @@ import functools
 import dateutil
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from itertools import chain, islice
+from itertools import islice
 import json
 import os
 import re
 import copy
 import codecs
 import shutil
-import time
 
 from bs4 import BeautifulSoup
 import camelot
@@ -22,10 +21,9 @@ from requests.exceptions import ConnectionError
 from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, export, fuzzy_join, import_csv, \
     spread_date_range, cut_ages
 from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
-    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, remove_suffix, replace_matcher, seperate, split, \
-    strip, toint, unique_values,\
-    web_files, web_links, all_in, NUM_OR_DASH, s
-from utils_scraping_tableau import workbook_flatten, workbook_iterate, workbook_explore
+    get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
+    strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s
+from utils_scraping_tableau import workbook_flatten, workbook_iterate
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -193,6 +191,7 @@ def situation_cases_new(parsed_pdf, date):
 
 
 def situation_pui_en(parsed_pdf, date):
+    parsed_pdf = parsed_pdf.replace("DDC Thailand 1", "")  # 2021-10-04
     numbers, _ = get_next_numbers(
         parsed_pdf, "Total +number of laboratory tests",
         until="Sought medical services on their own at hospitals",
@@ -213,6 +212,7 @@ def situation_pui_en(parsed_pdf, date):
             pui = pui2 = 3_112_896  # use thai report for this date
         # TODO: find 1529045 below and see which is correct 20201-04-26
         pui2 = pui if pui2 in [96989, 433807, 3891136, 385860, 326073, 1529045, 2159780, 278178, 2774962] else pui2
+        pui2 = pui if date in [d("2021-10-04")] else pui2
         assert pui == pui2
     else:
         numbers, _ = get_next_numbers(
@@ -397,7 +397,8 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         r"ด่านโรคติดต่อระหวา่งประเทศ",  # 'situation-no346-141263n.pdf'
         r"นวนการตรวจทาง\S+องปฏิบัติการ",
         "ด่านควบคุมโรคติดต่อระหว่างประเทศ",
-        until="(?:โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลเอกชน)"
+        until=r"(?:โรงพยาบาลด้วยตนเอง|ารับการรักษาท่ีโรงพยาบาลด|โรงพยาบาลเอกชน)",
+        require_until=True
     )
     # cases = None
 
@@ -427,7 +428,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         )
         if len(numbers) > 0:
             pui, *rest = numbers
-    if date > dateutil.parser.parse("2020-03-26") and not numbers:
+    if d("2020-03-26") < date < d("2021-10-06") and not numbers:
         raise Exception(f"Problem finding PUI numbers for date {date}")
     elif not numbers:
         return dfpui
@@ -471,7 +472,9 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         [(date,) + row],
         columns=["Date"] + cols
     ).set_index("Date")
-    assert check_cum(df, dfpui, cols)
+    if date < d("2021-10-05"):
+        # stopped publishing most data
+        assert check_cum(df, dfpui, cols)
     dfpui = dfpui.combine_first(df)
     print(date.date(), file, df.to_string(header=False, index=False))
     return dfpui
@@ -2162,13 +2165,13 @@ def prov_to_districts(dfprov):
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
     dfprov_grouped = dfprov_grouped.rename(columns=dict((i, f"Area {i}") for i in DISTRICT_RANGE))
-    # cols = dict((f"Area {i}", f"Cases Area {i}") for i in DISTRICT_RANGE)
-    # by_area = dfprov_grouped["Cases"].groupby(['Health District Number'],axis=1).sum(min_count=1).rename(columns=cols)
-    # cols = dict((f"Area {i}", f"Cases Proactive Area {i}") for i in DISTRICT_RANGE)
-    by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
+    
+    # Can cause problems sum across all provinces. might be missing data.
+    # by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
+
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
-    by_area = dfprov_grouped.combine_first(by_type)
+    by_area = dfprov_grouped  # .combine_first(by_type)
 
     # Ensure we have all areas
     for i in DISTRICT_RANGE:
@@ -2585,7 +2588,10 @@ def vaccination_daily(daily, date, file, page):
         return daily
 
     def clean_num(numbers):
-        return [n for n in numbers if n not in [60, 7]]
+        if len(numbers) > 8:
+            return [n for n in numbers if n not in (60, 17, 12, 7)]
+        else:
+            return [n for n in numbers if n not in (60, 7)]
 
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
@@ -2622,28 +2628,37 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Disease {dose} Cum",
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
+            f"Vac Group Student {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
-        if len(numbers) in [6, 8] and is_risks.search(rest):
-            if len(numbers) == 8:
-                total, medical, volunteer, frontline, over60, chronic, pregnant, area = numbers
+        if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
+            if num_len >= 8:
+                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *student = numbers
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
+                # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
+                if (student_len := len(student)):
+                    if student_len == 1:
+                        student = student[0]
+                    else:
+                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
+                else:
+                    student = None
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = medical = None
-            row = [medical, volunteer, frontline, over60, chronic, pregnant, area]
+                pregnant = volunteer = medical = student = None
+            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
                 assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
-                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area]
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
                 assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [0] * 7
-            else:
-                numbers = [0] * 9
+                numbers = numbers + [np.nan] * 8
+            elif len(numbers) == 0:
+                numbers = [np.nan] * 10
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12")  # Should be getting all the numbers every day now
@@ -2675,12 +2690,13 @@ def vaccination_tables(df, date, page, file):
         "Vac Given 3 Cum",
         "Vac Given 3 %",
     ]
-    vaccols7x3 = givencols3 + [
+    vaccols8x3 = givencols3 + [
         f"Vac Group {g} {d} Cum" for g in [
             "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
-            "Risk: Location"
+            "Risk: Location", "Student"
         ] for d in range(1, 4)
     ]
+    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]  # Student vaccination figures did not exist prior to 2021-10-06
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
 
@@ -2723,14 +2739,18 @@ def vaccination_tables(df, date, page, file):
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
     oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+    def in_heading(pat):
+        return max(len(pat.findall(h)) for h in headings)
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
-        shot_count = max(len(shots.findall(h)) for h in headings)
-        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july"}.get(shot_count)
-        if not table and max(len(oldhead.findall(h)) for h in headings):
+        shot_count = in_heading(shots)
+        table = {12: "new_given", 10: "given", 6: "alloc", 14: "july", 16: "july"}.get(shot_count)
+        if not table and in_heading(oldhead):
             table = "old_given"
-        elif not table and max(len(july.findall(h)) for h in headings):
+        elif not table and in_heading(july) and in_heading(re.compile(r"(?:ร้อยละ|รอ้ยละ)")) and date > d("2021-08-01"):  # new % table
+            table = "percent"
+        elif not table and in_heading(july):
             table = "july"
         elif not table:
             continue
@@ -2785,13 +2805,13 @@ def vaccination_tables(df, date, page, file):
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 add(prov, row, givencols)
-            elif table == "july" and len(numbers) in [33, 27, 21, 22, 17]:  # from 2021-08-05
+            elif table == "july" and len(numbers) in [31, 33, 27, 21, 22, 17]:  # from 2021-08-05
                 # Actually cumulative totals
                 if len(numbers) == 21:
                     # Givens is a single total only 2021-08-16
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:6], numbers[6:]
                     givens = [None] * 6  # We don't use the total
-                elif len(numbers) == 22:
+                elif len(numbers) == 22 and date < datetime.datetime(2021, 10, 5):
                     # Givens has sinopharm in it too. 2021-08-15
                     pop, alloc, givens, groups = numbers[0], numbers[1:6], numbers[6:7], numbers[7:]
                     givens = [None] * 6  # We don't use the total
@@ -2800,26 +2820,33 @@ def vaccination_tables(df, date, page, file):
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
                     givens = [None] * 6
                     alloc = [None] * 4
-                else:
+                elif len(numbers) in [27, 33]:  # 2021-08-06, # 2021-08-05
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
-                if len(alloc) == 4:
+                elif len(numbers) == 31:  # 2021-10-05
+                    pop, givens, groups = numbers[0], numbers[1:5], numbers[7:]
+                    alloc = [None] * 5
+                else:
+                    assert False
+                if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
                     sp = None
-                else:
+                else:  # 2021-08-15
                     sv, az, sp, pf, total_alloc = alloc
                 assert total_alloc is None or sum([m for m in [sv, az, pf, sp] if m]) == total_alloc
-                if len(groups) == 15:
+                if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
                         groups.insert(i, None)
-                add(prov, givens + groups + [pop], vaccols7x3 + ["Vac Population"])
+                if len(groups) < 24:
+                    groups = groups + [np.nan] * 3  # students
+                add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
                 add(prov, [sv, az, sp, pf], alloc4)
-            elif table == "july" and len(numbers) in [13]:
+            elif table == "percent" and len(numbers) in [13]:  # 2021-08-10
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
-            elif table == "july" and len(numbers) in [18]:
-                # extra table with %  per population for over 60s and totals - 2021-09-09
+            elif table == "percent" and len(numbers) in [18, 22]:
+                # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
                 pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
@@ -2987,7 +3014,8 @@ def get_vaccinations():
     vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    vac_prov_sum = vac_reports_prov.groupby("Date").sum()
+    # No currently used as it is too likely to result in missing numbers
+    # vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
     vac_prov = vac_prov.combine_first(vac_reports_prov)  # .combine_first(vacct)
@@ -3017,8 +3045,7 @@ def get_vaccinations():
         # vac_import).combine_first(
         given_by_area_1).combine_first(
         given_by_area_2).combine_first(
-        given_by_area_both).combine_first(
-        vac_prov_sum)
+        given_by_area_both)
     if not USE_CACHE_DATA:
         export(vac_timeline, "vac_timeline")
 
@@ -3028,10 +3055,10 @@ def get_vaccinations():
 def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
-    if "AstraZeneca" not in page or file <= "inputs/vaccinations/1620104912165.pdf":  # 2021-03-21
+    if "AstraZeneca" not in page or int(os.path.splitext(os.path.basename(file))[0]) <= 1620104912165:  # 2021-03-21
         return df
     table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
-    # show be just one col. sometimes there is extra empty ones. 2021-08-03
+    # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
     title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
@@ -3091,6 +3118,7 @@ def vac_slides_groups(df, page, file, page_num):
         "Vac Group Risk: Disease",
         "Vac Group Risk: Pregnant",
         "Vac Group Risk: Location",
+        "Vac Group Student"
         "Total"
     ]
     table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
@@ -3338,10 +3366,10 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
+    vac = get_vaccinations()
     situation = get_situation()
     dashboard, dash_prov = moph_dashboard()
     tests_reports = get_test_reports()
-    vac = get_vaccinations()
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     cases_demo, risks_prov = get_cases_by_demographics_api()
 
