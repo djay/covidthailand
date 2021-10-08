@@ -2165,13 +2165,13 @@ def prov_to_districts(dfprov):
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
     dfprov_grouped = dfprov_grouped.rename(columns=dict((i, f"Area {i}") for i in DISTRICT_RANGE))
-    # cols = dict((f"Area {i}", f"Cases Area {i}") for i in DISTRICT_RANGE)
-    # by_area = dfprov_grouped["Cases"].groupby(['Health District Number'],axis=1).sum(min_count=1).rename(columns=cols)
-    # cols = dict((f"Area {i}", f"Cases Proactive Area {i}") for i in DISTRICT_RANGE)
-    by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
+    
+    # Can cause problems sum across all provinces. might be missing data.
+    # by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
+
     # Collapse columns to "Cases Proactive Area 13" etc
     dfprov_grouped.columns = dfprov_grouped.columns.map(' '.join).str.strip()
-    by_area = dfprov_grouped.combine_first(by_type)
+    by_area = dfprov_grouped  # .combine_first(by_type)
 
     # Ensure we have all areas
     for i in DISTRICT_RANGE:
@@ -3014,7 +3014,8 @@ def get_vaccinations():
     vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    vac_prov_sum = vac_reports_prov.groupby("Date").sum()
+    # No currently used as it is too likely to result in missing numbers
+    # vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
     vac_prov = vac_prov.combine_first(vac_reports_prov)  # .combine_first(vacct)
@@ -3044,8 +3045,7 @@ def get_vaccinations():
         # vac_import).combine_first(
         given_by_area_1).combine_first(
         given_by_area_2).combine_first(
-        given_by_area_both).combine_first(
-        vac_prov_sum)
+        given_by_area_both)
     if not USE_CACHE_DATA:
         export(vac_timeline, "vac_timeline")
 
