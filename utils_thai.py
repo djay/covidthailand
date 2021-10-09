@@ -214,7 +214,7 @@ def parse_gender(x):
 def thaipop(num: float, pos: int) -> str:
     pp = num / 69630000 * 100
     num = num / 1000000
-    return '0%' if num > -0.1 and num < 0.1 else f'{num:.1f}M\n{pp:0.1f}%'.replace(".0", "")
+    return '0%' if num > -0.1 and num < 0.1 else f'{pp:0.1f}%\n{num:.1f}M'.replace(".0", "")
 
 
 def thaipop2(num: float, pos: int) -> str:
