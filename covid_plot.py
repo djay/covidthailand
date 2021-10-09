@@ -360,7 +360,8 @@ def save_plots(df: pd.DataFrame) -> None:
               percent_fig=False,
               ma_days=7,
               cmap='tab10',
-              highlight=['Positivity Public+Private'])
+              highlight=['Positivity Public+Private'],
+              y_formatter=perc_format)
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI'] * 3 / df['Cases']
@@ -944,6 +945,7 @@ def save_plots(df: pd.DataFrame) -> None:
         actuals=actuals,
         ma_days=None,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
+        y_formatter=perc_format
     )
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
@@ -960,6 +962,7 @@ def save_plots(df: pd.DataFrame) -> None:
         actuals=actuals,
         ma_days=None,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
+        y_formatter=perc_format
     )
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
@@ -992,6 +995,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='vac_top5_doses', cols_subset=cols,
               title='Top Provinces for Vaccination Doses per 100 people',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              y_formatter=perc_format
               )
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
@@ -999,6 +1003,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='vac_top5_doses_1', cols_subset=cols,
               title='Top Provinces for Vaccination 1st Dose per 100 people',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              y_formatter=perc_format
               )
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
@@ -1006,6 +1011,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='vac_top5_doses_2', cols_subset=cols,
               title='Top Provinces for Vaccination 2nd Dose per 100 people',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              y_formatter=perc_format
               )
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
@@ -1013,8 +1019,9 @@ def save_plots(df: pd.DataFrame) -> None:
                     other_name=None, num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5, png_prefix='vac_low_doses_1', cols_subset=cols,
-              title='Lowesst Provinces for Vaccination 1st Dose per 100 people',
+              title='Lowest Provinces for Vaccination 1st Dose per 100 people',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              y_formatter=perc_format
               )
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
@@ -1024,6 +1031,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5, png_prefix='vac_low_doses_2', cols_subset=cols,
               title='Lowest Provinces for Vaccination 2nd Dose per 100 people',
               kind='line', stacked=False, percent_fig=False, ma_days=None, cmap='tab10',
+              y_formatter=perc_format
               )
 
     #######################
