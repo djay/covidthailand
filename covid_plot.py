@@ -23,6 +23,7 @@ def plot_area(df: pd.DataFrame,
               cols_subset: Union[str, Sequence[str]],
               title: str,
               footnote: str = None,
+              footnote_left: str = None,
               legends: List[str] = None,
               legend_pos: str = 'upper left',
               legend_cols: int = 1,
@@ -244,6 +245,13 @@ def plot_area(df: pd.DataFrame,
                          va='top',
                          fontsize=15,
                          horizontalalignment='right')
+        if footnote_left:
+            plt.annotate(footnote_left, (0.01, 0), (0, -50),
+                         xycoords='axes fraction',
+                         textcoords='offset points',
+                         va='top',
+                         fontsize=15,
+                         horizontalalignment='left')
 
         handles, labels = a0.get_legend_handles_labels()
         # we are skipping pandas determining which legends to show so do it manually. box lines are 'None'
