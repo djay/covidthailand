@@ -406,7 +406,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         tests_total, pui, active_finding, asq, not_pui, *rest = numbers
         if pui == 4534137:
             pui = 453413  # situation-no273-021063n.pdf
-    elif len(numbers) > 8:
+    elif len(numbers) > 8 and date < d("2021-10-06"):
         _, _, tests_total, pui, active_finding, asq, not_pui, *rest = numbers
     elif len(numbers) == 8:
         # 2021 - removed not_pui
@@ -430,7 +430,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
             pui, *rest = numbers
     if d("2020-03-26") < date < d("2021-10-06") and not numbers:
         raise Exception(f"Problem finding PUI numbers for date {date}")
-    elif not numbers:
+    elif not numbers or date > d("2021-10-06"):
         return dfpui
     if tests_total == 167515:  # situation-no447-250364.pdf
         tests_total = 1675125
@@ -3094,11 +3094,8 @@ def vac_manuf_given(df, page, file, page_num, url):
             total2 = sv2 + az2
     assert total1 == sv1 + az1 + sp1 + pf1
     #assert total2 == sv2 + az2 + sp2 + pf2
-    # tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
-    assert (total3 == 0) or (date in (d("2021-08-15",))) or (
-        (total3 / (sv3 + az3 + sp3 + pf3) >= 0.99) and
-        (total3 / (sv3 + az3 + sp3 + pf3) <= 1.01)
-    )
+    # 1% tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
+    assert total3 == 0 or date in [d("2021-08-15")] or 0.99 <= total3 / (sv3 + az3 + sp3 + pf3) <= 1.01
     row = [date, sv1, az1, sp1, pf1, sv2, az2, sp2, pf2, sv3, az3, sp3, pf3]
     cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer"]]
     row = pd.DataFrame([row], columns=['Date'] + cols)
