@@ -83,6 +83,7 @@ def formatter(log_entry):
     end = log_entry["extra"].get("end", "\n")
     return "[{time}] {message}" + end + "{exception}"
 
+
 # first we clear the multi-process-naive default logger
 logger.remove()
 # then we add an MP-aware one instead
@@ -134,7 +135,7 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False, dash_as_zero=False):
     """
     returns the numbers that appear immediately before or after the string(s) in 'matches',
     optionally up through 'until', that are found in the parsed PDF string 'content'
@@ -158,6 +159,8 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
             rest = until + (rest[0] if rest else "")
         else:
             rest = ""
+        if dash_as_zero:
+            found = found.replace(r'(-)', '(0)')
         numbers = (INT_RE if ints else NUM_RE).findall(found)
         numbers = [n.replace(",", "") for n in numbers]
         numbers = [int(n) if ints else float(n) for n in numbers if n]
@@ -177,8 +180,10 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         return []
 
 
-def get_next_number(content, *matches, default=None, remove=False, before=False, until=None, return_rest=True, require_until=False):
-    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until, require_until=require_until)
+def get_next_number(content, *matches, default=None, remove=False, before=False, until=None, return_rest=True,
+                    require_until=False, dash_as_zero=False):
+    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until,
+                                 require_until=require_until, dash_as_zero=dash_as_zero)
     num = num[0] if num else default
     if return_rest:
         return num, rest
@@ -592,4 +597,3 @@ def replace_matcher(matches, replacements=None):
                 return r
         return item
     return replace_match
-
