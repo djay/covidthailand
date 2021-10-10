@@ -212,15 +212,15 @@ def parse_gender(x):
 
 
 def thaipop(num: float, pos: int) -> str:
-    pp = num / 69630000 * 100
-    num = num / 1000000
-    return f'{num:.1f}M / {pp:.1f}%'
+    pp = round(num / 69630000 * 100, 1)
+    num = round(num / 1000000, 1)
+    return '0%' if num > -0.1 and num < 0.1 else f'{pp:0.1f}%\n{num:.1f}M'.replace(".0", "")
 
 
 def thaipop2(num: float, pos: int) -> str:
-    pp = num / 69630000 / 2 * 100
-    num = num / 1000000
-    return f'{num:.1f}M / {pp:.1f}%'
+    pp = round(num / 69630000 / 2 * 100, 1)
+    num = round(num / 1000000, 1)
+    return '0%' if num > -0.1 and num < 0.1 else f'{pp:.1f}%\n{num:.1f}M'.replace(".0", "")
 
 
 @functools.lru_cache(maxsize=100, typed=False)
