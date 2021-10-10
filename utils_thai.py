@@ -220,7 +220,7 @@ def thaipop(num: float, pos: int) -> str:
 def thaipop2(num: float, pos: int) -> str:
     pp = round(num / 69630000 / 2 * 100, 1)
     num = round(num / 1000000, 1)
-    return '0%' if num > -0.1 and num < 0.1 else f'{num:.1f}M\n{pp:.1f}%'.replace(".0", "")
+    return '0%' if num > -0.1 and num < 0.1 else f'{pp:.1f}%\n{num:.1f}M'.replace(".0", "")
 
 
 @functools.lru_cache(maxsize=100, typed=False)
