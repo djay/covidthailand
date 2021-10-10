@@ -297,13 +297,18 @@ Notes
 
 ### Running just plots (or latest files)
 
-- To get latest files
+- To get latest files; change into the root directory of your clone of the repository and then:
 
   ```sh
-  wget --recursive --level=1 --accept="*.csv" --no-host-directories --cut-dirs=2 https://github.com/djay/covidthailand/blob/main/downloads.md
-  mv --no-target-directory wiki api
-  mkdir --parents json
-  cp api/{deaths_all.csv,moph_*} json
+  wget https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz && \
+  tar xzf inputs.tar.gz && \
+  rm inputs.tar.gz
+  ```
+
+- To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
+
+  ```sh
+  USE_CACHE_DATA=True python covid_data.py
   ```
 
 - To do just plots
