@@ -113,6 +113,10 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
 
 
 def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False):
+    """
+    returns the numbers that appear immediately before or after the string(s) in 'matches',
+    optionally up through 'until', that are found in the parsed PDF string 'content'
+    """
     if len(matches) == 0:
         matches = [""]
     for match in matches:

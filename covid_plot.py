@@ -375,6 +375,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              y_formatter=perc_format,
               footnote_left='\nData Sources:\n  DMSC: Thailand Laboratory Testing Data\n  Daily situation Reports')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
@@ -991,6 +992,7 @@ def save_plots(df: pd.DataFrame) -> None:
         actuals=actuals,
         ma_days=None,
         stacked=False, percent_fig=False,
+        y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
         footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
 
@@ -1004,6 +1006,7 @@ def save_plots(df: pd.DataFrame) -> None:
         actuals=actuals,
         ma_days=None,
         kind='line', stacked=False, percent_fig=False,
+        y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
         footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
 
@@ -1038,6 +1041,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
+              y_formatter=perc_format,
               footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
@@ -1048,6 +1052,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
+              y_formatter=perc_format,
               footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
@@ -1058,6 +1063,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
+              y_formatter=perc_format,
               footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
@@ -1070,6 +1076,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
+              y_formatter=perc_format,
               footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
@@ -1082,6 +1089,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
+              y_formatter=perc_format,
               footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     #######################
