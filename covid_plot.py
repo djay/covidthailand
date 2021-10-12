@@ -329,7 +329,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, show_last_values=True,
               cmap='tab10',
               actuals=['Tests XLS'],
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
@@ -344,7 +344,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='PCR Tests and PUI - Thailand\n(excludes some proactive test)',
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, show_last_values=True,
               cmap='tab10',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -467,7 +467,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases', cols_subset=cols,
               actuals=["Cases", "Pos XLS"],
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, show_last_values=True,
               cmap="tab10",
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -488,7 +488,7 @@ def save_plots(df: pd.DataFrame) -> None:
         legends=legends,
         png_prefix='cases_tests', cols_subset=cols,
         ma_days=21,
-        kind='line', stacked=False, percent_fig=False,
+        kind='line', stacked=False, percent_fig=False, show_last_values=True,
         cmap="tab10",
         footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -513,7 +513,7 @@ def save_plots(df: pd.DataFrame) -> None:
         legends=legends,
         png_prefix='cases_tests_cum3', cols_subset=cols,
         ma_days=None,
-        kind='line', stacked=False, percent_fig=False,
+        kind='line', stacked=False, percent_fig=False, show_last_values=True,
         cmap="tab10",
         footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -527,7 +527,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               png_prefix='cases_all', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, show_last_values=True,
               cmap='tab20',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -776,7 +776,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='active_severe', cols_subset=cols,
               actuals=True,
               ma_days=7, 
-              kind='line', stacked=True, percent_fig=False, 
+              kind='line', stacked=True, percent_fig=False, show_last_values=True,
               cmap='tab10', 
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -1292,7 +1292,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Covid CFR since 2021-04-01 - Thailand',
               png_prefix='deaths_w3cfr', cols_subset=cols, 
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, show_last_values=True,
               cmap='tab10',
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -1408,7 +1408,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=["Deviation from normal deaths (removing Covid Deaths) %", "Deviation from Normal deaths (avg 2015-29)"],
               cols_subset=['Deviation from expected Deaths', 'PScore'],
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, show_last_values=True,
               cmap='tab10',
               footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
               footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
@@ -1629,7 +1629,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               png_prefix='deaths_pscore_age', 
               cols_subset=list(by_age.columns),
               periods_to_plot=['all'],
-              kind='line', stacked=False,
+              kind='line', stacked=False, show_last_values=True,
               cmap='tab10',
               footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
 
