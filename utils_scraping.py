@@ -16,7 +16,7 @@ from pytwitterscraper import TwitterScraper
 import requests
 from requests.exceptions import Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
-from tika import parser
+from tika import parser, config
 from webdav3.client import Client
 from webdav3.exceptions import NoConnection, ResponseErrorCode
 
@@ -35,7 +35,9 @@ RETRY = Retry(
 )  # should make it more reliable as ddc.moph.go.th often fails
 
 
-DEFAULT_TIMEOUT = 5 # seconds
+DEFAULT_TIMEOUT = 5  # seconds
+
+
 class TimeoutHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         self.timeout = DEFAULT_TIMEOUT
@@ -62,6 +64,10 @@ def fix_timeouts(s, timeout=None):
 
 s = requests.Session()
 fix_timeouts(s)
+
+
+# do any tika install now before we start the run and use multiple processes
+config.getParsers()
 
 
 def today() -> datetime.datetime:
