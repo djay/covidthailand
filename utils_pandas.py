@@ -101,12 +101,16 @@ def human_format(num: float, pos: int) -> str:
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
+    if not np.isnan(num):
+        num = round(num,1) if abs(num) < 100.0 else round(num)
     # add more suffixes if you need them
     suffix = ['', 'k', 'M', 'G', 'T', 'P'][magnitude]
     return f'{num:.1f}{suffix}'.replace(".0", "")
 
 
 def perc_format(num: float, pos: int) -> str:
+    if not np.isnan(num):
+        num = round(num)
     return f'{num:.0f}%'
 
 
