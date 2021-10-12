@@ -9,7 +9,9 @@ import os
 import re
 import copy
 import codecs
+from multiprocessing import Pool
 import shutil
+import sys
 
 from bs4 import BeautifulSoup
 import camelot
@@ -22,7 +24,7 @@ from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, e
     spread_date_range, cut_ages
 from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
-    strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s
+    strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s, logger
 from utils_scraping_tableau import workbook_flatten, workbook_iterate
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
@@ -315,7 +317,7 @@ def get_en_situation():
         #     print(results.iloc[0:2])
         # raise Exception("Cumulative data didn't increase")
         # row = results.iloc[0].to_dict()
-        print(date.date(), file, row.to_string(header=False, index=False))
+        logger.info('{} {} {}', date.date(), file, row.to_string(header=False, index=False))
         #     "p{Tested PUI Cum:.0f}\tc{Cases Cum:.0f}({Cases:.0f})\t"
         #     "l{Cases Local Transmission Cum:.0f}({Cases Local Transmission:.0f})\t"
         #     "a{Cases Proactive Cum:.0f}({Cases Proactive:.0f})\t"
@@ -385,7 +387,7 @@ def situation_pui_th_death(dfsit, parsed_pdf, date, file):
         "W3 Time To Treatment Max"
     ]
     df = pd.DataFrame([[date, a1_w3, a2_w3, a3_w3, w3_avg, w3_min, w3_max]], columns=columns).set_index("Date")
-    print(date.date(), "Death Ages", df.to_string(header=False, index=False))
+    logger.info('{} {} {}', date.date(), "Death Ages", df.to_string(header=False, index=False))
     return dfsit.combine_first(df)
 
 
@@ -406,7 +408,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         tests_total, pui, active_finding, asq, not_pui, *rest = numbers
         if pui == 4534137:
             pui = 453413  # situation-no273-021063n.pdf
-    elif len(numbers) > 8:
+    elif len(numbers) > 8 and date < d("2021-10-06"):
         _, _, tests_total, pui, active_finding, asq, not_pui, *rest = numbers
     elif len(numbers) == 8:
         # 2021 - removed not_pui
@@ -430,7 +432,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
             pui, *rest = numbers
     if d("2020-03-26") < date < d("2021-10-06") and not numbers:
         raise Exception(f"Problem finding PUI numbers for date {date}")
-    elif not numbers:
+    elif not numbers or date > d("2021-10-06"):
         return dfpui
     if tests_total == 167515:  # situation-no447-250364.pdf
         tests_total = 1675125
@@ -476,7 +478,7 @@ def situation_pui_th(dfpui, parsed_pdf, date, file):
         # stopped publishing most data
         assert check_cum(df, dfpui, cols)
     dfpui = dfpui.combine_first(df)
-    print(date.date(), file, df.to_string(header=False, index=False))
+    logger.info('{} {} {}', date.date(), file, df.to_string(header=False, index=False))
     return dfpui
 
 
@@ -543,7 +545,7 @@ def get_situation_today():
 
 
 def get_situation():
-    print("========Situation Reports==========")
+    logger.info("========Situation Reports==========")
 
     today_situation = get_situation_today()
     th_situation = get_thai_situation()
@@ -585,7 +587,7 @@ def get_situation():
 
 
 def get_cases():
-    print("========Covid19 Timeline==========")
+    logger.info("========Covid19 Timeline==========")
     try:
         file, text, url = next(
             web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="inputs/json", check=True))
@@ -625,7 +627,7 @@ def get_case_details_csv():
                 with codecs.open(file, encoding="tis-620") as fp:
                     confirmedcases = pd.read_csv(fp)
             first, last, ldate = confirmedcases["No."].iloc[0], confirmedcases["No."].iloc[-1], confirmedcases["announce_date"].iloc[-1]
-            print("Covid19daily:", f"rows={len(confirmedcases)}", f"{last-first}={last}-{first}", ldate, file)
+            logger.info("Covid19daily: rows={} {}={} {} {}", len(confirmedcases), last - first, last - first, ldate, file)
             cases = cases.combine_first(confirmedcases.set_index("No."))
         else:
             raise Exception(f"Unknown filetype for covid19daily {file}")
@@ -659,7 +661,7 @@ def get_case_details_api():
         lastid += chunk - 1
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
     cases = cases.set_index("Date")
-    print("Covid19daily: ", "covid-19", cases.last_valid_index())
+    logger.info("Covid19daily: covid-19 {}", cases.last_valid_index())
 
     # # they screwed up the date conversion. d and m switched sometimes
     # # TODO: bit slow. is there way to do this in pandas?
@@ -672,7 +674,7 @@ def get_case_details_api():
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
-    print("========Covid19Daily Demographics==========")
+    logger.info("========Covid19Daily Demographics==========")
 
     cases = get_case_details_csv().reset_index()
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
@@ -903,7 +905,7 @@ def moph_dashboard():
         if not nulls:
             return True
         else:
-            print(date, "MOPH Dashboard", f"Retry Missing data at {idx_value} for {nulls}. Retry")
+            logger.info("{} MOPH Dashboard Retry Missing data at {} for {}. Retry", date, idx_value, nulls)
             return False
 
     def getDailyStats(df):
@@ -998,7 +1000,7 @@ def moph_dashboard():
             assert date >= row.index.max()  # might be something broken with setParam for date
             row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
             df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
-            print(date, "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
         # We get negative values for field hospital before April
         assert df[df['Recovered'] == 0.0].empty
         df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
@@ -1044,8 +1046,8 @@ def moph_dashboard():
             row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
             row.columns = [f"{n} Age {v}" for n, v in row.columns]
             df = row.combine_first(df)
-            print(row.last_valid_index(), "MOPH Ages", range2eng(age_group),
-                  row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            logger.info("{} MOPH Ages {} {}", row.last_valid_index(), range2eng(age_group),
+                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
         df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
         return df
 
@@ -1076,8 +1078,8 @@ def moph_dashboard():
                 continue
             row['Province'] = province
             df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
-            print(row.last_valid_index(), "DASH Trend prov",
-                  row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            logger.info("{} DASH Trend prov {}", row.last_valid_index(),
+                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
         df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
         return df
 
@@ -1154,7 +1156,8 @@ def moph_dashboard():
             )
             row['Province'] = province
             df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
-            print(date.date(), "MOPH Dashboard", row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            logger.info("{} MOPH Dashboard {}", date.date(),
+                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
             if USE_CACHE_DATA:
                 # Save as we go to help debugging
                 export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
@@ -1214,12 +1217,12 @@ def excess_deaths():
             if counts.Age.get((year, month), 0) >= 77 * 102 * 2:
                 continue
             date = datetime.datetime(year=year, month=month, day=1)
-            print("Excess Deaths:", f"missing {year}-{month}")
+            logger.info("Excess Deaths: missing {}-{}", year, month)
             for prov, iso in provinces[["Name", "ISO[7]"]].itertuples(index=False):
                 if iso is None or type(iso) != str:
                     continue
                 dateth = f"{to_thaiyear(year, short=True)}{month:02}"
-                print(".", end="")
+                logger.bind(end="").opt(raw=True).info(".")
                 apiurl = f"{url}&yymmBegin={dateth}&yymmEnd={dateth}&cc={iso[3:]}"
                 res = s.get(apiurl)
                 data = json.loads(res.content)
@@ -1227,11 +1230,11 @@ def excess_deaths():
                     # data not found
                     if date < today() - relativedelta(months=1):
                         # Error in specific past data
-                        print("Excess Deaths:", f"Error getting {prov}", apiurl, str(data))
+                        logger.info("Excess Deaths: Error getting {} {} {}", prov, apiurl, str(data))
                         continue
                     else:
                         # This months data not yet available
-                        print("Excess Deaths:", f"Error in {year}-{month}")
+                        logger.info("Excess Deaths: Error in {}-{}", year, month)
                         done = True
                         break
                 changed = True
@@ -1241,7 +1244,7 @@ def excess_deaths():
                     assert total == sum([r[-1] for r in thisrows])
                     assert numbers.get("lsAge102") is None
                     rows.extend(thisrows)
-            print()
+            logger.opt(raw=True).info("\n")
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
         export(df, "deaths_all", csv_only=True, dir="inputs/json")
@@ -1289,7 +1292,7 @@ def parse_official_tweet(df, date, text, url):
         assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
     row_opt = row2 + [serious, vent, url]
     tdf = pd.DataFrame([row_opt], columns=cols).set_index("Date")
-    print(date, "Official:", tdf.to_string(index=False, header=False))
+    logger.info("{} Official: {}", date, tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
@@ -1305,7 +1308,7 @@ def parse_unofficial_tweet(df, date, text, url):
     cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Source Cases"]
     row = [date, deaths, cases, prisons, url]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
-    print(date, "Breaking:", tdf.to_string(index=False, header=False))
+    logger.info("{} Breaking: {}", date, tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
@@ -1325,7 +1328,7 @@ def parse_moph_tweet(df, date, text, url):
     cols = ["Date", "Deaths", "Cases", "Cases Area Prison", "Recovered", "Source Cases"]
     row = [date, deaths, cases, prisons, recovered, url]
     tdf = pd.DataFrame([row], columns=cols).set_index("Date")
-    print(date, "Moph:", tdf.to_string(index=False, header=False))
+    logger.info("{} Moph: {}", date, tdf.to_string(index=False, header=False))
     return df.combine_first(tdf)
 
 
@@ -1363,11 +1366,11 @@ def parse_case_prov_tweet(walkins, proactive, date, text, url):
             raise Exception(f"bad parse of {date} {total}!={sum(prov.values())}: {text}")
         if "proactive" in label:
             proactive.update(dict(((date, k), v) for k, v in prov.items()))
-            print(date, "Proactive:", len(prov))
+            logger.info("{} Proactive: {}", date, len(prov))
             # proactive[(date,"All")] = total
         elif "walk-in" in label:
             walkins.update(dict(((date, k), v) for k, v in prov.items()))
-            print(date, "Walkins:", len(prov))
+            logger.info("{} Walkins: {}", date, len(prov))
             # walkins[(date,"All")] = total
         else:
             raise Exception()
@@ -1375,7 +1378,7 @@ def parse_case_prov_tweet(walkins, proactive, date, text, url):
 
 
 def get_cases_by_prov_tweets():
-    print("========RB Tweets==========")
+    logger.info("========RB Tweets==========")
     # These are published early so quickest way to get data
     # previously also used to get per province case stats but no longer published
 
@@ -1686,7 +1689,7 @@ def briefing_case_types(date, pages, url):
         "Source Cases",
     ]).set_index(['Date'])
     if not df.empty:
-        print(f"{date.date()} Briefing Cases:", df.to_string(header=False, index=False))
+        logger.info("{} Briefing Cases: {}", date.date(), df.to_string(header=False, index=False))
     return df
 
 
@@ -1926,7 +1929,7 @@ def briefing_deaths_summary(text, date, file):
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
         ] + risk_cols + cm_cols).set_index("Date")
-    print(f"{date.date()} Deaths:", row.to_string(header=False, index=False), file)
+    logger.info("{} Deaths: {}", date.date(), row.to_string(header=False, index=False), file)
     return row
 
 
@@ -2031,7 +2034,7 @@ def briefing_deaths(file, date, pages):
             raise Exception(f"Couldn't parse deaths {date}")
 
     if all.empty:
-        print(f"{date.date()}: Deaths:  0")
+        logger.info("{}: Deaths:  0", date.date())
         sum = \
             pd.DataFrame([[date, 0, None, None, None, 0, 0]],
                          columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max",
@@ -2047,7 +2050,7 @@ def briefing_deaths(file, date, pages):
             pd.DataFrame([[date, male + female, med_age, min_age, max_age, male, female]],
                          columns=["Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max",
                                   "Deaths Male", "Deaths Female"]).set_index("Date")
-        print(f"{date.date()} Deaths: ", sum.to_string(header=False, index=False))
+        logger.info("{} Deaths: {}", date.date(), sum.to_string(header=False, index=False))
         dfprov = all[["Date", 'Province']].value_counts().to_frame("Deaths")
 
     # calculate per province counts
@@ -2078,7 +2081,7 @@ def briefing_documents(check=True):
 
 
 def get_cases_by_prov_briefings():
-    print("========Briefings==========")
+    logger.info("========Briefings==========")
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
@@ -2136,7 +2139,7 @@ def get_cases_by_prov_briefings():
         if today_total and prov_total:
             assert prov_total / today_total > 0.77, warning  # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            print(f"{date.date()} WARNING:", warning)
+            logger.info("{} WARNING:", date.date(), warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
@@ -2165,7 +2168,7 @@ def prov_to_districts(dfprov):
     dfprov_grouped = dfprov.groupby(["Date", "Health District Number"]).sum(min_count=1).reset_index()
     dfprov_grouped = dfprov_grouped.pivot(index="Date", columns=['Health District Number'])
     dfprov_grouped = dfprov_grouped.rename(columns=dict((i, f"Area {i}") for i in DISTRICT_RANGE))
-    
+
     # Can cause problems sum across all provinces. might be missing data.
     # by_type = dfprov_grouped.groupby(level=0, axis=1).sum(min_count=1)
 
@@ -2206,7 +2209,7 @@ def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
 
 
 def get_tests_by_day():
-    print("========Tests by Day==========")
+    logger.info("========Tests by Day==========")
 
     file, dl = next(get_test_dav_files(ext="xlsx"))
     dl()
@@ -2235,7 +2238,7 @@ def get_tests_by_day():
     tests.set_index("Date", inplace=True)
 
     tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
-    print(file, len(tests))
+    logger.info("{} {}", file, len(tests))
 
     return tests
 
@@ -2260,7 +2263,7 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
         [[start, end, ] + pos + tests],
         columns=["Start", "End", ] + POS_COLS + TEST_COLS
     ).set_index("Start"))
-    print("Tests by Area", start.date(), "-", end.date(), file)
+    logger.info("Tests by Area {} - {} {}", start.date(), end.date(), file)
     return data, raw
 
 
@@ -2295,7 +2298,7 @@ def get_tests_by_area_pdf(file, page, data, raw):
         [[start, end, ] + pos + tests],
         columns=["Start", "End", ] + POS_COLS + TEST_COLS
     ).set_index("Start"))
-    print("Tests by Area", start.date(), "-", end.date(), file)
+    logger.info("Tests by Area {} - {} {}", start.date(), end.date(), file)
     return data, raw
 
 
@@ -2326,7 +2329,7 @@ def get_tests_private_public_pptx(file, title, series, data):
     df[f"Pos{private}"] = (
         df[f"Tests{private}"] * df[f"% Detection{private}"] / 100.0
     )
-    print(f"Tests {private}", start.date(), "-", end.date(), file)
+    logger.info("Tests {} {} - {} {}", private, start.date(), end.date(), file)
     return data.combine_first(df)
 
 
@@ -2365,7 +2368,7 @@ def get_test_reports():
 ################################
 
 def get_vaccination_coldchain(request_json, join_prov=False):
-    print("Requesting coldchain:", request_json)
+    logger.info("Requesting coldchain: {}", request_json)
     if join_prov:
         df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
         codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
@@ -2399,7 +2402,7 @@ def get_vaccination_coldchain(request_json, join_prov=False):
         try:
             r = requests.post(url, json=post, timeout=120)
         except requests.exceptions.ReadTimeout:
-            print("Timeout so using cached", request_json)
+            logger.info("Timeout so using cached {}", request_json)
             with open(os.path.join("inputs", "json", request_json), ) as fp:
                 data = fp.read()
         else:
@@ -2508,7 +2511,7 @@ def vac_briefing_totals(df, date, url, page, text):
     columns += ["Source Vac Given"]
     vac = pd.DataFrame([row], columns=columns).set_index("Date")
     if not vac.empty:
-        print(f"{date.date()} Vac:", vac.to_string(header=False, index=False))
+        logger.info("{} Vac: {}", date.date(), vac.to_string(header=False, index=False))
     df = df.combine_first(vac)
 
     return df
@@ -2583,7 +2586,7 @@ def vaccination_daily(daily, date, file, page):
     daily = daily.combine_first(df)
 
     if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย|กรทำงกำรแพทย์)", page):
-        print(date.date(), "Vac Sum (Missing groups)", df.to_string(header=False, index=False), file)
+        logger.info("{} Vac Sum (Missing groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
         assert date < d("2021-07-12")
         return daily
 
@@ -2610,7 +2613,7 @@ def vaccination_daily(daily, date, file, page):
         if date > d("2021-04-24"):
             assert False
         else:
-            print(date.date(), "Vac Sum (Error groups)", df.to_string(header=False, index=False), file)
+            logger.info("{} Vac Sum (Error groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
             return daily
     # assert len(d3_num) == 0 or len(d3_num) == len(d2_num)
 
@@ -2672,7 +2675,7 @@ def vaccination_daily(daily, date, file, page):
             continue
         daily = daily.combine_first(df)
     daily = daily.fillna(value=np.nan)
-    print(date.date(), "Vac Sum", daily.loc[date:date].to_string(header=False, index=False), file)
+    logger.info("{} Vac Sum {} {}", date.date(), daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
 
 
@@ -2739,6 +2742,7 @@ def vaccination_tables(df, date, page, file):
     shots = re.compile(r"(เข็ม(?:ที|ที่|ท่ี)\s.?(?:1|2)\s*)")
     july = re.compile(r"\( *(?:ร้อยละ|รอ้ยละ) *\)", re.DOTALL)
     oldhead = re.compile(r"(เข็มที่ 1 วัคซีน|เข็มท่ี 1 และ|เข็มที ่1 และ)")
+
     def in_heading(pat):
         return max(len(pat.findall(h)) for h in headings)
     lines = [line.strip() for line in page.split('\n') if line.strip()]
@@ -2928,16 +2932,16 @@ def vaccination_reports():
 
             vac_daily = vaccination_daily(vac_daily, date, file, page)
             vac_daily = vac_problem(vac_daily, date, file, page)
-        print(date, "Vac Tables", len(table), "Provinces parsed", file)
+        logger.info("{} Vac Tables {} {} {}", date, len(table), "Provinces parsed", file)
         # TODO: move this into vaccination_tables so can be tested
         if d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
-            print(date, "Dropping table: too few provinces")
+            logger.info("{} Dropping table: too few provinces", date)
             continue
         elif d("2021-04-09") <= date <= d("2021-05-03") and table.groupby("Date").count().iloc[0]['Vac Group Risk: Location 1 Cum'] != 77:
             #counts = table.groupby("Date").count()
             #missing_data = counts[counts['Vac Allocated AstraZeneca'] > counts['Vac Group Risk: Location 2 Cum']]
             # if not missing_data.empty:
-            print(date, "Dropping table: alloc doesn't match prov")
+            logger.info("{} Dropping table: alloc doesn't match prov", date)
             continue
         else:
             assert len(table) == 77 or date < d("2021-08-01")
@@ -3093,11 +3097,12 @@ def vac_manuf_given(df, page, file, page_num, url):
             total2 = sv2 + az2
     assert total1 == sv1 + az1 + sp1 + pf1
     #assert total2 == sv2 + az2 + sp2 + pf2
-    assert total3 == sv3 + az3 + sp3 + pf3 or date in [d("2021-08-15")]
+    # 1% tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
+    assert total3 == 0 or date in [d("2021-08-15")] or 0.99 <= total3 / (sv3 + az3 + sp3 + pf3) <= 1.01
     row = [date, sv1, az1, sp1, pf1, sv2, az2, sp2, pf2, sv3, az3, sp3, pf3]
     cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer"]]
     row = pd.DataFrame([row], columns=['Date'] + cols)
-    print(date.date(), "Vac slides", file, row.to_string(header=False, index=False))
+    logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
     return df.combine_first(row.set_index("Date"))
 
 
@@ -3229,7 +3234,7 @@ def get_ifr():
 
 
 def get_hospital_resources():
-    print("========ArcGIS==========")
+    logger.info("========ArcGIS==========")
 
     # PUI + confirmed, recovered etc stats
     fields = [
@@ -3357,7 +3362,7 @@ def scrape_and_combine():
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
     MAX_DAYS = int(os.environ.get("MAX_DAYS", 1 if USE_CACHE_DATA else 0))
 
-    print(f'\n\nUSE_CACHE_DATA = {quick}\nCHECK_NEWER = {CHECK_NEWER}\nMAX_DAYS = {MAX_DAYS}\n\n')
+    logger.info('\n\nUSE_CACHE_DATA = {}\nCHECK_NEWER = {}\nMAX_DAYS = {}\n\n', quick, CHECK_NEWER, MAX_DAYS)
 
     # TODO: replace with cli --data=situation,briefings --start=2021-06-01 --end=2021-07-01
     # "--data=" to plot only
@@ -3366,19 +3371,36 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    vac = get_vaccinations()
-    situation = get_situation()
-    dashboard, dash_prov = moph_dashboard()
-    tests_reports = get_test_reports()
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    cases_demo, risks_prov = get_cases_by_demographics_api()
+    with Pool() as pool:
+        vac = pool.apply_async(get_vaccinations)
+        situation = pool.apply_async(get_situation)
+        dashboard__dash_prov = pool.apply_async(moph_dashboard)
+        tests_reports = pool.apply_async(get_test_reports)
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
+        cases_demo__risks_prov = pool.apply_async(get_cases_by_demographics_api)
 
-    tweets_prov, twcases = get_cases_by_prov_tweets()
-    timelineapi = get_cases()
+        tweets_prov__twcases = pool.apply_async(get_cases_by_prov_tweets)
+        timelineapi = pool.apply_async(get_cases)
 
-    tests = get_tests_by_day()
-    excess_deaths()
-    case_api_by_area = get_cases_by_area_api()  # can be very wrong for the last days
+        tests = pool.apply_async(get_tests_by_day)
+
+        xcess_deaths = pool.apply_async(excess_deaths)
+        case_api_by_area = pool.apply_async(get_cases_by_area_api)  # can be very wrong for the last days
+
+        situation = situation.get()
+        dashboard, dash_prov = dashboard__dash_prov.get()
+        tests_reports = tests_reports.get()
+        vac = vac.get()
+        briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
+        cases_demo, risks_prov = cases_demo__risks_prov.get()
+
+        tweets_prov, twcases = tweets_prov__twcases.get()
+        timelineapi = timelineapi.get()
+
+        tests = tests.get()
+
+        xcess_deaths.get()
+        case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
@@ -3402,11 +3424,11 @@ def scrape_and_combine():
     cases_by_area = cases_by_area.combine_first(by_area).combine_first(case_api_by_area)
     export(cases_by_area, "cases_by_area")
 
-    print("========Combine all data sources==========")
+    logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
     for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac, dashboard, ]:
         df = df.combine_first(f)
-    print(df)
+    logger.info(df)
 
     if quick:
         old = import_csv("combined", index=["Date"])

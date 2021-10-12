@@ -1,0 +1,9 @@
+{
+  "line-length": false,
+  "single-title": false,
+  "no-inline-html": {
+    "allowed_elements": [
+      "a", "br", "img", "path", "style", "svg"
+    ]
+  }
+}

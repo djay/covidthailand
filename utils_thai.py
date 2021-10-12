@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from utils_pandas import fuzzy_join, rearrange
-from utils_scraping import remove_prefix, remove_suffix, web_files
+from utils_scraping import remove_prefix, remove_suffix, web_files, logger
 
 
 DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
@@ -144,10 +144,10 @@ def previous_date(end, day):
 
 def find_thai_date(content, remove=False):
     """find thai date like
-    >>> print(find_thai_date('17 เม.ย. 2563')) 
+    >>> print(find_thai_date('17 เม.ย. 2563'))
     2020-04-17 00:00:00
     >>> print(find_thai_date('28 กุมภำพันธ์  – 18 กรกฎำคม 2564'))
-    2021-07-18 00:00:00 
+    2021-07-18 00:00:00
     """
 
     thai_date = re.compile(r"([0-9]+)\s*([^ ]+)\s*(25[0-9][0-9])")
@@ -212,15 +212,15 @@ def parse_gender(x):
 
 
 def thaipop(num: float, pos: int) -> str:
-    pp = num / 69630000 * 100
-    num = num / 1000000
-    return f'{num:.1f}M / {pp:.1f}%'
+    pp = round(num / 69630000 * 100, 1)
+    num = round(num / 1000000, 1)
+    return '0%' if num > -0.1 and num < 0.1 else f'{pp:0.1f}%\n{num:.1f}M'.replace(".0", "")
 
 
 def thaipop2(num: float, pos: int) -> str:
-    pp = num / 69630000 / 2 * 100
-    num = num / 1000000
-    return f'{num:.1f}M / {pp:.1f}%'
+    pp = round(num / 69630000 / 2 * 100, 1)
+    num = round(num / 1000000, 1)
+    return '0%' if num > -0.1 and num < 0.1 else f'{pp:.1f}%\n{num:.1f}M'.replace(".0", "")
 
 
 @functools.lru_cache(maxsize=100, typed=False)
@@ -245,7 +245,7 @@ def get_provinces():
                 elif name not in r:
                     r[name] = prov_en
                 elif name in r:
-                    print(f"Warning: duplicate entry of {name} for Province: {prov_en} from Alt Names set: {altnames}")
+                    logger.info("Warning: duplicate entry of {} for Province: {} from Alt Names set: {}", name, prov_en, altnames)
                 else:
                     raise ValueError(
                         f"Unexpected error while iterating over mappings: {name}<-{altnames} for Province: {prov_en}")
@@ -339,7 +339,7 @@ def prov_mapping_from_kristw(provinces):
 
 def prov_regions_wealth(provinces):
     # TODO: Use 4 regions + greater bangkok instead
-    # https://data.go.th/dataset/proviceandregionthailand - has 4, not 5. 
+    # https://data.go.th/dataset/proviceandregionthailand - has 4, not 5.
 
     def clean_column_name(col):
         return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()

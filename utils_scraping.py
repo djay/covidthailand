@@ -6,9 +6,11 @@ import os
 from pathlib import Path
 import pickle
 import re
+import sys
 import urllib.parse
 
 from bs4 import BeautifulSoup
+from loguru import logger
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
 import requests
@@ -67,6 +69,20 @@ def today() -> datetime.datetime:
     return datetime.datetime.today()
 
 
+def formatter(log_entry):
+    """
+    Formats a log entry allowing for multiple entries per line
+    Required for progress indicators...
+    """
+    end = log_entry["extra"].get("end", "\n")
+    return "[{time}] {message}" + end + "{exception}"
+
+# first we clear the multi-process-naive default logger
+logger.remove()
+# then we add an MP-aware one instead
+logger.add(sys.stderr, format=formatter, enqueue=True)
+
+
 ####################
 # Extraction helpers
 #####################
@@ -113,6 +129,10 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
 
 
 def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False):
+    """
+    returns the numbers that appear immediately before or after the string(s) in 'matches',
+    optionally up through 'until', that are found in the parsed PDF string 'content'
+    """
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -143,8 +163,8 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         else:
             return numbers
     if debug and matches:
-        print("Couldn't find '{}'".format(match))
-        print(content)
+        logger.info("Couldn't find '{}'", match)
+        logger.info(content)
     if return_rest:
         return [], content
     else:
@@ -203,7 +223,7 @@ def resume_from(file, remote_date, check=True, size=0, appending=False):
         remote_date = dateutil.parser.parse(remote_date)
 
     if not os.path.exists(file):
-        print(f"Missing: {file}")
+        logger.info("Missing: {}", file)
         return 0
     else:
         fdate = datetime.datetime.fromtimestamp(os.path.getmtime(file)).astimezone()
@@ -247,7 +267,7 @@ def is_cutshort(file, modified, check):
         modified = dateutil.parser.parse(modified)
     if not check and MAX_DAYS and modified and (datetime.datetime.today().astimezone()
                                                 - modified).days > MAX_DAYS and os.path.exists(file):
-        print(f"Reached MAX_DAYS={MAX_DAYS}")
+        logger.info("Reached MAX_DAYS={}", MAX_DAYS)
         return True
     return False
 
@@ -321,11 +341,11 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             if r is None or r.status_code >= 300:
                 err = f"bad response {r.status_code}, {r.content}" if r is not None else err
                 if not os.path.exists(file):
-                    print(f"Error downloading: {file}: skipping. {err}")
+                    logger.info("Error downloading: {}: skipping. {}", file, err)
                     continue
-                print(f"Error downloading: {file}: using cache. {err}")
+                logger.info("Error downloading: {}: using cache. {}", file, err)
             else:
-                print(f"Download: {file} {modified}", end="")
+                logger.bind(end="").opt(raw=True).info("Download: {} {}", file, modified)
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 mode = "w+b" if resume_byte_pos > 0 else "wb"
                 with open(file, mode) as f:
@@ -335,16 +355,17 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                         for chunk in r.iter_content(chunk_size=2 * 1024 * 1024):
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
-                                print(".", end="")
+                                logger.bind(end="").opt(raw=True).info(".")
                     except (Timeout, ConnectionError) as e:
                         if resumable:
                             # TODO: should we revert to last version instead?
-                            print(f"Error downloading: {file}: resumable file incomplete {str(e)}")
+                            logger.opt(raw=True).info("Error downloading: {}: resumable file incomplete {}", file, str(e))
                             continue
                         else:
-                            print(f"Error downloading: {file}: skipping. {str(e)}")
+                            logger.opt(raw=True).info("Error downloading: {}: skipping. {}", file, str(e))
                             remove = True
-                print("")
+                logger.opt(raw=True).info("\n")
+            logger.bind(end="\n")
         if remove:
             os.remove(file)  # if we leave it without check it will never get fixed
             continue
@@ -437,7 +458,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
         with open(filename, "rb") as fp:
             tweets = pickle.load(fp)
     except (IOError, EOFError, OSError, pickle.PickleError, pickle.UnpicklingError) as e:
-        print(f'Error detected when attempting to load the pickle file: {e}, setting an empty \'tweets\' dictionary')
+        logger.info('Error detected when attempting to load the pickle file: {}, setting an empty \'tweets\' dictionary', e)
         tweets = {}
     for date, tweet_list in tweets.items():
         fixed = []
@@ -449,7 +470,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in [50, 2000, 20000]:
-        print(f"Getting {limit} tweets")
+        logger.info("Getting {} tweets", limit)
         try:
             resp = tw.get_tweets(userid, count=limit).contents
         except Exception:
@@ -464,11 +485,11 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
 
         earliest = min(tweets.keys())
         latest = max(tweets.keys())
-        print(f"got tweets {earliest} to {latest} {len(tweets)}")
+        logger.info("got tweets {} to {} {}", earliest, latest, len(tweets))
         if earliest <= datefrom.date():  # TODO: ensure we have every tweet in sequence?
             break
         else:
-            print(f"Retrying: Earliest {earliest}")
+            logger.info("Retrying: Earliest {}", earliest)
     with open(filename, "wb") as fp:
         pickle.dump(tweets, fp)
     return tweets

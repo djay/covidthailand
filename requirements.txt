@@ -16,3 +16,4 @@ pythainlp
 TableauScraper
 pytest
 mpld3
+loguru
