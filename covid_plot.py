@@ -30,7 +30,7 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
-              show_last_values: bool = False,
+              show_last_values: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
               unknown_percent=False,
@@ -283,15 +283,57 @@ def plot_area(df: pd.DataFrame,
             a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
             a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
             a1_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
+            if show_last_values:
+                values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
+                sum = 0.0
+                ticks = []
+                labels = []
+                for value in values:
+                    sum += value
+                    ticks.append(sum - value/2.0)
+                    labels.append(perc_format(value,0))
+                a1_secax_y.set_yticks(ticks)
+                a1_secax_y.set_yticklabels(labels)
+                number = 0
+                for patch in leg.get_patches():
+                    if number >= len(perccols):
+                        break
+                    a1_secax_y.get_yticklabels()[number].set_color(patch.get_facecolor())
+                    number += 1
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
         a0_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
-        if y_formatter is not None:
-            a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=1, color='lightgrey')
             
         if show_last_values:
-            a0_secax_y.set_yticks(df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce'))
+            values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            if stacked:
+                sum = 0.0
+                ticks = []
+                labels = []
+                for value in values:
+                    sum += value
+                    ticks.append(sum - value/2.0)
+                    labels.append(y_formatter(value,0))
+                a0_secax_y.set_yticks(ticks)
+                a0_secax_y.set_yticklabels(labels)
+                number = 0
+                for patch in leg.get_patches():
+                    if number >= len(cols):
+                        break
+                    a0_secax_y.get_yticklabels()[number].set_color(patch.get_facecolor())
+                    number += 1
+            else:
+                a0_secax_y.set_yticks(values)
+                if y_formatter is not None:
+                    a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+                number = 0
+                for line in leg.get_lines():
+                    if number >= len(cols):
+                        break
+                    a0_secax_y.get_yticklabels()[number].set_color(line.get_color())
+                    number += 1
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -329,7 +371,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, show_last_values=True,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               actuals=['Tests XLS'],
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
@@ -344,7 +386,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='PCR Tests and PUI - Thailand\n(excludes some proactive test)',
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, show_last_values=True,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -467,7 +509,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases', cols_subset=cols,
               actuals=["Cases", "Pos XLS"],
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, show_last_values=True,
+              kind='line', stacked=False, percent_fig=False,
               cmap="tab10",
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -488,7 +530,7 @@ def save_plots(df: pd.DataFrame) -> None:
         legends=legends,
         png_prefix='cases_tests', cols_subset=cols,
         ma_days=21,
-        kind='line', stacked=False, percent_fig=False, show_last_values=True,
+        kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
         footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -513,7 +555,7 @@ def save_plots(df: pd.DataFrame) -> None:
         legends=legends,
         png_prefix='cases_tests_cum3', cols_subset=cols,
         ma_days=None,
-        kind='line', stacked=False, percent_fig=False, show_last_values=True,
+        kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
         footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -527,7 +569,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               png_prefix='cases_all', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, show_last_values=True,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab20',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -776,7 +818,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='active_severe', cols_subset=cols,
               actuals=True,
               ma_days=7, 
-              kind='line', stacked=True, percent_fig=False, show_last_values=True,
+              kind='line', stacked=True, percent_fig=False,
               cmap='tab10', 
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -1292,7 +1334,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Covid CFR since 2021-04-01 - Thailand',
               png_prefix='deaths_w3cfr', cols_subset=cols, 
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, show_last_values=True,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -1408,7 +1450,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=["Deviation from normal deaths (removing Covid Deaths) %", "Deviation from Normal deaths (avg 2015-29)"],
               cols_subset=['Deviation from expected Deaths', 'PScore'],
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, show_last_values=True,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
               footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
@@ -1629,7 +1671,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               png_prefix='deaths_pscore_age', 
               cols_subset=list(by_age.columns),
               periods_to_plot=['all'],
-              kind='line', stacked=False, show_last_values=True,
+              kind='line', stacked=False,
               cmap='tab10',
               footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
 
