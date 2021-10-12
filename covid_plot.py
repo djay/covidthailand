@@ -29,6 +29,7 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
+              show_last_values: bool = False,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
               unknown_percent=False,
@@ -53,6 +54,7 @@ def plot_area(df: pd.DataFrame,
     :param kind: the type of plot (line chart or area chart)
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
+    :param show_last_values: show the last actual values on the right axis
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals
     :param unknown_percent: to include unknowns in a percentage fig if enabled
@@ -280,6 +282,9 @@ def plot_area(df: pd.DataFrame,
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=1, color='lightgrey')
             
+        if show_last_values:
+            a0_secax_y.set_yticks(df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce'))
+
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path)
