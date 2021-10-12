@@ -152,7 +152,7 @@ jobs:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}  
       - name: Make cached docs bundle
         run: |
-           tar --exclude="inputs/.git" -czvf inputs.tar.gz inputs    
+           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs    
       - name: Upload Cached docs to existing release
         uses: svenstaro/upload-release-action@v2
         with:
