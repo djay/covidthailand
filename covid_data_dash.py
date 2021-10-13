@@ -220,8 +220,8 @@ def dash_by_province():
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
 
-    allow_na = {
-        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=6), 0.001),
+    valid = {
+        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=8), 0.001),
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=5), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
@@ -235,6 +235,23 @@ def dash_by_province():
         "Cases": d("2021-06-28"),  # Only Lampang?
         'Hospitalized Severe': today(),  # Comes from the trends data
     }
+    # Dates with no data and doesn't seem to change
+    skip = [
+        (d("2021-10-04"), "Amnat Charoen"),
+        (d("2021-10-02"), "Phrae"),
+        (d("2021-10-02"), "Phayao"),
+        (d("2021-10-01"), "Amnat Charoen"),
+        (d('2021-10-01'), 'Chai Nat'),
+        (d("2021-09-28"), "Phayao"),
+        (d('2021-09-28'), 'Nan')
+        (d("2021-09-27"), "Phayao"),
+        (d("2021-09-26"), "Mukdahan"),
+        (d('2021-09-26'), 'Bueng Kan')
+        (d('2021-09-26'), 'Nan'),
+        (d("2021-09-23"), 'Phayao'),
+        (d("2021-09-22"), 'Nakhon Phanom'),
+        (d('2021-09-21'), 'Nan'),
+    ]
 
     dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
     for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
@@ -242,7 +259,7 @@ def dash_by_province():
         if province is None:
             continue
         province = get_province(province)
-        if skip_valid(df, (date, province), allow_na):
+        if (date, province) in skip or skip_valid(df, (date, province), valid):
             continue
         if (wb := get_wb()) is None:
             continue
