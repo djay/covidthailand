@@ -237,6 +237,10 @@ def dash_by_province():
     }
     # Dates with no data and doesn't seem to change
     skip = [
+        (d("2021-10-12"), "Mae Hong Son"),
+        (d('2021-10-09'), 'Phayao'),
+        (d('2021-10-09'), 'Nan'),
+        (d('2021-10-07'), 'Nan'),
         (d("2021-10-04"), "Amnat Charoen"),
         (d("2021-10-02"), "Phrae"),
         (d("2021-10-02"), "Phayao"),
