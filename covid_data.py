@@ -1550,7 +1550,7 @@ def briefing_deaths_summary(text, date, file):
         # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
     comorbidity = {
-        disease: get_next_number(text, *thdiseases, default=0, return_rest=False)
+        disease: get_next_number(text, *thdiseases, default=0, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
     if date not in [d("2021-8-10"), d("2021-09-23")]:
@@ -3038,16 +3038,19 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    with Pool() as pool:
-        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
-        dash_ages = pool.apply_async(covid_data_dash.dash_ages)
+    with Pool(1 if USE_CACHE_DATA or MAX_DAYS > 0 else None) as pool:
+
+        # These 2 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
 
+        dash_ages = pool.apply_async(covid_data_dash.dash_ages)
+        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
+
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         vac = pool.apply_async(get_vaccinations)
         situation = pool.apply_async(get_situation)
         tests_reports = pool.apply_async(get_test_reports)
-        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         cases_demo__risks_prov = pool.apply_async(get_cases_by_demographics_api)
 
         tweets_prov__twcases = pool.apply_async(get_cases_by_prov_tweets)
