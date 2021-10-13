@@ -2211,33 +2211,37 @@ def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
 def get_tests_by_day():
     logger.info("========Tests by Day==========")
 
-    file, dl = next(get_test_dav_files(ext="xlsx"))
-    dl()
-    tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
-    tests.dropna(how="any", inplace=True)  # get rid of totals row
+    # file, dl = next(get_test_dav_files(ext="xlsx"))
+    # dl()
+    # tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+    url = "https://data.go.th/dataset/9f6d900f-f648-451f-8df4-89c676fce1c4/resource/0092046c-db85-4608-b519-ce8af099315e/download/thailand_covid-19_testing_data_update091064.csv"  # NOQA
+    file, _, _ = next(iter(web_files(url, dir="inputs/testing_moph")))
+    tests = pd.read_csv(file, parse_dates=True, usecols=[0, 1, 2])
+    pos = tests[tests["Date"] == "Cannot specify date"]['positive']
+    total = tests[tests["Date"] == "Cannot specify date"]['Total Testing']
+    tests = tests[tests["Date"] != "Cannot specify date"]
+    tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
     tests = tests.set_index("Date")
-    pos = tests.loc["Cannot specify date"].Pos
-    total = tests.loc["Cannot specify date"].Total
-    tests.drop("Cannot specify date", inplace=True)
+
+    # tests.dropna(how="any", inplace=True)  # get rid of totals row
+    # tests.drop("Cannot specify date", inplace=True)
     # Need to redistribute the unknown values across known values
     # Documentation tells us it was 11 labs and only before 3 April
     unknown_end_date = datetime.datetime(day=3, month=4, year=2020)
-    all_pos = tests["Pos"][:unknown_end_date].sum()
-    all_total = tests["Total"][:unknown_end_date].sum()
+    all_pos = tests["positive"][:unknown_end_date].sum()
+    all_total = tests["Total Testing"][:unknown_end_date].sum()
     for index, row in tests.iterrows():
         if index > unknown_end_date:
             continue
-        row.Pos = float(row.Pos) + row.Pos / all_pos * pos
-        row.Total = float(row.Total) + row.Total / all_total * total
+        row['positive'] = float(row['positive']) + row['positive'] / all_pos * pos
+        row['Total Testing'] = float(row['Total Testing']) + row['Total Testing'] / all_total * total
     # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
     # print(tests["Pos"].sum(), pos + all_pos)
     # print(tests["Total"].sum(), total + all_total)
     # fix datetime
-    tests.reset_index(drop=False, inplace=True)
-    tests["Date"] = pd.to_datetime(tests["Date"])
-    tests.set_index("Date", inplace=True)
+    # tests.reset_index(drop=False, inplace=True)
 
-    tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
+    tests.rename(columns={'positive': "Pos XLS", 'Total Testing': "Tests XLS"}, inplace=True)
     logger.info("{} {}", file, len(tests))
 
     return tests
@@ -3371,7 +3375,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    with Pool() as pool:
+    with Pool(1 if MAX_DAYS > 0 else None) as pool:
+        tests = pool.apply_async(get_tests_by_day)
         vac = pool.apply_async(get_vaccinations)
         situation = pool.apply_async(get_situation)
         dashboard__dash_prov = pool.apply_async(moph_dashboard)
@@ -3381,8 +3386,6 @@ def scrape_and_combine():
 
         tweets_prov__twcases = pool.apply_async(get_cases_by_prov_tweets)
         timelineapi = pool.apply_async(get_cases)
-
-        tests = pool.apply_async(get_tests_by_day)
 
         xcess_deaths = pool.apply_async(excess_deaths)
         case_api_by_area = pool.apply_async(get_cases_by_area_api)  # can be very wrong for the last days
