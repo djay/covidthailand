@@ -3038,7 +3038,7 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    with Pool(1 if USE_CACHE_DATA or MAX_DAYS > 0 else None) as pool:
+    with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
         # These 2 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)

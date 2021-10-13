@@ -240,6 +240,7 @@ def dash_by_province():
         (d("2021-10-04"), "Amnat Charoen"),
         (d("2021-10-02"), "Phrae"),
         (d("2021-10-02"), "Phayao"),
+        (d('2021-10-02'), 'Nan'),
         (d("2021-10-01"), "Amnat Charoen"),
         (d('2021-10-01'), 'Chai Nat'),
         (d("2021-09-28"), "Phayao"),
