@@ -891,7 +891,7 @@ def excess_deaths():
                 dateth = f"{to_thaiyear(year, short=True)}{month:02}"
                 logger.bind(end="").opt(raw=True).info(".")
                 apiurl = f"{url}&yymmBegin={dateth}&yymmEnd={dateth}&cc={iso[3:]}"
-                res = s.get(apiurl)
+                res = s.get(apiurl, timeout=30)
                 data = json.loads(res.content)
                 if len(data) != 2:
                     # data not found
