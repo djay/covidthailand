@@ -11,7 +11,6 @@ import copy
 import codecs
 from multiprocessing import Pool
 import shutil
-import sys
 
 from bs4 import BeautifulSoup
 import camelot
@@ -25,10 +24,10 @@ from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, e
 from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
     strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s, logger
-from utils_scraping_tableau import workbook_flatten, workbook_iterate
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
+import covid_data_dash
 
 
 ##########################################
@@ -858,338 +857,6 @@ def get_cases_by_demographics_api():
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
 
-########################
-# Dashboards
-########################
-
-
-def moph_dashboard():
-
-    def skip_valid(df, idx_value, allow_na={}):
-
-        if type(idx_value) == tuple:
-            date, prov = idx_value
-            idx_value = (str(date.date()) if date else None, prov)
-        else:
-            date = idx_value
-            idx_value = str(date.date()) if date else None
-        # Assume index of df is in the same order as params
-        if df.empty:
-            return False
-
-        def is_valid(column, date, idx_value):
-            limits = allow_na.get(column, None)
-            maxdate = today()
-            mins = []
-            if type(limits) in [tuple, list]:
-                mindate, maxdate, *mins = limits
-            elif limits is None:
-                mindate = d("1975-1-1")
-            else:
-                mindate = limits
-            if not(date is None or mindate <= date <= maxdate):
-                return True
-            try:
-                val = df.loc[idx_value][column]
-            except KeyError:
-                return False
-            if pd.isna(val):
-                return False
-            if mins:
-                return mins[0] <= val
-            else:
-                return True
-
-        # allow certain fields null if before set date
-        nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
-        if not nulls:
-            return True
-        else:
-            logger.info("{} MOPH Dashboard Retry Missing data at {} for {}. Retry", date, idx_value, nulls)
-            return False
-
-    def getDailyStats(df):
-        # remove crap from bad pivot
-        df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
-        # somehow we got some dodgy rows. should be no neg cases 2021
-        df = df.drop(df[df['Cases'] == 0.0].index)
-        # Fix spelling mistake
-        if 'Postitive Rate Dash' in df.columns:
-            df = df.drop(columns=['Postitive Rate Dash'])
-
-        allow_na = {
-            "ATK": d("2021-07-31"),
-            "Cases Area Prison": d("2021-05-12"),
-            "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=5)),
-            "Tests": today(),  # it's no longer there
-            'Hospitalized Field HICI': d("2021-08-08"),
-            'Hospitalized Field Hospitel': d("2021-08-08"),
-            'Hospitalized Field Other': d("2021-08-08"),
-            'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
-            'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
-            "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=4)),
-            'Hospitalized Field': (d('2021-04-20'), today(), 100),
-            'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
-            'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
-            'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
-            'Recovered': (d('2021-01-01'), today(), 1),
-            'Cases Walkin': (d('2021-01-01'), today(), 1),
-        }
-        url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
-        # new day starts with new info comes in
-        dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
-        for get_wb, date in workbook_iterate(url, param_date=dates):
-            date = next(iter(date))
-            if skip_valid(df, date, allow_na):
-                continue
-            if (wb := get_wb()) is None:
-                continue
-            row = workbook_flatten(
-                wb,
-                date,
-                D_New="Cases",
-                D_Walkin="Cases Walkin",
-                D_Proact="Cases Proactive",
-                D_NonThai="Cases Imported",
-                D_Prison="Cases Area Prison",
-                D_Hospital="Hospitalized Hospital",
-                D_Severe="Hospitalized Severe",
-                D_SevereTube="Hospitalized Respirator",
-                D_Medic="Hospitalized",
-                D_Recov="Recovered",
-                D_Death="Deaths",
-                D_ATK="ATK",
-                D_Lab2={
-                    "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
-                    "DAY(txn_date)-value": "Date",
-                },
-                D_Lab={
-                    "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
-                    "ATTR(txn_date)-alias": "Date",
-                },
-                D_NewTL={
-                    "SUM(case_new)-value": "Cases",
-                    "DAY(txn_date)-value": "Date"
-                },
-                D_DeathTL={
-                    "SUM(death_new)-value": "Deaths",
-                    "DAY(txn_date)-value": "Date"
-                },
-                D_Vac_Stack={
-                    "DAY(txn_date)-value": "Date",
-                    "vaccine_plan_group-alias": {
-                        "1": "1 Cum",
-                        "2": "2 Cum",
-                        "3": "3 Cum",
-                    },
-                    "SUM(vaccine_total_acm)-value": "Vac Given",
-                },
-                D_HospitalField="Hospitalized Field",
-                D_Hospitel="Hospitalized Field Hospitel",
-                D_HICI="Hospitalized Field HICI",
-                D_HFieldOth="Hospitalized Field Other",
-                D_RecovL={
-                    "DAY(txn_date)-value": "Date",
-                    "SUM(recovered_new)-value": "Recovered"
-                }
-
-            )
-
-            if row.empty:
-                break
-            assert date >= row.index.max()  # might be something broken with setParam for date
-            row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
-            df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
-            logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
-        # We get negative values for field hospital before April
-        assert df[df['Recovered'] == 0.0].empty
-        df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
-        return df
-
-    def getTimelines(df):
-        # Get deaths by prov, date. and other stats - timeline
-        #
-        # ['< 10 ปี', '10-19 ปี', '20-29 ปี', '30-39 ปี', '40-49 ปี', '50-59 ปี', '60-69 ปี', '>= 70 ปี', 'ไม่ระบุ']
-
-        # D4_TREND
-        # cases = AGG(stat_count)-alias
-        # severe = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
-        # deaths = AGG(ผู้เสียชีวิต)-alias (and AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value  all patient groups)
-        # cum cases = AGG(stat_accum)-alias
-        # date  = DAY(date)-alias, DAY(date)-value
-        url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=select-trend-line"
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend-w"
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend?:isGuestRedirectFromVizportal=y&:embed=y"
-
-        def range2eng(range):
-            return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
-
-        for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range"):
-            age_group = next(iter(idx_value))
-            age_group = range2eng(age_group)
-            skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
-            if skip or (wb := get_wb()) is None:
-                continue
-            row = workbook_flatten(
-                wb,
-                None,
-                D4_TREND={
-                    "DAY(date)-value": "Date",
-                    "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
-                    "AGG(stat_count)-alias": "Cases",
-                    "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
-                },
-            )
-            if row.empty:
-                continue
-            row['Age'] = age_group
-            row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
-            row.columns = [f"{n} Age {v}" for n, v in row.columns]
-            df = row.combine_first(df)
-            logger.info("{} MOPH Ages {} {}", row.last_valid_index(), range2eng(age_group),
-                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
-        df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
-        return df
-
-    def get_trends_prov(df):
-        url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
-
-        for get_wb, idx_value in workbook_iterate(url, D4_CHART="province"):
-            province = get_province(next(iter(idx_value)))
-            date = str(today().date())
-            try:
-                df.loc[(date, province)]
-                continue
-            except KeyError:
-                pass
-            if (wb := get_wb()) is None:
-                continue
-            row = workbook_flatten(
-                wb,
-                None,
-                D4_TREND={
-                    "DAY(date)-value": "Date",
-                    "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
-                    "AGG(stat_count)-alias": "Cases",
-                    "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
-                },
-            )
-            if row.empty or province is None:
-                continue
-            row['Province'] = province
-            df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
-            logger.info("{} DASH Trend prov {}", row.last_valid_index(),
-                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
-        df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
-        return df
-
-    def by_province(df):
-        url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province"
-        # Fix spelling mistake
-        if 'Postitive Rate Dash' in df.columns:
-            df = df.drop(columns=['Postitive Rate Dash'])
-
-        #selectable items - D2_ProvinceBar
-        #    province : ['แม่ฮ่องสอน', 'พังงา', 'กระบี่', 'ลำพูน', 'ตราด', 'สตูล', 'พัทลุง', 'พะเยา', 'พิษณุโลก', 'แพร่'] ...
-        #    AGG(measure_analyze) : [1, 14, 17, 17, 21, 28, 32, 41, 44, 45] ...
-        # parameters [{'column': 'param_acm', 'values': ['วันที่เลือก', 'ค่าสะสมถึงวันที่เลือก'], 'parameterName': '[Parameters].[Parameter 9]'}]
-        allow_na = {
-            "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=6), 0.001),
-            "Tests": today(),  # It's no longer there
-            "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=5), 1),
-            "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
-            "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
-            # all the non-series will take too long to get historically
-            "Cases Walkin": d("2021-08-01"),
-            "Cases Proactive": d("2021-08-01"),
-            "Cases Area Prison": d("2021-08-01"),
-            "Cases Imported": d("2021-08-01"),
-            "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
-            "Cases": d("2021-06-28"),  # Only Lampang?
-            'Hospitalized Severe': today(),  # Comes from the trends data
-        }
-
-        dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
-        for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
-            date, province = idx_value
-            if province is None:
-                continue
-            province = get_province(province)
-            if skip_valid(df, (date, province), allow_na):
-                continue
-            if (wb := get_wb()) is None:
-                continue
-            row = workbook_flatten(
-                wb,
-                date,
-                D2_Vac_Stack={
-                    "DAY(txn_date)-value": "Date",
-                    "vaccine_plan_group-alias": {
-                        "1": "1 Cum",
-                        "2": "2 Cum",
-                        "3": "3 Cum",
-                    },
-                    "SUM(vaccine_total_acm)-value": "Vac Given",
-                },
-                D2_Walkin="Cases Walkin",
-                D2_Proact="Cases Proactive",
-                D2_Prison="Cases Area Prison",
-                D2_NonThai="Cases Imported",
-                D2_New="Cases",
-                D2_NewTL={
-                    "AGG(stat_count)-alias": "Cases",
-                    "DAY(txn_date)-value": "Date"
-                },
-                D2_Lab2={
-                    "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
-                    "DAY(txn_date)-value": "Date"
-                },
-                D2_Lab={
-                    "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
-                    "ATTR(txn_date)-alias": "Date",
-                },
-                D2_Death="Deaths",
-                D2_DeathTL={
-                    "AGG(num_death)-value": "Deaths",
-                    "DAY(txn_date)-value": "Date"
-                },
-            )
-            row['Province'] = province
-            df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
-            logger.info("{} MOPH Dashboard {}", date.date(),
-                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
-            if USE_CACHE_DATA:
-                # Save as we go to help debugging
-                export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
-
-        return df
-
-    # all province case numbers in one go
-    url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=scoreboard"
-
-    # 5 kinds cases stats for last 30 days
-    url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
-
-    dfprov = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
-    dfprov = get_trends_prov(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="inputs/json")  # Speeds up things locally
-    dfprov = by_province(dfprov)
-    export(dfprov, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
-
-    daily = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
-    daily = getDailyStats(daily)
-    export(daily, "moph_dashboard", csv_only=True, dir="inputs/json")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")  # "json" for caching, api so it's downloadable
-
-    ages = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
-    ages = getTimelines(ages)
-    export(ages, "moph_dashboard_ages", csv_only=True, dir="inputs/json")
-
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")  # "json" for caching, api so it's downloadable
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
-    daily = daily.combine_first(ages)
-    return daily, dfprov
-
 
 ########################
 # Excess Deaths
@@ -1883,7 +1550,7 @@ def briefing_deaths_summary(text, date, file):
         # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
     comorbidity = {
-        disease: get_next_number(text, *thdiseases, default=0, return_rest=False)
+        disease: get_next_number(text, *thdiseases, default=0, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
     if date not in [d("2021-8-10"), d("2021-09-23")]:
@@ -2211,33 +1878,37 @@ def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
 def get_tests_by_day():
     logger.info("========Tests by Day==========")
 
-    file, dl = next(get_test_dav_files(ext="xlsx"))
-    dl()
-    tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
-    tests.dropna(how="any", inplace=True)  # get rid of totals row
+    # file, dl = next(get_test_dav_files(ext="xlsx"))
+    # dl()
+    # tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+    url = "https://data.go.th/dataset/9f6d900f-f648-451f-8df4-89c676fce1c4/resource/0092046c-db85-4608-b519-ce8af099315e/download/thailand_covid-19_testing_data_update091064.csv"  # NOQA
+    file, _, _ = next(iter(web_files(url, dir="inputs/testing_moph")))
+    tests = pd.read_csv(file, parse_dates=True, usecols=[0, 1, 2])
+    pos = tests[tests["Date"] == "Cannot specify date"]['positive']
+    total = tests[tests["Date"] == "Cannot specify date"]['Total Testing']
+    tests = tests[tests["Date"] != "Cannot specify date"]
+    tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
     tests = tests.set_index("Date")
-    pos = tests.loc["Cannot specify date"].Pos
-    total = tests.loc["Cannot specify date"].Total
-    tests.drop("Cannot specify date", inplace=True)
+
+    # tests.dropna(how="any", inplace=True)  # get rid of totals row
+    # tests.drop("Cannot specify date", inplace=True)
     # Need to redistribute the unknown values across known values
     # Documentation tells us it was 11 labs and only before 3 April
     unknown_end_date = datetime.datetime(day=3, month=4, year=2020)
-    all_pos = tests["Pos"][:unknown_end_date].sum()
-    all_total = tests["Total"][:unknown_end_date].sum()
+    all_pos = tests["positive"][:unknown_end_date].sum()
+    all_total = tests["Total Testing"][:unknown_end_date].sum()
     for index, row in tests.iterrows():
         if index > unknown_end_date:
             continue
-        row.Pos = float(row.Pos) + row.Pos / all_pos * pos
-        row.Total = float(row.Total) + row.Total / all_total * total
+        row['positive'] = float(row['positive']) + row['positive'] / all_pos * pos
+        row['Total Testing'] = float(row['Total Testing']) + row['Total Testing'] / all_total * total
     # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
     # print(tests["Pos"].sum(), pos + all_pos)
     # print(tests["Total"].sum(), total + all_total)
     # fix datetime
-    tests.reset_index(drop=False, inplace=True)
-    tests["Date"] = pd.to_datetime(tests["Date"])
-    tests.set_index("Date", inplace=True)
+    # tests.reset_index(drop=False, inplace=True)
 
-    tests.rename(columns=dict(Pos="Pos XLS", Total="Tests XLS"), inplace=True)
+    tests.rename(columns={'positive': "Pos XLS", 'Total Testing': "Tests XLS"}, inplace=True)
     logger.info("{} {}", file, len(tests))
 
     return tests
@@ -3371,24 +3042,36 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
 
-    with Pool() as pool:
+    with Pool(1 if MAX_DAYS > 0 else None) as pool:
+
+        # These 2 are slowest so should go first
+        dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
+        dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
+
+        dash_ages = pool.apply_async(covid_data_dash.dash_ages)
+        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
+
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         vac = pool.apply_async(get_vaccinations)
         situation = pool.apply_async(get_situation)
-        dashboard__dash_prov = pool.apply_async(moph_dashboard)
         tests_reports = pool.apply_async(get_test_reports)
-        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
+        tests = pool.apply_async(get_tests_by_day)
         cases_demo__risks_prov = pool.apply_async(get_cases_by_demographics_api)
 
         tweets_prov__twcases = pool.apply_async(get_cases_by_prov_tweets)
         timelineapi = pool.apply_async(get_cases)
 
-        tests = pool.apply_async(get_tests_by_day)
-
         xcess_deaths = pool.apply_async(excess_deaths)
         case_api_by_area = pool.apply_async(get_cases_by_area_api)  # can be very wrong for the last days
 
+        # Now block getting until we get each of the data
         situation = situation.get()
-        dashboard, dash_prov = dashboard__dash_prov.get()
+
+        dash_daily = dash_daily.get()
+        dash_ages = dash_ages.get()
+        dash_by_province = dash_by_province.get()
+        dash_trends_prov = dash_trends_prov.get()
+
         tests_reports = tests_reports.get()
         vac = vac.get()
         briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
@@ -3402,6 +3085,11 @@ def scrape_and_combine():
         xcess_deaths.get()
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
 
+    # Combine dashboard data
+    dash_by_province = dash_trends_prov.combine_first(dash_by_province)
+    export(dash_by_province, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
+
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
     briefings = briefings.combine_first(cases_briefings).combine_first(twcases).combine_first(timelineapi)
@@ -3411,7 +3099,7 @@ def scrape_and_combine():
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
-        dash_prov).combine_first(
+        dash_by_province).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
@@ -3426,14 +3114,13 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac, dashboard, ]:
+    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 
     if quick:
         old = import_csv("combined", index=["Date"])
         df = df.combine_first(old)
-
         return df
     else:
         export(df, "combined", csv_only=True)
