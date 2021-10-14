@@ -219,9 +219,10 @@ def situation_pui_en(parsed_pdf, date):
         numbers, _ = get_next_numbers(
             parsed_pdf, "Total number of people who met the criteria of patients", debug=False,
         )
-        if date > dateutil.parser.parse("2020-01-30") and not numbers:
+        if d("2020-01-30") < date < d("2021-10-06") and not numbers:
             raise Exception(f"Problem parsing {date}")
         elif not numbers:
+            # They dropped PUI in oct
             return pd.DataFrame()
         tests_total, active_finding, asq, not_pui = [None] * 4
         pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
