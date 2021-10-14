@@ -858,7 +858,6 @@ def get_cases_by_demographics_api():
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
 
-
 ########################
 # Excess Deaths
 ########################
@@ -954,7 +953,10 @@ def parse_official_tweet(df, date, text, url):
     ]
     row = [date, imported, local, cases, deaths]
     row2 = row + [hospitalised, recovered]
-    if date <= d("2021-05-01").date():
+    if date >= d("2021-10-14"):
+        # there is a problem but we no longer need this so just skip
+        return df
+    elif date <= d("2021-05-01").date():
         assert not any_in(row, None), f"{date} Missing data in Official Tweet {row}"
     else:
         assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
