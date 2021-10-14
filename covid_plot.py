@@ -30,6 +30,7 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
+              show_last_values: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
               unknown_percent=False,
@@ -54,6 +55,7 @@ def plot_area(df: pd.DataFrame,
     :param kind: the type of plot (line chart or area chart)
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
+    :param show_last_values: show the last actual values on the right axis
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals
     :param unknown_percent: to include unknowns in a percentage fig if enabled
@@ -278,15 +280,68 @@ def plot_area(df: pd.DataFrame,
             a1.tick_params(direction='out', length=6, width=1, color='lightgrey')
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
             a1.xaxis.label.set_visible(False)
-            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x), color='lightgrey')
             a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
             a1_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
+            if show_last_values:
+                a1_secax_y.set_color(color='lightgrey')
+                a1_value_y = a1.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x))
+                a1_value_y.tick_params(direction='out', length=6, width=1, color='white')
+                values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
+                sum = 0.0
+                ticks = []
+                labels = []
+                for value in values:
+                    sum += value
+                    ticks.append(sum - value/2.0)
+                    labels.append(perc_format(value,0))
+                a1_value_y.set_yticks(ticks)
+                a1_value_y.set_yticklabels(labels)
+                number = 0
+                for patch in leg.get_patches():
+                    if number >= len(perccols):
+                        break
+                    a1_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
+                    number += 1
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
         a0_secax_y.tick_params(direction='out', length=6, width=1, color='lightgrey')
         if y_formatter is not None:
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=1, color='lightgrey')
+            
+        if show_last_values:
+            a0_secax_y.set_color(color='lightgrey')
+            a0_value_y = a0.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x))
+            a0_value_y.tick_params(direction='out', length=6, width=1, color='white')
+            values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            if stacked:
+                sum = 0.0
+                ticks = []
+                labels = []
+                for value in values:
+                    sum += value
+                    ticks.append(sum - value/2.0)
+                    labels.append(y_formatter(value,0))
+                a0_value_y.set_yticks(ticks)
+                a0_value_y.set_yticklabels(labels)
+                number = 0
+                for patch in leg.get_patches():
+                    if number >= len(cols):
+                        break
+                    a0_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
+                    number += 1
+            else:
+                a0_value_y.set_yticks(values)
+                if y_formatter is not None:
+                    a0_value_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+                number = 0
+                for line in leg.get_lines():
+                    if number >= len(cols):
+                        break
+                    a0_value_y.get_yticklabels()[number].set_color(line.get_color())
+                    number += 1
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -324,7 +379,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               actuals=['Tests XLS'],
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
@@ -339,7 +394,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='PCR Tests and PUI - Thailand\n(excludes some proactive test)',
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -398,7 +453,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests_per_case', cols_subset=cols,
               ma_days=7,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
               footnote_left='\nData Sources:\n  DMSC: Thailand Laboratory Testing Data\n  Daily situation Reports')
 
@@ -462,7 +517,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases', cols_subset=cols,
               actuals=["Cases", "Pos XLS"],
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False,
               cmap="tab10",
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -522,7 +577,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               png_prefix='cases_all', cols_subset=cols,
               ma_days=7, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab20',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -553,7 +608,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_sym', cols_subset=cols, 
               unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
               ma_days=None, 
-              kind='area', stacked=True, percent_fig=False, 
+              kind='area', stacked=True, percent_fig=False, clean_end=True,
               cmap='tab10',
               footnote_left='Data Sources:\n  CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
@@ -569,7 +624,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_ages', cols_subset=cols, 
               unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
               ma_days=7, 
-              kind='area', stacked=True, percent_fig=True, 
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(cols) + 1),
               footnote_left='Data Source:\n  API: Daily Reports of COVID-19 Infections')
 
@@ -584,7 +639,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_causes', cols_subset=cols,
               unknown_name='Risk: Investigating', unknown_total='Cases',
               ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
               actuals=['Cases'],
               cmap='tab10',
               footnote_left='Data Source:\n  API: Daily Reports of COVID-19 Infections')
@@ -687,7 +742,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS), 
               ma_days=None, 
-              kind='area', stacked=False, percent_fig=False, 
+              kind='area', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab20',
               footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
 
@@ -721,7 +776,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND,
               png_prefix='cases_areas_proactive', cols_subset=cols,
               ma_days=None, 
-              kind='area', stacked=True, percent_fig=False, 
+              kind='area', stacked=True, percent_fig=False, show_last_values=False,
               cmap='tab20',
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -735,7 +790,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='cases_from_positives_area', cols_subset=rearrange(cols, *FIRST_AREAS), 
               ma_days=None, 
-              kind='area', stacked=False, percent_fig=False, 
+              kind='area', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab20',
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -771,7 +826,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='active_severe', cols_subset=cols,
               actuals=True,
               ma_days=7, 
-              kind='line', stacked=True, percent_fig=False, 
+              kind='line', stacked=True, percent_fig=False,
               cmap='tab10', 
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -885,7 +940,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 2'],
         periods_to_plot=["30d", "2"],  # too slow to do all 
         ma_days=None,
-        kind='bar', stacked=True, percent_fig=False,
+        kind='bar', stacked=True, percent_fig=False, show_last_values=False,
         cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
         footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
 
@@ -991,7 +1046,7 @@ def save_plots(df: pd.DataFrame) -> None:
         kind='line',
         actuals=actuals,
         ma_days=None,
-        stacked=False, percent_fig=False,
+        stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
         footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
@@ -1005,7 +1060,7 @@ def save_plots(df: pd.DataFrame) -> None:
         png_prefix='vac_groups_goals_half', cols_subset=cols2,
         actuals=actuals,
         ma_days=None,
-        kind='line', stacked=False, percent_fig=False,
+        kind='line', stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
         footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
@@ -1184,7 +1239,7 @@ def save_plots(df: pd.DataFrame) -> None:
                   title=f'{risk} Related Covid Cases - Trending Up Provinces - Thailand\n(per 100,000 people)',
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing', cols_subset=cols,
                   ma_days=7,
-                  kind='line', stacked=False, percent_fig=False,
+                  kind='line', stacked=False, percent_fig=False, 
                   cmap='tab10',
                   footnote_left='\nData Sources:\n  CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
@@ -1260,7 +1315,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
     cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
     plot_area(df=df, 
-              title='Covid Death Age Range - Thailand',
+              title='Covid Deaths Age Range - Thailand',
               highlight=['Deaths Age Median (MA)'], 
               between=['Deaths Age Max', 'Deaths Age Min'],
               png_prefix='deaths_age', cols_subset=cols, 
@@ -1287,7 +1342,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Covid CFR since 2021-04-01 - Thailand',
               png_prefix='deaths_w3cfr', cols_subset=cols, 
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
@@ -1345,11 +1400,11 @@ def save_plots(df: pd.DataFrame) -> None:
     death_cols = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']
     death_cols = [f"Deaths Age {age}" for age in death_cols]
     plot_area(df=df,
-              title='Covid Death Age Distribution - Thailand',
+              title='Covid Deaths Age Distribution - Thailand',
               png_prefix='deaths_age_dash', cols_subset=death_cols,
               unknown_name='Unknown', unknown_total='Deaths', unknown_percent=False,
               ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
 
@@ -1403,7 +1458,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=["Deviation from normal deaths (removing Covid Deaths) %", "Deviation from Normal deaths (avg 2015-29)"],
               cols_subset=['Deviation from expected Deaths', 'PScore'],
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
               footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
@@ -1422,7 +1477,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None, 
-              kind='bar', stacked=False, percent_fig=False, 
+              kind='bar', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
               footnote_left='\n\n\n\nData Source:\n  MOPH Covid-19 Dashboard')
 
