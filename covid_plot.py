@@ -866,9 +866,13 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
     df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
     cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Mild", "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
+    legend = [
+        'On Ventilator', 'Severe Condition in Hospital',
+        'Mild In Hospital', 'Mild In Field Hospital', "Mild in Hospitel", "Mild in Home/Community Isolation"
+    ]
     plot_area(df=df,
-              title='Where hospitalized - Thailand',
-              png_prefix='active_hospital', cols_subset=cols,
+              title='Acive Cases by Condition - Thailand',
+              png_prefix='active_hospital', cols_subset=cols, legends=legend,
               # unknown_name='Hospitalized Other', unknown_total='Hospitalized', unknown_percent=True,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
@@ -1435,7 +1439,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left='Data Source: MOPH Covid-19 Dashboard')
 
     # Do a % of peak chart for death vs cases
-    cols = ['Cases', 'Deaths', 'Tests XLS']
+    cols = ['Cases', 'Deaths']
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
               title='Daily Averages as % of Peak - Thailand',
@@ -1446,6 +1450,18 @@ def save_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
+    # kind of dodgy since ATK is subset of positives but we don't know total ATK
+    cols = ['Cases', 'Tests XLS', 'ATK']
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    legend = ["Cases (PCR Tested Only)", "PCR Tests", "Home Isolation from ATK Positive"]
+    plot_area(df=peaks,
+              title='Tests as % of Peak - Thailand',
+              png_prefix='tests_peak', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     # Excess Deaths
 
