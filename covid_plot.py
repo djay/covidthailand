@@ -134,12 +134,10 @@ def plot_area(df: pd.DataFrame,
     if ma_days:
         subtitle = f'{ma_days}-Day Rolling Average - '
 
-    subtitle += 'https://djay.github.io/covidthailand'
-
     if is_dates:
-        subtitle += f" - Last Data: {last_update.date()}"
+        subtitle += f"Last Data: {last_update.date()}"
     else:
-        subtitle += f" - Last Data: {last_update}"
+        subtitle += f"Last Data: {last_update}"
 
     # if legends are not specified then use the columns names else use the data passed in the 'legends' argument
     if legends is None:
@@ -354,6 +352,7 @@ def plot_area(df: pd.DataFrame,
 
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
+    source = 'Source: https://djay.github.io/covidthailand\n'
 
     # matplotlib global settings
     matplotlib.use('AGG')
@@ -372,6 +371,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
+    source = 'Source: https://djay.github.io/covidthailand\n'
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
     plot_area(df=df,
@@ -382,7 +382,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               actuals=['Tests XLS'],
-              footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Tested Cum',
             'Tested PUI Cum',
@@ -396,7 +396,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ###############
     # Positive Rate
@@ -431,7 +431,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left='\nData Sources:\n  DMSC: Thailand Laboratory Testing Data\n  Daily situation Reports')
+              footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI'] * 3 / df['Cases']
@@ -455,7 +455,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
-              footnote_left='\nData Sources:\n  DMSC: Thailand Laboratory Testing Data\n  Daily situation Reports')
+              footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Positivity Cases/Tests',
             'Positivity Public',
@@ -476,7 +476,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='\nData Sources:\n  DMSC: Thailand Laboratory Testing Data\n  Daily situation Reports')
+              footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ########################
     # Public vs Private
@@ -493,7 +493,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='\nData Sources:\n  DMSC: Thailand Laboratory Testing Data\n  Daily situation Reports')
+              footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ##################
     # Test Plots
@@ -519,7 +519,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False,
               cmap="tab10",
-              footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = [
         'Cases',
@@ -540,7 +540,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=21,
         kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
-        footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+        footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
     df['Cases outside Prison 3rd Cum'] = df['2021-04-01':]['Cases outside Prison'].cumsum()
@@ -565,7 +565,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=None,
         kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
-        footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+        footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Cases',
             'Pos Area',
@@ -579,7 +579,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False,
               cmap='tab20',
-              footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive'] # .sub(df['Cases Area Prison'], fill_value=0)
@@ -600,7 +600,7 @@ def save_plots(df: pd.DataFrame) -> None:
               actuals=["Cases"],
               cmap="tab10",
               #footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test",
-              footnote_left='Data Sources:\n  CCSA Daily Briefing\n  MOPH Daily Situation Report')
+              footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     cols = ['Cases Symptomatic', 'Cases Asymptomatic']
     plot_area(df=df, 
@@ -610,7 +610,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, clean_end=True,
               cmap='tab10',
-              footnote_left='Data Sources:\n  CCSA Daily Briefing\n  MOPH Daily Situation Report')
+              footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
     # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
@@ -626,7 +626,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(cols) + 1),
-              footnote_left='Data Source:\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left=source + 'Data Source: API: Daily Reports of COVID-19 Infections')
 
     # Thailand Covid Cases by Risk
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
@@ -642,7 +642,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               actuals=['Cases'],
               cmap='tab10',
-              footnote_left='Data Source:\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left=source + 'Data Source: API: Daily Reports of COVID-19 Infections')
 
     ##########################
     # Tests by area
@@ -657,7 +657,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df, 
@@ -667,7 +667,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Tests Area {area} (i)'] = df[f'Tests Area {area}'].interpolate(limit_area="inside")
@@ -682,7 +682,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Pos Area {area} (i)'] = df[f'Pos Area {area}'].interpolate(limit_area="inside")
@@ -697,7 +697,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     # Workout positivity for each area as proportion of positivity for that period
     for area in DISTRICT_RANGE_SIMPLE:
@@ -716,7 +716,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
@@ -730,7 +730,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Cases/Tests {area}'] = (
@@ -744,7 +744,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab20',
-              footnote_left='Data Source:\n  DMSC: Thailand Laboratory Testing Data')
+              footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     #########################
     # Case by area plots
@@ -758,7 +758,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='area', stacked=True, percent_fig=True, 
               cmap='tab20',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, 
@@ -768,7 +768,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, 
@@ -778,7 +778,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, show_last_values=False,
               cmap='tab20',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Case-Pos {area}'] = (
@@ -792,7 +792,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='area', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab20',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     #######################
     # Hospital plots
@@ -828,7 +828,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=True, percent_fig=False,
               cmap='tab10', 
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     # show cumulitive deaths, recoveres and hospitalisations (which should all add up to cases)
     df['Recovered since 2021-04-01'] = df['2021-04-14':]['Recovered'].cumsum()
@@ -858,7 +858,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab10',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     ####################
     # Vaccines
@@ -942,7 +942,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=None,
         kind='bar', stacked=True, percent_fig=False, show_last_values=False,
         cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
-        footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
+        footnote_left=source + 'Data Source: DDC Daily Vaccination Reports')
 
     # # Now turn daily back to cumulative since we now have estimates for every day without dips
     # vac_cum = vac_daily.cumsum().combine_first(vac_daily[daily_cols].fillna(0).cumsum())
@@ -983,7 +983,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap=get_cycle('tab20', len(cols_cum), unpair=True),
               # between=['Available Vaccines Cum'],
               y_formatter=thaipop,
-              footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Source: DDC Daily Vaccination Reports')
 
     # Targets for groups
     # https://www.facebook.com/informationcovid19/photos/a.106455480972785/342985323986465/
@@ -1049,7 +1049,7 @@ def save_plots(df: pd.DataFrame) -> None:
         stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
-        footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
+        footnote_left=source + 'Data Source: DDC Daily Vaccination Reports')
 
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
@@ -1063,7 +1063,7 @@ def save_plots(df: pd.DataFrame) -> None:
         kind='line', stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
-        footnote_left='Data Source:\n  DDC Daily Vaccination Reports')
+        footnote_left=source + 'Data Source: DDC Daily Vaccination Reports')
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-28':][cols].interpolate(limit_area="inside")
@@ -1074,7 +1074,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
@@ -1097,7 +1097,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
@@ -1108,7 +1108,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
@@ -1119,7 +1119,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
                     lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
@@ -1132,7 +1132,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
                     lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
@@ -1145,7 +1145,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left='Data Sources:\n  MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=source + 'Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     #######################
     # Cases by provinces
@@ -1181,7 +1181,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='\nData Sources:\n  CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
                       decreasing(cases_per_capita("Cases"), 3),
@@ -1196,7 +1196,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='\nData Sources:\n  CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
                       cases_per_capita("Cases"),
@@ -1210,7 +1210,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='Data Sources:\n  CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
                       increasing(cases_per_capita('Cases Walkin'), 5),
@@ -1225,7 +1225,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote_left='\nData Sources:\n  CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
         top5 = cases.pipe(topprov,
@@ -1241,7 +1241,7 @@ def save_plots(df: pd.DataFrame) -> None:
                   ma_days=7,
                   kind='line', stacked=False, percent_fig=False, 
                   cmap='tab10',
-                  footnote_left='\nData Sources:\n  CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+                  footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     def top(func, _):
         return func
@@ -1260,7 +1260,7 @@ def save_plots(df: pd.DataFrame) -> None:
             ma_days=7,
             kind='line', stacked=False, percent_fig=False,
             cmap='tab10',
-            footnote_left='Data Source:\n  CCSA Daily Briefing')
+            footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
@@ -1293,7 +1293,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='Data Sources:\n  CCSA Daily Briefing\n  Covid IFR Analysis\n  Thailand Population by Age')
+              footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis\n  Thailand Population by Age')
 
     ####################
     # Deaths
@@ -1310,7 +1310,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
     cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
@@ -1322,7 +1322,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, 
@@ -1332,7 +1332,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='area', stacked=True, percent_fig=True, 
               cmap='tab20',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     # Work out Death ages from CFR from situation reports
     age_ranges = ["15-39", "40-59", "60-"]
@@ -1344,7 +1344,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     #ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
     ages = cut_ages_labels([15, 40, 60], "Cases Age")
@@ -1360,7 +1360,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, 
               cmap=get_cycle('summer_r', len(cols), extras=["gainsboro"]),
-              footnote_left='Data Source:\n  API: Daily Reports of COVID-19 Infections')
+              footnote_left=source + 'Data Source: API: Daily Reports of COVID-19 Infections')
 
     case_ages_cum = w3_cases["2021-04-01":].cumsum()
 
@@ -1384,7 +1384,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left='Data Source:\n  CCSA Daily Briefing')
+              footnote_left=source + 'Data Source: CCSA Daily Briefing')
     # don't use this chart anymore since we can get this data from the dashboard
     # plot_area(df=deaths_by_age,
     #           png_prefix='deaths_age_est',
@@ -1406,7 +1406,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
-              footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
+              footnote_left=source + 'Data Source: MOPH Covid-19 Dashboard')
 
     # Excess Deaths
 
@@ -1461,7 +1461,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
-              footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
+              footnote_left=source + 'Data Source: MOPH Covid-19 Dashboard')
 
     cols = [f'Deaths {y}' for y in range(2012, 2021, 1)]
     by_month = pd.DataFrame(all)
@@ -1479,7 +1479,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='bar', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
-              footnote_left='\n\n\n\nData Source:\n  MOPH Covid-19 Dashboard')
+              footnote_left='\n\n\n\n' + source + 'Data Source: MOPH Covid-19 Dashboard')
 
     # Test to get box plots working
     # https://stackoverflow.com/questions/57466631/matplotlib-boxplot-and-bar-chart-shifted-when-overlaid-using-twinx
@@ -1602,7 +1602,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
                   kind='bar', stacked=True,
                   cmap='tab10',
                   footnote=note,
-                  footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+                  footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
         plot_area(df=by_region,
                   title=f'Deaths from All Causes vs. Expected Deaths by Region ({year_span}) - Thailand',
@@ -1615,7 +1615,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
                   kind='bar', stacked=True,
                   cmap='tab10',
                   footnote=note,
-                  footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+                  footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
         plot_area(df=by_age,
                   title=f'Deaths from All Causes by Age vs. Expected Deaths ({year_span}) - Thailand',
@@ -1628,7 +1628,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
                   kind='bar', stacked=True,
                   cmap='tab10',
                   footnote=note,
-                  footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+                  footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
     by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
@@ -1642,7 +1642,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               footnote=footnote5,
-              footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+              footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
     cols = top5.columns.to_list()
@@ -1653,7 +1653,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+              footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_district = excess.groupby("Health District Number").apply(calc_pscore)
     by_district['Deaths Covid'] = cases.groupby(["Health District Number", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
@@ -1668,7 +1668,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab20',
-              footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+              footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_age = excess.pipe(cut_ages, [15, 65, 75, 85]).groupby(["Age Group"]).apply(calc_pscore)
     by_age = by_age.reset_index().pivot(values=["PScore"], index="Date", columns="Age Group")
@@ -1681,7 +1681,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               periods_to_plot=['all'],
               kind='line', stacked=False,
               cmap='tab10',
-              footnote_left='Data Sources:\n  Office of Registration Administration\n  Department of Provincial Administration')
+              footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
 
 if __name__ == "__main__":
