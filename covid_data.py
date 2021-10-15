@@ -219,9 +219,10 @@ def situation_pui_en(parsed_pdf, date):
         numbers, _ = get_next_numbers(
             parsed_pdf, "Total number of people who met the criteria of patients", debug=False,
         )
-        if date > dateutil.parser.parse("2020-01-30") and not numbers:
+        if d("2020-01-30") < date < d("2021-10-06") and not numbers:
             raise Exception(f"Problem parsing {date}")
         elif not numbers:
+            # They dropped PUI in oct
             return pd.DataFrame()
         tests_total, active_finding, asq, not_pui = [None] * 4
         pui, pui_airport, pui_seaport, pui_hospital, *rest = numbers
@@ -524,7 +525,10 @@ def get_thai_situation():
 
 
 def get_situation_today():
-    _, page, _ = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="inputs/situation_th", check=True))
+    try:
+        _, page, _ = next(web_files("https://ddc.moph.go.th/viralpneumonia/index.php", dir="inputs/situation_th", check=True))
+    except StopIteration:
+        return pd.DataFrame()
     text = BeautifulSoup(page, 'html.parser').get_text()
     numbers, rest = get_next_numbers(text, "ผู้ป่วยเข้าเกณฑ์เฝ้าระวัง")
     pui_cum, pui = numbers[:2]
@@ -857,7 +861,6 @@ def get_cases_by_demographics_api():
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
 
-
 ########################
 # Excess Deaths
 ########################
@@ -891,7 +894,7 @@ def excess_deaths():
                 dateth = f"{to_thaiyear(year, short=True)}{month:02}"
                 logger.bind(end="").opt(raw=True).info(".")
                 apiurl = f"{url}&yymmBegin={dateth}&yymmEnd={dateth}&cc={iso[3:]}"
-                res = s.get(apiurl)
+                res = s.get(apiurl, timeout=30)
                 data = json.loads(res.content)
                 if len(data) != 2:
                     # data not found
@@ -953,7 +956,10 @@ def parse_official_tweet(df, date, text, url):
     ]
     row = [date, imported, local, cases, deaths]
     row2 = row + [hospitalised, recovered]
-    if date <= d("2021-05-01").date():
+    if date >= d("2021-10-14").date():
+        # there is a problem but we no longer need this so just skip
+        return df
+    elif date <= d("2021-05-01").date():
         assert not any_in(row, None), f"{date} Missing data in Official Tweet {row}"
     else:
         assert not any_in(row2, None), f"{date} Missing data in Official Tweet {row}"
@@ -3044,15 +3050,16 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
-        # These 2 are slowest so should go first
+        # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
+        vac = pool.apply_async(get_vaccinations)
+        # TODO: split vac slides as thats the slowest
 
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
 
         briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
-        vac = pool.apply_async(get_vaccinations)
         situation = pool.apply_async(get_situation)
         tests_reports = pool.apply_async(get_test_reports)
         tests = pool.apply_async(get_tests_by_day)
