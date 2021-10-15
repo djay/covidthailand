@@ -375,13 +375,14 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
     plot_area(df=df,
-              title='PCR Tests and PUI - Thailand\n(totals exclude some proactive testing)', 
+              title='PCR Tests and PUI - Thailand', 
               legends=legends,
               png_prefix='tests', cols_subset=cols,
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               actuals=['Tests XLS'],
+              footnote='Note: Totals exclude some proactive testing.\nPCR: Polymerase Chain Reaction\nPUI: Person Under Investigation',
               footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Tested Cum',
@@ -391,11 +392,12 @@ def save_plots(df: pd.DataFrame) -> None:
             'Tested PUI Walkin Private Cum',
             'Tested PUI Walkin Public Cum']
     plot_area(df=df, 
-              title='PCR Tests and PUI - Thailand\n(excludes some proactive test)',
+              title='PCR Tests and PUI - Thailand',
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction\nPUI: Person Under Investigation',
               footnote_left=source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ###############
@@ -431,6 +433,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
+              footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
               footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
@@ -455,6 +458,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
+              footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
               footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Positivity Cases/Tests',
@@ -476,6 +480,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='\nPUI: Person Under Investigation',
               footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ########################
@@ -493,6 +498,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='\nPUI: Person Under Investigation',
               footnote_left='\n' + source + 'Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ##################
@@ -651,22 +657,24 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = rearrange([f'Tests Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
     plot_area(df=df, 
-              title='PCR Tests by Health District - Thailand\n(excludes proactive & private tests)', 
+              title='PCR Tests by Health District - Thailand', 
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='tests_area', cols_subset=cols[0],
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
+              footnote='Note: Excludes some proactive and private tests.\nPCR: Polymerase Chain Reaction',
               footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df, 
-              title='PCR Positive Test Results by Health District - Thailand\n(excludes proactive & private tests)',
+              title='PCR Positive Test Results by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='pos_area', cols_subset=cols,
               ma_days=None, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
+              footnote='Note: Excludes some proactive and private tests.\nPCR: Polymerase Chain Reaction',
               footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -676,12 +684,13 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Tests Daily {area}'] = (df[f'Tests Area {area} (i)'] / df[test_cols].sum(axis=1) * df['Tests'])
     cols = rearrange([f'Tests Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df,
-              title='PCR Tests by Health District - Thailand\n(excludes some proactive tests)',
+              title='PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='tests_area_daily', cols_subset=cols,
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
+              footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction',
               footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -691,12 +700,13 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Pos Daily {area}'] = (df[f'Pos Area {area} (i)'] / df[pos_cols].sum(axis=1) * df['Pos'])
     cols = rearrange([f'Pos Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df, 
-              title='Positive PCR Tests by Health District - Thailand\n(excludes some proactive tests)',
+              title='Positive PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='pos_area_daily', cols_subset=cols, 
               ma_days=7, 
               kind='area', stacked=True, percent_fig=False, 
               cmap='tab20',
+              footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction',
               footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -710,12 +720,13 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Positivity {area}'] = (df[f'Positivity {area}'] / df['Total Positivity Area']
                                     * df['Positivity Public+Private'])
     plot_area(df=df,
-              title='Positive Rate by Health District in Proportion to Positive Rate - Thailand\n(excludes some proactive tests)',
+              title='Positive Rate by Health District in Proportion to Positive Rate - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='positivity_area', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
+              footnote='Note: Excludes some proactive tests.',
               footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -738,12 +749,13 @@ def save_plots(df: pd.DataFrame) -> None:
         )
     cols = [f'Cases/Tests {area}' for area in DISTRICT_RANGE_SIMPLE]
     plot_area(df=df, 
-              title='Highest Covid Cases/Tests by Health District - Thailand\n(excludes some proactive tests)',
+              title='Highest Covid Cases/Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS), 
               ma_days=None, 
               kind='area', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab20',
+              footnote='Note: Excludes some proactive tests.',
               footnote_left=source + 'Data Source: DMSC: Thailand Laboratory Testing Data')
 
     #########################
@@ -1091,7 +1103,7 @@ def save_plots(df: pd.DataFrame) -> None:
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
     plot_area(df=top5, 
-              title='Covid Vaccination Doses - Top Provinces - Thailand\n(per 100 people)',
+              title='Covid Vaccination Doses - Top Provinces - Thailand',
               png_prefix='vac_top5_doses', cols_subset=cols,
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
@@ -1102,7 +1114,7 @@ def save_plots(df: pd.DataFrame) -> None:
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
     plot_area(df=top5, 
-              title='Covid Vaccinations 1st Dose - Top Provinces - Thailand\n(per 100 people)',
+              title='Covid Vaccinations 1st Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_1', cols_subset=cols,
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
@@ -1113,7 +1125,7 @@ def save_plots(df: pd.DataFrame) -> None:
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
     plot_area(df=top5, 
-              title='Covid Vaccinations 2nd Dose - Top Provinces - Thailand\n(per 100 people)',
+              title='Covid Vaccinations 2nd Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_2', cols_subset=cols,
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
@@ -1126,7 +1138,7 @@ def save_plots(df: pd.DataFrame) -> None:
                     other_name=None, num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5, 
-              title='Covid Vaccination 1st Dose - Lowest Provinces - Thailand\n(per 100 people)',
+              title='Covid Vaccination 1st Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_1', cols_subset=cols,
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
@@ -1139,7 +1151,7 @@ def save_plots(df: pd.DataFrame) -> None:
                     other_name=None, num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5, 
-              title='Covid Vaccinations 2nd Dose - Lowest Provinces - Thailand\n(per 100 people)',
+              title='Covid Vaccinations 2nd Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_2', cols_subset=cols,
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
@@ -1176,11 +1188,12 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='Confirmed Covid Cases - Trending Up Provinces - Thailand\n(per 100,000 people)',
+              title='Confirmed Covid Cases - Trending Up Provinces - Thailand',
               png_prefix='cases_prov_increasing', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='\nNote: Per 100,000 people.',
               footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
@@ -1191,11 +1204,12 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='Confirmed Covid Cases - Trending Down Provinces - Thailand\n(per 100,000 people)',
+              title='Confirmed Covid Cases - Trending Down Provinces - Thailand',
               png_prefix='cases_prov_decreasing', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='\nNote: Per 100,000 people.',
               footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
@@ -1205,11 +1219,12 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=6)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='Confirmed Covid Cases - Top Provinces - Thailand\n(per 100,000 people)',
+              title='Confirmed Covid Cases - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='Note: Per 100,000 people.',
               footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
@@ -1225,6 +1240,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
+              footnote='\nNote: Per 100,000 people.',
               footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
@@ -1236,11 +1252,12 @@ def save_plots(df: pd.DataFrame) -> None:
                           num=6)
         cols = top5.columns.to_list()
         plot_area(df=top5,
-                  title=f'{risk} Related Covid Cases - Trending Up Provinces - Thailand\n(per 100,000 people)',
+                  title=f'{risk} Related Covid Cases - Trending Up Provinces - Thailand',
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing', cols_subset=cols,
                   ma_days=7,
                   kind='line', stacked=False, percent_fig=False, 
                   cmap='tab10',
+                  footnote='\nNote: Per 100,000 people.',
                   footnote_left='\n' + source + 'Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     def top(func, _):
@@ -1255,11 +1272,12 @@ def save_plots(df: pd.DataFrame) -> None:
                           num=8)
         cols = top5.columns.to_list()
         plot_area(df=top5,
-            title=f'Severe Active Covid Cases - {title}Provinces - Thailand\n(per 100,000 people)',
+            title=f'Severe Active Covid Cases - {title}Provinces - Thailand',
             png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
             ma_days=7,
             kind='line', stacked=False, percent_fig=False,
             cmap='tab10',
+            footnote='Note: Per 100,000 people.',
             footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     # TODO: work out based on districts of deaths / IFR for that district
@@ -1283,17 +1301,16 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-11) / 0.0054
     cols = ["Cases", "Infections Estimate", ]
     legend = ["Confirmed Cases", "Infections Estimate (based on deaths)"]
-    title = """Covid Infections (Unofficial Estimate) in Thailand (based on Deaths/IFR)
-(DISCLAIMER: see site below for the assumptions of this simple estimate)"""
     plot_area(df=cases_est,
-              title=title,
+              title='Covid Infections (unofficial estimate) - Thailand',
               legends=legend,
               png_prefix='cases_infections_estimate', cols_subset=cols,
               actuals=True,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis\n  Thailand Population by Age')
+              footnote='Note: Based on Deaths/IFR.\nIFR: Infection Fatality Rate\nDISCLAIMER: See website for the assumptions of this simple estimate.',
+              footnote_left=source + 'Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
 
     ####################
     # Deaths
@@ -1304,7 +1321,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Deaths', 'Deaths Risk Family', 'Deaths Comorbidity None']
     plot_area(df=df, 
               title='Covid Deaths - Thailand',
-              legends=['Deaths', 'Infected from family', 'No underlying diseases'],
+              legends=['Deaths', 'Infected from Family', 'No Underlying Diseases'],
               png_prefix='deaths_reason', cols_subset=cols, 
               actuals=True,
               ma_days=7, 
@@ -1344,6 +1361,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote='CFR: Case Fatality Rate\nMeasures the severity of a disease by defining the total number\n of deaths as a proportion of reported cases at a specific time.',
               footnote_left=source + 'Data Source: CCSA Daily Briefing')
 
     #ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
@@ -1379,7 +1397,7 @@ def save_plots(df: pd.DataFrame) -> None:
     deaths_by_age = deaths_by_age.pipe(normalise_to_total, death_cols, 'Deaths (MA)')
     cols = death_cols + ['Deaths (MA)', 'Deaths Ages Sum']
     plot_area(df=deaths_by_age,
-              title='Covid Death Age Range - Thailand',
+              title='Covid Deaths Age Range - Thailand',
               png_prefix='deaths_age_bins', cols_subset=cols,
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
@@ -1454,13 +1472,14 @@ def save_plots(df: pd.DataFrame) -> None:
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
     plot_area(df=all, png_prefix='deaths_pscore',
-              title='Monthly Deaths above Normal - Thailand\n(Average 2015-2019)',
-              legends=["Deviation from normal deaths (removing Covid Deaths) %", "Deviation from Normal deaths (avg 2015-29)"],
+              title='Monthly Deaths above Normal - Thailand',
+              legends=["Deviation from Normal Deaths (Removing Covid Deaths)", "Deviation from Normal Deaths (Average 2015-19)"],
               cols_subset=['Deviation from expected Deaths', 'PScore'],
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote="There is some variability in comparison years 2015-19 so normal is a not a certain value",
+              y_formatter=perc_format,
+              footnote="Note: There is some variability in comparison years 2015-19 so normal is a not a certain value.",
               footnote_left=source + 'Data Source: MOPH Covid-19 Dashboard')
 
     cols = [f'Deaths {y}' for y in range(2012, 2021, 1)]
@@ -1473,12 +1492,13 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = cols + cols2021
 
     plot_area(df=by_month, 
-              title='Excess Deaths - Thailand\n(number of deaths from all causes compared to previous years)',
+              title='Excess Deaths - Thailand',
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None, 
               kind='bar', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
+              footnote='\n\n\n\nNote: Number of deaths from all causes compared to previous years.',
               footnote_left='\n\n\n\n' + source + 'Data Source: MOPH Covid-19 Dashboard')
 
     # Test to get box plots working
@@ -1635,13 +1655,13 @@ see https://djay.github.io/covidthailand/#excess-deaths
     top5 = by_province.pipe(topprov, lambda adf: (adf["Excess Deaths"] - adf['Deaths Covid']) / adf['Pre 5 Avg'] * 100, num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5, 
-              title='Deviation from Expected Monthly Deaths - Thailand\n(Average 2015-19 + Known Covid Deaths)',
+              title='Deviation from Expected Monthly Deaths - Thailand',
               png_prefix='deaths_expected_prov', cols_subset=cols,
               periods_to_plot=['all'],
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
-              footnote=footnote5,
+              footnote='Note: Average 2015-19 plus known Covid deaths.\n' + footnote5,
               footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
@@ -1661,13 +1681,14 @@ see https://djay.github.io/covidthailand/#excess-deaths
     top5 = area_crosstab(by_district, "Deviation from expected Deaths", "")
     cols = rearrange([f'Deviation from expected Deaths Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=top5, 
-              title='Deviation from Expected Monthly Deaths - Thailand\n(Average 2015-19 + Known Covid Deaths)',
+              title='Deviation from Expected Monthly Deaths - Thailand',
               legends=AREA_LEGEND,
               png_prefix='deaths_expected_area', cols_subset=cols, 
               periods_to_plot=['all'],
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, 
               cmap='tab20',
+              footnote='Note: Average 2015-2019 plus known Covid deaths.',
               footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_age = excess.pipe(cut_ages, [15, 65, 75, 85]).groupby(["Age Group"]).apply(calc_pscore)
@@ -1681,6 +1702,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               periods_to_plot=['all'],
               kind='line', stacked=False,
               cmap='tab10',
+              footnote='P-Test: A statistical method used to test one or more hypotheses within\n a population or a proportion within a population.',
               footnote_left=source + 'Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
 
