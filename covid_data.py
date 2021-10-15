@@ -1861,6 +1861,7 @@ def prov_to_districts(dfprov):
 
 
 def get_cases_by_area_api():
+    logger.info("========Covid-19 case details - get_cases_by_area_api==========")
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = join_provinces(cases, "province_of_onset")
