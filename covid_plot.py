@@ -860,6 +860,32 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left='Data Source:\n  CCSA Daily Briefing')
 
+    # TODO: I think we can replace the recovered since april with plot showing just hospitalisations?
+    df["Hospitalized Field Unknown"] = df["Hospitalized Field"].sub(df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0)
+
+    cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
+    df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
+    cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Mild", "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
+    plot_area(df=df,
+              title='Where hospitalized - Thailand',
+              png_prefix='active_hospital', cols_subset=cols,
+              # unknown_name='Hospitalized Other', unknown_total='Hospitalized', unknown_percent=True,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
+              cmap='tab10',
+              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
+    cols = ["Hospitalized", "Hospitalized Field", "Hospitalized Severe", "Hospitalized Respirator", ]
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    plot_area(df=peaks,
+              title='Active Cases Daily Averages as % of Peak - Thailand',
+              png_prefix='active_peak', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left='Data Source: MOPH Covid-19 Dashboard')
+
     ####################
     # Vaccines
     ####################
@@ -1406,7 +1432,20 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
-              footnote_left='Data Source:\n  MOPH Covid-19 Dashboard')
+              footnote_left='Data Source: MOPH Covid-19 Dashboard')
+
+    # Do a % of peak chart for death vs cases
+    cols = ['Cases', 'Deaths', 'Tests XLS']
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    plot_area(df=peaks,
+              title='Daily Averages as % of Peak - Thailand',
+              png_prefix='cases_peak', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
 
     # Excess Deaths
 
