@@ -1374,13 +1374,15 @@ def briefing_province_cases(date, pages):
     rows = {}
     for i, soup in enumerate(pages):
         text = str(soup)
-        if "อโควิดในประเทศรายใหม่" not in text or "รวมท ัง้ประเทศ" in text:
+        if "รวมท ัง้ประเทศ" in text:
             continue
         if not re.search(r"ที่\s*จังหวัด", text):
             continue
+        if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายใหม่)", text):
+            continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
-        preamble, *tables = split(parts, re.compile(r"รวม\s*\(ราย\)").search)
+        preamble, *tables = split(parts, re.compile(r"รวม\s*\((?:ราย|รำย)\)").search)
         if len(tables) <= 1:
             continue  # Additional top 10 report. #TODO: better detection of right report
         else:
