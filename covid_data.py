@@ -2745,7 +2745,8 @@ def vac_manuf_given(df, page, file, page_num, url):
     title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
     # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
-    if len(rest) == 3:
+    if len(rest) == 3 and date < d("2021-10-14"):
+        # TODO: need better way to detect this case
         doses = rest[0]  # Assumes header is doses cell
 
     # Sometimes there is an extra date thrown in inside brackets on the subheadings
