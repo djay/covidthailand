@@ -18,7 +18,11 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
 theme = 'Black'
-github_blue = "#59A6FE"
+github_blue_text = "#59A6FE"
+github_light_text = "#F0F7FD"
+github_dark_text = "#C9D0D8"
+github_light_back = "#161A23"
+github_dark_back = "#0C1116"
 
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
@@ -90,27 +94,24 @@ def plot_area(df: pd.DataFrame,
 
     if theme == 'Black':
         plt.rcParams.update({
-            "text.color": 'grey',
-            "legend.facecolor": 'darkblue',
-            "legend.edgecolor": github_blue,
+            "text.color": github_dark_text,
+            "legend.facecolor": github_light_back,
+            "legend.edgecolor": github_blue_text,
             "legend.frameon": True,
-            "legend.framealpha": 0.2,
+            "legend.framealpha": 0.3,
             "legend.shadow": True,
             "axes.grid" : True, 
-            "axes.facecolor": '#090911',
-            "axes.spines.top": False,
-            "axes.spines.bottom": False,
-            "axes.spines.left": False,
-            "axes.spines.right": False,
-            "grid.color": 'darkblue',
-            "grid.alpha": 0.6,
-            "xtick.color": github_blue,
+            "axes.facecolor": github_dark_back,
+            "axes.linewidth": 0,
+            "grid.color": github_blue_text,
+            "grid.alpha": 0.5,
+            "xtick.color": github_blue_text,
             "xtick.minor.size": 0,
-            "ytick.color": github_blue,
+            "ytick.color": github_blue_text,
             "ytick.minor.size": 0,
         })
         dim_color='darkblue'
-        invisible_color='black'
+        invisible_color=github_dark_back
     else:
         dim_color='lightgrey'
         invisible_color='white'
@@ -301,17 +302,17 @@ def plot_area(df: pd.DataFrame,
         if percent_fig:
             a1.set_prop_cycle(None)
             a1.yaxis.set_major_formatter(FuncFormatter(perc_format))
-            a1.tick_params(direction='out', length=6, width=1)
+            a1.tick_params(direction='out', length=6, width=0)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
             a1.xaxis.label.set_visible(False)
             a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
             a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
-            a1_secax_y.tick_params(direction='out', length=6, width=1)
+            a1_secax_y.tick_params(direction='out', length=6, width=0)
             if show_last_values:
                 a1_secax_y.set_color(color=dim_color)
                 a1_value_y = a1.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
                 a1_value_y.spines[:].set_visible(False)
-                a1_value_y.tick_params(direction='out', length=6, width=1, color=invisible_color)
+                a1_value_y.tick_params(direction='out', length=6, width=0)
                 values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
                 sum = 0.0
                 ticks = []
@@ -331,16 +332,16 @@ def plot_area(df: pd.DataFrame,
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
         a0_secax_y.spines[:].set_visible(False)
-        a0_secax_y.tick_params(direction='out', length=6, width=1)
+        a0_secax_y.tick_params(direction='out', length=6, width=0)
         if y_formatter is not None:
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
-        a0.tick_params(direction='out', length=6, width=1, color=dim_color)
+        a0.tick_params(direction='out', length=6, width=0)
             
         if show_last_values:
             a0_secax_y.set_color(color=dim_color)
             a0_value_y = a0.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
             a0_value_y.spines[:].set_visible(False)
-            a0_value_y.tick_params(direction='out', length=6, width=1, color=invisible_color)
+            a0_value_y.tick_params(direction='out', length=6, width=0)
             values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             if stacked:
