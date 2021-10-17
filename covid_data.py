@@ -703,7 +703,7 @@ def get_cases_by_demographics_api():
     risks['Cluster บางแค'] = "Community"  # bangkhee
     risks['Cluster ตลาดพรพัฒน์'] = "Community"  # market
     risks['Cluster ระยอง'] = "Entertainment"  # Rayong
-    # work with forigners
+    # work with foreigners
     risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work"
     risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Prison"  # detention
     risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
@@ -987,7 +987,7 @@ def parse_unofficial_tweet(df, date, text, url):
 
 
 def parse_moph_tweet(df, date, text, url):
-    "https://twitter.com/thaimoph"
+    """https://twitter.com/thaimoph"""
     cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
     prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
@@ -2713,7 +2713,7 @@ def get_vaccinations():
     vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    # No currently used as it is too likely to result in missing numbers
+    # Not currently used as it is too likely to result in missing numbers
     # vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
@@ -3074,7 +3074,7 @@ def scrape_and_combine():
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac = pool.apply_async(get_vaccinations)
-        # TODO: split vac slides as thats the slowest
+        # TODO: split vac slides as that's the slowest
 
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)

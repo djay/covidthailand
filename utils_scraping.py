@@ -152,7 +152,7 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         behind = "".join(behind)
         found = ahead if before else behind
         if until is not None:
-            found, *rest = re.split(until, found, 1)  # TODO: how to put it back togeather if behind=True?
+            found, *rest = re.split(until, found, 1)  # TODO: how to put it back together if behind=True?
             if not rest and require_until:
                 # in this case return nothing since end didn't find a match
                 continue
@@ -310,7 +310,7 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
 
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename):
-    "if check is None, then always download"
+    """if check is None, then always download"""
     s = requests.Session()
     fix_timeouts(s)
     i = 0
@@ -462,7 +462,7 @@ def parse_tweet(tw, tweet, found, *matches):
 
 
 def get_tweets_from(userid, datefrom, dateto, *matches):
-    "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
+    """return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"""
 
     tw = TwitterScraper()
     filename = os.path.join("inputs", "tweets", f"tweets2_{userid}.pickle")
@@ -535,7 +535,7 @@ def seperate(seq, condition):
 
 
 def split(seq, condition, maxsplit=0):
-    "Similar to str.split except works on lists of lines. e.g. split([1,2,3,4], lambda x: x==2) -> [[1],[2],[3,4]]"
+    """Similar to str.split except works on lists of lines. e.g. split([1,2,3,4], lambda x: x==2) -> [[1],[2],[3,4]]"""
     run = []
     last = False
     splits = 0
@@ -551,7 +551,7 @@ def split(seq, condition, maxsplit=0):
 
 
 def pairwise(lst):
-    "Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"
+    """Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"""
     lst = list(lst)
     return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))
 
