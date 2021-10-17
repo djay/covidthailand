@@ -1374,13 +1374,15 @@ def briefing_province_cases(date, pages):
     rows = {}
     for i, soup in enumerate(pages):
         text = str(soup)
-        if "อโควิดในประเทศรายใหม่" not in text or "รวมท ัง้ประเทศ" in text:
+        if "รวมท ัง้ประเทศ" in text:
             continue
         if not re.search(r"ที่\s*จังหวัด", text):
             continue
+        if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายใหม่)", text):
+            continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
-        preamble, *tables = split(parts, re.compile(r"รวม\s*\(ราย\)").search)
+        preamble, *tables = split(parts, re.compile(r"รวม\s*\((?:ราย|รำย)\)").search)
         if len(tables) <= 1:
             continue  # Additional top 10 report. #TODO: better detection of right report
         else:
@@ -2745,7 +2747,8 @@ def vac_manuf_given(df, page, file, page_num, url):
     title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
     # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
-    if len(rest) == 3:
+    if len(rest) == 3 and date < d("2021-10-14"):
+        # TODO: need better way to detect this case
         doses = rest[0]  # Assumes header is doses cell
 
     # Sometimes there is an extra date thrown in inside brackets on the subheadings

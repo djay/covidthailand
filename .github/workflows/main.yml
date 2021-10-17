@@ -9,9 +9,8 @@ on:
   schedule: # can be up to 20min late. So better to have more updates
     - cron: "19 00 * * *" # 07:00 Dashboard
     - cron: "20 00 * * *" # 08:00 Dashboard
-    - cron: "00 01 * * *" # 08:00 Unofficial tweet
     - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
-    - cron: "*/15 06-09 * * *" # Quick checks for briefing after 1pm
+    - cron: "*/30 06-09 * * *" # Quick checks for briefing after 1pm
     # - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
     # - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
     # - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later

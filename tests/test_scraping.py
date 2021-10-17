@@ -8,7 +8,7 @@ from covid_data import briefing_case_types, briefing_deaths_provinces, briefing_
                        get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
                        get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
                        vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
-                       situation_pui_en
+                       situation_pui_en, briefing_province_cases
 import pandas as pd
 import pytest
 import dateutil
@@ -220,6 +220,20 @@ def test_briefing_case_types(date, testdf, dl):
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, "")
     # write_scrape_data_back_to_test(df, "briefing_case_types")
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_province_cases", briefing_documents))
+def test_briefing_province_cases(date, testdf, dl):
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+
+    df = briefing_province_cases(dateutil.parser.parse(date), pages)
+    # write_scrape_data_back_to_test(df, "briefing_province_cases")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 

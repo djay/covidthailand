@@ -306,6 +306,8 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename):
     "if check is None, then always download"
+    s = requests.Session()
+    fix_timeouts(s)
     i = 0
     for url in urls:
         file = filenamer(url, strip_version)
