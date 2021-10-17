@@ -1,8 +1,16 @@
 ---
----
 
 @import "{{ site.theme }}";
 
-.main-content {
+#header {
+  display: none;
+}
+
+section {
+  margin-top: 60px;
+  max-width: 100%;
+}
+
+.wrapper {
   max-width: 100%;
 }
