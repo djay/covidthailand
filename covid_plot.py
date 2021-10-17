@@ -18,11 +18,11 @@ from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
 
 theme = 'Black'
-github_blue_text = "#59A6FE"
-github_light_text = "#F0F7FD"
-github_dark_text = "#C9D0D8"
-github_light_back = "#161A23"
-github_dark_back = "#0C1116"
+theme_label_text = '#F1991F'
+theme_light_text = '#E9E8E9'
+theme_dark_text = '#424242'
+theme_light_back = '#202020'
+theme_dark_back = '#0C1111'
 
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
@@ -94,24 +94,24 @@ def plot_area(df: pd.DataFrame,
 
     if theme == 'Black':
         plt.rcParams.update({
-            "text.color": github_dark_text,
-            "legend.facecolor": github_light_back,
-            "legend.edgecolor": github_blue_text,
+            "text.color": theme_light_text,
+            "legend.facecolor": theme_light_back,
+            "legend.edgecolor": theme_label_text,
             "legend.frameon": True,
             "legend.framealpha": 0.3,
             "legend.shadow": True,
             "axes.grid" : True, 
-            "axes.facecolor": github_dark_back,
+            "axes.facecolor": theme_dark_back,
             "axes.linewidth": 0,
-            "grid.color": github_blue_text,
+            "grid.color": theme_label_text,
             "grid.alpha": 0.5,
-            "xtick.color": github_blue_text,
+            "xtick.color": theme_label_text,
             "xtick.minor.size": 0,
-            "ytick.color": github_blue_text,
+            "ytick.color": theme_label_text,
             "ytick.minor.size": 0,
         })
-        dim_color='darkblue'
-        invisible_color=github_dark_back
+        dim_color='#784d00'
+        invisible_color=theme_dark_back
     else:
         dim_color='lightgrey'
         invisible_color='white'
@@ -373,7 +373,7 @@ def plot_area(df: pd.DataFrame,
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
-        plt.savefig(path)
+        plt.savefig(path, facecolor=theme_light_back)
         logger.info("Plot: {}", path)
         plt.close()
 
