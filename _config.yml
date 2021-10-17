@@ -1,4 +1,4 @@
-theme: jekyll-theme-hacker
+theme: jekyll-theme-midnight
 title: Covid Thailand Trends
 description: Thailand Covid testing and case data gathered and combined from various sources for others to download or view
 image: https://github.com/djay/covidthailand/wiki/tests_all.png
