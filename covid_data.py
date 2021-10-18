@@ -1376,7 +1376,7 @@ def briefing_province_cases(date, pages):
         text = str(soup)
         if "รวมท ัง้ประเทศ" in text:
             continue
-        if not re.search(r"ที่\s*จังหวัด", text):
+        if not re.search(r"(?:ที่|ที)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
             continue
         if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายใหม่)", text):
             continue
@@ -1388,7 +1388,11 @@ def briefing_province_cases(date, pages):
         else:
             title, parts = tables
         while parts and "รวม" in parts[0]:
+            # get rid of totals line at the top          
             totals, *parts = parts
+            # First line might be several
+            totals, *more_lines = totals.split("\n", 1)
+            parts = more_lines + parts
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
         while True:
             if len(parts) < 9:
@@ -1422,6 +1426,7 @@ def briefing_province_cases(date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
+    assert len(df.groupby("Province").count()) >= 77
     return df
 
 
