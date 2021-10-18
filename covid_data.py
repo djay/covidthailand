@@ -1427,7 +1427,7 @@ def briefing_province_cases(date, pages):
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
     if date > d("2021-05-01"):
-        assert len(df.groupby("Province").count()) in [77,78]
+        assert len(df.groupby("Province").count()) in [77,78], f"Not enough provinces briefing {date}"
     return df
 
 
@@ -3060,6 +3060,7 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
@@ -3069,7 +3070,6 @@ def scrape_and_combine():
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
 
-        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         situation = pool.apply_async(get_situation)
         tests_reports = pool.apply_async(get_test_reports)
         tests = pool.apply_async(get_tests_by_day)
