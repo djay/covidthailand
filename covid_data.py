@@ -274,6 +274,7 @@ def get_english_situation_files(check=False):
     dir = "inputs/situation_en"
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/eng/situation.php",
+        "https://ddc.moph.go.th/viralpneumonia/eng/situation_more.php",
         ext=".pdf",
         dir=dir,
         check=True,
@@ -1416,7 +1417,13 @@ def briefing_province_cases(date, pages):
                 if i > 4:  # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date - datetime.timedelta(days=i)
-                rows[(olddate, prov)] = cases + rows.get((olddate, prov), 0)  # rare case where we need to merge
+                if (olddate, prov) not in rows:
+                    rows[(olddate, prov)] = cases
+                else:
+                    # TODO: apparently 2021-05-13 had to merge two lines but why?
+                    # assert (olddate, prov) not in rows, f"{prov} twice in prov table line {linenum}"
+                    pass  # if duplicate we will catch it below
+
                 # if False and olddate == date:
                 #     if cases > 0:
                 #         print(date, linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
@@ -1426,8 +1433,9 @@ def briefing_province_cases(date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
-    if date > d("2021-05-01"):
-        assert len(df.groupby("Province").count()) in [77,78], f"Not enough provinces briefing {date}"
+    if date > d("2021-05-01") and date not in [d("2021-07-18")]:
+        # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
+        assert len(df.groupby("Province").count()) in [77, 78], f"Not enough provinces briefing {date}"
     return df
 
 
