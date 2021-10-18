@@ -2278,7 +2278,7 @@ def vaccination_daily(daily, date, file, page):
 
     def clean_num(numbers):
         if len(numbers) > 8:
-            return [n for n in numbers if n not in (60, 17, 12, 7)]
+            return [n for n in numbers if n not in (60, 17, 12, 7, 3)]
         else:
             return [n for n in numbers if n not in (60, 7)]
 
@@ -2293,10 +2293,11 @@ def vaccination_daily(daily, date, file, page):
     d2_num, rest2 = get_next_numbers(page,
                                      r"ได้รับวัคซีน 2 เข็ม",
                                      r"ไดรับวัคซีน 2 เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|3 \(Booster dose\))")
-    d3_num, rest3 = get_next_numbers(page, r"3 \(Booster dose\)", until="ดังรูป")
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))")
+    d3_num, rest3 = get_next_numbers(page, r"\(Booster dose\)", until="ดังรูป")
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
+            logger.error("ERROR number of first doses ({}) does not equal number of second doses ({}) in {} for {}", len(clean_num(d1_num)), len(clean_num(d2_num)), file, date)
             assert False
         else:
             logger.info("{} Vac Sum (Error groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
