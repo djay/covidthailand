@@ -1426,7 +1426,8 @@ def briefing_province_cases(date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
-    assert len(df.groupby("Province").count()) >= 77
+    if date > d("2021-05-01"):
+        assert len(df.groupby("Province").count()) in [77,78]
     return df
 
 
