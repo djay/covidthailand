@@ -27,7 +27,8 @@ def dash_daily():
     # remove crap from bad pivot
     df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
     # somehow we got some dodgy rows. should be no neg cases 2021
-    df = df.drop(df[df['Cases'] == 0.0].index)
+    if 'Cases' in df.columns:
+        df = df.drop(df[df['Cases'] == 0.0].index)
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
