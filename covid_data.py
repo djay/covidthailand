@@ -1828,7 +1828,7 @@ def get_cases_by_prov_briefings():
         if today_total and prov_total:
             assert prov_total / today_total > 0.77, warning  # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            logger.info("{} WARNING:", date.date(), warning)
+            logger.info("{} WARNING: {}", date.date(), warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
