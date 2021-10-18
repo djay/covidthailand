@@ -156,7 +156,7 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
             if not rest and require_until:
                 # in this case return nothing since end didn't find a match
                 continue
-            rest = until + (rest[0] if rest else "")
+            rest = until + (rest[0] if rest and rest[0] else "")
         else:
             rest = ""
         if dash_as_zero:
