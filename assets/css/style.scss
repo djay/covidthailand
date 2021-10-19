@@ -1,13 +1,13 @@
 ---
 
-@import "{{ site.theme }}";
+@import "{{ site.theme }}"
 
 #header {
-  display: none;
+  visibility: hidden;
 }
 
 section {
-  margin-top: 60px;
+  margin-top: 0px;
   max-width: 100%;
 }
 
