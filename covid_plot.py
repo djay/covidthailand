@@ -6,6 +6,8 @@ import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+from numpy import NaN, nan, isnan
+from numpy.ma.core import append
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
@@ -314,13 +316,20 @@ def plot_area(df: pd.DataFrame,
                 a1_value_y.spines[:].set_visible(False)
                 a1_value_y.tick_params(direction='out', length=6, width=0)
                 values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
+
+                bottom, top = a1.get_ylim()
+                small_value = (top - bottom) * 0.02
                 sum = 0.0
                 ticks = []
                 labels = []
                 for value in values:
-                    sum += value
-                    ticks.append(sum - value/2.0)
                     labels.append(perc_format(value,0))
+                    sum += value
+                    if value > small_value:
+                        ticks.append(sum - value/2.0)
+                    else:
+                        ticks.append(nan)
+                ticks = reduce_overlap(13, bottom, top, ticks)
                 a1_value_y.set_yticks(ticks)
                 a1_value_y.set_yticklabels(labels)
                 number = 0
@@ -344,32 +353,34 @@ def plot_area(df: pd.DataFrame,
             a0_value_y.tick_params(direction='out', length=6, width=0)
             values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            bottom, top = a0.get_ylim()
+            small_value = (top - bottom) * 0.02
+            ticks = []
+            labels = []
             if stacked:
                 sum = 0.0
-                ticks = []
-                labels = []
                 for value in values:
-                    sum += value
-                    ticks.append(sum - value/2.0)
                     labels.append(y_formatter(value,0))
+                    sum += value
+                    if value > small_value:
+                        ticks.append(sum - value/2.0)
+                    else:
+                        ticks.append(nan)
+                ticks = reduce_overlap(27, bottom, top, ticks)
                 a0_value_y.set_yticks(ticks)
                 a0_value_y.set_yticklabels(labels)
-                number = 0
-                for patch in leg.get_patches():
-                    if number >= len(cols):
-                        break
+                for number, patch in enumerate(leg.get_patches()):
+                    if number >= len(cols): break
                     a0_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
-                    number += 1
             else:
+                for value in values:
+                    labels.append(y_formatter(value,0))
+                ticks = reduce_overlap(25, bottom, top, values)
                 a0_value_y.set_yticks(values)
-                if y_formatter is not None:
-                    a0_value_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
-                number = 0
-                for line in leg.get_lines():
-                    if number >= len(cols):
-                        break
+                a0_value_y.set_yticklabels(labels)
+                for number, line in enumerate(leg.get_lines()):
+                    if number >= len(cols): break
                     a0_value_y.get_yticklabels()[number].set_color(line.get_color())
-                    number += 1
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -379,6 +390,30 @@ def plot_area(df: pd.DataFrame,
 
     return None
 
+class Tick:
+    def __init__(value, label, color):
+        self.tick = value
+        self.value = value
+        self.label = label
+        self.color = color
+
+def reduce_overlap(max_ticks, bottom, top, values):
+    spacing=(top - bottom) / max_ticks
+    ticks=[]
+    last_value=bottom
+    for value in values:
+        if isnan(value): 
+            ticks.append(nan)
+            continue
+        if value < last_value: continue
+        if last_value == bottom:
+            ticks.append(value)
+            last_value = value
+        else:
+            new_value = value if value > last_value + spacing else last_value + spacing
+            ticks.append(new_value)
+            last_value = new_value
+    return ticks
 
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
