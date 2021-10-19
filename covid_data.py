@@ -703,7 +703,7 @@ def get_cases_by_demographics_api():
     risks['Cluster บางแค'] = "Community"  # bangkhee
     risks['Cluster ตลาดพรพัฒน์'] = "Community"  # market
     risks['Cluster ระยอง'] = "Entertainment"  # Rayong
-    # work with forigners
+    # work with foreigners
     risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work"
     risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Prison"  # detention
     risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
@@ -987,7 +987,7 @@ def parse_unofficial_tweet(df, date, text, url):
 
 
 def parse_moph_tweet(df, date, text, url):
-    "https://twitter.com/thaimoph"
+    """https://twitter.com/thaimoph"""
     cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
     prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
@@ -1595,7 +1595,7 @@ def briefing_deaths_summary(text, date, file):
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
     }
     risk = {
-        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False)
+        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False, dash_as_zero=True)
         for en_risk, th_risks in risks.items()
     }
     # TODO: Get all bullets and fuzzy match them to categories
@@ -1828,7 +1828,7 @@ def get_cases_by_prov_briefings():
         if today_total and prov_total:
             assert prov_total / today_total > 0.77, warning  # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            logger.info("{} WARNING:", date.date(), warning)
+            logger.info("{} WARNING: {}", date.date(), warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
@@ -2286,7 +2286,7 @@ def vaccination_daily(daily, date, file, page):
 
     def clean_num(numbers):
         if len(numbers) > 8:
-            return [n for n in numbers if n not in (60, 17, 12, 7)]
+            return [n for n in numbers if n not in (60, 17, 12, 7, 3)]
         else:
             return [n for n in numbers if n not in (60, 7)]
 
@@ -2301,10 +2301,11 @@ def vaccination_daily(daily, date, file, page):
     d2_num, rest2 = get_next_numbers(page,
                                      r"ได้รับวัคซีน 2 เข็ม",
                                      r"ไดรับวัคซีน 2 เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|3 \(Booster dose\))")
-    d3_num, rest3 = get_next_numbers(page, r"3 \(Booster dose\)", until="ดังรูป")
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))")
+    d3_num, rest3 = get_next_numbers(page, r"\(Booster dose\)", until="ดังรูป")
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
+            logger.error("ERROR number of first doses ({}) does not equal number of second doses ({}) in {} for {}", len(clean_num(d1_num)), len(clean_num(d2_num)), file, date)
             assert False
         else:
             logger.info("{} Vac Sum (Error groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
@@ -2712,7 +2713,7 @@ def get_vaccinations():
     vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    # No currently used as it is too likely to result in missing numbers
+    # Not currently used as it is too likely to result in missing numbers
     # vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
@@ -3073,7 +3074,7 @@ def scrape_and_combine():
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac = pool.apply_async(get_vaccinations)
-        # TODO: split vac slides as thats the slowest
+        # TODO: split vac slides as that's the slowest
 
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
