@@ -398,6 +398,24 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left='Data Sources:\n  Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
+    # kind of dodgy since ATK is subset of positives but we don't know total ATK
+    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'ATK']
+    legend = [
+        "Cases (PCR)", 
+        "Proactive Cases (PCR)", 
+        "PCR Tests", 
+        "Probable Case (Registered for home isolation from ATK)"
+    ]
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    plot_area(df=peaks,
+              title='Tests as % of Peak - Thailand',
+              png_prefix='tests_peak', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
     ###############
     # Positive Rate
     ###############
@@ -1460,19 +1478,6 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=peaks,
               title='Daily Averages as % of Peak - Thailand',
               png_prefix='cases_peak', cols_subset=cols,
-              ma_days=7,
-              kind='line', stacked=False, percent_fig=False, clean_end=True,
-              cmap='tab10',
-              y_formatter=perc_format,
-              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
-
-    # kind of dodgy since ATK is subset of positives but we don't know total ATK
-    cols = ['Cases', 'Tests XLS', 'ATK']
-    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
-    legend = ["Cases (PCR Tested Only)", "PCR Tests", "Home Isolation from ATK Positive"]
-    plot_area(df=peaks,
-              title='Tests as % of Peak - Thailand',
-              png_prefix='tests_peak', cols_subset=cols, legends=legend,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab10',
