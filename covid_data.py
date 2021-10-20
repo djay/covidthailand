@@ -274,6 +274,7 @@ def get_english_situation_files(check=False):
     dir = "inputs/situation_en"
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/eng/situation.php",
+        "https://ddc.moph.go.th/viralpneumonia/eng/situation_more.php",
         ext=".pdf",
         dir=dir,
         check=True,
@@ -702,7 +703,7 @@ def get_cases_by_demographics_api():
     risks['Cluster บางแค'] = "Community"  # bangkhee
     risks['Cluster ตลาดพรพัฒน์'] = "Community"  # market
     risks['Cluster ระยอง'] = "Entertainment"  # Rayong
-    # work with forigners
+    # work with foreigners
     risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work"
     risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Prison"  # detention
     risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
@@ -986,7 +987,7 @@ def parse_unofficial_tweet(df, date, text, url):
 
 
 def parse_moph_tweet(df, date, text, url):
-    "https://twitter.com/thaimoph"
+    """https://twitter.com/thaimoph"""
     cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
     prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
@@ -1374,19 +1375,25 @@ def briefing_province_cases(date, pages):
     rows = {}
     for i, soup in enumerate(pages):
         text = str(soup)
-        if "อโควิดในประเทศรายใหม่" not in text or "รวมท ัง้ประเทศ" in text:
+        if "รวมท ัง้ประเทศ" in text:
             continue
-        if not re.search(r"ที่\s*จังหวัด", text):
+        if not re.search(r"(?:ที่|ที)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
+            continue
+        if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายใหม่)", text):
             continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
-        preamble, *tables = split(parts, re.compile(r"รวม\s*\(ราย\)").search)
+        preamble, *tables = split(parts, re.compile(r"รวม\s*\((?:ราย|รำย)\)").search)
         if len(tables) <= 1:
             continue  # Additional top 10 report. #TODO: better detection of right report
         else:
             title, parts = tables
         while parts and "รวม" in parts[0]:
+            # get rid of totals line at the top          
             totals, *parts = parts
+            # First line might be several
+            totals, *more_lines = totals.split("\n", 1)
+            parts = more_lines + parts
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
         while True:
             if len(parts) < 9:
@@ -1410,7 +1417,13 @@ def briefing_province_cases(date, pages):
                 if i > 4:  # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date - datetime.timedelta(days=i)
-                rows[(olddate, prov)] = cases + rows.get((olddate, prov), 0)  # rare case where we need to merge
+                if (olddate, prov) not in rows:
+                    rows[(olddate, prov)] = cases
+                else:
+                    # TODO: apparently 2021-05-13 had to merge two lines but why?
+                    # assert (olddate, prov) not in rows, f"{prov} twice in prov table line {linenum}"
+                    pass  # if duplicate we will catch it below
+
                 # if False and olddate == date:
                 #     if cases > 0:
                 #         print(date, linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
@@ -1420,6 +1433,9 @@ def briefing_province_cases(date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
+    if date > d("2021-05-12") and date not in [d("2021-07-18")]:
+        # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
+        assert len(df.groupby("Province").count()) in [77, 78], f"Not enough provinces briefing {date}"
     return df
 
 
@@ -1579,7 +1595,7 @@ def briefing_deaths_summary(text, date, file):
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
     }
     risk = {
-        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False)
+        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False, dash_as_zero=True)
         for en_risk, th_risks in risks.items()
     }
     # TODO: Get all bullets and fuzzy match them to categories
@@ -1812,7 +1828,7 @@ def get_cases_by_prov_briefings():
         if today_total and prov_total:
             assert prov_total / today_total > 0.77, warning  # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            logger.info("{} WARNING:", date.date(), warning)
+            logger.info("{} WARNING: {}", date.date(), warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
@@ -1861,6 +1877,7 @@ def prov_to_districts(dfprov):
 
 
 def get_cases_by_area_api():
+    logger.info("========Covid-19 case details - get_cases_by_area_api==========")
     cases = get_case_details_csv().reset_index()
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = join_provinces(cases, "province_of_onset")
@@ -2269,7 +2286,7 @@ def vaccination_daily(daily, date, file, page):
 
     def clean_num(numbers):
         if len(numbers) > 8:
-            return [n for n in numbers if n not in (60, 17, 12, 7)]
+            return [n for n in numbers if n not in (60, 17, 12, 7, 3)]
         else:
             return [n for n in numbers if n not in (60, 7)]
 
@@ -2284,10 +2301,11 @@ def vaccination_daily(daily, date, file, page):
     d2_num, rest2 = get_next_numbers(page,
                                      r"ได้รับวัคซีน 2 เข็ม",
                                      r"ไดรับวัคซีน 2 เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|3 \(Booster dose\))")
-    d3_num, rest3 = get_next_numbers(page, r"3 \(Booster dose\)", until="ดังรูป")
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))")
+    d3_num, rest3 = get_next_numbers(page, r"\(Booster dose\)", until="ดังรูป")
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
+            logger.error("ERROR number of first doses ({}) does not equal number of second doses ({}) in {} for {}", len(clean_num(d1_num)), len(clean_num(d2_num)), file, date)
             assert False
         else:
             logger.info("{} Vac Sum (Error groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
@@ -2695,7 +2713,7 @@ def get_vaccinations():
     vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    # No currently used as it is too likely to result in missing numbers
+    # Not currently used as it is too likely to result in missing numbers
     # vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
@@ -2744,7 +2762,8 @@ def vac_manuf_given(df, page, file, page_num, url):
     title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
     # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
-    if len(rest) == 3:
+    if len(rest) == 3 and date < d("2021-10-14"):
+        # TODO: need better way to detect this case
         doses = rest[0]  # Assumes header is doses cell
 
     # Sometimes there is an extra date thrown in inside brackets on the subheadings
@@ -3050,16 +3069,16 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac = pool.apply_async(get_vaccinations)
-        # TODO: split vac slides as thats the slowest
+        # TODO: split vac slides as that's the slowest
 
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
 
-        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         situation = pool.apply_async(get_situation)
         tests_reports = pool.apply_async(get_test_reports)
         tests = pool.apply_async(get_tests_by_day)
