@@ -2293,10 +2293,9 @@ def vaccination_daily(daily, date, file, page):
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
     d1_num, rest1 = get_next_numbers(page,
+                                     r"1\s*(?:จํานวน|จำนวน)",
                                      r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
                                      r"ซีนเข็มที่ 1 จ",
-                                     r"1\s*จํานวน",
-                                     r"1 จำนวน",
                                      until=r"(?:2 เข็ม)")
     d2_num, rest2 = get_next_numbers(page,
                                      r"ได้รับวัคซีน 2 เข็ม",
