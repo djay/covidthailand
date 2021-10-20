@@ -884,11 +884,22 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
-    cols = ["Hospitalized", "Hospitalized Field", "Hospitalized Severe", "Hospitalized Respirator", ]
+    df["Hospitalized All Mild"] = df["Hospitalized Mild"] + df["Hospitalized Field"]
+    cols = [
+        "Hospitalized Respirator",
+        "Hospitalized Severe",
+        "Hospitalized All Mild",
+    ]
+    legends = [
+        "Serious Condition with Ventilator"
+        "Serious Condition without Ventilator",
+        "Mild Condition",
+    ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
-              title='Active Cases Daily Averages as % of Peak - Thailand',
+              title='Active Cases by Condition as % of Peak - Thailand',
               png_prefix='active_peak', cols_subset=cols,
+              legends=legends,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab10',
