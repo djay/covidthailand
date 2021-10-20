@@ -2498,7 +2498,7 @@ def vaccination_tables(df, date, page, file):
                 add(prov, [alloc, 0, 0, 0, alloc, 0], alloc2_doses)
             elif table == "new_given" and len(numbers) == 12:  # e.g. vaccinations/Daily report 2021-05-11.pdf
                 dose1, dose2, *groups = numbers
-                add(prov, [dose1, None, dose2, None] + groups, vaccols5x2)
+                add(prov, [dose1, np.nan, dose2, np.nan] + groups, vaccols5x2)
             elif table == "new_given" and len(numbers) == 21:  # from 2021-07-20
                 # Actually cumulative totals
                 pop, alloc, givens, groups = numbers[0], numbers[1:4], numbers[4:8], numbers[9:21]
@@ -2514,33 +2514,34 @@ def vaccination_tables(df, date, page, file):
                 if len(numbers) == 21:
                     # Givens is a single total only 2021-08-16
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:6], numbers[6:]
-                    givens = [None] * 6  # We don't use the total
+                    givens = [np.nan] * 6  # We don't use the total
                 elif len(numbers) == 22 and date < datetime.datetime(2021, 10, 5):
                     # Givens has sinopharm in it too. 2021-08-15
                     pop, alloc, givens, groups = numbers[0], numbers[1:6], numbers[6:7], numbers[7:]
-                    givens = [None] * 6  # We don't use the total
+                    givens = [np.nan] * 6  # We don't use the total
                 elif len(numbers) == 17:
                     # No allocations or givens 2021-08-10
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
-                    givens = [None] * 6
-                    alloc = [None] * 4
+                    givens = [np.nan] * 6
+                    alloc = [np.nan] * 4
                 elif len(numbers) in [27, 33]:  # 2021-08-06, # 2021-08-05
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
                 elif len(numbers) == 31:  # 2021-10-05
-                    pop, givens, groups = numbers[0], numbers[1:5], numbers[7:]
-                    alloc = [None] * 5
+                    pop, alloc, groups = numbers[0], numbers[1:6], numbers[7:]
+                    # TODO: put in manuf given per province?
+                    givens = [np.nan] * 6
                 else:
                     assert False
                 if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
-                    sp = None
+                    sp = np.nan
                 else:  # 2021-08-15
                     sv, az, sp, pf, total_alloc = alloc
-                assert total_alloc is None or sum([m for m in [sv, az, pf, sp] if m]) == total_alloc
+                assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp] if not pd.isna(m)]) == total_alloc
                 if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
-                        groups.insert(i, None)
+                        groups.insert(i, np.nan)
                 if len(groups) < 24:
                     groups = groups + [np.nan] * 3  # students
                 add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
@@ -2558,8 +2559,10 @@ def vaccination_tables(df, date, page, file):
         assert added is None or added > 7
     rows = pd.DataFrame.from_dict(rows, orient='index')
     rows = rows.set_index(["Date", "Province"]).fillna(np.nan) if not rows.empty else rows
-    if 'Vac Given 1 Cum' in rows.columns:
-        rows['Vac Given Cum'] = rows['Vac Given 1 Cum'] + rows['Vac Given 2 Cum']
+    percents = rows[list(rows.columns.intersection([f'Vac Given {i} %' for i in range(1, 5)]))].fillna(0)
+    assert (percents < 200).all().all()
+    # if 'Vac Given 1 Cum' in rows.columns:
+    #     rows['Vac Given Cum'] = rows[list(rows.columns.intersection([f'Vac Given {i} Cum' for i in range(1, 5)]))].sum(axis=1)
     return df.combine_first(rows) if not rows.empty else df
 
 
