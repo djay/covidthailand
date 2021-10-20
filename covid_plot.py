@@ -307,80 +307,47 @@ def plot_area(df: pd.DataFrame,
             a1.tick_params(direction='out', length=6, width=0)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
             a1.xaxis.label.set_visible(False)
-            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+
+            a1_secax_y = right_axis(a1)
             a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
-            a1_secax_y.tick_params(direction='out', length=6, width=0)
             if show_last_values:
                 a1_secax_y.set_color(color=dim_color)
-                a1_value_y = a1.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
-                a1_value_y.spines[:].set_visible(False)
-                a1_value_y.tick_params(direction='out', length=6, width=0)
+                a1_value_y = right_axis(a1)
                 values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
 
                 bottom, top = a1.get_ylim()
-                small_value = (top - bottom) * 0.02
+                ticks = Ticks(13, bottom, top)
                 sum = 0.0
-                ticks = []
-                labels = []
-                for value in values:
-                    labels.append(perc_format(value,0))
+                for number, value in enumerate(values):
                     sum += value
-                    if value > small_value:
-                        ticks.append(sum - value/2.0)
-                    else:
-                        ticks.append(nan)
-                ticks = reduce_overlap(13, bottom, top, ticks)
-                a1_value_y.set_yticks(ticks)
-                a1_value_y.set_yticklabels(labels)
-                number = 0
-                for patch in leg.get_patches():
-                    if number >= len(perccols):
-                        break
-                    a1_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
-                    number += 1
+                    if not isnan(value) and number < len(leg.get_patches()): 
+                        ticks.append(Tick(sum - value/2.0, perc_format(value,0), leg.get_patches()[number].get_facecolor()))
+                set_ticks(a1_value_y, ticks)
 
-        a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
-        a0_secax_y.spines[:].set_visible(False)
-        a0_secax_y.tick_params(direction='out', length=6, width=0)
+        a0_secax_y = right_axis(a0)
         if y_formatter is not None:
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=0)
             
         if show_last_values:
             a0_secax_y.set_color(color=dim_color)
-            a0_value_y = a0.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
-            a0_value_y.spines[:].set_visible(False)
-            a0_value_y.tick_params(direction='out', length=6, width=0)
+            a0_value_y = right_axis(a0)
             values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
-            # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+
             bottom, top = a0.get_ylim()
-            small_value = (top - bottom) * 0.02
-            ticks = []
-            labels = []
+            ticks = Ticks(27, bottom, top)
             if stacked:
                 sum = 0.0
-                for value in values:
-                    labels.append(y_formatter(value,0))
+                for number, value in enumerate(values):
                     sum += value
-                    if value > small_value:
-                        ticks.append(sum - value/2.0)
-                    else:
-                        ticks.append(nan)
-                ticks = reduce_overlap(27, bottom, top, ticks)
-                a0_value_y.set_yticks(ticks)
-                a0_value_y.set_yticklabels(labels)
-                for number, patch in enumerate(leg.get_patches()):
-                    if number >= len(cols): break
-                    a0_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
+                    if not isnan(value) and number < len(leg.get_patches()): 
+                        ticks.append(Tick(sum - value/2.0, y_formatter(value,0), leg.get_patches()[number].get_facecolor()))
             else:
-                for value in values:
-                    labels.append(y_formatter(value,0))
-                ticks = reduce_overlap(25, bottom, top, values)
-                a0_value_y.set_yticks(values)
-                a0_value_y.set_yticklabels(labels)
-                for number, line in enumerate(leg.get_lines()):
-                    if number >= len(cols): break
-                    a0_value_y.get_yticklabels()[number].set_color(line.get_color())
+                for number, value in enumerate(values):
+                    if not isnan(value) and number < len(leg.get_lines()): 
+                        ticks.append(Tick(value, y_formatter(value,0), leg.get_lines()[number].get_color()))
+
+            set_ticks(a0_value_y, ticks)
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -390,30 +357,89 @@ def plot_area(df: pd.DataFrame,
 
     return None
 
+def set_ticks(axis, ticks):
+    """Set the ticks for the axis."""
+    ticks.reduce_overlap()
+    axis.set_yticks(ticks.get_ticks())
+    axis.set_yticklabels(ticks.get_labels())
+    for number, label in enumerate(axis.get_yticklabels()):
+        label.set_color(ticks.get_color(number))
+
+def right_axis(axis):
+    """Create clean secondary right axis."""
+    new_axis = axis.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+    new_axis.spines[:].set_visible(False)
+    new_axis.tick_params(direction='out', length=6, width=0)
+    return new_axis
+
+def sort_by_actual(e):
+    return e.actual
+
+class Ticks:
+    """All the ticks of an axis."""
+    def __init__(self, max_ticks, bottom, top):
+        self.ticks = []
+        self.max_ticks = max_ticks
+        self.bottom = bottom
+        self.top = top
+        self.spacing = (top - bottom) / max_ticks
+
+    def append(self, tick):
+        """Append a tick to the ticks list."""
+        self.ticks.append(tick)
+
+    def reduce_overlap(self):
+        """Move the tickmark positions of the ticks so that they don't overlap."""
+        if len(self.ticks) > self.max_ticks:
+            self.spacing = (self.top - self.bottom) / len(self.ticks)
+
+        # move them up if overlapping
+        self.ticks.sort(key=sort_by_actual)
+        last_value = self.bottom - self.spacing
+        for tick in self.ticks:
+            if tick.value < last_value + self.spacing: tick.value = last_value + self.spacing
+            last_value = tick.value
+
+        # move them halfway back and down if over the top
+        adjusted_last = False
+        self.ticks.reverse()
+        last_value = self.top + self.spacing
+        for tick in self.ticks:
+            if tick.value > last_value - self.spacing: 
+                tick.value = last_value - self.spacing
+            else:
+                adjusted_last = False
+            if not adjusted_last and tick.value > tick.actual: 
+                tick.value -= (tick.value - tick.actual) / 2.0
+                adjusted_last = True
+            last_value = tick.value
+
+        # move them up if they hit the bottom
+        self.ticks.reverse()
+        last_value = self.bottom - self.spacing
+        for tick in self.ticks:
+            if tick.value < last_value + self.spacing: tick.value = last_value + self.spacing
+            last_value = tick.value
+
+    def get_ticks(self): 
+        """Get the tick marks list."""
+        return [ tick.value for tick in self.ticks ]
+
+    def get_labels(self): 
+        """Get the tick labels list."""
+        return [ tick.label for tick in self.ticks ]
+
+    def get_color(self, number): 
+        """Get a single tick color."""
+        return self.ticks[number].color
+    
 class Tick:
-    def __init__(value, label, color):
-        self.tick = value
-        self.value = value
+    """A single tick including tickmarks, labels and colors."""
+    def __init__(self, actual, label, color):
+        self.value = actual
+        self.actual = actual
         self.label = label
         self.color = color
-
-def reduce_overlap(max_ticks, bottom, top, values):
-    spacing=(top - bottom) / max_ticks
-    ticks=[]
-    last_value=bottom
-    for value in values:
-        if isnan(value): 
-            ticks.append(nan)
-            continue
-        if value < last_value: continue
-        if last_value == bottom:
-            ticks.append(value)
-            last_value = value
-        else:
-            new_value = value if value > last_value + spacing else last_value + spacing
-            ticks.append(new_value)
-            last_value = new_value
-    return ticks
 
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
