@@ -100,9 +100,11 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 # Active Cases Since April 1st <a name="active-cases">
 
-![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
+![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/active_hospital_3.png)
 
 ![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
+
+![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
 ![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
 

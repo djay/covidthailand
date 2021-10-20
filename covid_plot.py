@@ -865,10 +865,15 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
     df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
-    cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Mild", "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
+    cols = ['Hospitalized Respirator', 'Hospitalized Severe',
+            "Hospitalized Mild", "Hospitalized Field Unknown",
+            "Hospitalized Field Hospitel",
+            "Hospitalized Field HICI", ]
     legend = [
-        'On Ventilator', 'Severe Condition in Hospital',
-        'Mild In Hospital', 'Mild In Field Hospital', "Mild in Hospitel", "Mild in Home/Community Isolation"
+        'Serious On Ventilator', 'Serios without Ventilator',
+        'Mild In Hospital', 'Mild In Field Hospital/Other',
+        "Mild in Hotel Field Hospital (Hospitel)",
+        "Mild in Home/Community Isolation (HICI)"
     ]
     plot_area(df=df,
               title='Acive Cases by Condition - Thailand',
