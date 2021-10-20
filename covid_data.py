@@ -2292,20 +2292,26 @@ def vaccination_daily(daily, date, file, page):
 
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
-    d1_num, rest1 = get_next_numbers(page,
-                                     r"1\s*(?:จํานวน|จำนวน)",
+    # Daily totals at the bottom often make it harder to get the right numbers
+    # ส ำหรับรำยงำนจ ำนวนผู้ได้รับวัคซีนโควิด 19 เพิ่มขึ้นในวันที่ 17 ตุลำคม 2564 มีผู้ได้รับวัคซีนทั้งหมด
+    gtext, *_ = re.split("หรับรำยงำนจ", page)
+
+    d1_num, rest1 = get_next_numbers(gtext,
+                                     r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
                                      r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
                                      r"ซีนเข็มที่ 1 จ",
                                      until=r"(?:2 เข็ม)")
-    d2_num, rest2 = get_next_numbers(page,
+    d2_num, rest2 = get_next_numbers(gtext,
                                      r"ได้รับวัคซีน 2 เข็ม",
                                      r"ไดรับวัคซีน 2 เข็ม",
                                      until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))")
-    d3_num, rest3 = get_next_numbers(page, r"\(Booster dose\)", until="ดังรูป")
+    d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป")
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
-            logger.error("ERROR number of first doses ({}) does not equal number of second doses ({}) in {} for {}", len(clean_num(d1_num)), len(clean_num(d2_num)), file, date)
-            assert False
+            ld1, ld2 = len(clean_num(d1_num)), len(clean_num(d2_num))
+            error = f"ERROR number of first doses ({ld1}) does not equal number of second doses ({ld2}) in {file} for {date}", 
+            logger.error(error)
+            assert False, error
         else:
             logger.info("{} Vac Sum (Error groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
             return daily
