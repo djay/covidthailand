@@ -24,7 +24,6 @@ github_dark_text = "#C9D0D8"
 github_light_back = "#161A23"
 github_dark_back = "#0C1116"
 
-
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
@@ -387,7 +386,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # matplotlib global settings
     matplotlib.use('AGG')
     if theme == 'Black':
-        plt.style.use('dark_background')
+        plt.style.use('dark_background') 
     else:
         plt.style.use('seaborn-whitegrid')
 
@@ -408,7 +407,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
     plot_area(df=df,
-              title='PCR Tests and PUI - Thailand',
+              title='PCR Tests and PUI - Thailand', 
               legends=legends,
               png_prefix='tests', cols_subset=cols,
               ma_days=7,
@@ -424,7 +423,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Tested Quarantine Cum',
             'Tested PUI Walkin Private Cum',
             'Tested PUI Walkin Public Cum']
-    plot_area(df=df,
+    plot_area(df=df, 
               title='PCR Tests and PUI - Thailand',
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7,
@@ -689,8 +688,8 @@ def save_plots(df: pd.DataFrame) -> None:
     plt.rc('legend', **{'fontsize': 12})
 
     cols = rearrange([f'Tests Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
-              title='PCR Tests by Health District - Thailand',
+    plot_area(df=df, 
+              title='PCR Tests by Health District - Thailand', 
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='tests_area', cols_subset=cols[0],
               ma_days=None,
@@ -700,7 +699,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=df,
+    plot_area(df=df, 
               title='PCR Positive Test Results by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='pos_area', cols_subset=cols,
@@ -732,7 +731,7 @@ def save_plots(df: pd.DataFrame) -> None:
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Pos Daily {area}'] = (df[f'Pos Area {area} (i)'] / df[pos_cols].sum(axis=1) * df['Pos'])
     cols = rearrange([f'Pos Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=df,
+    plot_area(df=df, 
               title='Positive PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='pos_area_daily', cols_subset=cols,
@@ -781,7 +780,7 @@ def save_plots(df: pd.DataFrame) -> None:
             df[f'Cases Area {area}'] / df[f'Tests Area {area}'] * 100
         )
     cols = [f'Cases/Tests {area}' for area in DISTRICT_RANGE_SIMPLE]
-    plot_area(df=df,
+    plot_area(df=df, 
               title='Highest Covid Cases/Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS),
@@ -872,7 +871,7 @@ def save_plots(df: pd.DataFrame) -> None:
               actuals=True,
               ma_days=7,
               kind='line', stacked=True, percent_fig=False,
-              cmap='tab10',
+              cmap='tab10', 
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # show cumulative deaths, recoveries and hospitalisations (which should all add up to cases)
@@ -1135,7 +1134,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Covid Vaccination Doses - Top Provinces - Thailand',
               png_prefix='vac_top5_doses', cols_subset=cols,
               ma_days=None,
@@ -1146,7 +1145,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Covid Vaccinations 1st Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_1', cols_subset=cols,
               ma_days=None,
@@ -1157,7 +1156,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
     cols = top5.columns.to_list()
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Covid Vaccinations 2nd Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_2', cols_subset=cols,
               ma_days=None,
@@ -1170,7 +1169,7 @@ def save_plots(df: pd.DataFrame) -> None:
                     lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
                     other_name=None, num=7)
     cols = top5.columns.to_list()
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Covid Vaccination 1st Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_1', cols_subset=cols,
               ma_days=None,
@@ -1183,7 +1182,7 @@ def save_plots(df: pd.DataFrame) -> None:
                     lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
                     other_name=None, num=7)
     cols = top5.columns.to_list()
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Covid Vaccinations 2nd Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_2', cols_subset=cols,
               ma_days=None,
@@ -1355,7 +1354,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df,
               title='Covid Deaths - Thailand',
               legends=['Deaths', 'Infected from Family', 'No Underlying Diseases'],
-              png_prefix='deaths_reason', cols_subset=cols,
+              png_prefix='deaths_reason', cols_subset=cols, 
               actuals=True,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -1508,8 +1507,8 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Monthly Deaths above Normal - Thailand',
               legends=["Deviation from Normal Deaths (Removing Covid Deaths)", "Deviation from Normal Deaths (Average 2015-19)"],
               cols_subset=['Deviation from expected Deaths', 'PScore'],
-              ma_days=None,
-              kind='line', stacked=False, percent_fig=False,
+              ma_days=None, 
+              kind='line', stacked=False, percent_fig=False, 
               cmap='tab10',
               y_formatter=perc_format,
               footnote="Note: There is some variability in comparison years 2015-19 so normal is a not a certain value.",
@@ -1524,7 +1523,7 @@ def save_plots(df: pd.DataFrame) -> None:
     by_month = years2020.combine_first(years2021).sort_values("Date")
     cols = cols + cols2021
 
-    plot_area(df=by_month,
+    plot_area(df=by_month, 
               title='Excess Deaths - Thailand',
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
@@ -1687,7 +1686,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
     by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
     top5 = by_province.pipe(topprov, lambda adf: (adf["Excess Deaths"] - adf['Deaths Covid']) / adf['Pre 5 Avg'] * 100, num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Deviation from Expected Monthly Deaths - Thailand',
               png_prefix='deaths_expected_prov', cols_subset=cols,
               periods_to_plot=['all'],
@@ -1713,7 +1712,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
     by_district['Deviation from expected Deaths'] = (by_district['Excess Deaths'] - by_district['Deaths Covid']) / by_district['Pre 5 Avg'] * 100
     top5 = area_crosstab(by_district, "Deviation from expected Deaths", "")
     cols = rearrange([f'Deviation from expected Deaths Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=top5,
+    plot_area(df=top5, 
               title='Deviation from Expected Monthly Deaths - Thailand',
               legends=AREA_LEGEND,
               png_prefix='deaths_expected_area', cols_subset=cols,
