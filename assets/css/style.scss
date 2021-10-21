@@ -1,8 +1,16 @@
 ---
----
 
-@import "{{ site.theme }}";
+@import "{{ site.theme }}"
 
-.main-content {
+#header {
+  visibility: hidden;
+}
+
+section {
+  margin-top: 0px;
+  max-width: 100%;
+}
+
+.wrapper {
   max-width: 100%;
 }
