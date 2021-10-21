@@ -567,7 +567,7 @@ def save_plots(df: pd.DataFrame) -> None:
                'Walkin Confirmed Cases',
                'Positive Test Results (All)',
                'Positive Test Results (Public)',
-               'Antigen Test Kit Positives (ATK/Rapid)']
+               "Probable Case (Registered for home isolation from ATK)"]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               legends=legends,
@@ -887,7 +887,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Active Covid Cases in Serious Condition - Thailand',
               legends=legends,
               png_prefix='active_severe', cols_subset=cols,
-              actuals=True,
+              actuals=False,
               ma_days=7,
               kind='line', stacked=True, percent_fig=False,
               cmap='tab10',
@@ -1420,7 +1420,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Covid Deaths - Thailand',
               legends=['Deaths', 'Infected from Family', 'No Underlying Diseases'],
               png_prefix='deaths_reason', cols_subset=cols,
-              actuals=True,
+              actuals=['Deaths'],
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',

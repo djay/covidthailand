@@ -98,7 +98,7 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-# Active Cases Since April 1st <a name="active-cases">
+# Active Cases/Hospitalisations <a name="active-cases">
 
 ![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/active_hospital_3.png)
 
@@ -106,9 +106,10 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
+![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
+
 ![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
 
-![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  
