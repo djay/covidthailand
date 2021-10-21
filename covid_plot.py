@@ -6,8 +6,7 @@ import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from numpy import NaN, nan, isnan
-from numpy.ma.core import append
+import numpy as np
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
@@ -320,7 +319,7 @@ def plot_area(df: pd.DataFrame,
                 sum = 0.0
                 for number, value in enumerate(values):
                     sum += value
-                    if not isnan(value) and number < len(leg.get_patches()): 
+                    if not np.isnan(value) and number < len(leg.get_patches()): 
                         ticks.append(Tick(sum - value/2.0, perc_format(value,0), leg.get_patches()[number].get_facecolor()))
                 set_ticks(a1_value_y, ticks)
 
@@ -340,11 +339,11 @@ def plot_area(df: pd.DataFrame,
                 sum = 0.0
                 for number, value in enumerate(values):
                     sum += value
-                    if not isnan(value) and number < len(leg.get_patches()): 
+                    if not np.isnan(value) and number < len(leg.get_patches()): 
                         ticks.append(Tick(sum - value/2.0, y_formatter(value,0), leg.get_patches()[number].get_facecolor()))
             else:
                 for number, value in enumerate(values):
-                    if not isnan(value) and number < len(leg.get_lines()): 
+                    if not np.isnan(value) and number < len(leg.get_lines()): 
                         ticks.append(Tick(value, y_formatter(value,0), leg.get_lines()[number].get_color()))
 
             set_ticks(a0_value_y, ticks)
@@ -397,7 +396,8 @@ class Ticks:
         self.ticks.sort(key=sort_by_actual)
         last_value = self.bottom - self.spacing
         for tick in self.ticks:
-            if tick.value < last_value + self.spacing: tick.value = last_value + self.spacing
+            if tick.value < last_value + self.spacing: 
+                tick.value = last_value + self.spacing
             last_value = tick.value
 
         # move them halfway back and down if over the top
@@ -418,7 +418,8 @@ class Ticks:
         self.ticks.reverse()
         last_value = self.bottom - self.spacing
         for tick in self.ticks:
-            if tick.value < last_value + self.spacing: tick.value = last_value + self.spacing
+            if tick.value < last_value + self.spacing: 
+                tick.value = last_value + self.spacing
             last_value = tick.value
 
     def get_ticks(self): 
