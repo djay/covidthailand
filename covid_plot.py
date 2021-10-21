@@ -444,7 +444,7 @@ class Tick:
 
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand\n'
+    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
     # matplotlib global settings
     matplotlib.use('AGG')
@@ -466,7 +466,6 @@ def save_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
-    source = 'Source: https://djay.github.io/covidthailand\n'
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
     plot_area(df=df,
