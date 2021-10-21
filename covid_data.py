@@ -2560,7 +2560,7 @@ def vaccination_tables(df, date, page, file):
     rows = pd.DataFrame.from_dict(rows, orient='index')
     rows = rows.set_index(["Date", "Province"]).fillna(np.nan) if not rows.empty else rows
     percents = rows[list(rows.columns.intersection([f'Vac Given {i} %' for i in range(1, 5)]))].fillna(0)
-    assert (percents < 200).all().all()
+    assert (percents < 500).all().all(), f"{file} {date}: wrong allocations"
     # if 'Vac Given 1 Cum' in rows.columns:
     #     rows['Vac Given Cum'] = rows[list(rows.columns.intersection([f'Vac Given {i} Cum' for i in range(1, 5)]))].sum(axis=1)
     return df.combine_first(rows) if not rows.empty else df
