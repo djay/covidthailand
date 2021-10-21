@@ -2339,12 +2339,12 @@ def vaccination_daily(daily, date, file, page):
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
                 medical = get_next_number(rest, r"างการแพท", until="ราย", return_rest=False)
-                frontline = get_next_number(rest, r"านหน้า", until="ราย", return_rest=False)
+                frontline = get_next_number(rest, r"านหน.า", until="ราย", return_rest=False)
                 volunteer = get_next_number(rest, r"อาสาสมัคร", until="ราย", return_rest=False)
-                over60 = get_next_number(rest, r"60 *ปี\s*(?:ขึ|ปี)", until="ราย", return_rest=False)
+                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)", until="ราย", return_rest=False)
                 d7, chronic = get_next_numbers(rest, r"โรคเ", until="ราย", return_rest=False)
                 assert d7 == 7
-                pregnant = get_next_number(rest, r"งครรภ์", r"จำนวน", until="ราย", return_rest=False)
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="ราย", return_rest=False)
                 area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", until="ราย", return_rest=False)
                 student = get_next_numbers(rest, r"นักเรียน", until="ราย", return_rest=False)
                 if len(student) == 3:
@@ -2363,7 +2363,7 @@ def vaccination_daily(daily, date, file, page):
                 pregnant = volunteer = medical = student = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
-                assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
+                assert not any_in([None, np.nan], medical or med_all, frontline, over60, chronic, area)
                 total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
                 assert 0.945 <= (sum(i for i in total_row if i and not pd.isna(i)) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
