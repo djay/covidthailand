@@ -135,7 +135,7 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False, dash_as_zero=False):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, return_until=False, require_until=False, dash_as_zero=False):
     """
     returns the numbers that appear immediately before or after the string(s) in 'matches',
     optionally up through 'until', that are found in the parsed PDF string 'content'
@@ -167,14 +167,16 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
             behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
-        if return_rest:
+        if return_until:
+            return numbers, found
+        elif return_rest:
             return numbers, matched + " " + rest + behind
         else:
             return numbers
     if debug and matches:
         logger.info("Couldn't find '{}'", match)
         logger.info(content)
-    if return_rest:
+    if return_rest or return_until:
         return [], content
     else:
         return []
