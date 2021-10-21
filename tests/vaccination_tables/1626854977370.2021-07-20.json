@@ -84,10 +84,6 @@
       {
         "name":"Vac Population",
         "type":"number"
-      },
-      {
-        "name":"Vac Given Cum",
-        "type":"number"
       }
     ],
     "primaryKey":[
@@ -118,8 +114,7 @@
       "Vac Group Risk: Disease 2 Cum":244.0,
       "Vac Group Risk: Location 1 Cum":14084.0,
       "Vac Group Risk: Location 2 Cum":1347.0,
-      "Vac Population":379995.0,
-      "Vac Given Cum":43346.0
+      "Vac Population":379995.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -142,8 +137,7 @@
       "Vac Group Risk: Disease 2 Cum":52441.0,
       "Vac Group Risk: Location 1 Cum":2465254.0,
       "Vac Group Risk: Location 2 Cum":596933.0,
-      "Vac Population":7699175.0,
-      "Vac Given Cum":4805401.0
+      "Vac Population":7699175.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -166,8 +160,7 @@
       "Vac Group Risk: Disease 2 Cum":5806.0,
       "Vac Group Risk: Location 1 Cum":129993.0,
       "Vac Group Risk: Location 2 Cum":50657.0,
-      "Vac Population":1587359.0,
-      "Vac Given Cum":366435.0
+      "Vac Population":1587359.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -190,8 +183,7 @@
       "Vac Group Risk: Disease 2 Cum":610.0,
       "Vac Group Risk: Location 1 Cum":15242.0,
       "Vac Group Risk: Location 2 Cum":3792.0,
-      "Vac Population":1134867.0,
-      "Vac Given Cum":85787.0
+      "Vac Population":1134867.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -214,8 +206,7 @@
       "Vac Group Risk: Disease 2 Cum":917.0,
       "Vac Group Risk: Location 1 Cum":16070.0,
       "Vac Group Risk: Location 2 Cum":2616.0,
-      "Vac Population":543683.0,
-      "Vac Given Cum":61502.0
+      "Vac Population":543683.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -238,8 +229,7 @@
       "Vac Group Risk: Disease 2 Cum":1325.0,
       "Vac Group Risk: Location 1 Cum":53754.0,
       "Vac Group Risk: Location 2 Cum":16219.0,
-      "Vac Population":503538.0,
-      "Vac Given Cum":114646.0
+      "Vac Population":503538.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -262,8 +252,7 @@
       "Vac Group Risk: Disease 2 Cum":644.0,
       "Vac Group Risk: Location 1 Cum":35871.0,
       "Vac Group Risk: Location 2 Cum":6406.0,
-      "Vac Population":351257.0,
-      "Vac Given Cum":76665.0
+      "Vac Population":351257.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -286,8 +275,7 @@
       "Vac Group Risk: Disease 2 Cum":8598.0,
       "Vac Group Risk: Location 1 Cum":125070.0,
       "Vac Group Risk: Location 2 Cum":75817.0,
-      "Vac Population":2692890.0,
-      "Vac Given Cum":381664.0
+      "Vac Population":2692890.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -310,8 +298,7 @@
       "Vac Group Risk: Disease 2 Cum":3279.0,
       "Vac Group Risk: Location 1 Cum":34114.0,
       "Vac Group Risk: Location 2 Cum":8599.0,
-      "Vac Population":1575117.0,
-      "Vac Given Cum":162486.0
+      "Vac Population":1575117.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -334,8 +321,7 @@
       "Vac Group Risk: Disease 2 Cum":786.0,
       "Vac Group Risk: Location 1 Cum":53746.0,
       "Vac Group Risk: Location 2 Cum":8923.0,
-      "Vac Population":805356.0,
-      "Vac Given Cum":118528.0
+      "Vac Population":805356.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -358,8 +344,7 @@
       "Vac Group Risk: Disease 2 Cum":743.0,
       "Vac Group Risk: Location 1 Cum":40471.0,
       "Vac Group Risk: Location 2 Cum":8382.0,
-      "Vac Population":743054.0,
-      "Vac Given Cum":98471.0
+      "Vac Population":743054.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -382,8 +367,7 @@
       "Vac Group Risk: Disease 2 Cum":1228.0,
       "Vac Group Risk: Location 1 Cum":38622.0,
       "Vac Group Risk: Location 2 Cum":11993.0,
-      "Vac Population":286339.0,
-      "Vac Given Cum":106317.0
+      "Vac Population":286339.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -406,8 +390,7 @@
       "Vac Group Risk: Disease 2 Cum":915.0,
       "Vac Group Risk: Location 1 Cum":6411.0,
       "Vac Group Risk: Location 2 Cum":2197.0,
-      "Vac Population":528207.0,
-      "Vac Given Cum":57348.0
+      "Vac Population":528207.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -430,8 +413,7 @@
       "Vac Group Risk: Disease 2 Cum":23483.0,
       "Vac Group Risk: Location 1 Cum":312431.0,
       "Vac Group Risk: Location 2 Cum":269074.0,
-      "Vac Population":547584.0,
-      "Vac Given Cum":722673.0
+      "Vac Population":547584.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -454,8 +436,7 @@
       "Vac Group Risk: Disease 2 Cum":1757.0,
       "Vac Group Risk: Location 1 Cum":40943.0,
       "Vac Group Risk: Location 2 Cum":10949.0,
-      "Vac Population":228507.0,
-      "Vac Given Cum":97668.0
+      "Vac Population":228507.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -478,8 +459,7 @@
       "Vac Group Risk: Disease 2 Cum":544.0,
       "Vac Group Risk: Location 1 Cum":8358.0,
       "Vac Group Risk: Location 2 Cum":3586.0,
-      "Vac Population":331057.0,
-      "Vac Given Cum":42340.0
+      "Vac Population":331057.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -502,8 +482,7 @@
       "Vac Group Risk: Disease 2 Cum":1206.0,
       "Vac Group Risk: Location 1 Cum":21510.0,
       "Vac Group Risk: Location 2 Cum":6003.0,
-      "Vac Population":1460182.0,
-      "Vac Given Cum":108718.0
+      "Vac Population":1460182.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -526,8 +505,7 @@
       "Vac Group Risk: Disease 2 Cum":4240.0,
       "Vac Group Risk: Location 1 Cum":55713.0,
       "Vac Group Risk: Location 2 Cum":8348.0,
-      "Vac Population":1487320.0,
-      "Vac Given Cum":242684.0
+      "Vac Population":1487320.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -550,8 +528,7 @@
       "Vac Group Risk: Disease 2 Cum":5765.0,
       "Vac Group Risk: Location 1 Cum":101042.0,
       "Vac Group Risk: Location 2 Cum":47691.0,
-      "Vac Population":1144090.0,
-      "Vac Given Cum":288078.0
+      "Vac Population":1144090.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -574,8 +551,7 @@
       "Vac Group Risk: Disease 2 Cum":981.0,
       "Vac Group Risk: Location 1 Cum":29958.0,
       "Vac Group Risk: Location 2 Cum":5492.0,
-      "Vac Population":1392583.0,
-      "Vac Given Cum":103143.0
+      "Vac Population":1392583.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -598,8 +574,7 @@
       "Vac Group Risk: Disease 2 Cum":797.0,
       "Vac Group Risk: Location 1 Cum":17980.0,
       "Vac Group Risk: Location 2 Cum":5028.0,
-      "Vac Population":659636.0,
-      "Vac Given Cum":77639.0
+      "Vac Population":659636.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -622,8 +597,7 @@
       "Vac Group Risk: Disease 2 Cum":1976.0,
       "Vac Group Risk: Location 1 Cum":30837.0,
       "Vac Group Risk: Location 2 Cum":7238.0,
-      "Vac Population":1880468.0,
-      "Vac Given Cum":144346.0
+      "Vac Population":1880468.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -646,8 +620,7 @@
       "Vac Group Risk: Disease 2 Cum":504.0,
       "Vac Group Risk: Location 1 Cum":29499.0,
       "Vac Group Risk: Location 2 Cum":2915.0,
-      "Vac Population":547993.0,
-      "Vac Given Cum":82881.0
+      "Vac Population":547993.0
     },
     {
       "Date":"2021-07-19T00:00:00.000Z",
@@ -670,8 +643,7 @@
       "Vac Group Risk: Disease 2 Cum":271.0,
       "Vac Group Risk: Location 1 Cum":13276.0,
       "Vac Group Risk: Location 2 Cum":3175.0,
-      "Vac Population":535512.0,
-      "Vac Given Cum":41168.0
+      "Vac Population":535512.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -694,8 +666,7 @@
       "Vac Group Risk: Disease 2 Cum":678.0,
       "Vac Group Risk: Location 1 Cum":6164.0,
       "Vac Group Risk: Location 2 Cum":1749.0,
-      "Vac Population":292159.0,
-      "Vac Given Cum":34650.0
+      "Vac Population":292159.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -718,8 +689,7 @@
       "Vac Group Risk: Disease 2 Cum":264.0,
       "Vac Group Risk: Location 1 Cum":11865.0,
       "Vac Group Risk: Location 2 Cum":1947.0,
-      "Vac Population":425427.0,
-      "Vac Given Cum":35733.0
+      "Vac Population":425427.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -742,8 +712,7 @@
       "Vac Group Risk: Disease 2 Cum":963.0,
       "Vac Group Risk: Location 1 Cum":76651.0,
       "Vac Group Risk: Location 2 Cum":6136.0,
-      "Vac Population":750784.0,
-      "Vac Given Cum":183425.0
+      "Vac Population":750784.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -766,8 +735,7 @@
       "Vac Group Risk: Disease 2 Cum":205.0,
       "Vac Group Risk: Location 1 Cum":2058.0,
       "Vac Group Risk: Location 2 Cum":1017.0,
-      "Vac Population":335049.0,
-      "Vac Given Cum":27746.0
+      "Vac Population":335049.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -790,8 +758,7 @@
       "Vac Group Risk: Disease 2 Cum":1257.0,
       "Vac Group Risk: Location 1 Cum":24914.0,
       "Vac Group Risk: Location 2 Cum":12781.0,
-      "Vac Population":587421.0,
-      "Vac Given Cum":109445.0
+      "Vac Population":587421.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -814,8 +781,7 @@
       "Vac Group Risk: Disease 2 Cum":8598.0,
       "Vac Group Risk: Location 1 Cum":51201.0,
       "Vac Group Risk: Location 2 Cum":20666.0,
-      "Vac Population":1729353.0,
-      "Vac Given Cum":305511.0
+      "Vac Population":1729353.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -838,8 +804,7 @@
       "Vac Group Risk: Disease 2 Cum":1973.0,
       "Vac Group Risk: Location 1 Cum":41343.0,
       "Vac Group Risk: Location 2 Cum":14287.0,
-      "Vac Population":1172648.0,
-      "Vac Given Cum":162750.0
+      "Vac Population":1172648.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -862,8 +827,7 @@
       "Vac Group Risk: Disease 2 Cum":8620.0,
       "Vac Group Risk: Location 1 Cum":182154.0,
       "Vac Group Risk: Location 2 Cum":50519.0,
-      "Vac Population":2047622.0,
-      "Vac Given Cum":448439.0
+      "Vac Population":2047622.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -886,8 +850,7 @@
       "Vac Group Risk: Disease 2 Cum":364.0,
       "Vac Group Risk: Location 1 Cum":11631.0,
       "Vac Group Risk: Location 2 Cum":3229.0,
-      "Vac Population":978299.0,
-      "Vac Given Cum":61299.0
+      "Vac Population":978299.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -910,8 +873,7 @@
       "Vac Group Risk: Disease 2 Cum":392.0,
       "Vac Group Risk: Location 1 Cum":9634.0,
       "Vac Group Risk: Location 2 Cum":2200.0,
-      "Vac Population":725873.0,
-      "Vac Given Cum":50526.0
+      "Vac Population":725873.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -934,8 +896,7 @@
       "Vac Group Risk: Disease 2 Cum":1101.0,
       "Vac Group Risk: Location 1 Cum":16349.0,
       "Vac Group Risk: Location 2 Cum":3371.0,
-      "Vac Population":848454.0,
-      "Vac Given Cum":62686.0
+      "Vac Population":848454.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -958,8 +919,7 @@
       "Vac Group Risk: Disease 2 Cum":917.0,
       "Vac Group Risk: Location 1 Cum":33302.0,
       "Vac Group Risk: Location 2 Cum":4719.0,
-      "Vac Population":1837005.0,
-      "Vac Given Cum":150334.0
+      "Vac Population":1837005.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -982,8 +942,7 @@
       "Vac Group Risk: Disease 2 Cum":342.0,
       "Vac Group Risk: Location 1 Cum":4734.0,
       "Vac Group Risk: Location 2 Cum":1720.0,
-      "Vac Population":731573.0,
-      "Vac Given Cum":54381.0
+      "Vac Population":731573.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1006,8 +965,7 @@
       "Vac Group Risk: Disease 2 Cum":176.0,
       "Vac Group Risk: Location 1 Cum":3464.0,
       "Vac Group Risk: Location 2 Cum":554.0,
-      "Vac Population":417225.0,
-      "Vac Given Cum":32564.0
+      "Vac Population":417225.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1030,8 +988,7 @@
       "Vac Group Risk: Disease 2 Cum":534.0,
       "Vac Group Risk: Location 1 Cum":16633.0,
       "Vac Group Risk: Location 2 Cum":2226.0,
-      "Vac Population":640283.0,
-      "Vac Given Cum":57180.0
+      "Vac Population":640283.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1054,8 +1011,7 @@
       "Vac Group Risk: Disease 2 Cum":1179.0,
       "Vac Group Risk: Location 1 Cum":15344.0,
       "Vac Group Risk: Location 2 Cum":6352.0,
-      "Vac Population":760478.0,
-      "Vac Given Cum":66386.0
+      "Vac Population":760478.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1078,8 +1034,7 @@
       "Vac Group Risk: Disease 2 Cum":177.0,
       "Vac Group Risk: Location 1 Cum":4370.0,
       "Vac Group Risk: Location 2 Cum":827.0,
-      "Vac Population":245764.0,
-      "Vac Given Cum":23917.0
+      "Vac Population":245764.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1102,8 +1057,7 @@
       "Vac Group Risk: Disease 2 Cum":495.0,
       "Vac Group Risk: Location 1 Cum":19665.0,
       "Vac Group Risk: Location 2 Cum":3594.0,
-      "Vac Population":957365.0,
-      "Vac Given Cum":75155.0
+      "Vac Population":957365.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1126,8 +1080,7 @@
       "Vac Group Risk: Disease 2 Cum":791.0,
       "Vac Group Risk: Location 1 Cum":5748.0,
       "Vac Group Risk: Location 2 Cum":2744.0,
-      "Vac Population":271739.0,
-      "Vac Given Cum":47302.0
+      "Vac Population":271739.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1150,8 +1103,7 @@
       "Vac Group Risk: Disease 2 Cum":3103.0,
       "Vac Group Risk: Location 1 Cum":51727.0,
       "Vac Group Risk: Location 2 Cum":9978.0,
-      "Vac Population":1125350.0,
-      "Vac Given Cum":161686.0
+      "Vac Population":1125350.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1174,8 +1126,7 @@
       "Vac Group Risk: Disease 2 Cum":628.0,
       "Vac Group Risk: Location 1 Cum":11810.0,
       "Vac Group Risk: Location 2 Cum":2136.0,
-      "Vac Population":724861.0,
-      "Vac Given Cum":61116.0
+      "Vac Population":724861.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1198,8 +1149,7 @@
       "Vac Group Risk: Disease 2 Cum":1156.0,
       "Vac Group Risk: Location 1 Cum":14688.0,
       "Vac Group Risk: Location 2 Cum":4847.0,
-      "Vac Population":1059708.0,
-      "Vac Given Cum":80512.0
+      "Vac Population":1059708.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1222,8 +1172,7 @@
       "Vac Group Risk: Disease 2 Cum":335.0,
       "Vac Group Risk: Location 1 Cum":10705.0,
       "Vac Group Risk: Location 2 Cum":1685.0,
-      "Vac Population":477862.0,
-      "Vac Given Cum":42219.0
+      "Vac Population":477862.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1246,8 +1195,7 @@
       "Vac Group Risk: Disease 2 Cum":466.0,
       "Vac Group Risk: Location 1 Cum":13389.0,
       "Vac Group Risk: Location 2 Cum":2489.0,
-      "Vac Population":523861.0,
-      "Vac Given Cum":36642.0
+      "Vac Population":523861.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1270,8 +1218,7 @@
       "Vac Group Risk: Disease 2 Cum":511.0,
       "Vac Group Risk: Location 1 Cum":28816.0,
       "Vac Group Risk: Location 2 Cum":3088.0,
-      "Vac Population":519027.0,
-      "Vac Given Cum":95646.0
+      "Vac Population":519027.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1294,8 +1241,7 @@
       "Vac Group Risk: Disease 2 Cum":10677.0,
       "Vac Group Risk: Location 1 Cum":280055.0,
       "Vac Group Risk: Location 2 Cum":106073.0,
-      "Vac Population":1609192.0,
-      "Vac Given Cum":601551.0
+      "Vac Population":1609192.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1318,8 +1264,7 @@
       "Vac Group Risk: Disease 2 Cum":8202.0,
       "Vac Group Risk: Location 1 Cum":153780.0,
       "Vac Group Risk: Location 2 Cum":42461.0,
-      "Vac Population":1533781.0,
-      "Vac Given Cum":360818.0
+      "Vac Population":1533781.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1342,8 +1287,7 @@
       "Vac Group Risk: Disease 2 Cum":477.0,
       "Vac Group Risk: Location 1 Cum":9624.0,
       "Vac Group Risk: Location 2 Cum":1330.0,
-      "Vac Population":468292.0,
-      "Vac Given Cum":46752.0
+      "Vac Population":468292.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1366,8 +1310,7 @@
       "Vac Group Risk: Disease 2 Cum":681.0,
       "Vac Group Risk: Location 1 Cum":17424.0,
       "Vac Group Risk: Location 2 Cum":4809.0,
-      "Vac Population":992791.0,
-      "Vac Given Cum":89579.0
+      "Vac Population":992791.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1390,8 +1333,7 @@
       "Vac Group Risk: Disease 2 Cum":1508.0,
       "Vac Group Risk: Location 1 Cum":37432.0,
       "Vac Group Risk: Location 2 Cum":8603.0,
-      "Vac Population":502827.0,
-      "Vac Given Cum":119494.0
+      "Vac Population":502827.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1414,8 +1356,7 @@
       "Vac Group Risk: Disease 2 Cum":665.0,
       "Vac Group Risk: Location 1 Cum":2716.0,
       "Vac Group Risk: Location 2 Cum":795.0,
-      "Vac Population":536012.0,
-      "Vac Given Cum":44835.0
+      "Vac Population":536012.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1438,8 +1379,7 @@
       "Vac Group Risk: Disease 2 Cum":1651.0,
       "Vac Group Risk: Location 1 Cum":16515.0,
       "Vac Group Risk: Location 2 Cum":2331.0,
-      "Vac Population":1050000.0,
-      "Vac Given Cum":97740.0
+      "Vac Population":1050000.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1462,8 +1402,7 @@
       "Vac Group Risk: Disease 2 Cum":2783.0,
       "Vac Group Risk: Location 1 Cum":30815.0,
       "Vac Group Risk: Location 2 Cum":7650.0,
-      "Vac Population":921047.0,
-      "Vac Given Cum":99877.0
+      "Vac Population":921047.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1486,8 +1425,7 @@
       "Vac Group Risk: Disease 2 Cum":391.0,
       "Vac Group Risk: Location 1 Cum":4507.0,
       "Vac Group Risk: Location 2 Cum":1008.0,
-      "Vac Population":441310.0,
-      "Vac Given Cum":36197.0
+      "Vac Population":441310.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1510,8 +1448,7 @@
       "Vac Group Risk: Disease 2 Cum":1423.0,
       "Vac Group Risk: Location 1 Cum":21964.0,
       "Vac Group Risk: Location 2 Cum":4855.0,
-      "Vac Population":579651.0,
-      "Vac Given Cum":73731.0
+      "Vac Population":579651.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1534,8 +1471,7 @@
       "Vac Group Risk: Disease 2 Cum":1440.0,
       "Vac Group Risk: Location 1 Cum":26046.0,
       "Vac Group Risk: Location 2 Cum":7676.0,
-      "Vac Population":578094.0,
-      "Vac Given Cum":108876.0
+      "Vac Population":578094.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1558,8 +1494,7 @@
       "Vac Group Risk: Disease 2 Cum":1548.0,
       "Vac Group Risk: Location 1 Cum":18118.0,
       "Vac Group Risk: Location 2 Cum":5501.0,
-      "Vac Population":918674.0,
-      "Vac Given Cum":87542.0
+      "Vac Population":918674.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1582,8 +1517,7 @@
       "Vac Group Risk: Disease 2 Cum":2205.0,
       "Vac Group Risk: Location 1 Cum":47691.0,
       "Vac Group Risk: Location 2 Cum":18388.0,
-      "Vac Population":966932.0,
-      "Vac Given Cum":154586.0
+      "Vac Population":966932.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1606,8 +1540,7 @@
       "Vac Group Risk: Disease 2 Cum":1094.0,
       "Vac Group Risk: Location 1 Cum":25144.0,
       "Vac Group Risk: Location 2 Cum":6123.0,
-      "Vac Population":1307158.0,
-      "Vac Given Cum":95142.0
+      "Vac Population":1307158.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1630,8 +1563,7 @@
       "Vac Group Risk: Disease 2 Cum":818.0,
       "Vac Group Risk: Location 1 Cum":34410.0,
       "Vac Group Risk: Location 2 Cum":8974.0,
-      "Vac Population":586286.0,
-      "Vac Given Cum":90902.0
+      "Vac Population":586286.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1654,8 +1586,7 @@
       "Vac Group Risk: Disease 2 Cum":973.0,
       "Vac Group Risk: Location 1 Cum":25541.0,
       "Vac Group Risk: Location 2 Cum":6148.0,
-      "Vac Population":1145848.0,
-      "Vac Given Cum":94612.0
+      "Vac Population":1145848.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1678,8 +1609,7 @@
       "Vac Group Risk: Disease 2 Cum":6901.0,
       "Vac Group Risk: Location 1 Cum":337076.0,
       "Vac Group Risk: Location 2 Cum":51337.0,
-      "Vac Population":1931727.0,
-      "Vac Given Cum":624991.0
+      "Vac Population":1931727.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1702,8 +1632,7 @@
       "Vac Group Risk: Disease 2 Cum":13443.0,
       "Vac Group Risk: Location 1 Cum":168115.0,
       "Vac Group Risk: Location 2 Cum":83287.0,
-      "Vac Population":953167.0,
-      "Vac Given Cum":365778.0
+      "Vac Population":953167.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1726,8 +1655,7 @@
       "Vac Group Risk: Disease 2 Cum":1884.0,
       "Vac Group Risk: Location 1 Cum":3257.0,
       "Vac Group Risk: Location 2 Cum":575.0,
-      "Vac Population":204018.0,
-      "Vac Given Cum":33305.0
+      "Vac Population":204018.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1750,8 +1678,7 @@
       "Vac Group Risk: Disease 2 Cum":2262.0,
       "Vac Group Risk: Location 1 Cum":32149.0,
       "Vac Group Risk: Location 2 Cum":6508.0,
-      "Vac Population":720145.0,
-      "Vac Given Cum":99601.0
+      "Vac Population":720145.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1774,8 +1701,7 @@
       "Vac Group Risk: Disease 2 Cum":821.0,
       "Vac Group Risk: Location 1 Cum":6103.0,
       "Vac Group Risk: Location 2 Cum":1038.0,
-      "Vac Population":214665.0,
-      "Vac Given Cum":34037.0
+      "Vac Population":214665.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1798,8 +1724,7 @@
       "Vac Group Risk: Disease 2 Cum":920.0,
       "Vac Group Risk: Location 1 Cum":9567.0,
       "Vac Group Risk: Location 2 Cum":2065.0,
-      "Vac Population":596902.0,
-      "Vac Given Cum":53073.0
+      "Vac Population":596902.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1822,8 +1747,7 @@
       "Vac Group Risk: Disease 2 Cum":1556.0,
       "Vac Group Risk: Location 1 Cum":10919.0,
       "Vac Group Risk: Location 2 Cum":3135.0,
-      "Vac Population":850709.0,
-      "Vac Given Cum":75722.0
+      "Vac Population":850709.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1846,8 +1770,7 @@
       "Vac Group Risk: Disease 2 Cum":4068.0,
       "Vac Group Risk: Location 1 Cum":52506.0,
       "Vac Group Risk: Location 2 Cum":35228.0,
-      "Vac Population":589901.0,
-      "Vac Given Cum":161699.0
+      "Vac Population":589901.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1870,8 +1793,7 @@
       "Vac Group Risk: Disease 2 Cum":77.0,
       "Vac Group Risk: Location 1 Cum":11102.0,
       "Vac Group Risk: Location 2 Cum":563.0,
-      "Vac Population":249458.0,
-      "Vac Given Cum":36612.0
+      "Vac Population":249458.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1894,8 +1816,7 @@
       "Vac Group Risk: Disease 2 Cum":2616.0,
       "Vac Group Risk: Location 1 Cum":21052.0,
       "Vac Group Risk: Location 2 Cum":4584.0,
-      "Vac Population":1565740.0,
-      "Vac Given Cum":139518.0
+      "Vac Population":1565740.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1918,8 +1839,7 @@
       "Vac Group Risk: Disease 2 Cum":514.0,
       "Vac Group Risk: Location 1 Cum":6404.0,
       "Vac Group Risk: Location 2 Cum":2051.0,
-      "Vac Population":334270.0,
-      "Vac Given Cum":40175.0
+      "Vac Population":334270.0
     },
     {
       "Date":"2021-07-20T00:00:00.000Z",
@@ -1942,8 +1862,7 @@
       "Vac Group Risk: Disease 2 Cum":247.0,
       "Vac Group Risk: Location 1 Cum":6094.0,
       "Vac Group Risk: Location 2 Cum":1292.0,
-      "Vac Population":455259.0,
-      "Vac Given Cum":41191.0
+      "Vac Population":455259.0
     }
   ]
 }
