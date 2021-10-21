@@ -19,6 +19,7 @@ from requests.adapters import HTTPAdapter, Retry
 from tika import parser, config
 from webdav3.client import Client
 from webdav3.exceptions import NoConnection, ResponseErrorCode
+import pythainlp
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -135,11 +136,16 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, return_until=False, require_until=False, dash_as_zero=False):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, return_until=False, require_until=False, dash_as_zero=False, thainorm=False, asserted=False):
     """
     returns the numbers that appear immediately before or after the string(s) in 'matches',
     optionally up through 'until', that are found in the parsed PDF string 'content'
     """
+    if thainorm:
+        content = pythainlp.util.remove_tonemark(pythainlp.util.normalize(content))
+        until = pythainlp.util.remove_tonemark(pythainlp.util.normalize(until))
+        matches = [pythainlp.util.remove_tonemark(pythainlp.util.normalize(match)) for match in matches]
+
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -176,6 +182,8 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
     if debug and matches:
         logger.info("Couldn't find '{}'", match)
         logger.info(content)
+    if asserted:
+        assert False, f"None of {matches} in: {content}"
     if return_rest or return_until:
         return [], content
     else:
@@ -183,9 +191,9 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
 
 
 def get_next_number(content, *matches, default=None, remove=False, before=False, until=None, return_rest=True,
-                    require_until=False, dash_as_zero=False):
+                    require_until=False, dash_as_zero=False, thainorm=False, asserted=False):
     num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until,
-                                 require_until=require_until, dash_as_zero=dash_as_zero)
+                                 require_until=require_until, dash_as_zero=dash_as_zero, thainorm=thainorm, asserted=asserted)
     num = num[0] if num else default
     if return_rest:
         return num, rest
