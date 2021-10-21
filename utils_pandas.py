@@ -96,7 +96,7 @@ def normalise_to_total(df, cols, total_col):
     return df
 
 
-def sensible_precission(num: float) -> str:
+def sensible_precision(num: float) -> str:
     """Convert a number to a string with sensible precission (3 digits maximum)."""
     sensible_number = ''
     if not np.isnan(num):
@@ -117,14 +117,14 @@ def human_format(num: float, pos: int) -> str:
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
-    sensible_number = sensible_precission(num)
+    sensible_number = sensible_precision(num)
     suffix = ['', 'k', 'M', 'G', 'T', 'P'][magnitude]
     return f'{sensible_number}{suffix}'
 
 
 def perc_format(num: float, pos: int) -> str:
     """Convert a number to a more human readablepercent string."""
-    sensible_number = sensible_precission(num)
+    sensible_number = sensible_precision(num)
     return f'{sensible_number}%'
 
 
