@@ -2338,15 +2338,15 @@ def vaccination_daily(daily, date, file, page):
             if num_len >= 8:
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
-                medical = get_next_number(rest, r"างการแพท", until="ราย", return_rest=False)
-                frontline = get_next_number(rest, r"านหน.า", until="ราย", return_rest=False)
-                volunteer = get_next_number(rest, r"อาสาสมัคร", until="ราย", return_rest=False)
-                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)", until="ราย", return_rest=False)
-                d7, chronic = get_next_numbers(rest, r"โรคเ", until="ราย", return_rest=False)
+                medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)", until="(?:ราย|รำย)", return_rest=False, asserted=True)
+                d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
                 assert d7 == 7
-                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="ราย", return_rest=False)
-                area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", until="ราย", return_rest=False)
-                student = get_next_numbers(rest, r"นักเรียน", until="ราย", return_rest=False)
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=False)
                 if len(student) == 3:
                     d12, d17, student = student
                     assert (d12, d17) == (12, 17)
