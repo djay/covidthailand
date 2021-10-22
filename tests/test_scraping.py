@@ -12,6 +12,7 @@ from covid_data import briefing_case_types, briefing_deaths_provinces, briefing_
 import pandas as pd
 import pytest
 import dateutil
+import functools
 
 
 def dl_files(target_dir, dl_gen, check=False):
@@ -57,6 +58,12 @@ def dl_files(target_dir, dl_gen, check=False):
         return dl_files(target_dir, dl_gen, check=True)
     else:
         return tests
+
+
+def pair(files):
+    "return paired up combinations and also wrap in a cache so they don't get done generated twice"
+    all_files = [get_file for _, _, get_file in files()]
+    return zip(all_files[:-1], all_files[1:])
 
 
 def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
@@ -110,15 +117,48 @@ def test_vac_reports_assert(link, content, get_file):
         df = vaccination_daily(df, None, file, page)
 
 
+@functools.lru_cache
+def parse_vac_tables(*files):
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    for get_file in files:
+        assert get_file is not None
+        file = get_file()  # Actually download
+        assert file is not None
+        for page in parse_file(file):
+            df = vaccination_tables(df, None, page, file)
+    return df
+
+
+@pytest.mark.parametrize("get_file1, get_file2", pair(vaccination_reports_files2))
+def test_vac_tables_inc(get_file1, get_file2):
+    
+    if (df1 := parse_vac_tables(get_file1)).empty:
+        return
+    if (df2 := parse_vac_tables(get_file2)).empty:
+        return
+    # TODO: some files have no data in. So really need to get a range and compare to the last one with data?
+    df = df1.combine_first(df2).dropna(axis=1) # don't compare empty cols
+
+    if len(df.index) < 154:
+        # for some reason two files gave data for the same day?
+        # TODO: should be an error somewhere else?
+        return
+
+    # Ensure every province either goes up or stays the same for cum values
+    #mono = df[[c for c in df.columns if " Cum" in c]].groupby("Province").apply(lambda x: x.apply(lambda y: y.is_monotonic))
+    #assert mono.all().all()
+
+
+    # Ensure we didn't jump too much but only when we have min num of vac given
+    change = df[[c for c in df.columns if " Cum" in c]].clip(1000).groupby("Province").pct_change()
+    dates = [str(d.date()) for d in df.reset_index("Province").index.unique()]
+    assert (change.max() < 10).all(), f"jump in {get_file1()} {dates} in {change.max()}"
+
+
+
 @pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
 def test_vac_tables(fname, testdf, get_file):
-    assert get_file is not None
-    file = get_file()  # Actually download
-    assert file is not None
-    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
-    for page in parse_file(file):
-        df = vaccination_tables(df, None, page, file)
-        df = df.dropna(axis=1)  # don't compare empty cols
+    df = parse_vac_tables(get_file)
     # write_scrape_data_back_to_test(df, "vaccination_tables", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
