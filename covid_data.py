@@ -2610,7 +2610,8 @@ def vaccination_reports_files2(check=True):
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
 
     links = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
-    links = sorted(links, reverse=True)
+    # links = sorted(links, reverse=True)
+    links = reversed(list(links))
     count = 0
     for link in links:
 
