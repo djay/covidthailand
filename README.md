@@ -22,6 +22,19 @@ Links to all data sources are including in [Downloads](downloads)
 
 # Cases <a name="cases">
 
+## Daily Averages as % of Peak
+
+![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png)
+
+- For predictions of total infections/deaths see [IHME Thailand](https://covid19.healthdata.org/thailand), 
+  [IHME Thailand Report](http://www.healthdata.org/covid/updates),  
+  [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/),  
+  [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/),
+  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA),
+  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) 
+- Sources: [CCSA Daily Briefing](downloads#dl-briefings),
+  [MOPH daily situation report](downloads#dl-situation-reports)
+ 
 ## Cases by Where Tested
 
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
@@ -44,29 +57,6 @@ Links to all data sources are including in [Downloads](downloads)
 - [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Provinces with Cases Trending Up
-
-To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/)
-
-![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_30d.png)
-
-![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
-
-![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png)
-
-![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
-
-![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_30d.png)
-
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
-
-- see also
-   [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png),
-   [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png),
-   [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png),
-   [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png),
-   [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png) and
-   [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
 
 ## Cases by Health District
 
@@ -78,6 +68,29 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - You can also see [Cases by District broken down by walk-in vs proactive](downloads#dl-situation-reports) but there is no longer a data source to keep this updated.
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings)
 
+## Provinces with Cases Trending Up
+
+To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/)
+
+![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
+
+![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_30d.png)
+
+![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_30d.png)
+
+![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
+
+![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png)
+
+- Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
+- see also
+   [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png),
+   [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png),
+   [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png),
+   [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png),
+   [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png) and
+   [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
 ## Cases by Age
 
 ![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
@@ -85,32 +98,18 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Unofficial Estimated Infections based on Deaths/IFR
+# Active Cases/Hospitalisations <a name="active-cases">
 
-![Estimated Infections Thailand](https://github.com/djay/covidthailand/wiki/cases_infections_estimate_2.png)
-
-- Due to the Asymptomatic nature of Covid all countries have more infections than can be confirmed via testing.
-- Research has been done to work out how many real infections there are in many countries to work out an [estimated global Infection Fatality Rate of the virus](http://epimonitor.net/Covid-IFR-Analysis.htm) for each age group. A simple estimate based on reported deaths using a per province IFR back-dated 11 days (median reported time till death for Thailand) gives an estimate of infections, however there are [many assumptions](https://github.com/djay/covidthailand/wiki#are-there-a-lot-more-infections-than-confirmed-cases), that if wrong, could make this estimate higher e.g. uncounted covid deaths.
-- This doesn't mean there is not enough testing being done in Thailand. [Positive rate](#positive-rate) is another indication of testing effectiveness.
-- More detailed models with predictions that take into account factors like [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) to predict infections based on adherence to social distancing measures.
-  - [ICL Covid Model](https://mrc-ide.github.io/global-lmic-reports/THA/)  
-([OWID ICL](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-icl-model?country=~THA)),
-  - [IHME Covid Model](https://covid19.healthdata.org/thailand)  
-([OWID IHME](https://ourworldindata.org/grapher/daily-new-estimated-covid-19-infections-ihme-model?country=~THA))
-  - [LSHTM Model](https://epiforecasts.io/covid/posts/national/thailand/).
-  - [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) lets you compare these infection estimates.
-- [IHME Policy Briefing PDFs](http://www.healthdata.org/covid/updates) provide a lot of detail on the current situation in a country and what factors are that drive their predictions.
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings), [Covid IFR Analysis](http://epimonitor.net/Covid-IFR-Analysis.htm), [Thailand population by Age](http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx)
-
-# Active Cases Since April 1st <a name="active-cases">
-
-![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/cases_cumulative_3.png)
+![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/active_hospital_3.png)
 
 ![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
 
-![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
+![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
 ![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
+
+![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
+
 
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  

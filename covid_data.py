@@ -2300,12 +2300,12 @@ def vaccination_daily(daily, date, file, page):
                                      r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
                                      r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
                                      r"ซีนเข็มที่ 1 จ",
-                                     until=r"(?:2 เข็ม)")
+                                     until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
                                      r"ได้รับวัคซีน 2 เข็ม",
                                      r"ไดรับวัคซีน 2 เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))")
-    d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป")
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
+    d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
             ld1, ld2 = len(clean_num(d1_num)), len(clean_num(d2_num))
@@ -2336,26 +2336,36 @@ def vaccination_daily(daily, date, file, page):
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
             if num_len >= 8:
-                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *student = numbers
+                # They changed around the order too much. have to switch to picking per category
+                total, *_ = numbers
+                medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)", until="(?:ราย|รำย)", return_rest=False, asserted=True)
+                d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                assert d7 == 7
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=False)
+                if len(student) == 3:
+                    d12, d17, student = student
+                    assert (d12, d17) == (12, 17)
+                elif len(student) == 0:
+                    student = np.nan
+                else:
+                    # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
+                    raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
-                # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
-                if (student_len := len(student)):
-                    if student_len == 1:
-                        student = student[0]
-                    else:
-                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
-                else:
-                    student = None
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
                 pregnant = volunteer = medical = student = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
-                assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
+                assert not any_in([None, np.nan], medical or med_all, frontline, over60, chronic, area)
                 total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
-                assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
+                assert 0.945 <= (sum(i for i in total_row if i and not pd.isna(i)) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:

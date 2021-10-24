@@ -432,6 +432,24 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction\nPUI: Person Under Investigation',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
+    # kind of dodgy since ATK is subset of positives but we don't know total ATK
+    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'ATK']
+    legend = [
+        "Cases (PCR)", 
+        "Proactive Cases (PCR)", 
+        "PCR Tests", 
+        "Probable Case (Registered for home isolation from ATK)"
+    ]
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    plot_area(df=peaks,
+              title='Tests as % of Peak - Thailand',
+              png_prefix='tests_peak', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
     ###############
     # Positive Rate
     ###############
@@ -548,7 +566,7 @@ def save_plots(df: pd.DataFrame) -> None:
                'Walkin Confirmed Cases',
                'Positive Test Results (All)',
                'Positive Test Results (Public)',
-               'Antigen Test Kit Positives (ATK/Rapid)']
+               "Probable Case (Registered for home isolation from ATK)"]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               legends=legends,
@@ -868,7 +886,7 @@ def save_plots(df: pd.DataFrame) -> None:
               title='Active Covid Cases in Serious Condition - Thailand',
               legends=legends,
               png_prefix='active_severe', cols_subset=cols,
-              actuals=True,
+              actuals=False,
               ma_days=7,
               kind='line', stacked=True, percent_fig=False,
               cmap='tab10', 
@@ -903,6 +921,52 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    # TODO: I think we can replace the recovered since april with plot showing just hospitalisations?
+    df["Hospitalized Field Unknown"] = df["Hospitalized Field"].sub(df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0)
+
+    cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
+    df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
+    cols = ['Hospitalized Respirator', 'Hospitalized Severe',
+            "Hospitalized Mild", "Hospitalized Field Unknown",
+            "Hospitalized Field Hospitel",
+            "Hospitalized Field HICI", ]
+    legend = [
+        'Serious On Ventilator', 'Serios without Ventilator',
+        'Mild In Hospital', 'Mild In Field Hospital/Other',
+        "Mild in Hotel Field Hospital (Hospitel)",
+        "Mild in Home/Community Isolation (HICI)"
+    ]
+    plot_area(df=df,
+              title='Acive Cases by Condition - Thailand',
+              png_prefix='active_hospital', cols_subset=cols, legends=legend,
+              # unknown_name='Hospitalized Other', unknown_total='Hospitalized', unknown_percent=True,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
+              cmap='tab10',
+              footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
+    df["Hospitalized All Mild"] = df["Hospitalized Mild"] + df["Hospitalized Field"]
+    cols = [
+        "Hospitalized Respirator",
+        "Hospitalized Severe",
+        "Hospitalized All Mild",
+    ]
+    legends = [
+        "Serious Condition with Ventilator"
+        "Serious Condition without Ventilator",
+        "Mild Condition",
+    ]
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    plot_area(df=peaks,
+              title='Active Cases by Condition as % of Peak - Thailand',
+              png_prefix='active_peak', cols_subset=cols,
+              legends=legends,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left='Data Source: MOPH Covid-19 Dashboard')
 
     ####################
     # Vaccines
@@ -1354,8 +1418,8 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df,
               title='Covid Deaths - Thailand',
               legends=['Deaths', 'Infected from Family', 'No Underlying Diseases'],
-              png_prefix='deaths_reason', cols_subset=cols, 
-              actuals=True,
+              png_prefix='deaths_reason', cols_subset=cols,
+              actuals=['Deaths'],
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
@@ -1457,6 +1521,31 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    # Do a % of peak chart for death vs cases
+    cols = ['Cases', 'Deaths']
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    plot_area(df=peaks,
+              title='Daily Averages as % of Peak - Thailand',
+              png_prefix='cases_peak', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
+    # kind of dodgy since ATK is subset of positives but we don't know total ATK
+    cols = ['Cases', 'Tests XLS', 'ATK']
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    legend = ["Cases (PCR Tested Only)", "PCR Tests", "Home Isolation from ATK Positive"]
+    plot_area(df=peaks,
+              title='Tests as % of Peak - Thailand',
+              png_prefix='tests_peak', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     # Excess Deaths
 
