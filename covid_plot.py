@@ -11,11 +11,11 @@ from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, import_csv, increasing, normalise_to_total, \
-    rearrange, set_time_series_labels_2, topprov
+from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, \
+    import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
+    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2
 
 theme = 'Black'
 github_blue_text = "#59A6FE"
@@ -339,6 +339,7 @@ def plot_area(df: pd.DataFrame,
         a0_secax_y.spines[:].set_visible(False)
         a0_secax_y.tick_params(direction='out', length=6, width=0)
         if y_formatter is not None:
+            if y_formatter is thaipop: y_formatter = thaipop2
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=0)
 

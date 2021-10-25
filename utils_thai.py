@@ -9,7 +9,7 @@ import pythainlp.tokenize
 import numpy as np
 import pandas as pd
 
-from utils_pandas import fuzzy_join, rearrange
+from utils_pandas import fuzzy_join, rearrange, sensible_precision
 from utils_scraping import remove_prefix, remove_suffix, web_files, logger
 
 
@@ -212,15 +212,15 @@ def parse_gender(x):
 
 
 def thaipop(num: float, pos: int) -> str:
-    pp = round(num / 69630000 * 100, 1)
-    num = round(num / 1000000, 1)
-    return '0%' if num > -0.1 and num < 0.1 else f'{pp:0.1f}%\n{num:.1f}M'.replace(".0", "")
+    pp = sensible_precision(num / 69630000 * 100)
+    num = sensible_precision(num / 1000000)
+    return '0%' if num == '0' else f'{pp}%\n{num}M'
 
 
 def thaipop2(num: float, pos: int) -> str:
-    pp = round(num / 69630000 / 2 * 100, 1)
-    num = round(num / 1000000, 1)
-    return '0%' if num > -0.1 and num < 0.1 else f'{pp:.1f}%\n{num:.1f}M'.replace(".0", "")
+    pp = sensible_precision(num / 69630000 / 2 * 100)
+    num = sensible_precision(num / 1000000)
+    return '0%' if num == '0' else f'{pp}% {num}M'
 
 
 @functools.lru_cache(maxsize=100, typed=False)
