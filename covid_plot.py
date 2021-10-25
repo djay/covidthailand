@@ -11,18 +11,18 @@ from pandas.tseries.offsets import MonthEnd
 from dateutil.relativedelta import relativedelta
 
 from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, import_csv, increasing, normalise_to_total, \
-    rearrange, set_time_series_labels_2, topprov
+from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, \
+    import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop
+    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2
 
 theme = 'Black'
-github_blue_text = "#59A6FE"
-github_light_text = "#F0F7FD"
-github_dark_text = "#C9D0D8"
-github_light_back = "#161A23"
-github_dark_back = "#0C1116"
+theme_label_text = '#F1991F'
+theme_light_text = '#E9E8E9'
+theme_dark_text = '#424242'
+theme_light_back = '#202020'
+theme_dark_back = '#0C1111'
 
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
@@ -37,6 +37,7 @@ def plot_area(df: pd.DataFrame,
               stacked=False,
               percent_fig: bool = False,
               show_last_values: bool = True,
+              limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
               unknown_percent=False,
@@ -62,6 +63,7 @@ def plot_area(df: pd.DataFrame,
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
     :param show_last_values: show the last actual values on the right axis
+    :param limit_to_zero: limit the bottom of the y-axis to 0
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals
     :param unknown_percent: to include unknowns in a percentage fig if enabled
@@ -94,24 +96,24 @@ def plot_area(df: pd.DataFrame,
 
     if theme == 'Black':
         plt.rcParams.update({
-            "text.color": github_dark_text,
-            "legend.facecolor": github_light_back,
-            "legend.edgecolor": github_blue_text,
+            "text.color": theme_light_text,
+            "legend.facecolor": theme_light_back,
+            "legend.edgecolor": theme_label_text,
             "legend.frameon": True,
             "legend.framealpha": 0.3,
             "legend.shadow": True,
-            "axes.grid": True,
-            "axes.facecolor": github_dark_back,
+            "axes.grid" : True, 
+            "axes.facecolor": theme_dark_back,
             "axes.linewidth": 0,
-            "grid.color": github_blue_text,
+            "grid.color": theme_label_text,
             "grid.alpha": 0.5,
-            "xtick.color": github_blue_text,
+            "xtick.color": theme_label_text,
             "xtick.minor.size": 0,
-            "ytick.color": github_blue_text,
+            "ytick.color": theme_label_text,
             "ytick.minor.size": 0,
         })
-        dim_color = 'darkblue'
-        invisible_color = github_dark_back
+        dim_color = '#784d00'
+        invisible_color = theme_dark_back
     else:
         dim_color = 'lightgrey'
         invisible_color = 'white'
@@ -296,10 +298,14 @@ def plot_area(df: pd.DataFrame,
         for line in leg.get_lines():
             line.set_linewidth(4.0)
 
+        a0.spines[:].set_visible(False)
         a0.xaxis.label.set_visible(False)
+        if limit_to_zero: a0.set_ylim(bottom=0)
 
         if percent_fig:
             a1.set_prop_cycle(None)
+            a1.spines[:].set_visible(False)
+            a1.set_ylim(bottom=0, top=100)
             a1.yaxis.set_major_formatter(FuncFormatter(perc_format))
             a1.tick_params(direction='out', length=6, width=0)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
@@ -333,6 +339,7 @@ def plot_area(df: pd.DataFrame,
         a0_secax_y.spines[:].set_visible(False)
         a0_secax_y.tick_params(direction='out', length=6, width=0)
         if y_formatter is not None:
+            if y_formatter is thaipop: y_formatter = thaipop2
             a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
         a0.tick_params(direction='out', length=6, width=0)
 
@@ -372,7 +379,7 @@ def plot_area(df: pd.DataFrame,
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
-        plt.savefig(path)
+        plt.savefig(path, facecolor=theme_light_back)
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -852,7 +859,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='cases_from_positives_area', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False,
+              kind='area', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -1597,7 +1604,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=["Deviation from Normal Deaths (Removing Covid Deaths)", "Deviation from Normal Deaths (Average 2015-19)"],
               cols_subset=['Deviation from expected Deaths', 'PScore'],
               ma_days=None, 
-              kind='line', stacked=False, percent_fig=False, 
+              kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               y_formatter=perc_format,
               footnote="Note: There is some variability in comparison years 2015-19 so normal is a not a certain value.",
@@ -1617,7 +1624,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None,
-              kind='bar', stacked=False, percent_fig=False, show_last_values=False,
+              kind='bar', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
               cmap='tab10',
               footnote='\n\n\n\nNote: Number of deaths from all causes compared to previous years.',
               footnote_left=f'\n\n\n\n{source}Data Source: MOPH Covid-19 Dashboard')
@@ -1780,7 +1787,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               png_prefix='deaths_expected_prov', cols_subset=cols,
               periods_to_plot=['all'],
               ma_days=None,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               footnote='Note: Average 2015-19 plus known Covid deaths.\n' + footnote5,
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
@@ -1792,7 +1799,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               png_prefix='deaths_excess_prov', cols_subset=cols,
               periods_to_plot=['all'],
               ma_days=None,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
@@ -1807,7 +1814,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               png_prefix='deaths_expected_area', cols_subset=cols,
               periods_to_plot=['all'],
               ma_days=None,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab20',
               footnote='Note: Average 2015-2019 plus known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
@@ -1821,7 +1828,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               png_prefix='deaths_pscore_age',
               cols_subset=list(by_age.columns),
               periods_to_plot=['all'],
-              kind='line', stacked=False,
+              kind='line', stacked=False, limit_to_zero=False,
               cmap='tab10',
               footnote='P-Test: A statistical method used to test one or more hypotheses within\n a population or a proportion within a population.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
