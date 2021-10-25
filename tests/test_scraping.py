@@ -144,16 +144,13 @@ def test_vac_tables_inc(get_file1, get_file2):
         # TODO: should be an error somewhere else?
         return
 
-    # Ensure every province either goes up or stays the same for cum values
-    #mono = df[[c for c in df.columns if " Cum" in c]].groupby("Province").apply(lambda x: x.apply(lambda y: y.is_monotonic))
-    #assert mono.all().all()
-
-
     # Ensure we didn't jump too much but only when we have min num of vac given
-    change = df[[c for c in df.columns if " Cum" in c]].clip(1000).groupby("Province").pct_change()
+    cols = [c for c in df.columns if " Cum" in c]
+    if not cols:
+        return
+    change = df[cols].clip(14000).groupby("Province").pct_change()
     dates = [str(d.date()) for d in df.reset_index("Province").index.unique()]
-    assert (change.max() < 10).all(), f"jump in {get_file1()} {dates} in {change.max()}"
-
+    assert (change.max() < 15).all(), f"jump in {get_file1()} {dates} in {change.max()}"
 
 
 @pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
