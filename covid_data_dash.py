@@ -27,7 +27,8 @@ def dash_daily():
     # remove crap from bad pivot
     df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
     # somehow we got some dodgy rows. should be no neg cases 2021
-    df = df.drop(df[df['Cases'] == 0.0].index)
+    if 'Cases' in df.columns:
+        df = df.drop(df[df['Cases'] == 0.0].index)
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
@@ -35,7 +36,7 @@ def dash_daily():
     allow_na = {
         "ATK": d("2021-07-31"),
         "Cases Area Prison": d("2021-05-12"),
-        "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=5)),
+        "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=14)),
         "Tests": today(),  # it's no longer there
         'Hospitalized Field HICI': d("2021-08-08"),
         'Hospitalized Field Hospitel': d("2021-08-08"),
@@ -221,7 +222,7 @@ def dash_by_province():
         df = df.drop(columns=['Postitive Rate Dash'])
 
     valid = {
-        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=8), 0.001),
+        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=14), 0.001),
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=5), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=5)),
