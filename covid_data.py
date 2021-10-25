@@ -274,6 +274,7 @@ def get_english_situation_files(check=False):
     dir = "inputs/situation_en"
     links = web_links(
         "https://ddc.moph.go.th/viralpneumonia/eng/situation.php",
+        "https://ddc.moph.go.th/viralpneumonia/eng/situation_more.php",
         ext=".pdf",
         dir=dir,
         check=True,
@@ -702,7 +703,7 @@ def get_cases_by_demographics_api():
     risks['Cluster บางแค'] = "Community"  # bangkhee
     risks['Cluster ตลาดพรพัฒน์'] = "Community"  # market
     risks['Cluster ระยอง'] = "Entertainment"  # Rayong
-    # work with forigners
+    # work with foreigners
     risks['อาชีพเสี่ยง เช่น ทำงานในสถานที่แออัด หรือทำงานใกล้ชิดสัมผัสชาวต่างชาติ เป็นต้น'] = "Work"
     risks['ศูนย์กักกัน ผู้ต้องกัก'] = "Prison"  # detention
     risks['คนไทยเดินทางกลับจากต่างประเทศ'] = "Imported"
@@ -986,7 +987,7 @@ def parse_unofficial_tweet(df, date, text, url):
 
 
 def parse_moph_tweet(df, date, text, url):
-    "https://twitter.com/thaimoph"
+    """https://twitter.com/thaimoph"""
     cases, _ = get_next_number(text, "รวม", "ติดเชื้อใหม่", until="ราย")
     prisons, _ = get_next_number(text, "ที่ต้องขัง", "ในเรือนจำ", until="ราย")
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
@@ -1376,7 +1377,7 @@ def briefing_province_cases(date, pages):
         text = str(soup)
         if "รวมท ัง้ประเทศ" in text:
             continue
-        if not re.search(r"ที่\s*จังหวัด", text):
+        if not re.search(r"(?:ที่|ที)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
             continue
         if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายใหม่)", text):
             continue
@@ -1388,7 +1389,11 @@ def briefing_province_cases(date, pages):
         else:
             title, parts = tables
         while parts and "รวม" in parts[0]:
+            # get rid of totals line at the top          
             totals, *parts = parts
+            # First line might be several
+            totals, *more_lines = totals.split("\n", 1)
+            parts = more_lines + parts
         parts = [c.strip() for c in NUM_OR_DASH.split("\n".join(parts)) if c.strip()]
         while True:
             if len(parts) < 9:
@@ -1412,7 +1417,13 @@ def briefing_province_cases(date, pages):
                 if i > 4:  # 2021-01-11 they use earlier cols for date ranges
                     break
                 olddate = date - datetime.timedelta(days=i)
-                rows[(olddate, prov)] = cases + rows.get((olddate, prov), 0)  # rare case where we need to merge
+                if (olddate, prov) not in rows:
+                    rows[(olddate, prov)] = cases
+                else:
+                    # TODO: apparently 2021-05-13 had to merge two lines but why?
+                    # assert (olddate, prov) not in rows, f"{prov} twice in prov table line {linenum}"
+                    pass  # if duplicate we will catch it below
+
                 # if False and olddate == date:
                 #     if cases > 0:
                 #         print(date, linenum, thai, PROVINCES["ProvinceEn"].loc[prov], cases)
@@ -1422,6 +1433,9 @@ def briefing_province_cases(date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
+    if date > d("2021-05-12") and date not in [d("2021-07-18")]:
+        # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
+        assert len(df.groupby("Province").count()) in [77, 78], f"Not enough provinces briefing {date}"
     return df
 
 
@@ -1581,7 +1595,7 @@ def briefing_deaths_summary(text, date, file):
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
     }
     risk = {
-        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False)
+        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False, dash_as_zero=True)
         for en_risk, th_risks in risks.items()
     }
     # TODO: Get all bullets and fuzzy match them to categories
@@ -1814,7 +1828,7 @@ def get_cases_by_prov_briefings():
         if today_total and prov_total:
             assert prov_total / today_total > 0.77, warning  # 2021-04-17 is very low but looks correct
         if today_total != prov_total:
-            logger.info("{} WARNING:", date.date(), warning)
+            logger.info("{} WARNING: {}", date.date(), warning)
         # if today_total / prov_total < 0.9 or today_total / prov_total > 1.1:
         #     raise Exception(f"briefing provs={prov_total}, cases={today_total}")
 
@@ -2272,26 +2286,32 @@ def vaccination_daily(daily, date, file, page):
 
     def clean_num(numbers):
         if len(numbers) > 8:
-            return [n for n in numbers if n not in (60, 17, 12, 7)]
+            return [n for n in numbers if n not in (60, 17, 12, 7, 3)]
         else:
             return [n for n in numbers if n not in (60, 7)]
 
     page = re.sub("ผัสผู้ป่วย 1,022", "", page)  # 2021-05-06
 
-    d1_num, rest1 = get_next_numbers(page,
+    # Daily totals at the bottom often make it harder to get the right numbers
+    # ส ำหรับรำยงำนจ ำนวนผู้ได้รับวัคซีนโควิด 19 เพิ่มขึ้นในวันที่ 17 ตุลำคม 2564 มีผู้ได้รับวัคซีนทั้งหมด
+    gtext, *_ = re.split("หรับรำยงำนจ", page)
+
+    d1_num, rest1 = get_next_numbers(gtext,
+                                     r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
                                      r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
                                      r"ซีนเข็มที่ 1 จ",
-                                     r"1\s*จํานวน",
-                                     r"1 จำนวน",
-                                     until=r"(?:2 เข็ม)")
-    d2_num, rest2 = get_next_numbers(page,
+                                     until=r"(?:2 เข็ม)", return_until=True, require_until=True)
+    d2_num, rest2 = get_next_numbers(gtext,
                                      r"ได้รับวัคซีน 2 เข็ม",
                                      r"ไดรับวัคซีน 2 เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|3 \(Booster dose\))")
-    d3_num, rest3 = get_next_numbers(page, r"3 \(Booster dose\)", until="ดังรูป")
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
+    d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
-            assert False
+            ld1, ld2 = len(clean_num(d1_num)), len(clean_num(d2_num))
+            error = f"ERROR number of first doses ({ld1}) does not equal number of second doses ({ld2}) in {file} for {date}", 
+            logger.error(error)
+            assert False, error
         else:
             logger.info("{} Vac Sum (Error groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
             return daily
@@ -2316,26 +2336,36 @@ def vaccination_daily(daily, date, file, page):
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
             if num_len >= 8:
-                total, medical, volunteer, frontline, over60, chronic, pregnant, area, *student = numbers
+                # They changed around the order too much. have to switch to picking per category
+                total, *_ = numbers
+                medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)", until="(?:ราย|รำย)", return_rest=False, asserted=True)
+                d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                assert d7 == 7
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=False)
+                if len(student) == 3:
+                    d12, d17, student = student
+                    assert (d12, d17) == (12, 17)
+                elif len(student) == 0:
+                    student = np.nan
+                else:
+                    # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
+                    raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
-                # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
-                if (student_len := len(student)):
-                    if student_len == 1:
-                        student = student[0]
-                    else:
-                        raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
-                else:
-                    student = None
             else:
                 total, med_all, frontline, over60, chronic, area = numbers
                 pregnant = volunteer = medical = student = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
-                assert not any_in([None], medical or med_all, frontline, over60, chronic, area)
+                assert not any_in([None, np.nan], medical or med_all, frontline, over60, chronic, area)
                 total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
-                assert 0.945 <= (sum(i for i in total_row if i) / total) <= 1.01
+                assert 0.945 <= (sum(i for i in total_row if i and not pd.isna(i)) / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
@@ -2478,7 +2508,7 @@ def vaccination_tables(df, date, page, file):
                 add(prov, [alloc, 0, 0, 0, alloc, 0], alloc2_doses)
             elif table == "new_given" and len(numbers) == 12:  # e.g. vaccinations/Daily report 2021-05-11.pdf
                 dose1, dose2, *groups = numbers
-                add(prov, [dose1, None, dose2, None] + groups, vaccols5x2)
+                add(prov, [dose1, np.nan, dose2, np.nan] + groups, vaccols5x2)
             elif table == "new_given" and len(numbers) == 21:  # from 2021-07-20
                 # Actually cumulative totals
                 pop, alloc, givens, groups = numbers[0], numbers[1:4], numbers[4:8], numbers[9:21]
@@ -2494,33 +2524,34 @@ def vaccination_tables(df, date, page, file):
                 if len(numbers) == 21:
                     # Givens is a single total only 2021-08-16
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:6], numbers[6:]
-                    givens = [None] * 6  # We don't use the total
+                    givens = [np.nan] * 6  # We don't use the total
                 elif len(numbers) == 22 and date < datetime.datetime(2021, 10, 5):
                     # Givens has sinopharm in it too. 2021-08-15
                     pop, alloc, givens, groups = numbers[0], numbers[1:6], numbers[6:7], numbers[7:]
-                    givens = [None] * 6  # We don't use the total
+                    givens = [np.nan] * 6  # We don't use the total
                 elif len(numbers) == 17:
                     # No allocations or givens 2021-08-10
                     pop, givens, groups = numbers[0], numbers[1:2], numbers[2:]
-                    givens = [None] * 6
-                    alloc = [None] * 4
+                    givens = [np.nan] * 6
+                    alloc = [np.nan] * 4
                 elif len(numbers) in [27, 33]:  # 2021-08-06, # 2021-08-05
                     pop, alloc, givens, groups = numbers[0], numbers[1:5], numbers[5:11], numbers[12:]
                 elif len(numbers) == 31:  # 2021-10-05
-                    pop, givens, groups = numbers[0], numbers[1:5], numbers[7:]
-                    alloc = [None] * 5
+                    pop, alloc, groups = numbers[0], numbers[1:6], numbers[7:]
+                    # TODO: put in manuf given per province?
+                    givens = [np.nan] * 6
                 else:
                     assert False
                 if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
-                    sp = None
+                    sp = np.nan
                 else:  # 2021-08-15
                     sv, az, sp, pf, total_alloc = alloc
-                assert total_alloc is None or sum([m for m in [sv, az, pf, sp] if m]) == total_alloc
+                assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp] if not pd.isna(m)]) == total_alloc
                 if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
-                        groups.insert(i, None)
+                        groups.insert(i, np.nan)
                 if len(groups) < 24:
                     groups = groups + [np.nan] * 3  # students
                 add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
@@ -2538,8 +2569,10 @@ def vaccination_tables(df, date, page, file):
         assert added is None or added > 7
     rows = pd.DataFrame.from_dict(rows, orient='index')
     rows = rows.set_index(["Date", "Province"]).fillna(np.nan) if not rows.empty else rows
-    if 'Vac Given 1 Cum' in rows.columns:
-        rows['Vac Given Cum'] = rows['Vac Given 1 Cum'] + rows['Vac Given 2 Cum']
+    percents = rows[list(rows.columns.intersection([f'Vac Given {i} %' for i in range(1, 5)]))].fillna(0)
+    assert (percents < 500).all().all(), f"{file} {date}: wrong allocations"
+    # if 'Vac Given 1 Cum' in rows.columns:
+    #     rows['Vac Given Cum'] = rows[list(rows.columns.intersection([f'Vac Given {i} Cum' for i in range(1, 5)]))].sum(axis=1)
     return df.combine_first(rows) if not rows.empty else df
 
 
@@ -2698,7 +2731,7 @@ def get_vaccinations():
     vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
-    # No currently used as it is too likely to result in missing numbers
+    # Not currently used as it is too likely to result in missing numbers
     # vac_prov_sum = vac_reports_prov.groupby("Date").sum()
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
@@ -3054,16 +3087,16 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac = pool.apply_async(get_vaccinations)
-        # TODO: split vac slides as thats the slowest
+        # TODO: split vac slides as that's the slowest
 
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
 
-        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         situation = pool.apply_async(get_situation)
         tests_reports = pool.apply_async(get_test_reports)
         tests = pool.apply_async(get_tests_by_day)

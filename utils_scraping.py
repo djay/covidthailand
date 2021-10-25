@@ -19,6 +19,7 @@ from requests.adapters import HTTPAdapter, Retry
 from tika import parser, config
 from webdav3.client import Client
 from webdav3.exceptions import NoConnection, ResponseErrorCode
+import pythainlp
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -83,6 +84,7 @@ def formatter(log_entry):
     end = log_entry["extra"].get("end", "\n")
     return "[{time}] {message}" + end + "{exception}"
 
+
 # first we clear the multi-process-naive default logger
 logger.remove()
 # then we add an MP-aware one instead
@@ -134,11 +136,16 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
         return '\n\n\n'.join(pages_txt)
 
 
-def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, require_until=False):
+def get_next_numbers(content, *matches, debug=False, before=False, remove=0, ints=True, until=None, return_rest=True, return_until=False, require_until=False, dash_as_zero=False, thainorm=False, asserted=False):
     """
     returns the numbers that appear immediately before or after the string(s) in 'matches',
     optionally up through 'until', that are found in the parsed PDF string 'content'
     """
+    if thainorm:
+        content = pythainlp.util.remove_tonemark(pythainlp.util.normalize(content))
+        until = pythainlp.util.remove_tonemark(pythainlp.util.normalize(until))
+        matches = [pythainlp.util.remove_tonemark(pythainlp.util.normalize(match)) for match in matches]
+
     if len(matches) == 0:
         matches = [""]
     for match in matches:
@@ -151,34 +158,42 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         behind = "".join(behind)
         found = ahead if before else behind
         if until is not None:
-            found, *rest = re.split(until, found, 1)  # TODO: how to put it back togeather if behind=True?
+            found, *rest = re.split(until, found, 1)  # TODO: how to put it back together if behind=True?
             if not rest and require_until:
                 # in this case return nothing since end didn't find a match
                 continue
-            rest = until + (rest[0] if rest else "")
+            rest = until + (rest[0] if rest and rest[0] else "")
         else:
             rest = ""
+        if dash_as_zero:
+            found = found.replace(r'(-)', '(0)')
         numbers = (INT_RE if ints else NUM_RE).findall(found)
         numbers = [n.replace(",", "") for n in numbers]
         numbers = [int(n) if ints else float(n) for n in numbers if n]
         numbers = numbers if not before else list(reversed(numbers))
         if remove:
             behind = (INT_RE if ints else NUM_RE).sub("", found, remove)
-        if return_rest:
+        if return_until:
+            return numbers, found
+        elif return_rest:
             return numbers, matched + " " + rest + behind
         else:
             return numbers
     if debug and matches:
         logger.info("Couldn't find '{}'", match)
         logger.info(content)
-    if return_rest:
+    if asserted:
+        assert False, f"None of {matches} in: {content}"
+    if return_rest or return_until:
         return [], content
     else:
         return []
 
 
-def get_next_number(content, *matches, default=None, remove=False, before=False, until=None, return_rest=True, require_until=False):
-    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until, require_until=require_until)
+def get_next_number(content, *matches, default=None, remove=False, before=False, until=None, return_rest=True,
+                    require_until=False, dash_as_zero=False, thainorm=False, asserted=False):
+    num, rest = get_next_numbers(content, *matches, remove=1 if remove else 0, before=before, until=until,
+                                 require_until=require_until, dash_as_zero=dash_as_zero, thainorm=thainorm, asserted=asserted)
     num = num[0] if num else default
     if return_rest:
         return num, rest
@@ -305,7 +320,7 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
 
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename):
-    "if check is None, then always download"
+    """if check is None, then always download"""
     s = requests.Session()
     fix_timeouts(s)
     i = 0
@@ -457,7 +472,7 @@ def parse_tweet(tw, tweet, found, *matches):
 
 
 def get_tweets_from(userid, datefrom, dateto, *matches):
-    "return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"
+    """return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"""
 
     tw = TwitterScraper()
     filename = os.path.join("inputs", "tweets", f"tweets2_{userid}.pickle")
@@ -530,7 +545,7 @@ def seperate(seq, condition):
 
 
 def split(seq, condition, maxsplit=0):
-    "Similar to str.split except works on lists of lines. e.g. split([1,2,3,4], lambda x: x==2) -> [[1],[2],[3,4]]"
+    """Similar to str.split except works on lists of lines. e.g. split([1,2,3,4], lambda x: x==2) -> [[1],[2],[3,4]]"""
     run = []
     last = False
     splits = 0
@@ -546,7 +561,7 @@ def split(seq, condition, maxsplit=0):
 
 
 def pairwise(lst):
-    "Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"
+    """Takes a list and turns them into pairs of tuples, e.g. [1,2,3,4] -> [[1,2],[3,4]]"""
     lst = list(lst)
     return list(zip(compress(lst, cycle([1, 0])), compress(lst, cycle([0, 1]))))
 
@@ -594,4 +609,3 @@ def replace_matcher(matches, replacements=None):
                 return r
         return item
     return replace_match
-
