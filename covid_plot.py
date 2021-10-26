@@ -89,7 +89,7 @@ def plot_area(df: pd.DataFrame,
         "legend.fontsize": 18,
         "xtick.labelsize": 20,
         "ytick.labelsize": 20,
-        "axes.prop_cycle": get_cycle(cmap),
+        # "axes.prop_cycle": get_cycle(cmap),
     })
 
     if theme == 'Black':
@@ -213,22 +213,23 @@ def plot_area(df: pd.DataFrame,
         if df_plot.empty:
             continue
 
+        plt.rcParams["axes.prop_cycle"] = get_cycle(cmap, len(cols) + len(between))
         if percent_fig:
             f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
-        # plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
-        a0.set_prop_cycle(None)
 
         if y_formatter is not None:
             a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
-        areacols = [c for c in cols if c not in between]
+        a0.set_prop_cycle(None)
         if kind != "line":
+            areacols = [c for c in cols if c not in between]
             df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked, legend='reverse')
-            linecols = between + actuals
+            linecols = between
         else:
-            linecols = cols + actuals
+            areacols = []
+            linecols = cols
 
         # advance colour cycle so lines have correct next colour
         for _ in range(len(areacols)):
@@ -237,7 +238,7 @@ def plot_area(df: pd.DataFrame,
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else 2
-            lines = df_plot.plot(ax=a0,
+            df_plot.plot(ax=a0,
                          y=c,
                          use_index=True,
                          linewidth=width,
@@ -245,6 +246,25 @@ def plot_area(df: pd.DataFrame,
                          kind="line",
                          zorder=4,
                          legend=c not in actuals,
+                         x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
+                         )
+
+        # reset colours and plot actuals repeating same colours used by lines
+        if actuals:
+            # TODO: There has to be a less dodgy way than this?
+            #a0._get_lines.prop_cycler = iter(get_cycle(cmap))
+            # a0._get_lines.set_prop_cycle(get_cycle(cmap))
+            # plt.rcParams["axes.prop_cycle"] = get_cycle(cmap)
+            # a0.set_prop_cycle(None)
+            # plt.gca().set_prop_cycle(None)
+            df_plot.plot(ax=a0,
+                         y=actuals,
+                         use_index=True,
+                         linewidth=2,
+                         style="--",
+                         kind="line",
+                         zorder=4,
+                         legend=False,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
 
@@ -258,7 +278,7 @@ def plot_area(df: pd.DataFrame,
             box_cols = []
         for dist in box_cols:
             mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
-            a0.fill_between(df.index, mins, maxes, facecolor="orange", alpha=0.3, zorder=3, label=None, step=None)
+            a0.fill_between(df.index, mins, maxes, facecolor="yellow", alpha=0.3, zorder=3, label=None, step=None)
             avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=False)
             # boxes = df_plot[box_cols].transpose()
             # boxes.boxplot(ax=a0)
@@ -953,7 +973,7 @@ def save_plots(df: pd.DataFrame) -> None:
         "Hospitalized All Mild",
     ]
     legends = [
-        "Serious Condition with Ventilator"
+        "Serious Condition with Ventilator",
         "Serious Condition without Ventilator",
         "Mild Condition",
     ]
@@ -1136,15 +1156,14 @@ def save_plots(df: pd.DataFrame) -> None:
     pred2 = pred2.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     vac_cum = vac_cum.combine_first(pred1).combine_first(pred2)
 
-    cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c]
-    actuals = [c for c in vac_cum.columns if " 2 Pred" in c]
+    cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     legends = [clean_vac_leg(c) for c in cols2]
-    plot_area(df=vac_cum,
+    plot_area(df=vac_cum.combine_first(pred2),
         title='Full Covid Vaccination Progress - Thailand',
         legends=legends,
         png_prefix='vac_groups_goals_full', cols_subset=cols2,
         kind='line',
-        actuals=actuals,
+        actuals=list(pred2.columns),
         ma_days=None,
         stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
@@ -1152,14 +1171,14 @@ def save_plots(df: pd.DataFrame) -> None:
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
         footnote="Assumes 2 months between doses")
 
-    cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c]
+    cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
     legends = [clean_vac_leg(c) for c in cols2]
-    plot_area(df=vac_cum,
+    plot_area(df=vac_cum.combine_first(pred1),
         title='Half Covid Vaccination Progress - Thailand',
         legends=legends,
         png_prefix='vac_groups_goals_half', cols_subset=cols2,
-        actuals=actuals,
+        actuals=list(pred1.columns),
         ma_days=None,
         kind='line', stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
@@ -1553,7 +1572,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_peak', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
-              cmap='tab10',
+              cmap='tab20_r',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
@@ -1566,7 +1585,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='tests_peak', cols_subset=cols, legends=legend,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
-              cmap='tab10',
+              cmap='tab20_r',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
