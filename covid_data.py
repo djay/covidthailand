@@ -1512,7 +1512,8 @@ def briefing_deaths_provinces(dtext, date, file):
     return dfprov
 
 
-deaths_title_re = re.compile(r"(ผูป่้วยโรคโควดิ-19|ผู้ป่วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย) (รายงานวันที่|รายงานวนัที่)")  # noqa
+deaths_title_re = re.compile(r"(ผูป่้วยโรคโควดิ-19|วยโรคโควิด-19) (เสยีชวีติ|เสียชีวิต) (ของประเทศไทย|ของประเทศไทย)")  # noqa
+# ผู;ป=วยโรคโควิด-19 เสียชีวิต ของประเทศไทย รายงานวันท่ี 17 ต.ค. 64 (+68 ราย)
 
 
 def briefing_deaths_summary(text, date, file):
@@ -1525,7 +1526,7 @@ def briefing_deaths_summary(text, date, file):
     # Risk factors for COVID-19 infection
     # risk_factors = df[3][0]
     numbers, *_ = get_next_numbers(text,
-                                   "ค่ามัธยฐานของอา",
+                                   "ามัธยฐานของอา",
                                    "ค่ากลางขอ(?:งอ)?ายุ",
                                    "ามัธยฐานอายุ",
                                    "• ค่ากลาง",
@@ -1562,7 +1563,7 @@ def briefing_deaths_summary(text, date, file):
         "Diabetes": ["เบาหวาน", "DM"],
         "Hyperlipidemia": ["ไขมันในเลือดสูง", "HPL"],
         "Lung disease": ["โรคปอด"],
-        "Obesity": ["โรคอ้วน", "อ้วน"],
+        "Obesity": ["โรคอ้วน", "อ้วน", "อ1วน"],
         "Cerebrovascular": ["หลอดเลือดสมอง"],
         "Kidney disease": ["โรคไต"],
         "Heart disease": ["โรคหัวใจ"],
@@ -1580,17 +1581,17 @@ def briefing_deaths_summary(text, date, file):
 
     risks = {
         "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
-        "Others": ["คนอื่นๆ", "คนอ่ืนๆ", "คนรู้จัก"],
+        "Others": ["คนอื่นๆ", "คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก"],
         "Residence": ["อาศัย"],
         "Location": [
             "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพ้ืนที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด", "อาศัย/เข้าพ้ืนที่ระบาด",
-            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด"
+            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด", "ในพื้นท่ี",
         ],  # Live/go to an epidemic area
         "Crowds": [
             "ไปที่แออัด", "ไปท่ีแออัด", "ไปสถานที่แออัดพลุกพลา่น", "เข้าไปในสถานที่แออัดพลุกพลา่น",
             "ไปสถานที่แออัดพลุกพล่าน"
         ],  # Go to crowded places
-        "Work": ["อาชีพเสี่ยง"],  # Risky occupations
+        "Work": ["อาชีพเสี่ยง", "อาชีพเ"],  # Risky occupations
         "HCW": ["HCW", "บุคลากรทางการแพทย์"],
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
     }
