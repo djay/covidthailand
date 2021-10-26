@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import colors as mcolors
 import mpld3
+from dateutil.relativedelta import relativedelta
 
 from utils_scraping import logger
 
@@ -86,6 +87,15 @@ def daily2cum(results):
 
     cum = cum.reset_index().set_index(names)
     return cum[cum.columns]
+
+def fix_gaps(df):
+    # Some gaps in the data so fill them in. df.groupby("Province").apply(fix_gaps)
+    df = df.reset_index("Province")
+    all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, closed=None)
+    df = df.reindex(all_days, fill_value=np.nan)
+    df = df.interpolate()
+    df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province
+    return df.reset_index().set_index(["Date", "Province"])
 
 
 def normalise_to_total(df, cols, total_col):
@@ -311,6 +321,32 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         return series[cols + [other_name]]
     else:
         return series[cols]
+
+
+def pred_vac(dose1, dose2=None, ahead=90, lag=60, suffix=" Pred"):
+    "Pred dose 1 using linear progression using 14 day rate and dose {lag} using 2month from dose1"
+    cur = dose1.last_valid_index()
+    rate = (dose1.loc[cur] - dose1.loc[cur - relativedelta(days=14)]) / 14
+    future_dates = pd.date_range(cur, cur + relativedelta(days=ahead), name="Date")
+    # increasing sequence 
+    future1 = pd.DataFrame(dict([(col, pd.RangeIndex(1, ahead + 2)) for col in dose1.columns]), index=future_dates) * rate
+    future1 = future1 + dose1.loc[dose1.last_valid_index()]
+    future1.columns = [col + suffix for col in future1.columns]
+
+    if dose2 is None:
+        return future1
+
+    # 2nd dose is 1st dose from 2 months previous
+    # TODO: factor in 2 months vs 3 months AZ?
+    from_past = dose1[cur - relativedelta(days=lag): cur]
+    from_past.columns = [col + suffix for col in dose2.columns]
+    from_future = future1.iloc[1:ahead - lag + 1]
+    from_future.columns = from_past.columns
+    v2 = pd.concat([from_past, from_future], axis=0)
+    # adjust to start where dose2 finished
+    future2 = (v2 - v2.loc[v2.index.min()]).add(list(dose2.loc[cur]))
+    future2.index = future_dates
+    return (future1, future2)
 
 
 #################
