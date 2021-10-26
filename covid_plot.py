@@ -7,12 +7,12 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
+import numpy as np
 from pandas.tseries.offsets import MonthEnd
-from dateutil.relativedelta import relativedelta
 
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov
+    import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov, pred_vac, fix_gaps
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2
@@ -91,7 +91,7 @@ def plot_area(df: pd.DataFrame,
         "legend.fontsize": 18,
         "xtick.labelsize": 20,
         "ytick.labelsize": 20,
-        "axes.prop_cycle": get_cycle(cmap),
+        # "axes.prop_cycle": get_cycle(cmap),
     })
 
     if theme == 'Black':
@@ -215,22 +215,23 @@ def plot_area(df: pd.DataFrame,
         if df_plot.empty:
             continue
 
+        plt.rcParams["axes.prop_cycle"] = get_cycle(cmap, len(cols) + len(between))
         if percent_fig:
             f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
-        # plt.rcParams["axes.prop_cycle"] = get_cycle(colormap)
-        a0.set_prop_cycle(None)
 
         if y_formatter is not None:
             a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
-        areacols = [c for c in cols if c not in between]
+        a0.set_prop_cycle(None)
         if kind != "line":
+            areacols = [c for c in cols if c not in between]
             df_plot.plot(ax=a0, y=areacols, kind=kind, stacked=stacked, legend='reverse')
-            linecols = between + actuals
+            linecols = between
         else:
-            linecols = cols + actuals
+            areacols = []
+            linecols = cols
 
         # advance colour cycle so lines have correct next colour
         for _ in range(len(areacols)):
@@ -239,7 +240,7 @@ def plot_area(df: pd.DataFrame,
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
             width = 5 if c in [f"{h}{ma_suffix}" for h in highlight] else 2
-            lines = df_plot.plot(ax=a0,
+            df_plot.plot(ax=a0,
                          y=c,
                          use_index=True,
                          linewidth=width,
@@ -247,6 +248,25 @@ def plot_area(df: pd.DataFrame,
                          kind="line",
                          zorder=4,
                          legend=c not in actuals,
+                         x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
+                         )
+
+        # reset colours and plot actuals repeating same colours used by lines
+        if actuals:
+            # TODO: There has to be a less dodgy way than this?
+            #a0._get_lines.prop_cycler = iter(get_cycle(cmap))
+            # a0._get_lines.set_prop_cycle(get_cycle(cmap))
+            # plt.rcParams["axes.prop_cycle"] = get_cycle(cmap)
+            # a0.set_prop_cycle(None)
+            # plt.gca().set_prop_cycle(None)
+            df_plot.plot(ax=a0,
+                         y=actuals,
+                         use_index=True,
+                         linewidth=2,
+                         style="--",
+                         kind="line",
+                         zorder=4,
+                         legend=False,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
                          )
 
@@ -260,7 +280,7 @@ def plot_area(df: pd.DataFrame,
             box_cols = []
         for dist in box_cols:
             mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
-            a0.fill_between(df.index, mins, maxes, facecolor="orange", alpha=0.3, zorder=3, label=None, step=None)
+            a0.fill_between(df.index, mins, maxes, facecolor="yellow", alpha=0.3, zorder=3, label=None, step=None)
             avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=False)
             # boxes = df_plot[box_cols].transpose()
             # boxes.boxplot(ax=a0)
@@ -316,7 +336,7 @@ def plot_area(df: pd.DataFrame,
             if show_last_values:
                 a1_secax_y.set_color(color=dim_color)
                 a1_value_y = a1.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
-                a1_value_y.spines[:].set_visible(False)
+                # a1_value_y.spines[:].set_visible(False)
                 a1_value_y.tick_params(direction='out', length=6, width=0)
                 values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
                 sum = 0.0
@@ -336,7 +356,7 @@ def plot_area(df: pd.DataFrame,
                     number += 1
 
         a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
-        a0_secax_y.spines[:].set_visible(False)
+        # a0_secax_y.spines[:].set_visible(False)
         a0_secax_y.tick_params(direction='out', length=6, width=0)
         if y_formatter is not None:
             if y_formatter is thaipop: y_formatter = thaipop2
@@ -346,9 +366,9 @@ def plot_area(df: pd.DataFrame,
         if show_last_values:
             a0_secax_y.set_color(color=dim_color)
             a0_value_y = a0.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
-            a0_value_y.spines[:].set_visible(False)
+            # a0_value_y.spines[:].set_visible(False)
             a0_value_y.tick_params(direction='out', length=6, width=0)
-            values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            values = df_plot.ffill().loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             if stacked:
                 sum = 0.0
@@ -960,7 +980,7 @@ def save_plots(df: pd.DataFrame) -> None:
         "Hospitalized All Mild",
     ]
     legends = [
-        "Serious Condition with Ventilator"
+        "Serious Condition with Ventilator",
         "Serious Condition without Ventilator",
         "Mild Condition",
     ]
@@ -1100,6 +1120,8 @@ def save_plots(df: pd.DataFrame) -> None:
               y_formatter=thaipop,
               footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
+
+
     # Targets for groups
     # https://www.facebook.com/informationcovid19/photos/a.106455480972785/342985323986465/
 
@@ -1133,47 +1155,37 @@ def save_plots(df: pd.DataFrame) -> None:
             vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
                 f'Vac Group {group} {d} Cum'] / goal * 100
 
-    for group, goal in goals:
-        # calc prediction. 14day trajectory till end of the year. calc eoy and interpolate
-        v = vac_cum[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)']
-        rate = (v.loc[v.last_valid_index()] - v.loc[v.last_valid_index() - relativedelta(days=14)]) / 14
-        future_dates = pd.date_range(v.last_valid_index(), v.last_valid_index() + relativedelta(days=90), name="Date")
-        perc = (pd.RangeIndex(1, 92) * rate + v.loc[v.last_valid_index()])
-        future = pd.DataFrame(perc, columns=[f'Vac Group {group} 1 Pred'], index=future_dates).clip(upper=100)
-        vac_cum = vac_cum.combine_first(future)
 
-        # 2nd dose is 1st dose from 2 months previous
-        # TODO: factor in 2 months vs 3 months AZ?
-        last_2m = v[v.last_valid_index() - relativedelta(days=60): v.last_valid_index()]
-        v2 = pd.concat([last_2m, future[f'Vac Group {group} 1 Pred'].iloc[1:31]], axis=0)
-        start_pred = vac_cum[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)'].loc[v.last_valid_index()]
-        perc2 = (v2 - v2[v2.index.min()] + start_pred).clip(upper=100)
-        perc2.index = future_dates
-        vac_cum = vac_cum.combine_first(perc2.to_frame(f'Vac Group {group} 2 Pred'))
+    dose1 = vac_cum[[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
+    dose2 = vac_cum[[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
+    pred1, pred2 = pred_vac(dose1, dose2)
+    pred1 = pred1.clip(upper=pred1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    pred2 = pred2.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    vac_cum = vac_cum.combine_first(pred1).combine_first(pred2)
 
-    cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c]
-    actuals = [c for c in vac_cum.columns if " 2 Pred" in c]
+    cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     legends = [clean_vac_leg(c) for c in cols2]
-    plot_area(df=vac_cum,
+    plot_area(df=vac_cum.combine_first(pred2),
         title='Full Covid Vaccination Progress - Thailand',
         legends=legends,
         png_prefix='vac_groups_goals_full', cols_subset=cols2,
         kind='line',
-        actuals=actuals,
+        actuals=list(pred2.columns),
         ma_days=None,
         stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
-        footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
+        footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
+        footnote="Assumes 2 months between doses")
 
-    cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c]
+    cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
     legends = [clean_vac_leg(c) for c in cols2]
-    plot_area(df=vac_cum,
+    plot_area(df=vac_cum.combine_first(pred1),
         title='Half Covid Vaccination Progress - Thailand',
         legends=legends,
         png_prefix='vac_groups_goals_half', cols_subset=cols2,
-        actuals=actuals,
+        actuals=list(pred1.columns),
         ma_days=None,
         kind='line', stacked=False, percent_fig=False, show_last_values=False,
         y_formatter=perc_format,
@@ -1193,8 +1205,11 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
+
+    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
     # Let's trust the dashboard more but they could both be different
-    vac = dash_prov.combine_first(vac)
+    # TODO: dash gives different higher values. Also glitches cause problems
+    # vac = dash_prov.combine_first(vac)
     #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
     # Add them all up
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
@@ -1203,64 +1218,91 @@ def save_plots(df: pd.DataFrame) -> None:
     pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population")  # It's not on all data
     vac = vac.join(pops, rsuffix="2")
 
-    top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
-    cols = top5.columns.to_list()
-    plot_area(df=top5, 
-              title='Covid Vaccination Doses - Top Provinces - Thailand',
-              png_prefix='vac_top5_doses', cols_subset=cols,
-              ma_days=None,
-              kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
-              y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+    # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
+    # cols = top5.columns.to_list()
+    # pred = pred_vac(top5)
+    # plot_area(df=top5, 
+    #           title='Covid Vaccination Doses - Top Provinces - Thailand',
+    #           png_prefix='vac_top5_doses', cols_subset=cols,
+    #           ma_days=None,
+    #           kind='line', stacked=False, percent_fig=False,
+    #           cmap='tab10',
+    #           actuals=pred,
+    #           y_formatter=perc_format,
+    #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
+    pred = pred_vac(top5)
+    pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     cols = top5.columns.to_list()
-    plot_area(df=top5, 
+    plot_area(df=top5.combine_first(pred),
               title='Covid Vaccinations 1st Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_1', cols_subset=cols,
               ma_days=None,
+              actuals=list(pred.columns),
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote="Percentage include ages 0-18")
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
+    # since top5 might be different need to recalculate
+    top5_dose1 = vac.pipe(
+        topprov, 
+        lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
+        lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
+    )
+    _, pred = pred_vac(top5_dose1, top5)
+    pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     cols = top5.columns.to_list()
-    plot_area(df=top5, 
+    plot_area(df=top5.combine_first(pred), 
               title='Covid Vaccinations 2nd Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_2', cols_subset=cols,
+              actuals=list(pred.columns),
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote="Percentage include ages 0-18")
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
                     lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
                     other_name=None, num=7)
     cols = top5.columns.to_list()
-    plot_area(df=top5, 
+    pred = pred_vac(top5)
+    pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    plot_area(df=top5.combine_first(pred), 
               title='Covid Vaccination 1st Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_1', cols_subset=cols,
+              actuals=list(pred.columns),
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote="Percentage include ages 0-18")
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
                     lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
                     other_name=None, num=7)
     cols = top5.columns.to_list()
-    plot_area(df=top5, 
+    top5_dose1 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
+                    lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
+                    other_name=None, num=7)
+    _, pred = pred_vac(top5_dose1, top5)
+    pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    plot_area(df=top5.combine_first(pred), 
               title='Covid Vaccinations 2nd Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_2', cols_subset=cols,
+              actuals=list(pred.columns),
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote="Percentage include ages 0-18")
 
     #######################
     # Cases by provinces
@@ -1537,7 +1579,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_peak', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
-              cmap='tab10',
+              cmap='tab20_r',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
@@ -1550,7 +1592,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='tests_peak', cols_subset=cols, legends=legend,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
-              cmap='tab10',
+              cmap='tab20_r',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 

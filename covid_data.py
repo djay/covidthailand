@@ -2610,7 +2610,8 @@ def vaccination_reports_files2(check=True):
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
 
     links = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
-    links = sorted(links, reverse=True)
+    # links = sorted(links, reverse=True)
+    links = reversed(list(links))
     count = 0
     for link in links:
 
@@ -3087,13 +3088,14 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
-        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
         # These 3 are slowest so should go first
-        dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
+        dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         vac = pool.apply_async(get_vaccinations)
         # TODO: split vac slides as that's the slowest
 
+        briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
+    
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
 
