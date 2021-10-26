@@ -361,7 +361,7 @@ def plot_area(df: pd.DataFrame,
             a0_value_y = a0.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
             # a0_value_y.spines[:].set_visible(False)
             a0_value_y.tick_params(direction='out', length=6, width=0)
-            values = df_plot.loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+            values = df_plot.ffill().loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
             if stacked:
                 sum = 0.0
