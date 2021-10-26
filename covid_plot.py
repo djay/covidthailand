@@ -6,6 +6,7 @@ import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+import numpy as np
 import pandas as pd
 import numpy as np
 from pandas.tseries.offsets import MonthEnd
@@ -221,8 +222,8 @@ def plot_area(df: pd.DataFrame,
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
 
-        if y_formatter is not None:
-            a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+        # if y_formatter is not None:
+        #     a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
         a0.set_prop_cycle(None)
         if kind != "line":
@@ -318,84 +319,19 @@ def plot_area(df: pd.DataFrame,
         for line in leg.get_lines():
             line.set_linewidth(4.0)
 
-        # a0.spines[:].set_visible(False)
-        a0.xaxis.label.set_visible(False)
+        clean_axis(a0, y_formatter)
         if limit_to_zero: a0.set_ylim(bottom=0)
 
         if percent_fig:
-            a1.set_prop_cycle(None)
-            #a1.spines[:].set_visible(False)
+            clean_axis(a1, perc_format)
             a1.set_ylim(bottom=0, top=100)
-            a1.yaxis.set_major_formatter(FuncFormatter(perc_format))
-            a1.tick_params(direction='out', length=6, width=0)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
-            a1.xaxis.label.set_visible(False)
-            a1_secax_y = a1.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
-            a1_secax_y.yaxis.set_major_formatter(FuncFormatter(perc_format))
-            a1_secax_y.tick_params(direction='out', length=6, width=0)
-            if show_last_values:
-                a1_secax_y.set_color(color=dim_color)
-                a1_value_y = a1.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
-                # a1_value_y.spines[:].set_visible(False)
-                a1_value_y.tick_params(direction='out', length=6, width=0)
-                values = df_plot.loc[df_plot.index.max()][perccols].apply(pd.to_numeric, downcast='float', errors='coerce')
-                sum = 0.0
-                ticks = []
-                labels = []
-                for value in values:
-                    sum += value
-                    ticks.append(sum - value/2.0)
-                    labels.append(perc_format(value, 0))
-                a1_value_y.set_yticks(ticks)
-                a1_value_y.set_yticklabels(labels)
-                number = 0
-                for patch in leg.get_patches():
-                    if number >= len(perccols):
-                        break
-                    a1_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
-                    number += 1
 
-        a0_secax_y = a0.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
-        # a0_secax_y.spines[:].set_visible(False)
-        a0_secax_y.tick_params(direction='out', length=6, width=0)
-        if y_formatter is not None:
-            if y_formatter is thaipop: y_formatter = thaipop2
-            a0_secax_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
-        a0.tick_params(direction='out', length=6, width=0)
+            right_axis(a1, perc_format, show_last_values)
+            right_value_axis(df_plot, a1, leg, perccols, True, perc_format, show_last_values, 13)
 
-        if show_last_values:
-            a0_secax_y.set_color(color=dim_color)
-            a0_value_y = a0.secondary_yaxis(1.0, functions=(lambda x: x, lambda x: x), color=invisible_color)
-            # a0_value_y.spines[:].set_visible(False)
-            a0_value_y.tick_params(direction='out', length=6, width=0)
-            values = df_plot.ffill().loc[df_plot.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
-            # [df.loc[df[c].last_valid_index()][c] for c in cols].apply(pd.to_numeric, downcast='float', errors='coerce')
-            if stacked:
-                sum = 0.0
-                ticks = []
-                labels = []
-                for value in values:
-                    sum += value
-                    ticks.append(sum - value/2.0)
-                    labels.append(y_formatter(value, 0))
-                a0_value_y.set_yticks(ticks)
-                a0_value_y.set_yticklabels(labels)
-                number = 0
-                for patch in leg.get_patches():
-                    if number >= len(cols):
-                        break
-                    a0_value_y.get_yticklabels()[number].set_color(patch.get_facecolor())
-                    number += 1
-            else:
-                a0_value_y.set_yticks(values)
-                if y_formatter is not None:
-                    a0_value_y.yaxis.set_major_formatter(FuncFormatter(y_formatter))
-                number = 0
-                for line in leg.get_lines():
-                    if number >= len(cols):
-                        break
-                    a0_value_y.get_yticklabels()[number].set_color(line.get_color())
-                    number += 1
+        right_axis(a0, y_formatter, show_last_values)
+        right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter, show_last_values)
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -406,9 +342,135 @@ def plot_area(df: pd.DataFrame,
     return None
 
 
+def clean_axis(axis, y_formatter):
+    """Clean up the axis."""
+    axis.spines[:].set_visible(False)
+    axis.tick_params(direction='out', length=6, width=0)
+    axis.xaxis.label.set_visible(False)
+    axis.set_prop_cycle(None)
+    if y_formatter is not None:
+        axis.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+
+
+def right_axis(axis, y_formatter, show_last_values):
+    """Create clean secondary right axis."""
+    new_axis = axis.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
+    clean_axis(new_axis, y_formatter)
+    if show_last_values:
+        new_axis.set_color(color='#784d00')
+    return new_axis
+
+
+def right_value_axis(df, axis, legend, cols, stacked, y_formatter, show_last_values, max_ticks=27):
+    """Create clean secondary right axis showning actual values."""
+    if not show_last_values: return
+
+    if y_formatter is thaipop: y_formatter = thaipop2
+    new_axis = right_axis(axis, y_formatter, show_last_values)
+
+    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    bottom, top = axis.get_ylim()
+    ticks = Ticks(max_ticks, bottom, top)
+    if stacked:
+        sum = 0.0
+        for number, value in enumerate(values):
+            sum += value
+            if not np.isnan(value) and number < len(legend.get_patches()): 
+                ticks.append(Tick(sum - value/2.0, y_formatter(value,0), legend.get_patches()[number].get_facecolor()))
+    else:
+        for number, value in enumerate(values):
+            if not np.isnan(value) and number < len(legend.get_lines()): 
+                ticks.append(Tick(value, y_formatter(value,0), legend.get_lines()[number].get_color()))
+
+    set_ticks(new_axis, ticks)
+
+
+def set_ticks(axis, ticks):
+    """Set the ticks for the axis."""
+    ticks.reduce_overlap()
+    axis.set_yticks(ticks.get_ticks())
+    axis.set_yticklabels(ticks.get_labels())
+    for number, label in enumerate(axis.get_yticklabels()):
+        label.set_color(ticks.get_color(number))
+
+
+def sort_by_actual(e):
+    return e.actual
+
+
+class Ticks:
+    """All the ticks of an axis."""
+    def __init__(self, max_ticks, bottom, top):
+        self.ticks = []
+        self.max_ticks = max_ticks
+        self.bottom = bottom
+        self.top = top
+        self.spacing = (top - bottom) / max_ticks
+
+    def append(self, tick):
+        """Append a tick to the ticks list."""
+        self.ticks.append(tick)
+
+    def reduce_overlap(self):
+        """Move the tickmark positions of the ticks so that they don't overlap."""
+        if len(self.ticks) > self.max_ticks:
+            self.spacing = (self.top - self.bottom) / len(self.ticks)
+
+        # move them up if overlapping
+        self.ticks.sort(key=sort_by_actual)
+        last_value = self.bottom - self.spacing
+        for tick in self.ticks:
+            if tick.value < last_value + self.spacing: 
+                tick.value = last_value + self.spacing
+            last_value = tick.value
+
+        # move them halfway back and down if over the top
+        adjusted_last = False
+        self.ticks.reverse()
+        last_value = self.top + self.spacing
+        for tick in self.ticks:
+            if tick.value > last_value - self.spacing: 
+                tick.value = last_value - self.spacing
+            else:
+                adjusted_last = False
+            if not adjusted_last and tick.value > tick.actual: 
+                tick.value -= (tick.value - tick.actual) / 2.0
+                adjusted_last = True
+            last_value = tick.value
+
+        # move them up if they hit the bottom
+        self.ticks.reverse()
+        last_value = self.bottom - self.spacing
+        for tick in self.ticks:
+            if tick.value < last_value + self.spacing: 
+                tick.value = last_value + self.spacing
+            last_value = tick.value
+
+    def get_ticks(self): 
+        """Get the tick marks list."""
+        return [ tick.value for tick in self.ticks ]
+
+    def get_labels(self): 
+        """Get the tick labels list."""
+        return [ tick.label for tick in self.ticks ]
+
+    def get_color(self, number): 
+        """Get a single tick color."""
+        return self.ticks[number].color
+    
+
+class Tick:
+    """A single tick including tickmarks, labels and colors."""
+    def __init__(self, actual, label, color):
+        self.value = actual
+        self.actual = actual
+        self.label = label
+        self.color = color
+
+
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand\n'
+    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
     # matplotlib global settings
     matplotlib.use('AGG')
@@ -430,7 +492,6 @@ def save_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
-    source = 'Source: https://djay.github.io/covidthailand\n'
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
     legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
     plot_area(df=df,
