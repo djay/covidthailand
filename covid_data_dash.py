@@ -191,6 +191,7 @@ def dash_trends_prov():
             pass
         if (wb := get_wb()) is None:
             continue
+
         row = workbook_flatten(
             wb,
             None,
@@ -222,7 +223,7 @@ def dash_by_province():
         df = df.drop(columns=['Postitive Rate Dash'])
 
     valid = {
-        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=31), 0.001),  # Might have to remove it completely.
+        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=31), 0.001, 2),  # Might have to remove it completely.
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=2), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
@@ -350,7 +351,13 @@ def skip_valid(df, idx_value, allow_na={}):
         if pd.isna(val):
             return False
         if mins:
-            return mins[0] <= val
+            min_val, *max_val = mins
+            if min_val > val:
+                return False
+            elif max_val and val > max_val[0]:
+                return False
+            else:
+                return True 
         else:
             return True
 
