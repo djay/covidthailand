@@ -318,13 +318,13 @@ def plot_area(df: pd.DataFrame,
         for line in leg.get_lines():
             line.set_linewidth(4.0)
 
-        a0.spines[:].set_visible(False)
+        # a0.spines[:].set_visible(False)
         a0.xaxis.label.set_visible(False)
         if limit_to_zero: a0.set_ylim(bottom=0)
 
         if percent_fig:
             a1.set_prop_cycle(None)
-            a1.spines[:].set_visible(False)
+            #a1.spines[:].set_visible(False)
             a1.set_ylim(bottom=0, top=100)
             a1.yaxis.set_major_formatter(FuncFormatter(perc_format))
             a1.tick_params(direction='out', length=6, width=0)
@@ -776,6 +776,7 @@ def save_plots(df: pd.DataFrame) -> None:
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Pos Daily {area}'] = (df[f'Pos Area {area} (i)'] / df[pos_cols].sum(axis=1) * df['Pos'])
     cols = rearrange([f'Pos Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    
     plot_area(df=df, 
               title='Positive PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
@@ -806,12 +807,15 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote='Note: Excludes some proactive tests.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
-    for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
-    cols = [f'Positivity Daily {area}' for area in DISTRICT_RANGE_SIMPLE]
+    # for area in DISTRICT_RANGE_SIMPLE:
+    #     df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
+    # cols = [f'Positivity Daily {area}' for area in DISTRICT_RANGE_SIMPLE]
+    pos_areas = join_provinces(dash_prov, "Province")
+    pos_areas = area_crosstab(pos_areas, "Positive Rate Dash", "") * 100
+    cols = rearrange([f'Positive Rate Dash Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
     legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c) + 1 for c in topcols])[:5]
-    plot_area(df=df,
+    plot_area(df=pos_areas,
               title='Highest Positive Rate by Health Districts - Thailand',
               legends=legend,
               png_prefix='positivity_area_unstacked', cols_subset=topcols,
