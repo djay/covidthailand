@@ -1284,7 +1284,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='Confirmed Covid Cases - Trending Up Provinces - Thailand',
+              title='Confirmed Covid Cases/100k - Trending Up Provinces - Thailand',
               png_prefix='cases_prov_increasing', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -1300,7 +1300,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='Confirmed Covid Cases - Trending Down Provinces - Thailand',
+              title='Confirmed Covid Cases/100k - Trending Down Provinces - Thailand',
               png_prefix='cases_prov_decreasing', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -1315,7 +1315,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=6)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='Confirmed Covid Cases - Top Provinces - Thailand',
+              title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -1331,7 +1331,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=6)
     cols = top5.columns.to_list()
     plot_area(df=top5,
-              title='"Walk-in" Covid Cases - Top Provinces - Thailand',
+              title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_walkins_increasing', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -1348,7 +1348,7 @@ def save_plots(df: pd.DataFrame) -> None:
                           num=6)
         cols = top5.columns.to_list()
         plot_area(df=top5,
-                  title=f'{risk} Related Covid Cases - Trending Up Provinces - Thailand',
+                  title=f'{risk} Related Covid Cases/100k - Trending Up Provinces - Thailand',
                   png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing', cols_subset=cols,
                   ma_days=7,
                   kind='line', stacked=False, percent_fig=False,
@@ -1368,7 +1368,7 @@ def save_plots(df: pd.DataFrame) -> None:
                           num=8)
         cols = top5.columns.to_list()
         plot_area(df=top5,
-            title=f'Severe Active Covid Cases - {title}Provinces - Thailand',
+            title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
             png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
             ma_days=7,
             kind='line', stacked=False, percent_fig=False,
