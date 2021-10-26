@@ -245,7 +245,9 @@ def test_briefing_deaths_summary(date, testdf, dl):
         df = briefing_deaths_summary(text, dateutil.parser.parse(date), file)
         dfprov = dfprov.combine_first(df)
     # write_scrape_data_back_to_test(dfprov, "briefing_deaths_summary")
-    pd.testing.assert_frame_equal(testdf, dfprov, check_dtype=False)
+    if testdf.empty:
+        return
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), dfprov, check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))
