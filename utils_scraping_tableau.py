@@ -72,6 +72,8 @@ def workbook_flatten(wb, date=None, **mappings):
                 df.columns = df.columns.map(' '.join)
                 df = df.reset_index()
             df = df.set_index("Date")
+            # This seems to be 0 in these graphs. and if we don't then any bad previous values won't get corrected. TODO: param depeden
+            df = df.replace("%null%", 0)
             # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
             df = df.apply(pd.to_numeric, errors='coerce', axis=1)
 
