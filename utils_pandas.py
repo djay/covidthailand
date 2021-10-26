@@ -106,22 +106,36 @@ def normalise_to_total(df, cols, total_col):
     return df
 
 
+def sensible_precision(num: float) -> str:
+    """Convert a number to a string with sensible precission (3 digits maximum)."""
+    sensible_number = ''
+    if not np.isnan(num):
+        if abs(num) < 10.0:
+            num = round(num, 2)
+            sensible_number = f'{num:.2f}'.rstrip('0').rstrip('.')
+        elif abs(num) < 100.0:
+            num = round(num, 1)
+            sensible_number = f'{num:.1f}'.rstrip('0').rstrip('.')
+        else:
+            num = round(num)
+            sensible_number = f'{num:.0f}'
+    return sensible_number
+
 def human_format(num: float, pos: int) -> str:
+    """Convert a number to a more human readable string."""
     magnitude = 0
     while abs(num) >= 1000:
         magnitude += 1
         num /= 1000.0
-    if not np.isnan(num):
-        num = round(num,1) if abs(num) < 100.0 else round(num)
-    # add more suffixes if you need them
+    sensible_number = sensible_precision(num)
     suffix = ['', 'k', 'M', 'G', 'T', 'P'][magnitude]
-    return f'{num:.1f}{suffix}'.replace(".0", "")
+    return f'{sensible_number}{suffix}'
 
 
 def perc_format(num: float, pos: int) -> str:
-    if not np.isnan(num):
-        num = round(num)
-    return f'{num:.0f}%'
+    """Convert a number to a more human readablepercent string."""
+    sensible_number = sensible_precision(num)
+    return f'{sensible_number}%'
 
 
 def rearrange(lst, *first):
