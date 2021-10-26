@@ -156,6 +156,7 @@ def test_vac_tables_inc(get_file1, get_file2):
 @pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
 def test_vac_tables(fname, testdf, get_file):
     df = parse_vac_tables(get_file)
+    df = df.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vaccination_tables", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
