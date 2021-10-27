@@ -39,7 +39,7 @@ def dash_daily():
         "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=14)),
         "Tests": today(),  # it's no longer there
         'Hospitalized Field HICI': d("2021-08-08"),
-        'Hospitalized Field Hospitel': [[d("2021-08-08")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
+        'Hospitalized Field Hospitel': [[d("2021-08-08"), today(), 0.0], [d("2021-04-01"), d("2021-08-03"), 0.0, 0.0]],
         'Hospitalized Field Other': d("2021-08-08"),
         'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
         'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
