@@ -34,12 +34,12 @@ def dash_daily():
         df = df.drop(columns=['Postitive Rate Dash'])
 
     allow_na = {
-        "ATK": d("2021-07-31"),
+        "ATK": [[d("2021-07-31")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
         "Cases Area Prison": d("2021-05-12"),
         "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=14)),
         "Tests": today(),  # it's no longer there
         'Hospitalized Field HICI': d("2021-08-08"),
-        'Hospitalized Field Hospitel': d("2021-08-08"),
+        'Hospitalized Field Hospitel': [[d("2021-08-08")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
         'Hospitalized Field Other': d("2021-08-08"),
         'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
         'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
@@ -115,6 +115,8 @@ def dash_daily():
             break
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
+        if date < today() - relativedelta(days=30):  # TODO: should use skip_valid rules to work which are delayed rather than 0?
+            row.loc[date] = row.loc[date].fillna(0.0)  # ATK and HICI etc are null to mean 0.0
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
     # We get negative values for field hospital before April
@@ -223,7 +225,7 @@ def dash_by_province():
         df = df.drop(columns=['Postitive Rate Dash'])
 
     valid = {
-        "Positive Rate Dash": (d("2021-05-09"), today() - relativedelta(days=31), 0.001, 2),  # Might have to remove it completely.
+        "Positive Rate Dash": (d("2021-05-20"), today() - relativedelta(days=31), 0.001, 2),  # Might have to remove it completely.
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=2), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
@@ -332,12 +334,22 @@ def skip_valid(df, idx_value, allow_na={}):
     if df.empty:
         return False
 
-    def is_valid(column, date, idx_value):
-        limits = allow_na.get(column, None)
+    def is_valid(column, date, idx_value, limits=None):
+        if limits is None:
+            limits = allow_na.get(column, None)
+            if limits is None:
+                return True
+            elif type(limits) in (list, tuple) and type(limits[0]) in (list, tuple):
+                # multiple rules. recurse
+                return all([is_valid(column, date, idx_value, limits=rule) for rule in limits])
+            else:
+                pass
         maxdate = today()
         mins = []
         if type(limits) in [tuple, list]:
-            mindate, maxdate, *mins = limits
+            mindate, *limits = limits
+            if limits:
+                maxdate, *mins = limits
         elif limits is None:
             mindate = d("1975-1-1")
         else:
