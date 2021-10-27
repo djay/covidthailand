@@ -344,7 +344,7 @@ def plot_area(df: pd.DataFrame,
 
 def clean_axis(axis, y_formatter):
     """Clean up the axis."""
-    axis.spines[:].set_visible(False)
+    # axis.spines[:].set_visible(False)
     axis.tick_params(direction='out', length=6, width=0)
     axis.xaxis.label.set_visible(False)
     axis.set_prop_cycle(None)
@@ -872,12 +872,12 @@ def save_plots(df: pd.DataFrame) -> None:
     #     df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
     # cols = [f'Positivity Daily {area}' for area in DISTRICT_RANGE_SIMPLE]
     pos_areas = join_provinces(dash_prov, "Province")
-    pos_areas = area_crosstab(pos_areas, "Positive Rate Dash", "") * 100
+    pos_areas = area_crosstab(pos_areas, "Positive Rate Dash", aggfunc="mean") * 100
     cols = rearrange([f'Positive Rate Dash Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
     legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c) + 1 for c in topcols])[:5]
     plot_area(df=pos_areas,
-              title='Highest Positive Rate by Health Districts - Thailand',
+              title='Average Positive Rate in Health Districts - Thailand',
               legends=legend,
               png_prefix='positivity_area_unstacked', cols_subset=topcols,
               ma_days=7,
