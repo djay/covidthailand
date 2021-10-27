@@ -15,20 +15,19 @@ import requests
 
 
 def workbook_explore(workbook):
-    logger.info()
-    logger.info()
-    logger.info("storypoints: {}", workbook.getStoryPoints())
-    logger.info("parameters {}", workbook.getParameters())
+    print()
+    print("storypoints: {}", workbook.getStoryPoints())
+    print("parameters {}", workbook.getParameters())
     for t in workbook.worksheets:
-        logger.info()
-        logger.info("worksheet name : {}", t.name)  # show worksheet name
-        logger.info(t.data)  # show dataframe for this worksheet
-        logger.info("filters: ")
+        print()
+        print("worksheet name : {}", t.name)  # show worksheet name
+        print(t.data)  # show dataframe for this worksheet
+        print("filters: ")
         for f in t.getFilters():
-            logger.info("  {} : {} {}", f['column'], f['values'][:10], '...' if len(f['values']) > 10 else '')
-        logger.info("selectableItems: ")
+            print("  {} : {} {}", f['column'], f['values'][:10], '...' if len(f['values']) > 10 else '')
+        print("selectableItems: ")
         for f in t.getSelectableItems():
-            logger.info("  {} : {} {}", f['column'], f['values'][:10], '...' if len(f['values']) > 10 else '')
+            print("  {} : {} {}", f['column'], f['values'][:10], '...' if len(f['values']) > 10 else '')
 
 
 def workbook_flatten(wb, date=None, **mappings):
@@ -73,16 +72,21 @@ def workbook_flatten(wb, date=None, **mappings):
                 df.columns = df.columns.map(' '.join)
                 df = df.reset_index()
             df = df.set_index("Date")
+            # This seems to be 0 in these graphs. and if we don't then any bad previous values won't get corrected. TODO: param depeden
+            df = df.replace("%null%", 0)
             # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
             df = df.apply(pd.to_numeric, errors='coerce', axis=1)
-            # If it's only some days rest we can assume are 0.0
+
+            # Some series have gaps where its assumed missing values are 0. Like deaths
             # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
-            start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
-            start = max([start, df.index.min()])
+            #start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
+            #start = min([start, df.index.min()])
+            start = df.index.min()
             # Some data like tests can be a 2 days late
             # TODO: Should be able to do better than fixed offset?
-            end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
-            end = max([end, df.index.max()])
+            #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
+            #end = max([end, df.index.max()])
+            end = df.index.max()
             assert date is None or end <= date
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
             try:

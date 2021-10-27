@@ -453,7 +453,7 @@ def get_fuzzy_provinces():
         return pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 
 
-def area_crosstab(df, col, suffix):
+def area_crosstab(df, col, suffix=""):
     given_2 = df.reset_index()[[
         'Date', col + suffix, 'Health District Number'
     ]]
