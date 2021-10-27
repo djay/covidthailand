@@ -3090,8 +3090,8 @@ def scrape_and_combine():
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
         # These 3 are slowest so should go first
-        dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
+        dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac = pool.apply_async(get_vaccinations)
         # TODO: split vac slides as that's the slowest
 

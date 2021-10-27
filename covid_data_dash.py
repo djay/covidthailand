@@ -223,7 +223,7 @@ def dash_by_province():
         df = df.drop(columns=['Postitive Rate Dash'])
 
     valid = {
-        "Positive Rate Dash": (d("2021-07-09"), today() - relativedelta(days=31), 0.001, 2),  # Might have to remove it completely.
+        "Positive Rate Dash": (d("2021-05-09"), today() - relativedelta(days=31), 0.001, 2),  # Might have to remove it completely.
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=2), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
