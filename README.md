@@ -175,19 +175,15 @@ proactive tests from positive rate is perhaps better for [comparison with other 
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
 - Source: [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
 
-## Positive Rate by Health District
+## Positive Rate by Province
 
-![Proportion of positive rate contributed by health districts](https://raw.githubusercontent.com/wiki/djay/covidthailand/positivity_area_3.png)
+![Positive Rate - Top Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_top_3.png)
 
-- Shows if all health districts are testing similarly
+![Positive Rate - Lowest Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_low_3.png)
 
-![Health Districts with high Positive Rate (ex. some proactive tests)](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_3.png)
+![Average Positive Rate by Region - Thailand](https://github.com/djay/covidthailand/wiki/positivity_region_3.png)
 
-- Shows which districts have the highest positive rate
-
-- see also [Positive Rate by Health District: Full Year](https://github.com/djay/covidthailand/wiki/positivity_area_unstacked_all.png)
-
-- Source: [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
+- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
 # Vaccinations <a name="vaccinations">
 

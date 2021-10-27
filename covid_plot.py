@@ -859,31 +859,76 @@ def save_plots(df: pd.DataFrame) -> None:
         df[f'Positivity {area}'] = (df[f'Positivity {area}'] / df['Total Positivity Area']
                                     * df['Positivity Public+Private'])
     plot_area(df=df,
-              title='Positive Rate by Health District in Proportion to Positive Rate - Thailand',
+              title='Positive Rate by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='positivity_area', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive tests.',
+              y_formatter=perc_format,
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
+
 
     # for area in DISTRICT_RANGE_SIMPLE:
     #     df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
     # cols = [f'Positivity Daily {area}' for area in DISTRICT_RANGE_SIMPLE]
-    pos_areas = join_provinces(dash_prov, "Province")
+    pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"])
     pos_areas = area_crosstab(pos_areas, "Positive Rate Dash", aggfunc="mean") * 100
     cols = rearrange([f'Positive Rate Dash Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
     legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c) + 1 for c in topcols])[:5]
     plot_area(df=pos_areas,
-              title='Average Positive Rate in Health Districts - Thailand',
+              title='Average Positive Rate - by Health District - Thailand',
               legends=legend,
               png_prefix='positivity_area_unstacked', cols_subset=topcols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
+    pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="mean") * 100
+    plot_area(df=pos_areas,
+              title='Average Positive Rate - by Region - Thailand',
+              png_prefix='positivity_region', cols_subset=list(pos_areas.columns),
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    top5 = dash_prov.pipe(topprov,
+                      lambda df: df["Positive Rate Dash"] * 100,
+                      name="Province Positive Rate",
+                      other_name=None,
+                      num=7)
+    cols = top5.columns.to_list()
+    plot_area(df=top5,
+              title='Positive Rate - Top Provinces - Thailand',
+              png_prefix='positivity_prov_top', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    top5 = dash_prov.pipe(topprov,
+                      lambda df: -df["Positive Rate Dash"] * 100,
+                      lambda df: df["Positive Rate Dash"] * 100,
+                      name="Province Positive Rate",
+                      other_name=None,
+                      num=7)
+    cols = top5.columns.to_list()
+    plot_area(df=top5,
+              title='Positive Rate - Lowest Provinces - Thailand',
+              png_prefix='positivity_prov_low', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Cases/Tests {area}'] = (

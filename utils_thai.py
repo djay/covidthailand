@@ -453,15 +453,29 @@ def get_fuzzy_provinces():
         return pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 
 
-def area_crosstab(df, col, suffix=""):
+def area_crosstab(df, col, suffix="", aggfunc="sum"):
     given_2 = df.reset_index()[[
         'Date', col + suffix, 'Health District Number'
     ]]
     given_by_area_2 = pd.crosstab(given_2['Date'],
                                   given_2['Health District Number'],
                                   values=given_2[col + suffix],
-                                  aggfunc='sum')
+                                  aggfunc=aggfunc)
     given_by_area_2.columns = [
         f"{col} Area {c}{suffix}" for c in given_by_area_2.columns
+    ]
+    return given_by_area_2
+
+
+def region_crosstab(df, col, suffix="", aggfunc="sum"):
+    given_2 = df.reset_index()[[
+        'Date', col + suffix, 'region'
+    ]]
+    given_by_area_2 = pd.crosstab(given_2['Date'],
+                                  given_2['region'],
+                                  values=given_2[col + suffix],
+                                  aggfunc=aggfunc)
+    given_by_area_2.columns = [
+        f"{col} Region: {c}{suffix}" for c in given_by_area_2.columns
     ]
     return given_by_area_2
