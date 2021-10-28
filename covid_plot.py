@@ -1471,16 +1471,19 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases",
                       other_name="Other Provinces",
-                      all=True,
                       num=6)
-    cols = top5.columns.to_list()[:6]
-    allprov = top5.columns.to_list()[:5] + top5.columns.to_list()[6:]
+    cols = top5.columns.to_list()
+    provtable = cases.reset_index()
+    provtable = pd.crosstab(index=provtable['Date'], columns=provtable['Province'], values=provtable['Cases'], aggfunc="max")
+    provtable = provtable.loc[provtable.last_valid_index()]
+    provtable = provtable.nlargest(len(provtable))  # Sort it 
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              table = provtable,
               footnote='Note: Per 100,000 people.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
