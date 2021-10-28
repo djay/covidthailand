@@ -594,7 +594,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests_per_case', cols_subset=cols,
               ma_days=7,
-              kind='line', stacked=False, percent_fig=False, show_last_values=False,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
@@ -940,7 +940,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False,
+              kind='area', stacked=False, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive tests.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
@@ -975,7 +975,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND,
               png_prefix='cases_areas_proactive', cols_subset=cols,
               ma_days=None,
-              kind='area', stacked=True, percent_fig=False, show_last_values=False,
+              kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -989,7 +989,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='cases_from_positives_area', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
+              kind='area', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -1185,7 +1185,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 2'],
         periods_to_plot=["30d", "2"],  # too slow to do all
         ma_days=None,
-        kind='bar', stacked=True, percent_fig=False, show_last_values=False,
+        kind='bar', stacked=True, percent_fig=False,
         cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
@@ -1282,7 +1282,7 @@ def save_plots(df: pd.DataFrame) -> None:
         kind='line',
         actuals=list(pred2.columns),
         ma_days=None,
-        stacked=False, percent_fig=False, show_last_values=False,
+        stacked=False, percent_fig=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
@@ -1297,7 +1297,7 @@ def save_plots(df: pd.DataFrame) -> None:
         png_prefix='vac_groups_goals_half', cols_subset=cols2,
         actuals=list(pred1.columns),
         ma_days=None,
-        kind='line', stacked=False, percent_fig=False, show_last_values=False,
+        kind='line', stacked=False, percent_fig=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
@@ -1776,7 +1776,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None,
-              kind='bar', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
+              kind='bar', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               footnote='\n\n\n\nNote: Number of deaths from all causes compared to previous years.',
               footnote_left=f'\n\n\n\n{source}Data Source: MOPH Covid-19 Dashboard')
