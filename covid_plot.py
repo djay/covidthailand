@@ -1069,7 +1069,7 @@ def save_plots(df: pd.DataFrame) -> None:
             "Hospitalized Field Hospitel",
             "Hospitalized Field HICI", ]
     legend = [
-        'Serious On Ventilator', 'Serios without Ventilator',
+        'Serious On Ventilator', 'Serious without Ventilator',
         'Mild In Hospital', 'Mild In Field Hospital/Other',
         "Mild in Hotel Field Hospital (Hospitel)",
         "Mild in Home/Community Isolation (HICI)"
@@ -1471,8 +1471,10 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases",
                       other_name="Other Provinces",
+                      all=True,
                       num=6)
-    cols = top5.columns.to_list()
+    cols = top5.columns.to_list()[:6]
+    allprov = top5.columns.to_list()[:5] + top5.columns.to_list()[6:]
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
