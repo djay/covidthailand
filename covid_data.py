@@ -1747,6 +1747,23 @@ def briefing_deaths(file, date, pages):
     return all, sum, dfprov
 
 
+def briefing_atk(file, date, pages):
+    df = pd.DataFrame()
+    for i, soup in enumerate(pages):
+        text = soup.get_text()
+        if "ยอดตรวจ ATK" not in text:
+            continue
+        # remove all teh dates
+        while True:
+            found_date, text = find_thai_date(text, remove=True)
+            if found_date is None:
+                break
+        atk_tests, _, atk_tests_cum, atk_pos, _, atk_pos_cum, *_ = get_next_numbers(text, "ยอดตรวจ ATK", return_rest=False)
+        return pd.DataFrame([[date, atk_tests, atk_tests_cum, atk_pos, atk_pos_cum]],
+                            columns=['Date', "Tests ATK Proactive", "Tests ATK Proactive Cum", "Pos ATK Proactive", "Pos ATK Proactive Cum"]).set_index("Date")
+    return df
+
+
 def briefing_documents(check=True):
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
@@ -1793,6 +1810,8 @@ def get_cases_by_prov_briefings():
 
         prov = briefing_province_cases(date, pages)
 
+        atk = briefing_atk(file, date, pages)
+
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
         # TODO: This should be redundant now with dashboard having early info on vac progress.
         for i, page in enumerate(pages):
@@ -1818,7 +1837,7 @@ def get_cases_by_prov_briefings():
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
-        types = types.combine_first(death_sum)
+        types = types.combine_first(death_sum).combine_first(atk)
 
         date_prov = date_prov.combine_first(prov)
 

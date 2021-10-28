@@ -4,7 +4,7 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_case_types, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, \
+from covid_data import briefing_atk, briefing_case_types, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, \
                        get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
                        get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
                        vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
@@ -284,7 +284,7 @@ def test_briefing_province_cases(date, testdf, dl):
     pages = parse_file(file, html=True, paged=True)
     pages = [BeautifulSoup(page, 'html.parser') for page in pages]
 
-    df = briefing_province_cases(dateutil.parser.parse(date), pages)
+    df = briefing_province_cases(file, dateutil.parser.parse(date), pages)
     # write_scrape_data_back_to_test(df, "briefing_province_cases")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
@@ -308,6 +308,20 @@ def test_vac_briefing_totals(date, testdf, dl):
         text = soup.get_text()
         df = vac_briefing_totals(df, date, "", soup, text)
     # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_atk", briefing_documents))
+def test_briefing_atk(date, testdf, dl):
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+
+    df = briefing_atk(file, dateutil.parser.parse(date), pages)
+    # write_scrape_data_back_to_test(df, "briefing_atk")
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 

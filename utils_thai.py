@@ -143,35 +143,37 @@ def previous_date(end, day):
 
 
 def find_thai_date(content, remove=False):
-    """find thai date like
+    """
+    find thai date like
     >>> print(find_thai_date('17 เม.ย. 2563'))
     2020-04-17 00:00:00
+
     >>> print(find_thai_date('28 กุมภำพันธ์  – 18 กรกฎำคม 2564'))
     2021-07-18 00:00:00
+
+    >>> print(find_thai_date("20 ต.ค. 64"))
+    2021-10-20 00:00:00
     """
 
-    thai_date = re.compile(r"([0-9]+)\s*([^ ]+)\s*(25[0-9][0-9])")
-    m3 = thai_date.search(content)
-    if m3 is None and remove:
-        return None, content
-    elif m3 is None:
-        return None
-    d2, month, year = m3.groups()
-    closest = difflib.get_close_matches(month, THAI_ABBR_MONTHS + THAI_FULL_MONTHS, 1, cutoff=0.60)
-    month = closest[0] if closest else None
+    for m3 in re.finditer(r"([0-9]+)\s*([^ ]+)\s*((?:25)?[0-9][0-9])", content):
+        d2, month, year = m3.groups()
+        if len(year) == 2:
+            year = "25" + year
+        closest = difflib.get_close_matches(month, THAI_ABBR_MONTHS + THAI_FULL_MONTHS, 1, cutoff=0.60)
+        month = closest[0] if closest else None
 
-    month = (
-        THAI_ABBR_MONTHS.index(month) + 1
-        if month in THAI_ABBR_MONTHS
-        else THAI_FULL_MONTHS.index(month) + 1
-        if month in THAI_FULL_MONTHS
-        else None
-    )
-    date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
-    if remove:
-        return date, thai_date.sub(" ", content)
-    else:
-        return date
+        month = (
+            THAI_ABBR_MONTHS.index(month) + 1
+            if month in THAI_ABBR_MONTHS
+            else THAI_FULL_MONTHS.index(month) + 1
+            if month in THAI_FULL_MONTHS
+            else None
+        )
+        if month is None:
+            continue
+        date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
+        return (date, content[:m3.start()] + " " + content[m3.end():]) if remove else date
+    return (None, content) if remove else None
 
 
 def find_date_range(content):
