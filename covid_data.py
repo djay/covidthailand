@@ -138,6 +138,9 @@ def situation_cases_cum(parsed_pdf, date):
 def situation_cases_new(parsed_pdf, date):
     if date < d("2020-11-02"):
         return pd.DataFrame()
+    if date >= d("2021-10-24"):
+        # no point. its all duplicate info now
+        return pd.DataFrame()
     _, rest = get_next_numbers(
         parsed_pdf,
         "The Disease Situation in Thailand",
