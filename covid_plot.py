@@ -492,8 +492,8 @@ def save_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
-    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
-    legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
+    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', 'Tests ATK Proactive']
+    legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', 'Tests ATK Proactive']
     plot_area(df=df,
               title='PCR Tests and PUI - Thailand', 
               legends=legends,
@@ -549,18 +549,21 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
     df['Cases per PUI3'] = df['Cases'].divide(df['Tested PUI']) / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
+    df['Postive Rate ATK Proactive'] = df['Tests ATK Proactive'] / df['Pos ATK Proactive'] * 100
 
     cols = [
         'Positivity Public+Private',
         'Positivity Cases/Tests',
         'Cases per PUI3',
         'Positivity Walkins/PUI3',
+        'Postive Rate ATK Proactive'
     ]
     legends = [
         'Positive Results per PCR Test (%) (Positive Rate)',
         'Confirmed Cases per PCR Test (%)',
         'Confirmed Cases per PUI*3 (%)',
-        'Walkin Cases per PUI*3 (%)'
+        'Walkin Cases per PUI*3 (%)',
+        'Postive Rate ATK Proactive'
     ]
     plot_area(df=df,
               title='Positive Rate: Is enough testing happening? - Thailand',
@@ -649,12 +652,14 @@ def save_plots(df: pd.DataFrame) -> None:
             'Pos XLS',
             'Pos Public',
             'ATK',
+            'Pos ATK Proactive',
             ]
     legends = ['Confirmed Cases',
                'Walkin Confirmed Cases',
-               'Positive Test Results (All)',
-               'Positive Test Results (Public)',
-               "Probable Case (Registered for home isolation from ATK)"]
+               'Positive PCR Test Results (All)',
+               'Positive PCR Test Results (Public)',
+               "Probable Case (Registered for home isolation from ATK)",
+               "Positive ATK Proactive"]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               legends=legends,
