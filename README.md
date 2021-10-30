@@ -8,7 +8,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml).
 
-## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](downloads) | [About](#about)
+## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](downloads.md) | [About](#about)
 
 **NEW** [Excess Deaths](#excess-deaths)
 
@@ -18,7 +18,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 and data feeds have been used effort has gone into making this data collection accurate and timely.
 This sites only intention is to give an accurate representation of all the available Covid data for Thailand in one place.*
 
-Links to all data sources are including in [Downloads](downloads)
+Links to all data sources are including in [Downloads](downloads.md)
 
 # Cases <a name="cases">
 
