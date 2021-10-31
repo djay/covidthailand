@@ -29,6 +29,7 @@ def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
               title: str,
+              table: pd.DataFrame = [],
               footnote: str = None,
               footnote_left: str = None,
               legends: List[str] = None,
@@ -217,13 +218,54 @@ def plot_area(df: pd.DataFrame,
             continue
 
         plt.rcParams["axes.prop_cycle"] = get_cycle(cmap, len(cols) + len(between))
-        if percent_fig:
-            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
-        else:
-            f, a0 = plt.subplots(figsize=[20, 12])
 
-        # if y_formatter is not None:
-        #     a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+        show_province_tables = len(table) > 0
+
+        # element heights
+        main_height = 17 if percent_fig or show_province_tables else 21
+        perc_height = 10
+        table_height = 10
+        spacing = 3
+        fn_left_lines = len(footnote_left.split('\n')) if footnote_left else 0
+        fn_right_lines = len(footnote.split('\n')) if footnote else 0
+        footnote_height = max(fn_left_lines, fn_right_lines)
+
+        # figure out the figure dimensions
+        figure_height = main_height
+        figure_width = 20
+        if percent_fig:
+            figure_height += perc_height + spacing
+        if show_province_tables:
+            figure_height += table_height + spacing
+        fig = plt.figure(figsize=[figure_width, 0.5 * figure_height + 0.2 * footnote_height])
+
+        grid_rows = figure_height
+        grid_columns = 4
+
+        grid_offset = 0
+        # main chart
+        a0 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=main_height)
+        grid_offset += main_height + spacing
+
+        # percent chart
+        if percent_fig:
+            a1 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=perc_height)
+            grid_offset += perc_height + spacing
+
+        # province tables
+        if show_province_tables:
+            ax_provinces = []
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=1, rowspan=table_height))
+            add_footnote(footnote_left, 'left')
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 1), colspan=1, rowspan=table_height))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 2), colspan=1, rowspan=table_height))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 3), colspan=1, rowspan=table_height))
+            add_footnote(footnote, 'right')
+
+            fill_province_tables(ax_provinces, list(table.index), list(table))
+        else:
+            add_footnote(footnote_left, 'left')
+            add_footnote(footnote, 'right')
 
         a0.set_prop_cycle(None)
         if kind != "line":
@@ -289,32 +331,15 @@ def plot_area(df: pd.DataFrame,
         if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
 
-        f.suptitle(title)
+        fig.suptitle(title)
         a0.set_title(label=subtitle)
-        if footnote:
-            plt.annotate(footnote, (0.99, 0), (0, -60),
-                         xycoords='axes fraction',
-                         textcoords='offset points',
-                         va='top',
-                         fontsize=15,
-                         horizontalalignment='right')
-        if footnote_left:
-            plt.annotate(footnote_left, (0.01, 0), (0, -60),
-                         xycoords='axes fraction',
-                         textcoords='offset points',
-                         va='top',
-                         fontsize=15,
-                         horizontalalignment='left')
 
         handles, labels = a0.get_legend_handles_labels()
         # we are skipping pandas determining which legends to show so do it manually. box lines are 'None'
         # TODO: go back to pandas doing it.
         handles, labels = zip(*[(h, l) for h, l in zip(*a0.get_legend_handles_labels()) if l not in actuals + ['None']])
 
-        leg = a0.legend(handles=handles,
-                        labels=legends,
-                        loc=legend_pos,
-                        ncol=legend_cols)
+        leg = a0.legend(handles=handles, labels=legends)
 
         for line in leg.get_lines():
             line.set_linewidth(4.0)
@@ -329,9 +354,17 @@ def plot_area(df: pd.DataFrame,
 
             right_axis(a1, perc_format, show_last_values)
             right_value_axis(df_plot, a1, leg, perccols, True, perc_format, show_last_values, 13)
+            legends = rewrite_legends(df_plot, legends, perccols, perc_format)
 
         right_axis(a0, y_formatter, show_last_values)
         right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter, show_last_values)
+
+        legends = rewrite_legends(df_plot, legends, cols, y_formatter)
+
+        a0.legend(handles=handles,
+                  labels=legends,
+                  loc=legend_pos,
+                  ncol=legend_cols)
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -340,6 +373,65 @@ def plot_area(df: pd.DataFrame,
         plt.close()
 
     return None
+
+
+def fill_province_tables(ax_provinces, provinces, values):
+    """Create an info table showing last values."""
+    number_columns = len(ax_provinces)
+    provinces_per_column = int(np.ceil(len(provinces) / number_columns))
+
+    for ax_number, axis in enumerate(ax_provinces):
+        row_labels = provinces[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
+        row_values = values[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
+
+        cell_text = []
+        cell_colors = []
+        for value_number, province in enumerate(row_labels):
+            value = row_values[value_number]
+            cell_text.append([f'{human_format(value,0)}', ])
+            cell_colors.append([theme_dark_back, ])
+            
+        axis.set_axis_off() 
+        table = axis.table(cellLoc='right',  loc='upper right',
+            rowLabels=row_labels, cellText=cell_text,  cellColours=cell_colors)       
+        table.auto_set_column_width((0, 1))
+        table.auto_set_font_size(False)
+        table.set_fontsize(14)
+        table.scale(1, 1.35)
+
+        for cell in table.get_celld().values():
+            cell.visible_edges = 'open'
+            cell.set_text_props(color=theme_light_text)
+
+
+def rewrite_legends(df, legends, cols, y_formatter):
+    """Rewrite the legends."""
+    new_legends = []
+    if y_formatter is thaipop: y_formatter = thaipop2
+
+    # add the values to the legends
+    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    for number, value in enumerate(values):
+        if not np.isnan(value) and number < len(legends): 
+            new_legends.append(f'{y_formatter(value, 0)} {legends[number]}')
+    
+    # add the remaining legends without values
+    while len(new_legends) < len(legends):
+        new_legends.append(legends[len(new_legends)])
+
+    return new_legends
+        
+
+def add_footnote(footnote, location):
+    if footnote:
+        if location == 'left':
+            plt.annotate(footnote, (0, 0), (0, -70),
+                         xycoords='axes fraction', textcoords='offset points',
+                         fontsize=15, va='top', horizontalalignment='left')
+        if location == 'right':
+            plt.annotate(footnote, (1, 0), (0, -70),
+                         xycoords='axes fraction',textcoords='offset points',
+                         fontsize=15, va='top', horizontalalignment='right')
 
 
 def clean_axis(axis, y_formatter):
