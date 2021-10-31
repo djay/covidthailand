@@ -8,7 +8,7 @@ from covid_data import briefing_case_types, briefing_deaths_provinces, briefing_
                        get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
                        get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
                        vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
-                       situation_pui_en, briefing_province_cases
+                       situation_pui_en, briefing_province_cases, situation_cases_new
 import pandas as pd
 import pytest
 import dateutil
@@ -337,3 +337,18 @@ def test_situation_pui_en(date, testdf, dl):
 
     # write_scrape_data_back_to_test(df, "situation_pui_en", fname=file, date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("situation_cases_new", get_english_situation_files))
+def test_situation_cases_new(date, testdf, dl):
+    results = pd.DataFrame(columns=["Date"]).set_index("Date")
+    file = dl()
+    assert dl is not None
+    date = dateutil.parser.parse(date)
+
+    parsed_pdf = parse_file(file, html=False, paged=False)
+    df = situation_cases_new(parsed_pdf, date)
+
+    # write_scrape_data_back_to_test(df, "situation_cases_new", fname=file, date=date)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
