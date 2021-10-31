@@ -138,6 +138,9 @@ def situation_cases_cum(parsed_pdf, date):
 def situation_cases_new(parsed_pdf, date):
     if date < d("2020-11-02"):
         return pd.DataFrame()
+    if date >= d("2021-10-24"):
+        # no point. its all duplicate info now
+        return pd.DataFrame()
     _, rest = get_next_numbers(
         parsed_pdf,
         "The Disease Situation in Thailand",
@@ -2474,7 +2477,7 @@ def vaccination_tables(df, date, page, file):
             # fix some number broken in the middle
             line = re.sub(r"(\d+ ,\d+)", lambda x: x.group(0).replace(" ", ""), line)
             area, *rest = line.split(' ', 1)
-            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม", 'ตั้งแต่วันที่', 'หมายเหตุ']:  # Extra heading
+            if area in ["เข็มที่", "และ", "จ", "ควำมครอบคลุม", 'ตั้งแต่วันที่', 'หมายเหตุ', 'เขต', 'เข็ม']:  # Extra heading
                 continue
             if area == "รวม" or not rest:
                 continue  # previously meant end of table. Now can be part of header. 2021-08-14
@@ -3089,6 +3092,7 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
+        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
@@ -3098,7 +3102,6 @@ def scrape_and_combine():
         briefings_prov__cases_briefings = pool.apply_async(get_cases_by_prov_briefings)
     
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
-        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
 
         situation = pool.apply_async(get_situation)
         tests_reports = pool.apply_async(get_test_reports)

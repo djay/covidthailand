@@ -1,0 +1,49 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Cases",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Local Transmission",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Imported",
+        "type":"string"
+      },
+      {
+        "name":"Cases In Quarantine",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Outside Quarantine",
+        "type":"string"
+      },
+      {
+        "name":"Cases Proactive",
+        "type":"string"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-09-26T00:00:00.000Z",
+      "Cases":12353,
+      "Cases Local Transmission":10809,
+      "Cases Imported":null,
+      "Cases In Quarantine":12,
+      "Cases Outside Quarantine":null,
+      "Cases Proactive":null
+    }
+  ]
+}
