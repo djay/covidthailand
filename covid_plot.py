@@ -350,7 +350,7 @@ def plot_area(df: pd.DataFrame,
             a1.set_ylim(bottom=0, top=100)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
 
-            right_axis(a1, perc_format, show_last_values)
+            right_axis(a1, perc_format)
             right_value_axis(df_plot, a1, leg, perccols, True, perc_format, 13)
             legends = rewrite_legends(df_plot, legends, perccols, perc_format)
 
