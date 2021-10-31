@@ -37,7 +37,6 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
-              show_last_values: bool = True,
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
@@ -63,7 +62,6 @@ def plot_area(df: pd.DataFrame,
     :param kind: the type of plot (line chart or area chart)
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
-    :param show_last_values: show the last actual values on the right axis
     :param limit_to_zero: limit the bottom of the y-axis to 0
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals
@@ -222,9 +220,6 @@ def plot_area(df: pd.DataFrame,
         else:
             f, a0 = plt.subplots(figsize=[20, 12])
 
-        # if y_formatter is not None:
-        #     a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
-
         a0.set_prop_cycle(None)
         if kind != "line":
             areacols = [c for c in cols if c not in between]
@@ -327,11 +322,12 @@ def plot_area(df: pd.DataFrame,
             a1.set_ylim(bottom=0, top=100)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
 
-            right_axis(a1, perc_format, show_last_values)
-            right_value_axis(df_plot, a1, leg, perccols, True, perc_format, show_last_values, 13)
+            right_axis(a1, perc_format)
+            right_value_axis(df_plot, a1, leg, perccols, True, perc_format, 13)
 
-        right_axis(a0, y_formatter, show_last_values)
-        right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter, show_last_values)
+        right_axis(a0, y_formatter)
+        if not (kind == 'bar' and stacked == False):
+            right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter)
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -352,21 +348,18 @@ def clean_axis(axis, y_formatter):
         axis.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
 
-def right_axis(axis, y_formatter, show_last_values):
+def right_axis(axis, y_formatter):
     """Create clean secondary right axis."""
     new_axis = axis.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
     clean_axis(new_axis, y_formatter)
-    if show_last_values:
-        new_axis.set_color(color='#784d00')
+    new_axis.set_color(color='#784d00')
     return new_axis
 
 
-def right_value_axis(df, axis, legend, cols, stacked, y_formatter, show_last_values, max_ticks=27):
+def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27):
     """Create clean secondary right axis showning actual values."""
-    if not show_last_values: return
-
     if y_formatter is thaipop: y_formatter = thaipop2
-    new_axis = right_axis(axis, y_formatter, show_last_values)
+    new_axis = right_axis(axis, y_formatter)
 
     values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     bottom, top = axis.get_ylim()
@@ -594,7 +587,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests_per_case', cols_subset=cols,
               ma_days=7,
-              kind='line', stacked=False, percent_fig=False, show_last_values=False,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
@@ -940,7 +933,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False,
+              kind='area', stacked=False, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive tests.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
@@ -975,7 +968,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND,
               png_prefix='cases_areas_proactive', cols_subset=cols,
               ma_days=None,
-              kind='area', stacked=True, percent_fig=False, show_last_values=False,
+              kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -989,7 +982,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='cases_from_positives_area', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
+              kind='area', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -1185,7 +1178,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 2'],
         periods_to_plot=["30d", "2"],  # too slow to do all
         ma_days=None,
-        kind='bar', stacked=True, percent_fig=False, show_last_values=False,
+        kind='bar', stacked=True, percent_fig=False,
         cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
@@ -1282,7 +1275,7 @@ def save_plots(df: pd.DataFrame) -> None:
         kind='line',
         actuals=list(pred2.columns),
         ma_days=None,
-        stacked=False, percent_fig=False, show_last_values=False,
+        stacked=False, percent_fig=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
@@ -1297,7 +1290,7 @@ def save_plots(df: pd.DataFrame) -> None:
         png_prefix='vac_groups_goals_half', cols_subset=cols2,
         actuals=list(pred1.columns),
         ma_days=None,
-        kind='line', stacked=False, percent_fig=False, show_last_values=False,
+        kind='line', stacked=False, percent_fig=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
@@ -1776,7 +1769,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None,
-              kind='bar', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
+              kind='bar', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               footnote='\n\n\n\nNote: Number of deaths from all causes compared to previous years.',
               footnote_left=f'\n\n\n\n{source}Data Source: MOPH Covid-19 Dashboard')
