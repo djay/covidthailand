@@ -505,7 +505,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote='Note: Totals exclude some proactive testing.\n'
                         + 'PCR: Polymerase Chain Reaction\n'
                         + 'PUI: Person Under Investigation\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.',
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Tested Cum',
@@ -523,7 +523,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote='Note: Excludes some proactive tests.\n'
                         + 'PCR: Polymerase Chain Reaction\n'
                         + 'PUI: Person Under Investigation\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.',
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
@@ -543,7 +543,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.',
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     ###############
@@ -608,7 +608,10 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab10',
-              footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
+              footnote='\nPUI: Person Under Investigation\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
+                        + 'so it is included for when testing data is delayed. It is not the actual positive rate.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Positivity Cases/Tests',
@@ -699,7 +702,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=21,
         kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
-        footnote='Proactive: Done at high risk locations, rather than random sampling.',
+        footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
         footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
@@ -725,7 +728,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=None,
         kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
-        footnote='Proactive: Done at high risk locations, rather than random sampling.',
+        footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
         footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Cases',
@@ -762,8 +765,10 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap="tab10",
               footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
                         + 'Contact tracing counts as a Walk-in.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
                         + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.',
+                        + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     cols = ['Cases Symptomatic', 'Cases Asymptomatic']
@@ -809,7 +814,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote='Grouped from original data which has over 70 risk categories.\n'
                         + 'Clusters have been grouped into either Work (factories),\n'
                         + 'Entertainment (bars/gambling...) or Community (markets) related.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.',
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
 
     ##########################
@@ -826,7 +831,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
@@ -839,7 +844,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
@@ -857,7 +862,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
@@ -876,7 +881,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
@@ -901,7 +906,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote='PCR: Polymerase Chain Reaction\n'
                         + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
                         + 'Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.',
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
 
@@ -982,7 +987,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=False, percent_fig=False, show_last_values=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Done at high risk locations, rather than random sampling.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
@@ -1008,6 +1013,8 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
+              footnote='Walk-in: Testing done at hospital or test lab (PCR test).\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
@@ -1018,7 +1025,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False, show_last_values=False,
               cmap='tab20',
-              footnote='Proactive: Done at high risk locations, rather than random sampling.',
+              footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -1089,8 +1096,8 @@ def save_plots(df: pd.DataFrame) -> None:
         'Recovered since 2021-04-01',
     ]
     legends = [
-        'Deaths from cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)',
-        'In Hospital/Mild', 'In Field Hospital', 'Recovered from cases since 1st April'
+        'Deaths from Cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)',
+        'In Hospital/Mild', 'In Field Hospital', 'Recovered from Cases since 1st April'
     ]
     plot_area(df=df,
               title='Covid Cases by Current Outcome since 1st April 2021 - Thailand',
@@ -1537,7 +1544,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='\nNote: Per 100,000 people.',
+              footnote='\nNote: Per 100,000 people.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'Walk-in: Testing done at hospital or test lab (PCR test).',
               footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
@@ -1555,7 +1564,7 @@ def save_plots(df: pd.DataFrame) -> None:
                   kind='line', stacked=False, percent_fig=False,
                   cmap='tab10',
                   footnote='\nNote: Per 100,000 people.\n'
-                            + 'Proactive: Done at high risk locations, rather than random sampling.',
+                            + 'Proactive: Testing done at high risk locations, rather than random sampling.',
                   footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     def top(func, _):
@@ -1749,7 +1758,8 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab20_r',
               y_formatter=perc_format,
-              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit',
+              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     # Excess Deaths
