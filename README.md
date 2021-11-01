@@ -37,7 +37,7 @@ Links to all data sources are including in [Downloads](downloads)
  
 ## Cases by Where Tested
 
-![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_2.png)
+![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_3.png)
 
 - [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 - Contact tracing normally counts as a "Walk-in"
@@ -47,7 +47,7 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Cases by Risk Group
 
-![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_2.png)
+![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_3.png)
 
 - Grouped from original data which has over 70 risk categories. Clusters have
   been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
@@ -60,7 +60,7 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Cases by Health District
 
-![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_2.png)
+![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_3.png)
 
 - To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/)
 - [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
@@ -72,28 +72,28 @@ Links to all data sources are including in [Downloads](downloads)
 
 To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/)
 
-![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_30d.png)
+![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_3.png)
 
-![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_30d.png)
+![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_3.png)
 
-![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_30d.png)
+![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_3.png)
 
-![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png)
+![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
 
-![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png)
+![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png)
 
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 - see also
-   [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_30d.png),
-   [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_30d.png),
-   [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_30d.png),
-   [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_30d.png),
-   [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_30d.png) and
-   [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_30d.png)
+   [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_3.png),
+   [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png),
+   [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png),
+   [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_3.png),
+   [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_3.png) and
+   [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_3.png)
 ## Cases by Age
 
-![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_2.png)
+![Ages of Confirmed cases](https://github.com/djay/covidthailand/wiki/cases_ages_3.png)
 
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
@@ -106,9 +106,9 @@ To see cases for every province go to [The Researcher Covid Tracker](https://cov
 
 ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
-![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_30d.png)
+![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_3.png)
 
-![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_30d.png)
+![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_3.png)
 
 
 - Break down of active case status only available from 2020-04-24 onwards.

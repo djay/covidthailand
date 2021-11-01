@@ -1621,7 +1621,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               table = provtable,
-              footnote='Note: Per 100,000 people.',
+              footnote='Note: Table shows total cases for that province',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
