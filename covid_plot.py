@@ -352,13 +352,13 @@ def plot_area(df: pd.DataFrame,
 
             right_axis(a1, perc_format)
             right_value_axis(df_plot, a1, leg, perccols, True, perc_format, 13)
-            legends = rewrite_legends(df_plot, legends, perccols, perc_format)
+            # legends = rewrite_legends(df_plot, legends, perccols, perc_format)
 
         right_axis(a0, y_formatter)
         if not (kind == 'bar' and stacked == False):
             right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter)
 
-        legends = rewrite_legends(df_plot, legends, cols, y_formatter)
+        # legends = rewrite_legends(df_plot, legends, cols, y_formatter)
 
         a0.legend(handles=handles,
                   labels=legends,
