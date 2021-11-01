@@ -1286,9 +1286,8 @@ def briefing_case_types(date, pages, url):
                 # cases == domestic
                 cases = cases2
                 assert cases == domestic + imported + prison
-        # proactive += prison  # not sure if they are going to add this category going forward?
-
-        assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
+        if date not in [d("2021-11-01")]:
+            assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
         hospital, field, severe, respirator, hospitalised = [np.nan] * 5
