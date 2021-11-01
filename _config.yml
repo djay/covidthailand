@@ -10,7 +10,6 @@ plugins:
   - jekyll-optional-front-matter
   - jekyll-readme-index
   - jekyll-default-layout
-  - jekyll-titles-from-headings
 
 social-network-links:
    github: djay

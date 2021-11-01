@@ -18,3 +18,8 @@ tweets/
 .env
 vaccinations/
 outputs/*.html
+_site/
+vendor/
+.sass-cache/
+Gemfile.lock
+.bundle/
