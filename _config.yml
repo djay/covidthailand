@@ -5,6 +5,13 @@ image: https://github.com/djay/covidthailand/wiki/tests_all.png
 page:
    image: https://github.com/djay/covidthailand/wiki/tests_all.png
 google_analytics: UA-167358587-2
+plugins:
+  - jekyll-titles-from-headings
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
+
 social-network-links:
    github: djay
    twitter: djay75
