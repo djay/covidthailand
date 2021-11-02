@@ -1033,7 +1033,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       lambda df: df["Positive Rate Dash"] * 100,
                       name="Province Positive Rate",
                       other_name=None,
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Positive Rate - Top Provinces - Thailand',
@@ -1050,7 +1050,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       lambda df: df["Positive Rate Dash"] * 100,
                       name="Province Positive Rate",
                       other_name=None,
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Positive Rate - Lowest Provinces - Thailand',
@@ -1577,7 +1577,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Up Provinces - Thailand',
@@ -1593,7 +1593,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Down Provinces - Thailand',
@@ -1608,7 +1608,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases",
                       other_name="Other Provinces",
-                      num=6)
+                      num=5)
     cols = top5.columns.to_list()
     provtable = cases.reset_index()
     provtable = pd.crosstab(index=provtable['Date'], columns=provtable['Province'], values=provtable['Cases'], aggfunc="max")
@@ -1629,7 +1629,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita('Cases Walkin'),
                       name="Province Cases Walkin (7d MA)",
                       other_name="Other Provinces",
-                      num=6)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
@@ -1648,7 +1648,7 @@ def save_plots(df: pd.DataFrame) -> None:
                           cases_per_capita(f"Cases Risk: {risk}"),
                           name=f"Province Cases {risk} (7d MA)",
                           other_name="Other Provinces",
-                          num=6)
+                          num=5)
         cols = top5.columns.to_list()
         plot_area(df=top5,
                   title=f'{risk} Related Covid Cases/100k - Trending Up Provinces - Thailand',
