@@ -134,12 +134,12 @@ jobs:
         run: 
           du inputs | tee outputfiles.txt
       - uses: nelonoel/branch-name@v1.0.1
-      - uses: jsmrcaga/action-netlify-deploy@master
+      - uses: netlify/actions/cli@master
         with:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: practical-ritchie-cca141
-          deploy_alias: ${{ env.BRANCH_NAME }}
-          build_directory: _site
+           args: deploy --build --dir=. --alias=${{ env.BRANCH_NAME }}
+        env:
+           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       # Creates a status check with link to preview
       - name: Status check
         uses: Sibz/github-status-action@v1.1.1
@@ -147,7 +147,7 @@ jobs:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: https://${{ env.BRANCH_NAME }}--practical-ritchie-cca141.netlify.app
+          target_url: https://${{ env.BRANCH_NAME }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
