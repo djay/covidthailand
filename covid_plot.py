@@ -375,9 +375,17 @@ def plot_area(df: pd.DataFrame,
 
     return None
 
+def trend_indicator(trend):
+    """Get the trend indicator and corresponding color."""
+    arrows = ('→', '↗', '↑', '↓', '↘')
+    colors = ('#444400', '#008800', '#00ff00', '#ff0000', '#880000')
+    trend_slot = min(max(round(trend * 2), -2), 2)
+    return arrows[trend_slot], colors[trend_slot]
+
 
 def fill_province_tables(ax_provinces, provinces, values):
     """Create an info table showing last values."""
+
     number_columns = len(ax_provinces)
     provinces_per_column = int(np.ceil(len(provinces) / number_columns))
 
@@ -385,15 +393,20 @@ def fill_province_tables(ax_provinces, provinces, values):
         row_labels = provinces[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
         row_values = values[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
 
+        # generate the the cell values and colors
         cell_text = []
         cell_colors = []
+        trend_colors = []
         for value_number, province in enumerate(row_labels):
             if row_labels[value_number] == 'Phra Nakhon Si Ayutthaya':
                 row_labels[value_number] = 'Ayutthaya'
-            value = row_values[value_number]
-            cell_text.append([f'{human_format(value,0)}', ])
-            cell_colors.append([theme_dark_back, ])
-            
+            value = row_values[value_number] 
+            trend_arrow, trend_color = trend_indicator(0.5 * (4 - value_number % 5) - 1)
+            cell_text.append([f'{human_format(value,0)}', trend_arrow])
+            cell_colors.append([theme_dark_back, theme_dark_back])
+            trend_colors.append(trend_color)
+
+        # create the table    
         axis.set_axis_off() 
         table = axis.table(cellLoc='right',  loc='upper right',
             rowLabels=row_labels, cellText=cell_text,  cellColours=cell_colors)       
@@ -402,9 +415,14 @@ def fill_province_tables(ax_provinces, provinces, values):
         table.set_fontsize(15)
         table.scale(1, 1.35)
 
+        # fix the formating
         for cell in table.get_celld().values():
             cell.visible_edges = 'open'
             cell.set_text_props(color=theme_light_text)
+
+        # fix the trend colors
+        for row_number, color in enumerate(trend_colors):
+            table[(row_number, 1)].set_text_props(color=color)
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
@@ -573,7 +591,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
-
+    """
     dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
 
     # Computed data
@@ -1554,7 +1572,7 @@ def save_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
-
+    """
     #######################
     # Cases by provinces
     #######################
