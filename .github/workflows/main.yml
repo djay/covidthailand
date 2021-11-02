@@ -133,6 +133,21 @@ jobs:
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
+      - uses: nelonoel/branch-name@v1.0.1
+      - uses: jsmrcaga/action-netlify-deploy@master
+        with:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          deploy_alias: ${{ env.BRANCH_NAME }}
+          build_directory: _site
+      # Creates a status check with link to preview
+      - name: Status check
+        uses: Sibz/github-status-action@v1.1.1
+        with:
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: Netlify preview
+          state: success
+          target_url: https://${{ env.BRANCH_NAME }}--my-site.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
