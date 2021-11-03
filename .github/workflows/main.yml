@@ -151,7 +151,7 @@ jobs:
         if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
-           args: deploy --dir=./_site --alias=${{ env.GITHUB_REF_NAME_SLUG }}
+           args: deploy --dir=./_site --alias=${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -162,7 +162,7 @@ jobs:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: https://${{ env.GITHUB_REF_NAME_SLUG }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Netlify prod deploy
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: netlify/actions/cli@master
