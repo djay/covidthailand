@@ -12,9 +12,9 @@ plugins:
   - jekyll-default-layout
 exclude:
   - inputs/
-  - outputs/
-  - ./*.py
+  - '*.py'
   - vendor
+  - tests
 social-network-links:
    github: djay
    twitter: djay75
