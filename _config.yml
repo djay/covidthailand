@@ -10,7 +10,11 @@ plugins:
   - jekyll-optional-front-matter
   - jekyll-readme-index
   - jekyll-default-layout
-
+exclude:
+  - inputs/
+  - outputs/
+  - ./*.py
+  - vendor
 social-network-links:
    github: djay
    twitter: djay75

@@ -141,7 +141,7 @@ jobs:
         run: |
           bundle config set --local path vendor/bundle
           bundler install --jobs 4 --retry 3
-          sed 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
+          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
           bundle exec jekyll build --destination=./outputs
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
