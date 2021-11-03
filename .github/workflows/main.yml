@@ -133,11 +133,15 @@ jobs:
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.8          
       - name: Jekyll Build
         run: |
-          gem update bundler
+          gem install bundler
           bundle config set --local path vendor/bundle
-          bundler install
+          bundler install --jobs 4 --retry 3
           sed 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
           bundle exec jekyll build --destination=./outputs
       - name: Extract branch name
