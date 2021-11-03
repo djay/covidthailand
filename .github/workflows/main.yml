@@ -144,18 +144,23 @@ jobs:
           bundler install --jobs 4 --retry 3
           sed 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
           bundle exec jekyll build --destination=./outputs
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
       - name: Netlify preview deploy
         if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
-           args: deploy --dir=./outputs --alias=${{ steps.extract_branch.outputs.branch }}
+           args: deploy --dir=./outputs --alias=${{ env.GITHUB_REF_NAME }}
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      - name: Netlify preview announce
+        uses: Sibz/github-status-action@v1.1.1
+        with:
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: Netlify preview
+          state: success
+          target_url: https://${{ env.GITHUB_REF_NAME }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Netlify prod deploy
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: netlify/actions/cli@master
@@ -170,7 +175,7 @@ jobs:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: https://${{ steps.extract_branch.outputs.branch }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://${{ env.GITHUB_REF_NAME }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
