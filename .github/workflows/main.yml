@@ -140,11 +140,15 @@ jobs:
           bundler install
           sed 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
           bundle exec jekyll build --destination=./outputs
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Netlify preview deploy
         if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
-           args: deploy --dir=./outputs --alias=${{ github.ref##*/ }}-${{ github.head_ref##*/ }}
+           args: deploy --dir=./outputs --alias=${{ steps.extract_branch.outputs.branch }}
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -162,7 +166,7 @@ jobs:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: https://${{ github.ref##*/ }}-${{ github.head_ref##*/ }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://${{ steps.extract_branch.outputs.branch }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
