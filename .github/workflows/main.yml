@@ -133,21 +133,36 @@ jobs:
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
-      - uses: nelonoel/branch-name@v1.0.1
-      - uses: netlify/actions/cli@master
+      - name: Jekyll Build
+        run: |
+          gem update bundler
+          bundle config set --local path vendor/bundle
+          bundler install
+          sed 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
+          bundle exec jekyll build --destination=./outputs
+      - name: Netlify preview deploy
+        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
+        uses: netlify/actions/cli@master
         with:
-           args: deploy --build --dir=. --alias=${{ env.BRANCH_NAME }}
+           args: deploy --dir=./outputs --alias=${{ github.ref##*/ }}-${{ github.head_ref##*/ }}
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      # Creates a status check with link to preview
-      - name: Status check
+      - name: Netlify prod deploy
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: netlify/actions/cli@master
+        with:
+           args: deploy  --dir=./outputs --prod
+        env:
+           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      - name: Netlify preview announce
         uses: Sibz/github-status-action@v1.1.1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: https://${{ env.BRANCH_NAME }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://${{ github.ref##*/ }}-${{ github.head_ref##*/ }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
