@@ -133,13 +133,12 @@ jobs:
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
-      - name: Set up Ruby
-        uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.6          
+          ruby-version: 2.6 # Not needed with a .ruby-version file
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       - name: Jekyll Build
         run: |
-          gem install bundler
           bundle config set --local path vendor/bundle
           bundler install --jobs 4 --retry 3
           sed 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
