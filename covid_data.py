@@ -1369,7 +1369,7 @@ def briefing_case_types(date, pages, url):
     return df
 
 
-def briefing_province_cases(date, pages):
+def briefing_province_cases(file, date, pages):
     # TODO: also can be got from https://ddc.moph.go.th/viralpneumonia/file/scoreboard/scoreboard_02062564.pdf
     # Seems updated around 3pm so perhaps not better than briefing
     if date < d("2021-01-13"):
@@ -1810,7 +1810,7 @@ def get_cases_by_prov_briefings():
         case_detail = briefing_case_detail(date, pages)
         date_prov_types = date_prov_types.combine_first(case_detail)
 
-        prov = briefing_province_cases(date, pages)
+        prov = briefing_province_cases(file, date, pages)
 
         atk = briefing_atk(file, date, pages)
 

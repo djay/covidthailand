@@ -137,7 +137,7 @@ def test_vac_tables_inc(get_file1, get_file2):
     if (df2 := parse_vac_tables(get_file2)).empty:
         return
     # TODO: some files have no data in. So really need to get a range and compare to the last one with data?
-    df = df1.combine_first(df2).dropna(axis=1) # don't compare empty cols
+    df = df1.combine_first(df2).dropna(axis=1)  # don't compare empty cols
 
     if len(df.index) < 154:
         # for some reason two files gave data for the same day?
