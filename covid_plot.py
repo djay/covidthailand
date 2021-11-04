@@ -403,7 +403,7 @@ def fill_province_tables(ax_provinces, provinces, values):
             value = row_values[value_number] 
             trend_arrow, trend_color = trend_indicator(0.5 * (4 - value_number % 5) - 1)
             cell_text.append([f'{human_format(value,0)}', trend_arrow])
-            cell_colors.append([theme_dark_back, theme_dark_back])
+            cell_colors.append([theme_light_back, trend_color])
             trend_colors.append(trend_color)
 
         # create the table    
@@ -417,12 +417,15 @@ def fill_province_tables(ax_provinces, provinces, values):
 
         # fix the formating
         for cell in table.get_celld().values():
-            cell.visible_edges = 'open'
+            # cell.visible_edges = 'open'
             cell.set_text_props(color=theme_light_text)
 
         # fix the trend colors
         for row_number, color in enumerate(trend_colors):
-            table[(row_number, 1)].set_text_props(color=color)
+            table[(row_number, 1)].set_text_props(color='blue')
+            table[(row_number, 1)].set_color(color)
+            table[(row_number, -1)].set_color(theme_light_back)
+            table[(row_number, 0)].set_color(theme_light_back)
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
