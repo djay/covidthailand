@@ -285,7 +285,7 @@ def trendline_slow(data: pd.DataFrame, order: int = 1) -> float:
     return float(coeffs[-2])
 
 
-def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand"):
+def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other_name="Rest of Thailand", return_all=False):
     "return df with columns of valuefunc for the top x provinces by metricfunc"
     # Top 5 dfcine rollouts
     # old_index = df.index.names
@@ -314,7 +314,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
     values = df.set_index(["Date", name]).groupby(level=name, group_keys=False).apply(valuefunc).rename(0).reset_index()
     # put the provinces into cols. use max to ensure NA aren't included. Should only be one value anyway?
     # TODO: is aggfunc=lambda df: df.sum(skipna=False) better?
-    series = pd.crosstab(values['Date'], values[name], values[0], aggfunc="max")
+    series = pd.crosstab(index=values['Date'], columns=values[name], values=values[0], aggfunc="max")
 
     cols = list(top5[name])  # in right order
     if other_name:

@@ -29,6 +29,7 @@ def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
               title: str,
+              table: pd.DataFrame = [],
               footnote: str = None,
               footnote_left: str = None,
               legends: List[str] = None,
@@ -37,7 +38,6 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
-              show_last_values: bool = True,
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
@@ -63,7 +63,6 @@ def plot_area(df: pd.DataFrame,
     :param kind: the type of plot (line chart or area chart)
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
-    :param show_last_values: show the last actual values on the right axis
     :param limit_to_zero: limit the bottom of the y-axis to 0
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals
@@ -217,13 +216,54 @@ def plot_area(df: pd.DataFrame,
             continue
 
         plt.rcParams["axes.prop_cycle"] = get_cycle(cmap, len(cols) + len(between))
-        if percent_fig:
-            f, (a0, a1) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 2]}, figsize=[20, 15])
-        else:
-            f, a0 = plt.subplots(figsize=[20, 12])
 
-        # if y_formatter is not None:
-        #     a0.yaxis.set_major_formatter(FuncFormatter(y_formatter))
+        show_province_tables = len(table) > 0
+
+        # element heights
+        main_height = 17 if percent_fig or show_province_tables else 21
+        perc_height = 10
+        table_height = 10
+        spacing = 3
+        fn_left_lines = len(footnote_left.split('\n')) if footnote_left else 0
+        fn_right_lines = len(footnote.split('\n')) if footnote else 0
+        footnote_height = max(fn_left_lines, fn_right_lines)
+
+        # figure out the figure dimensions
+        figure_height = main_height
+        figure_width = 20
+        if percent_fig:
+            figure_height += perc_height + spacing
+        if show_province_tables:
+            figure_height += table_height + spacing
+        fig = plt.figure(figsize=[figure_width, 0.5 * figure_height + 0.2 * footnote_height])
+
+        grid_rows = figure_height
+        grid_columns = 4
+
+        grid_offset = 0
+        # main chart
+        a0 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=main_height)
+        grid_offset += main_height + spacing
+
+        # percent chart
+        if percent_fig:
+            a1 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=perc_height)
+            grid_offset += perc_height + spacing
+
+        # province tables
+        if show_province_tables:
+            ax_provinces = []
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=1, rowspan=table_height))
+            add_footnote(footnote_left, 'left')
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 1), colspan=1, rowspan=table_height))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 2), colspan=1, rowspan=table_height))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 3), colspan=1, rowspan=table_height))
+            add_footnote(footnote, 'right')
+
+            fill_province_tables(ax_provinces, list(table.index), list(table))
+        else:
+            add_footnote(footnote_left, 'left')
+            add_footnote(footnote, 'right')
 
         a0.set_prop_cycle(None)
         if kind != "line":
@@ -289,32 +329,15 @@ def plot_area(df: pd.DataFrame,
         if kind == "bar" and is_dates:
             set_time_series_labels_2(df_plot, a0)
 
-        f.suptitle(title)
+        fig.suptitle(title)
         a0.set_title(label=subtitle)
-        if footnote:
-            plt.annotate(footnote, (0.99, 0), (0, -60),
-                         xycoords='axes fraction',
-                         textcoords='offset points',
-                         va='top',
-                         fontsize=15,
-                         horizontalalignment='right')
-        if footnote_left:
-            plt.annotate(footnote_left, (0.01, 0), (0, -60),
-                         xycoords='axes fraction',
-                         textcoords='offset points',
-                         va='top',
-                         fontsize=15,
-                         horizontalalignment='left')
 
         handles, labels = a0.get_legend_handles_labels()
         # we are skipping pandas determining which legends to show so do it manually. box lines are 'None'
         # TODO: go back to pandas doing it.
         handles, labels = zip(*[(h, l) for h, l in zip(*a0.get_legend_handles_labels()) if l not in actuals + ['None']])
 
-        leg = a0.legend(handles=handles,
-                        labels=legends,
-                        loc=legend_pos,
-                        ncol=legend_cols)
+        leg = a0.legend(handles=handles, labels=legends)
 
         for line in leg.get_lines():
             line.set_linewidth(4.0)
@@ -327,11 +350,20 @@ def plot_area(df: pd.DataFrame,
             a1.set_ylim(bottom=0, top=100)
             df_plot.plot(ax=a1, y=perccols, kind='area', legend=False)
 
-            right_axis(a1, perc_format, show_last_values)
-            right_value_axis(df_plot, a1, leg, perccols, True, perc_format, show_last_values, 13)
+            right_axis(a1, perc_format)
+            right_value_axis(df_plot, a1, leg, perccols, True, perc_format, 13)
+            # legends = rewrite_legends(df_plot, legends, perccols, perc_format)
 
-        right_axis(a0, y_formatter, show_last_values)
-        right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter, show_last_values)
+        right_axis(a0, y_formatter)
+        if not (kind == 'bar' and stacked == False):
+            right_value_axis(df_plot, a0, leg, cols, stacked, y_formatter)
+
+        # legends = rewrite_legends(df_plot, legends, cols, y_formatter)
+
+        a0.legend(handles=handles,
+                  labels=legends,
+                  loc=legend_pos,
+                  ncol=legend_cols)
 
         plt.tight_layout()
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
@@ -340,6 +372,65 @@ def plot_area(df: pd.DataFrame,
         plt.close()
 
     return None
+
+
+def fill_province_tables(ax_provinces, provinces, values):
+    """Create an info table showing last values."""
+    number_columns = len(ax_provinces)
+    provinces_per_column = int(np.ceil(len(provinces) / number_columns))
+
+    for ax_number, axis in enumerate(ax_provinces):
+        row_labels = provinces[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
+        row_values = values[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
+
+        cell_text = []
+        cell_colors = []
+        for value_number, province in enumerate(row_labels):
+            value = row_values[value_number]
+            cell_text.append([f'{human_format(value,0)}', ])
+            cell_colors.append([theme_dark_back, ])
+            
+        axis.set_axis_off() 
+        table = axis.table(cellLoc='right',  loc='upper right',
+            rowLabels=row_labels, cellText=cell_text,  cellColours=cell_colors)       
+        table.auto_set_column_width((0, 1))
+        table.auto_set_font_size(False)
+        table.set_fontsize(14)
+        table.scale(1, 1.35)
+
+        for cell in table.get_celld().values():
+            cell.visible_edges = 'open'
+            cell.set_text_props(color=theme_light_text)
+
+
+def rewrite_legends(df, legends, cols, y_formatter):
+    """Rewrite the legends."""
+    new_legends = []
+    if y_formatter is thaipop: y_formatter = thaipop2
+
+    # add the values to the legends
+    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    for number, value in enumerate(values):
+        if not np.isnan(value) and number < len(legends): 
+            new_legends.append(f'{y_formatter(value, 0)} {legends[number]}')
+    
+    # add the remaining legends without values
+    while len(new_legends) < len(legends):
+        new_legends.append(legends[len(new_legends)])
+
+    return new_legends
+        
+
+def add_footnote(footnote, location):
+    if footnote:
+        if location == 'left':
+            plt.annotate(footnote, (0, 0), (0, -70),
+                         xycoords='axes fraction', textcoords='offset points',
+                         fontsize=15, va='top', horizontalalignment='left')
+        if location == 'right':
+            plt.annotate(footnote, (1, 0), (0, -70),
+                         xycoords='axes fraction',textcoords='offset points',
+                         fontsize=15, va='top', horizontalalignment='right')
 
 
 def clean_axis(axis, y_formatter):
@@ -352,21 +443,18 @@ def clean_axis(axis, y_formatter):
         axis.yaxis.set_major_formatter(FuncFormatter(y_formatter))
 
 
-def right_axis(axis, y_formatter, show_last_values):
+def right_axis(axis, y_formatter):
     """Create clean secondary right axis."""
     new_axis = axis.secondary_yaxis('right', functions=(lambda x: x, lambda x: x))
     clean_axis(new_axis, y_formatter)
-    if show_last_values:
-        new_axis.set_color(color='#784d00')
+    new_axis.set_color(color='#784d00')
     return new_axis
 
 
-def right_value_axis(df, axis, legend, cols, stacked, y_formatter, show_last_values, max_ticks=27):
+def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27):
     """Create clean secondary right axis showning actual values."""
-    if not show_last_values: return
-
     if y_formatter is thaipop: y_formatter = thaipop2
-    new_axis = right_axis(axis, y_formatter, show_last_values)
+    new_axis = right_axis(axis, y_formatter)
 
     values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     bottom, top = axis.get_ylim()
@@ -502,7 +590,10 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               actuals=['Tests XLS'],
-              footnote='Note: Totals exclude some proactive testing.\nPCR: Polymerase Chain Reaction\nPUI: Person Under Investigation',
+              footnote='Note: Totals exclude some proactive testing.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'PUI: Person Under Investigation\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Tested Cum',
@@ -517,7 +608,10 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction\nPUI: Person Under Investigation',
+              footnote='Note: Excludes some proactive tests.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'PUI: Person Under Investigation\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
@@ -536,6 +630,8 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab10',
               y_formatter=perc_format,
+              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     ###############
@@ -574,7 +670,11 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
+              footnote='\nPUI: Person Under Investigation\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
+                        + 'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
+                        + 'so it is included for when testing data is delayed. It is not the actual positive rate.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
@@ -597,9 +697,12 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='tests_per_case', cols_subset=cols,
               ma_days=7,
-              kind='line', stacked=False, percent_fig=False, show_last_values=False,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='\nPUI: Person Under Investigation\nPCR: Polymerase Chain Reaction',
+              footnote='\nPUI: Person Under Investigation\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
+                        + 'so it is included for when testing data is delayed. It is not the actual positive rate.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Positivity Cases/Tests',
@@ -621,7 +724,8 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='\nPUI: Person Under Investigation',
+              footnote='\nPUI: Person Under Investigation\n'
+                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ########################
@@ -639,7 +743,8 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='\nPUI: Person Under Investigation',
+              footnote='\nPUI: Person Under Investigation\n'
+                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ##################
@@ -668,6 +773,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap="tab10",
+              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = [
@@ -689,6 +795,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=21,
         kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
+        footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
         footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
@@ -714,6 +821,7 @@ def save_plots(df: pd.DataFrame) -> None:
         ma_days=None,
         kind='line', stacked=False, percent_fig=False,
         cmap="tab10",
+        footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
         footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Cases',
@@ -748,7 +856,12 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               actuals=["Cases"],
               cmap="tab10",
-              #footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test",
+              footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
+                        + 'Contact tracing counts as a Walk-in.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                        + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     cols = ['Cases Symptomatic', 'Cases Asymptomatic']
@@ -791,6 +904,10 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               actuals=['Cases'],
               cmap='tab10',
+              footnote='Grouped from original data which has over 70 risk categories.\n'
+                        + 'Clusters have been grouped into either Work (factories),\n'
+                        + 'Entertainment (bars/gambling...) or Community (markets) related.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
 
     ##########################
@@ -806,7 +923,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote='Note: Excludes some proactive and private tests.\nPCR: Polymerase Chain Reaction',
+              footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
@@ -817,7 +936,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote='Note: Excludes some proactive and private tests.\nPCR: Polymerase Chain Reaction',
+              footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -833,7 +954,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction',
+              footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -850,7 +973,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote='Note: Excludes some proactive tests.\nPCR: Polymerase Chain Reaction',
+              footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -870,8 +995,11 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
-              footnote='Note: Excludes some proactive tests.',
               y_formatter=perc_format,
+              footnote='PCR: Polymerase Chain Reaction\n'
+                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
+                        + 'Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
 
@@ -891,6 +1019,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
+              footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
@@ -902,13 +1031,14 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
+              footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = dash_prov.pipe(topprov,
                       lambda df: df["Positive Rate Dash"] * 100,
                       name="Province Positive Rate",
                       other_name=None,
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Positive Rate - Top Provinces - Thailand',
@@ -917,6 +1047,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
+              footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = dash_prov.pipe(topprov,
@@ -924,7 +1055,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       lambda df: df["Positive Rate Dash"] * 100,
                       name="Province Positive Rate",
                       other_name=None,
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Positive Rate - Lowest Provinces - Thailand',
@@ -933,6 +1064,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
+              footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -945,9 +1077,11 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False,
+              kind='area', stacked=False, percent_fig=False,
               cmap='tab20',
-              footnote='Note: Excludes some proactive tests.',
+              footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     #########################
@@ -972,6 +1106,8 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
+              footnote='Walk-in: Testing done at hospital or test lab (PCR test).\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
@@ -980,8 +1116,9 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND,
               png_prefix='cases_areas_proactive', cols_subset=cols,
               ma_days=None,
-              kind='area', stacked=True, percent_fig=False, show_last_values=False,
+              kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
+              footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -994,7 +1131,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='cases_from_positives_area', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=None,
-              kind='area', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
+              kind='area', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -1052,8 +1189,8 @@ def save_plots(df: pd.DataFrame) -> None:
         'Recovered since 2021-04-01',
     ]
     legends = [
-        'Deaths from cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)',
-        'In Hospital/Mild', 'In Field Hospital', 'Recovered from cases since 1st April'
+        'Deaths from Cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)',
+        'In Hospital/Mild', 'In Field Hospital', 'Recovered from Cases since 1st April'
     ]
     plot_area(df=df,
               title='Covid Cases by Current Outcome since 1st April 2021 - Thailand',
@@ -1074,7 +1211,7 @@ def save_plots(df: pd.DataFrame) -> None:
             "Hospitalized Field Hospitel",
             "Hospitalized Field HICI", ]
     legend = [
-        'Serious On Ventilator', 'Serios without Ventilator',
+        'Serious On Ventilator', 'Serious without Ventilator',
         'Mild In Hospital', 'Mild In Field Hospital/Other',
         "Mild in Hotel Field Hospital (Hospitel)",
         "Mild in Home/Community Isolation (HICI)"
@@ -1101,7 +1238,7 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
-              title='Active Cases by Condition as % of Peak - Thailand',
+              title='Active Covid Cases by Condition as % of Peak - Thailand',
               png_prefix='active_peak', cols_subset=cols,
               legends=legends,
               ma_days=7,
@@ -1190,7 +1327,7 @@ def save_plots(df: pd.DataFrame) -> None:
             'Target Rate 2'],
         periods_to_plot=["30d", "2"],  # too slow to do all
         ma_days=None,
-        kind='bar', stacked=True, percent_fig=False, show_last_values=False,
+        kind='bar', stacked=True, percent_fig=False,
         cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
@@ -1287,11 +1424,11 @@ def save_plots(df: pd.DataFrame) -> None:
         kind='line',
         actuals=list(pred2.columns),
         ma_days=None,
-        stacked=False, percent_fig=False, show_last_values=False,
+        stacked=False, percent_fig=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
-        footnote="Assumes 2 months between doses")
+        footnote='Assumes 2 months between doses')
 
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
@@ -1302,7 +1439,7 @@ def save_plots(df: pd.DataFrame) -> None:
         png_prefix='vac_groups_goals_half', cols_subset=cols2,
         actuals=list(pred1.columns),
         ma_days=None,
-        kind='line', stacked=False, percent_fig=False, show_last_values=False,
+        kind='line', stacked=False, percent_fig=False,
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
@@ -1359,7 +1496,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
-              footnote="Percentage include ages 0-18")
+              footnote='Percentage include ages 0-18')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
     # since top5 might be different need to recalculate
@@ -1397,7 +1534,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
-              footnote="Percentage include ages 0-18")
+              footnote='Percentage include ages 0-18')
 
     top5 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
                     lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
@@ -1417,7 +1554,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
-              footnote="Percentage include ages 0-18")
+              footnote='Percentage include ages 0-18')
 
     #######################
     # Cases by provinces
@@ -1445,7 +1582,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Up Provinces - Thailand',
@@ -1461,7 +1598,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
-                      num=7)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Down Provinces - Thailand',
@@ -1476,15 +1613,20 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases",
                       other_name="Other Provinces",
-                      num=6)
+                      num=5)
     cols = top5.columns.to_list()
+    provtable = cases.reset_index()
+    provtable = pd.crosstab(index=provtable['Date'], columns=provtable['Province'], values=provtable['Cases'], aggfunc="max")
+    provtable = provtable.loc[provtable.last_valid_index()]
+    provtable = provtable.nlargest(len(provtable))  # Sort it 
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='Note: Per 100,000 people.',
+              table = provtable,
+              footnote='Note: Table shows total cases for that province',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
@@ -1492,7 +1634,7 @@ def save_plots(df: pd.DataFrame) -> None:
                       cases_per_capita('Cases Walkin'),
                       name="Province Cases Walkin (7d MA)",
                       other_name="Other Provinces",
-                      num=6)
+                      num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
@@ -1500,7 +1642,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='\nNote: Per 100,000 people.',
+              footnote='\nNote: Per 100,000 people.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'Walk-in: Testing done at hospital or test lab (PCR test).',
               footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
@@ -1509,7 +1653,7 @@ def save_plots(df: pd.DataFrame) -> None:
                           cases_per_capita(f"Cases Risk: {risk}"),
                           name=f"Province Cases {risk} (7d MA)",
                           other_name="Other Provinces",
-                          num=6)
+                          num=5)
         cols = top5.columns.to_list()
         plot_area(df=top5,
                   title=f'{risk} Related Covid Cases/100k - Trending Up Provinces - Thailand',
@@ -1517,7 +1661,8 @@ def save_plots(df: pd.DataFrame) -> None:
                   ma_days=7,
                   kind='line', stacked=False, percent_fig=False,
                   cmap='tab10',
-                  footnote='\nNote: Per 100,000 people.',
+                  footnote='\nNote: Per 100,000 people.\n'
+                            + 'Proactive: Testing done at high risk locations, rather than random sampling.',
                   footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     def top(func, _):
@@ -1569,7 +1714,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='Note: Based on Deaths/IFR.\nIFR: Infection Fatality Rate\nDISCLAIMER: See website for the assumptions of this simple estimate.',
+              footnote='Note: Based on Deaths/IFR.\n'
+                        + 'IFR: Infection Fatality Rate\n'
+                        + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
 
     ####################
@@ -1709,6 +1856,8 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab20_r',
               y_formatter=perc_format,
+              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                        + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     # Excess Deaths
@@ -1781,7 +1930,7 @@ def save_plots(df: pd.DataFrame) -> None:
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None,
-              kind='bar', stacked=False, percent_fig=False, show_last_values=False, limit_to_zero=False,
+              kind='bar', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               footnote='\n\n\n\nNote: Number of deaths from all causes compared to previous years.',
               footnote_left=f'\n\n\n\n{source}Data Source: MOPH Covid-19 Dashboard')
@@ -1879,7 +2028,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     footnote = """
 Expected Deaths = Min/Mean/Max of years before the pandemic ({year_span}) + Known Covid Deaths.
-NOTE: Excess deaths can be changed by many factors other than Covid.
+Note: Excess deaths can be changed by many factors other than Covid.
     """.strip()
     footnote3 = f"""{footnote}
 2015-2018 was used to compare for the most stable death rates. For other comparisons see
