@@ -143,7 +143,8 @@ jobs:
         run: |
           bundle config set --local path vendor/bundle
           bundler install --jobs 4 --retry 3
-          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki\///g' *.md
+          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/outputs/g' readme.md
+          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/api/g' downloads.md
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
@@ -155,13 +156,15 @@ jobs:
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      - name: Netlify preview deployed
+      - name: Netlify preview status update
         if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
         uses: Sibz/github-status-action@v1.1.1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
-          context: Netlify preview
-          state: success
+          context: 'Netlify preview deployed'
+          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          state: 'success'
+          sha: ${{github.event.pull_request.head.sha || github.sha}}
           target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Netlify prod deploy
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
