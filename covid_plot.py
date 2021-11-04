@@ -262,7 +262,7 @@ def plot_area(df: pd.DataFrame,
             ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 4), colspan=1, rowspan=1))
             add_footnote(footnote, 'right')
 
-            fill_province_tables(ax_provinces, list(table.index), list(table))
+            fill_province_tables(ax_provinces, table)
         else:
             add_footnote(footnote_left, 'left')
             add_footnote(footnote, 'right')
@@ -378,13 +378,16 @@ def plot_area(df: pd.DataFrame,
 def trend_indicator(trend):
     """Get the trend indicator and corresponding color."""
     arrows = ('→', '↗', '↑', '↓', '↘')
-    colors = ('#444400', '#008800', '#00ff00', '#ff0000', '#880000')
-    trend_slot = min(max(round(trend * 2), -2), 2)
-    return arrows[trend_slot], colors[trend_slot]
+    trend = min(max(trend, -1), 1)  # limit the trend
+    trend_color = (1, 0, 0, trend*trend) if trend > 0 else (0, 1, 0, trend*trend)
+    return arrows[round(trend * 2)], trend_color
 
 
-def fill_province_tables(ax_provinces, provinces, values):
+def fill_province_tables(ax_provinces, table_provinces):
     """Create an info table showing last values."""
+
+    provinces = list(table_provinces.index)
+    values = list(table_provinces)
 
     number_columns = len(ax_provinces)
     provinces_per_column = int(np.ceil(len(provinces) / number_columns))
@@ -401,7 +404,7 @@ def fill_province_tables(ax_provinces, provinces, values):
             if row_labels[value_number] == 'Phra Nakhon Si Ayutthaya':
                 row_labels[value_number] = 'Ayutthaya'
             value = row_values[value_number] 
-            trend_arrow, trend_color = trend_indicator(0.5 * (4 - value_number % 5) - 1)
+            trend_arrow, trend_color = trend_indicator((2.0*value_number - provinces_per_column)/provinces_per_column)
             cell_text.append([f'{human_format(value,0)}', trend_arrow])
             cell_colors.append([theme_light_back, trend_color])
             trend_colors.append(trend_color)
@@ -409,7 +412,7 @@ def fill_province_tables(ax_provinces, provinces, values):
         # create the table    
         axis.set_axis_off() 
         table = axis.table(cellLoc='right',  loc='upper right',
-            rowLabels=row_labels, cellText=cell_text,  cellColours=cell_colors)       
+            rowLabels=row_labels, cellText=cell_text, cellColours=cell_colors)       
         table.auto_set_column_width((0, 1))
         table.auto_set_font_size(False)
         table.set_fontsize(15)
@@ -417,7 +420,6 @@ def fill_province_tables(ax_provinces, provinces, values):
 
         # fix the formating
         for cell in table.get_celld().values():
-            # cell.visible_edges = 'open'
             cell.set_text_props(color=theme_light_text)
 
         # fix the trend colors
@@ -1635,6 +1637,16 @@ def save_plots(df: pd.DataFrame) -> None:
                       other_name="Other Provinces",
                       num=5)
     cols = top5.columns.to_list()
+
+    # #Modi was here... 
+    # #reg = reg_cases.rolling(14).mean()
+    # #((reg - reg.shift(14)) / reg).iloc[-1]
+
+    # #latest = df.loc[df.index.max()]  # only get the last row of the table
+
+    # ma = cases['Cases'].rolling(14).mean()  # 14day MA just for cases
+    # cases['inc'] = ((ma - ma.shift(-14)) / ma).iloc[-1]  # set a new col called inc with the now / 14 days earlier
+
     provtable = cases.reset_index()
     provtable = pd.crosstab(index=provtable['Date'], columns=provtable['Province'], values=provtable['Cases'], aggfunc="max")
     provtable = provtable.loc[provtable.last_valid_index()]
