@@ -161,6 +161,17 @@ def find_thai_date(content, remove=False):
     >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ")) 
     2021-05-10 00:00:00
 
+    remove the date from the string
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ", remove=True)[1]) 
+    สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่  ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส
+
+    can handle mispellings
+    >>> print(find_thai_date("10 พฤษภาม 2564")) 
+    2021-05-10 00:00:00
+
+    can handle mispellings
+    >>> print(find_thai_date("10 พฤษ 2564")) 
+    2021-05-10 00:00:00
 
     """
     # TODO: prevent it finding numbers for the month name? finds too many
@@ -181,7 +192,7 @@ def find_thai_date(content, remove=False):
         if month is None:
             continue
         date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
-        return (date, content[:m3.start()] + " " + content[m3.end():]) if remove else date
+        return (date, content[:m3.start()] + " " + content[m3.end(m3.lastindex):]) if remove else date
     return (None, content) if remove else None
 
 
