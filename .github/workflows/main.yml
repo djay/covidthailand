@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+    permissions:
+      statuses: write 
     steps:
       - uses: actions/checkout@v2
       # - name: Get Cached docs
@@ -133,6 +135,53 @@ jobs:
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6 # Not needed with a .ruby-version file
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      - name: Jekyll Build
+        run: |
+          bundle config set --local path vendor/bundle
+          bundler install --jobs 4 --retry 3
+          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/outputs/g' README.md
+          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/api/g' downloads.md
+          bundle exec jekyll build --destination=./_site
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+      - name: Netlify preview deploy
+        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
+        uses: netlify/actions/cli@master
+        with:
+           args: deploy --dir=./_site --alias=${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}
+        env:
+           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      - name: Netlify preview status update
+        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
+        uses: Sibz/github-status-action@v1.1.1
+        with:
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: 'Netlify preview deployed'
+          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          state: 'success'
+          sha: ${{github.event.pull_request.head.sha || github.sha}}
+          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+      - name: Netlify prod deploy
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: netlify/actions/cli@master
+        with:
+           args: deploy  --dir=./outputs --prod
+        env:
+           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      - name: Netlify prod deploy
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: Sibz/github-status-action@v1.1.1
+        with:
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: Netlify preview
+          state: success
+          target_url: ${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1

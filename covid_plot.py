@@ -220,44 +220,46 @@ def plot_area(df: pd.DataFrame,
         show_province_tables = len(table) > 0
 
         # element heights
-        main_height = 17 if percent_fig or show_province_tables else 21
-        perc_height = 10
-        table_height = 10
-        spacing = 3
         fn_left_lines = len(footnote_left.split('\n')) if footnote_left else 0
         fn_right_lines = len(footnote.split('\n')) if footnote else 0
         footnote_height = max(fn_left_lines, fn_right_lines)
 
         # figure out the figure dimensions
-        figure_height = main_height
+        figure_height = 21
         figure_width = 20
+        grid_rows = 1
+        grid_columns = 5
+        main_rows = 1
         if percent_fig:
-            figure_height += perc_height + spacing
+            figure_height += 7
+            grid_rows += 2
+            main_rows = 2
         if show_province_tables:
-            figure_height += table_height + spacing
-        fig = plt.figure(figsize=[figure_width, 0.5 * figure_height + 0.2 * footnote_height])
+            figure_height += 7
+            grid_rows += 2
+            main_rows = 2
+        fig = plt.figure(figsize=[figure_width, 0.5 * figure_height + 0.4 * footnote_height])
 
-        grid_rows = figure_height
-        grid_columns = 4
 
         grid_offset = 0
         # main chart
-        a0 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=main_height)
-        grid_offset += main_height + spacing
+        a0 = plt.subplot2grid((grid_rows, grid_columns), (0, 0), colspan=grid_columns, rowspan=main_rows)
+        grid_offset += main_rows
 
         # percent chart
         if percent_fig:
-            a1 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=perc_height)
-            grid_offset += perc_height + spacing
+            a1 = plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=grid_columns, rowspan=1)
+            grid_offset += 1
 
         # province tables
         if show_province_tables:
             ax_provinces = []
-            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=1, rowspan=table_height))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 0), colspan=1, rowspan=1))
             add_footnote(footnote_left, 'left')
-            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 1), colspan=1, rowspan=table_height))
-            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 2), colspan=1, rowspan=table_height))
-            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 3), colspan=1, rowspan=table_height))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 1), colspan=1, rowspan=1))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 2), colspan=1, rowspan=1))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 3), colspan=1, rowspan=1))
+            ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 4), colspan=1, rowspan=1))
             add_footnote(footnote, 'right')
 
             fill_province_tables(ax_provinces, list(table.index), list(table))
@@ -365,7 +367,7 @@ def plot_area(df: pd.DataFrame,
                   loc=legend_pos,
                   ncol=legend_cols)
 
-        plt.tight_layout()
+        plt.tight_layout(pad=1.08, w_pad=-11.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
         logger.info("Plot: {}", path)
@@ -386,6 +388,8 @@ def fill_province_tables(ax_provinces, provinces, values):
         cell_text = []
         cell_colors = []
         for value_number, province in enumerate(row_labels):
+            if row_labels[value_number] == 'Phra Nakhon Si Ayutthaya':
+                row_labels[value_number] = 'Ayutthaya'
             value = row_values[value_number]
             cell_text.append([f'{human_format(value,0)}', ])
             cell_colors.append([theme_dark_back, ])
@@ -395,7 +399,7 @@ def fill_province_tables(ax_provinces, provinces, values):
             rowLabels=row_labels, cellText=cell_text,  cellColours=cell_colors)       
         table.auto_set_column_width((0, 1))
         table.auto_set_font_size(False)
-        table.set_fontsize(14)
+        table.set_fontsize(15)
         table.scale(1, 1.35)
 
         for cell in table.get_celld().values():
@@ -502,7 +506,7 @@ class Ticks:
     def reduce_overlap(self):
         """Move the tickmark positions of the ticks so that they don't overlap."""
         if len(self.ticks) > self.max_ticks:
-            self.spacing = (self.top - self.bottom) / len(self.ticks)
+            self.spacing = (self.top - self.bottom) / (len(self.ticks) - 1)
 
         # move them up if overlapping
         self.ticks.sort(key=sort_by_actual)
