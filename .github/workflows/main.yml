@@ -148,7 +148,7 @@ jobs:
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
-      - name: Netlify preview deploy
+      - name: Netlify preview build
         if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
@@ -166,7 +166,7 @@ jobs:
           state: 'success'
           sha: ${{github.event.pull_request.head.sha || github.sha}}
           target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
-      - name: Netlify prod deploy
+      - name: Netlify prod build
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
@@ -174,14 +174,14 @@ jobs:
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      - name: Netlify prod deploy
+      - name: Netlify prod deployed
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: Sibz/github-status-action@v1.1.1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: ${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
