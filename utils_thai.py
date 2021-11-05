@@ -144,22 +144,31 @@ def previous_date(end, day):
 
 def find_thai_date(content, remove=False):
     """
-    find thai date like
+    find thai date in a string
+
+    Abbreviated dates
     >>> print(find_thai_date('17 เม.ย. 2563'))
     2020-04-17 00:00:00
 
+    Won't get confused if its a date range
     >>> print(find_thai_date('28 กุมภำพันธ์  – 18 กรกฎำคม 2564'))
     2021-07-18 00:00:00
 
     >>> print(find_thai_date("20 ต.ค. 64"))
     2021-10-20 00:00:00
-    """
 
-    for m3 in re.finditer(r"([0-9]+)\s*([^ ]+)\s*((?:25)?[0-9][0-9])", content):
+    Can find inside a string
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ")) 
+    2021-05-10 00:00:00
+
+
+    """
+    # TODO: prevent it finding numbers for the month name? finds too many
+    for m3 in re.finditer(r"([0-9]+)(?=\s*([^ ]+)\s*((?:25)?[0-9][0-9]))", content):
         d2, month, year = m3.groups()
         if len(year) == 2:
             year = "25" + year
-        closest = difflib.get_close_matches(month, THAI_ABBR_MONTHS + THAI_FULL_MONTHS, 1, cutoff=0.60)
+        closest = difflib.get_close_matches(month, THAI_FULL_MONTHS + THAI_ABBR_MONTHS, 1, cutoff=0.60)
         month = closest[0] if closest else None
 
         month = (
