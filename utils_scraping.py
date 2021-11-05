@@ -416,7 +416,7 @@ def dav_files(url, username=None, password=None,
     use_cache = False
     try:
         client_list = [(info["path"], info["modified"]) for info in client.list(get_info=True)]
-    except (NoConnection, ResponseErrorCode):
+    except (Exception):
         client_list = [
             (
                 f"{file}",
