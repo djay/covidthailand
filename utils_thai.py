@@ -93,7 +93,16 @@ def to_thaiyear(year, short=False):
 
 
 def file2date(file):
-    "return date of either for '10-02-21' or '100264'"
+    """
+    return date of either 
+    
+    #>>> file2date('files/10-02-21.json') 
+    #datetime.datetime(2021, 2, 10, 0, 0)
+
+    >>> file2date('files/report-100264.pdf') 
+    datetime.datetime(2021, 2, 10, 0, 0)
+    """
+
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
     if m := re.search(r"\d{4}-\d{2}-\d{2}", file):
@@ -143,39 +152,68 @@ def previous_date(end, day):
 
 
 def find_thai_date(content, remove=False):
-    """find thai date like
+    """
+    find thai date in a string
+
+    Abbreviated dates
     >>> print(find_thai_date('17 เม.ย. 2563'))
     2020-04-17 00:00:00
+
+    Won't get confused if its a date range
     >>> print(find_thai_date('28 กุมภำพันธ์  – 18 กรกฎำคม 2564'))
     2021-07-18 00:00:00
+
+    >>> print(find_thai_date("20 ต.ค. 64"))
+    2021-10-20 00:00:00
+
+    Can find inside a string
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ")) 
+    2021-05-10 00:00:00
+
+    remove the date from the string
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส", remove=True)[1]) 
+    สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่   ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส
+
+    can handle mispellings
+    >>> print(find_thai_date("10 พฤษภาม 2564")) 
+    2021-05-10 00:00:00
+
+    can handle mispellings
+    >>> print(find_thai_date("10 พฤษ 2564")) 
+    2021-05-10 00:00:00
+
     """
+    # TODO: prevent it finding numbers for the month name? finds too many
+    for m3 in re.finditer(r"([0-9]+)(?=\s*([^ ]+)\s*((?:25)?[0-9][0-9]))", content):
+        d2, month, year = m3.groups()
+        if len(year) == 2:
+            year = "25" + year
+        closest = difflib.get_close_matches(month, THAI_FULL_MONTHS + THAI_ABBR_MONTHS, 1, cutoff=0.60)
+        month = closest[0] if closest else None
 
-    thai_date = re.compile(r"([0-9]+)\s*([^ ]+)\s*(25[0-9][0-9])")
-    m3 = thai_date.search(content)
-    if m3 is None and remove:
-        return None, content
-    elif m3 is None:
-        return None
-    d2, month, year = m3.groups()
-    closest = difflib.get_close_matches(month, THAI_ABBR_MONTHS + THAI_FULL_MONTHS, 1, cutoff=0.60)
-    month = closest[0] if closest else None
-
-    month = (
-        THAI_ABBR_MONTHS.index(month) + 1
-        if month in THAI_ABBR_MONTHS
-        else THAI_FULL_MONTHS.index(month) + 1
-        if month in THAI_FULL_MONTHS
-        else None
-    )
-    date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
-    if remove:
-        return date, thai_date.sub(" ", content)
-    else:
-        return date
+        month = (
+            THAI_ABBR_MONTHS.index(month) + 1
+            if month in THAI_ABBR_MONTHS
+            else THAI_FULL_MONTHS.index(month) + 1
+            if month in THAI_FULL_MONTHS
+            else None
+        )
+        if month is None:
+            continue
+        date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
+        return (date, content[:m3.start()] + " " + content[m3.end(m3.lastindex):]) if remove else date
+    return (None, content) if remove else None
 
 
 def find_date_range(content):
-    "Parse thai date ranges line '11-17 เม.ย. 2563' or '04/04/2563 12/06/2563'"
+    """
+    Parse thai date ranges like
+    >>> find_date_range('11-17 เม.ย. 2563')
+    (datetime.datetime(2020, 4, 11, 0, 0), datetime.datetime(2020, 4, 17, 0, 0))
+
+    >>> find_date_range('04/04/2563 - 12/06/2563')
+    (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
+    """
     m1 = re.search(
         r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content
     )
