@@ -645,7 +645,7 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
     df['Cases per PUI3'] = df['Cases'].divide(df['Tested PUI']) / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
-    df['Postive Rate ATK Proactive'] = df['Tests ATK Proactive'] / df['Pos ATK Proactive'] * 100
+    df['Postive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
 
     cols = [
         'Positivity Public+Private',

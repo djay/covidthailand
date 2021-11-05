@@ -13,6 +13,11 @@ import pandas as pd
 import pytest
 import dateutil
 import functools
+from tika import parser, config
+
+
+# do any tika install now before we start the run and use multiple processes
+config.getParsers()
 
 
 def dl_files(target_dir, dl_gen, check=False):
