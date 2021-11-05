@@ -581,7 +581,7 @@ def save_plots(df: pd.DataFrame) -> None:
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
     cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', 'Tests ATK Proactive']
-    legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', 'Tests ATK Proactive']
+    legends = ['PCR Tests (All)', 'PCT Tests (Public)', 'PUI', 'PUI (Public)', 'ATK Tests (NHSO provided/Proactive)']
     plot_area(df=df,
               title='PCR Tests and PUI - Thailand', 
               legends=legends,
@@ -615,12 +615,12 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
-    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'ATK']
+    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'Tests ATK Proactve']
     legend = [
         "Cases (PCR)", 
         "Proactive Cases (PCR)", 
         "PCR Tests", 
-        "Probable Case (Registered for home isolation from ATK)"
+        "ATK Tests (NHSO provided/Proactive)",
     ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
@@ -659,7 +659,7 @@ def save_plots(df: pd.DataFrame) -> None:
         'Confirmed Cases per PCR Test (%)',
         'Confirmed Cases per PUI*3 (%)',
         'Walkin Cases per PUI*3 (%)',
-        'Postive Rate ATK Proactive'
+        'Postive Results per ATK Test (NHSO provided/Proactive)'
     ]
     plot_area(df=df,
               title='Positive Rate: Is enough testing happening? - Thailand',
@@ -764,7 +764,7 @@ def save_plots(df: pd.DataFrame) -> None:
                'Positive PCR Test Results (All)',
                'Positive PCR Test Results (Public)',
                "Probable Case (Registered for home isolation from ATK)",
-               "Positive ATK Proactive"]
+               "Positive ATK Test Resilts (NHSO provided/Proactive)"]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               legends=legends,
