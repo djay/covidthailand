@@ -93,7 +93,16 @@ def to_thaiyear(year, short=False):
 
 
 def file2date(file):
-    "return date of either for '10-02-21' or '100264'"
+    """
+    return date of either 
+    
+    #>>> file2date('files/10-02-21.json') 
+    #datetime.datetime(2021, 2, 10, 0, 0)
+
+    >>> file2date('files/report-100264.pdf') 
+    datetime.datetime(2021, 2, 10, 0, 0)
+    """
+
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
     if m := re.search(r"\d{4}-\d{2}-\d{2}", file):
@@ -162,8 +171,8 @@ def find_thai_date(content, remove=False):
     2021-05-10 00:00:00
 
     remove the date from the string
-    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ", remove=True)[1]) 
-    สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่  ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส", remove=True)[1]) 
+    สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่   ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส
 
     can handle mispellings
     >>> print(find_thai_date("10 พฤษภาม 2564")) 
@@ -197,7 +206,14 @@ def find_thai_date(content, remove=False):
 
 
 def find_date_range(content):
-    "Parse thai date ranges line '11-17 เม.ย. 2563' or '04/04/2563 12/06/2563'"
+    """
+    Parse thai date ranges like
+    >>> find_date_range('11-17 เม.ย. 2563')
+    (datetime.datetime(2020, 4, 11, 0, 0), datetime.datetime(2020, 4, 17, 0, 0))
+
+    >>> find_date_range('04/04/2563 - 12/06/2563')
+    (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
+    """
     m1 = re.search(
         r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content
     )
