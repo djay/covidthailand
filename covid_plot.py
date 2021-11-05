@@ -615,7 +615,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
-    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'Tests ATK Proactve']
+    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'Tests ATK Proactive']
     legend = [
         "Cases (PCR)", 
         "Proactive Cases (PCR)", 
