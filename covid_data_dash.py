@@ -363,17 +363,17 @@ def skip_valid(df, idx_value, allow_na={}):
             return False
         if pd.isna(val):
             return False
-        if mins:
-            min_val, *max_val = mins
-            if min_val > val:
-                return False
-            elif max_val and val > max_val[0]:
-                return False
-            else:
-                return True 
-        else:
+        if not mins:
             return True
-
+        
+        min_val, *max_val = mins
+        if min_val > val:
+            return False
+        elif max_val and val > max_val[0]:
+            return False
+        else:
+            return True 
+ 
     # allow certain fields null if before set date
     nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
     if not nulls:
