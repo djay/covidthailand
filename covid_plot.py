@@ -375,59 +375,92 @@ def plot_area(df: pd.DataFrame,
 
     return None
 
+
 def trend_indicator(trend):
     """Get the trend indicator and corresponding color."""
+    if trend == 0.00042 or np.isnan(trend):
+        return '?', (0, 0, 0, 0)
     arrows = ('→', '↗', '↑', '↓', '↘')
     trend = min(max(trend, -1), 1)  # limit the trend
     trend_color = (1, 0, 0, trend*trend) if trend > 0 else (0, 1, 0, trend*trend)
     return arrows[round(trend * 2)], trend_color
 
 
+def append_row(row_labels, row_texts, row_colors, trend_colors, 
+               labels='', texts=['', ''], colors=[(0, 0, 0, 0), (0, 0, 0, 0)], trend_color=(0, 0, 0, 0)):
+    """Append a table row."""
+    row_labels.append(labels)
+    row_texts.append(texts)
+    row_colors.append(colors)
+    trend_colors.append(trend_color)
+
+
+def add_regions_to_axis(axis, table_regions):
+    """Add a sorted table with multiple regions to the axis."""
+    row_labels = []
+    row_texts = []
+    row_colors = []
+    trend_colors = []
+
+    # get the regions and add the heading
+    regions = list(table_regions.loc[:, 'Region'].tolist()) 
+    if regions[0] == 'Bangkok Metropolitan Region': regions[0] = 'Bangkok'
+    current_region = regions[0]
+    append_row(row_labels, row_texts, row_colors, trend_colors, '- ' + current_region + ' Region -')
+
+    # get the remaining values
+    provinces = list(table_regions.index)
+    values = list(table_regions.loc[:, 'Cases'].tolist())
+    trends = list(table_regions.loc[:, 'Trend'].tolist())
+
+    # generate the the cell values and colors
+    for row_number, province in enumerate(provinces):
+        if provinces[row_number] == 'Phra Nakhon Si Ayutthaya': provinces[row_number] = 'Ayutthaya'
+        if regions[row_number] == 'Bangkok Metropolitan Region': regions[row_number] = 'Bangkok'
+        if not current_region == regions[row_number]:
+            append_row(row_labels, row_texts, row_colors, trend_colors)
+            current_region = regions[row_number]
+            append_row(row_labels, row_texts, row_colors, trend_colors, '- ' + current_region + ' Region -')
+
+        trend_arrow, trend_color = trend_indicator(trends[row_number])
+        append_row(row_labels, row_texts, row_colors, trend_colors, 
+                   provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow], 
+                   [(0, 0, 0, 0), trend_color], trend_color)
+
+    # create the table    
+    axis.set_axis_off() 
+    table = axis.table(cellLoc='right',  loc='upper right',
+                       rowLabels=row_labels, cellText=row_texts, cellColours=row_colors)       
+    table.auto_set_column_width((0, 1))
+    table.auto_set_font_size(False)
+    table.set_fontsize(15)
+    table.scale(1, 1.35)
+
+    # fix the formating and trend colors
+    for cell in table.get_celld().values():
+        cell.set_text_props(color=theme_light_text)
+    for row_number, color in enumerate(trend_colors):
+        table[(row_number, 1)].set_text_props(color='blue')
+        table[(row_number, 1)].set_color(color)
+        table[(row_number, -1)].set_color(theme_light_back)
+        table[(row_number, 0)].set_color(theme_light_back)
+
+
+def add_to_table(axis, table, regions):
+    """Add selected regions to a table."""
+    regions_to_add = table[table['Region'].isin(regions)]
+    regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
+    regions_to_add.sort_values(by=['Region', 'Trend'], ascending=False, inplace=True)
+    add_regions_to_axis(axis, regions_to_add)
+
+
 def fill_province_tables(ax_provinces, table_provinces):
-    """Create an info table showing last values."""
-
-    provinces = list(table_provinces.index)
-    values = list(table_provinces)
-
-    number_columns = len(ax_provinces)
-    provinces_per_column = int(np.ceil(len(provinces) / number_columns))
-
-    for ax_number, axis in enumerate(ax_provinces):
-        row_labels = provinces[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
-        row_values = values[ax_number * provinces_per_column : (ax_number + 1) * provinces_per_column ]
-
-        # generate the the cell values and colors
-        cell_text = []
-        cell_colors = []
-        trend_colors = []
-        for value_number, province in enumerate(row_labels):
-            if row_labels[value_number] == 'Phra Nakhon Si Ayutthaya':
-                row_labels[value_number] = 'Ayutthaya'
-            value = row_values[value_number] 
-            trend_arrow, trend_color = trend_indicator((2.0*value_number - provinces_per_column)/provinces_per_column)
-            cell_text.append([f'{human_format(value,0)}', trend_arrow])
-            cell_colors.append([theme_light_back, trend_color])
-            trend_colors.append(trend_color)
-
-        # create the table    
-        axis.set_axis_off() 
-        table = axis.table(cellLoc='right',  loc='upper right',
-            rowLabels=row_labels, cellText=cell_text, cellColours=cell_colors)       
-        table.auto_set_column_width((0, 1))
-        table.auto_set_font_size(False)
-        table.set_fontsize(15)
-        table.scale(1, 1.35)
-
-        # fix the formating
-        for cell in table.get_celld().values():
-            cell.set_text_props(color=theme_light_text)
-
-        # fix the trend colors
-        for row_number, color in enumerate(trend_colors):
-            table[(row_number, 1)].set_text_props(color='blue')
-            table[(row_number, 1)].set_color(color)
-            table[(row_number, -1)].set_color(theme_light_back)
-            table[(row_number, 0)].set_color(theme_light_back)
+    """Create an info table showing province values."""
+    add_to_table(ax_provinces[0], table_provinces, ['Northern'])
+    add_to_table(ax_provinces[1], table_provinces, ['Western', 'Eastern'])
+    add_to_table(ax_provinces[2], table_provinces, ['Northeastern'])
+    add_to_table(ax_provinces[3], table_provinces, ['Central', 'Bangkok Metropolitan Region'])
+    add_to_table(ax_provinces[4], table_provinces, ['Southern'])
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
@@ -449,6 +482,7 @@ def rewrite_legends(df, legends, cols, y_formatter):
         
 
 def add_footnote(footnote, location):
+    """Add left or right footnotes."""
     if footnote:
         if location == 'left':
             plt.annotate(footnote, (0, 0), (0, -70),
@@ -510,6 +544,7 @@ def set_ticks(axis, ticks):
 
 
 def sort_by_actual(e):
+    """Sort the values by the Actual."""
     return e.actual
 
 
@@ -1639,25 +1674,38 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = top5.columns.to_list()
 
     # #Modi was here... 
-    # #reg = reg_cases.rolling(14).mean()
-    # #((reg - reg.shift(14)) / reg).iloc[-1]
 
-    # #latest = df.loc[df.index.max()]  # only get the last row of the table
+    # 14day MA just for cases
+    ma = cases['Cases'].rolling(14).mean()
+    # set a new col called inc with the now / 14 days earlier
+    cases['Inc'] = ((ma - ma.shift(-14)) / ma)
 
-    # ma = cases['Cases'].rolling(14).mean()  # 14day MA just for cases
-    # cases['inc'] = ((ma - ma.shift(-14)) / ma).iloc[-1]  # set a new col called inc with the now / 14 days earlier
+    # create the Trend table
+    inctable = cases.reset_index()
+    inctable = pd.crosstab(index=inctable['Date'], columns=inctable['Province'], values=inctable['Inc'], aggfunc="max")
+    inctable = inctable.loc[inctable.last_valid_index()]
 
+    # create the Cases table
     provtable = cases.reset_index()
     provtable = pd.crosstab(index=provtable['Date'], columns=provtable['Province'], values=provtable['Cases'], aggfunc="max")
     provtable = provtable.loc[provtable.last_valid_index()]
-    provtable = provtable.nlargest(len(provtable))  # Sort it 
+
+    # Create the region table
+    regiontable = cases.reset_index()
+    regiontable = pd.crosstab(index=regiontable['Date'], columns=regiontable['Province'], values=regiontable['region'], aggfunc="max")
+    regiontable = regiontable.loc[regiontable.last_valid_index()]
+
+    # create the combined table
+    frame = { 'Region': regiontable, 'Cases': provtable, 'Trend': inctable }
+    final = pd.DataFrame(frame)
+
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = provtable,
+              table = final,
               footnote='Note: Table shows total cases for that province',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
