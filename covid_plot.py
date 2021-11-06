@@ -1830,6 +1830,24 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    top5 = cases.pipe(topprov,
+                      cases_per_capita("Deaths"),
+                      name="Province Cases",
+                      other_name="Other Provinces",
+                      num=5)
+    cols = top5.columns.to_list()
+
+    plot_area(df=top5,
+              title='Covid Deaths/100k - Top Provinces - Thailand',
+              png_prefix='deaths_prov_top', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = cases['Deaths'],
+              footnote='Note: Table shows total cases for that province',
+              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+
+
     # Work out Death ages from CFR from situation reports
     age_ranges = ["15-39", "40-59", "60-"]
 

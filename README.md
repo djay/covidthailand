@@ -125,6 +125,12 @@ Links to all data sources are including in [Downloads](downloads)
 
 - source: [CCSA Daily Briefing](downloads#dl-briefings)
 
+
+![Deaths Top Provinces](https://github.com/djay/covidthailand/wiki/deaths_prov_top_3.png)
+
+- source: [CCSA Daily Briefing](downloads#dl-briefings)
+
+
 ## COVID-19 Deaths by Health District
 
 ![Thailand Covid Deaths by Health District](https://github.com/djay/covidthailand/wiki/deaths_by_area_3.png)
