@@ -403,14 +403,14 @@ def add_regions_to_axis(axis, table_regions):
     trend_colors = []
 
     # get the regions and add the heading
-    regions = list(table_regions.loc[:, 'Region'].tolist()) 
+    regions = list(table_regions.loc[:, 'region'].tolist()) 
     if regions[0] == 'Bangkok Metropolitan Region': regions[0] = 'Bangkok'
     current_region = regions[0]
     append_row(row_labels, row_texts, row_colors, trend_colors, '- ' + current_region + ' Region -')
 
     # get the remaining values
     provinces = list(table_regions.index)
-    values = list(table_regions.loc[:, 'Cases'].tolist())
+    values = list(table_regions.loc[:, 'Value'].tolist())
     trends = list(table_regions.loc[:, 'Trend'].tolist())
 
     # generate the the cell values and colors
@@ -448,19 +448,36 @@ def add_regions_to_axis(axis, table_regions):
 
 def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
-    regions_to_add = table[table['Region'].isin(regions)]
+    regions_to_add = table[table['region'].isin(regions)]
     regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
-    regions_to_add.sort_values(by=['Region', 'Trend'], ascending=False, inplace=True)
+    regions_to_add.sort_values(by=['region', 'Value'], ascending=False, inplace=True)
     add_regions_to_axis(axis, regions_to_add)
 
 
 def fill_province_tables(ax_provinces, table_provinces):
     """Create an info table showing province values."""
-    add_to_table(ax_provinces[0], table_provinces, ['Northern'])
-    add_to_table(ax_provinces[1], table_provinces, ['Western', 'Eastern'])
-    add_to_table(ax_provinces[2], table_provinces, ['Northeastern'])
-    add_to_table(ax_provinces[3], table_provinces, ['Central', 'Bangkok Metropolitan Region'])
-    add_to_table(ax_provinces[4], table_provinces, ['Southern'])
+
+        # #Modi was here... 
+
+    # 14day MA just for cases
+    #ma = table_provinces[['Cases','region']]
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
+    # set a new col called inc with the now / 14 days earlier
+    ma = ma.to_frame("MA").assign(
+        Trend=ma.groupby("Province").apply(lambda df: ((df - df.shift(14)) / df)),
+        Value=table_provinces
+    )
+
+    ma = ma.reset_index("Province")
+    last_day = ma.loc[ma.last_valid_index()]
+    last_day = join_provinces(last_day, "Province", ["region"])
+    last_day = last_day.reset_index().set_index("Province").drop(columns="Date")
+
+    add_to_table(ax_provinces[0], last_day, ['Bangkok Metropolitan Region', 'Central', ])
+    add_to_table(ax_provinces[1], last_day, ['Western', 'Eastern'])
+    add_to_table(ax_provinces[2], last_day, ['Northeastern'])
+    add_to_table(ax_provinces[3], last_day, ['Northern'])
+    add_to_table(ax_provinces[4], last_day, ['Southern'])
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
@@ -631,7 +648,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
-    """
+
     dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
 
     # Computed data
@@ -1612,7 +1629,7 @@ def save_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
-    """
+
     #######################
     # Cases by provinces
     #######################
@@ -1673,31 +1690,6 @@ def save_plots(df: pd.DataFrame) -> None:
                       num=5)
     cols = top5.columns.to_list()
 
-    # #Modi was here... 
-
-    # 14day MA just for cases
-    ma = cases['Cases'].rolling(14).mean()
-    # set a new col called inc with the now / 14 days earlier
-    cases['Inc'] = ((ma - ma.shift(-14)) / ma)
-
-    # create the Trend table
-    inctable = cases.reset_index()
-    inctable = pd.crosstab(index=inctable['Date'], columns=inctable['Province'], values=inctable['Inc'], aggfunc="max")
-    inctable = inctable.loc[inctable.last_valid_index()]
-
-    # create the Cases table
-    provtable = cases.reset_index()
-    provtable = pd.crosstab(index=provtable['Date'], columns=provtable['Province'], values=provtable['Cases'], aggfunc="max")
-    provtable = provtable.loc[provtable.last_valid_index()]
-
-    # Create the region table
-    regiontable = cases.reset_index()
-    regiontable = pd.crosstab(index=regiontable['Date'], columns=regiontable['Province'], values=regiontable['region'], aggfunc="max")
-    regiontable = regiontable.loc[regiontable.last_valid_index()]
-
-    # create the combined table
-    frame = { 'Region': regiontable, 'Cases': provtable, 'Trend': inctable }
-    final = pd.DataFrame(frame)
 
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
@@ -1705,7 +1697,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = final,
+              table = cases['Cases'],
               footnote='Note: Table shows total cases for that province',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
