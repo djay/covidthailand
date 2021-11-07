@@ -201,7 +201,7 @@ jobs:
       - name: Make cached docs bundle
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
-           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs    
+           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs/*    
       - name: Upload Cached docs to existing release
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: svenstaro/upload-release-action@v2
