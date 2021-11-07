@@ -209,7 +209,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./inputs.tar.gz
           asset_name: inputs.tar.gz
-          tag: 1.0
+          tag: 1
           overwrite: true
           body: "Updated docs"
       # - name: Push cached docs to repo
