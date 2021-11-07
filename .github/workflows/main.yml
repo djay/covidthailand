@@ -135,6 +135,29 @@ jobs:
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
+      - name: Make cached docs bundle
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        run: |
+           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs    
+      - name: Upload Cached docs to existing release
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./inputs.tar.gz
+          asset_name: inputs.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+      # - name: Push cached docs to repo
+      #   run: |
+      #     cd inputs
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add .
+      #     git commit -m "generated"
+      #     git push
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6 # Not needed with a .ruby-version file
@@ -198,25 +221,3 @@ jobs:
             include-patterns: "*"
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}  
-      - name: Make cached docs bundle
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        run: |
-           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs    
-      - name: Upload Cached docs to existing release
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./inputs.tar.gz
-          asset_name: inputs.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated docs"
-      # - name: Push cached docs to repo
-      #   run: |
-      #     cd inputs
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git add .
-      #     git commit -m "generated"
-      #     git push
