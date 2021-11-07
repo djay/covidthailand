@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    permissions:
-      statuses: write 
+    # permissions:
+    #   statuses: write 
     steps:
       - uses: actions/checkout@v2
       # - name: Get Cached docs
@@ -138,7 +138,7 @@ jobs:
       - name: Make cached docs bundle
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
-           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs    
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs    
       - name: Upload Cached docs to existing release
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: svenstaro/upload-release-action@v2
