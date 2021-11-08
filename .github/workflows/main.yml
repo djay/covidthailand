@@ -185,7 +185,7 @@ jobs:
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: 'Netlify preview deployed'
-          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
           state: 'success'
           sha: ${{github.event.pull_request.head.sha || github.sha}}
           target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
