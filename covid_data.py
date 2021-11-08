@@ -23,7 +23,7 @@ from utils_pandas import add_data, check_cum, cum2daily, daily2cum, daterange, e
     spread_date_range, cut_ages
 from utils_scraping import CHECK_NEWER, MAX_DAYS, USE_CACHE_DATA, any_in, dav_files, get_next_number, get_next_numbers, \
     get_tweets_from, pairwise, parse_file, parse_numbers, pptx2chartdata, replace_matcher, seperate, split, \
-    strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s, logger
+    strip, toint, web_files, web_links, all_in, NUM_OR_DASH, s, logger, local_files
 from utils_thai import DISTRICT_RANGE, area_crosstab, file2date, find_date_range, \
     find_thai_date, get_province, join_provinces, parse_gender, to_thaiyear, today,  \
     get_fuzzy_provinces, POS_COLS, TEST_COLS
@@ -1912,48 +1912,83 @@ def get_cases_by_area_api():
 # Testing data
 ##########################################
 
-def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
-                       username="wbioWZAQfManokc",
-                       password="null",
-                       ext=".pdf .pptx",
-                       dir="inputs/testing_moph"):
-    return dav_files(url, username, password, ext, dir)
+# def get_test_dav_files(url="http://nextcloud.dmsc.moph.go.th/public.php/webdav",
+#                        username="wbioWZAQfManokc",
+#                        password="null",
+#                        ext=".pdf .pptx",
+#                        dir="inputs/testing_moph"):
+#     return dav_files(url, username, password, ext, dir)
+
+
+def get_test_files(ext="pdf", dir="inputs/testing_moph"):
+    key = os.environ.get('DRIVE_API_KEY', None)
+    if key is None:
+        yield from local_files(ext, dir)
+        return
+    folder_id = "1yUVwstf5CmdvBVtKBs0uReV0BTbjQYlT"
+    url = f"https://www.googleapis.com/drive/v3/files?q=%27{folder_id}%27+in+parents&key={key}"
+    res = requests.get(url).json()
+    for data in res['files']:
+        id = data['id']
+        name = data['name']
+        # TODO: how to get modification date?
+        if not name.endswith(ext):
+            continue
+        target = os.path.join(dir, name)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+
+        def get_file(id=id, name=name):
+            url = f"https://www.googleapis.com/drive/v2/files/{id}?alt=media&key={key}"
+            file, _, _ = next(iter(web_files(url, dir="inputs/testing_moph", filenamer=lambda url, _: name)))
+            return file
+
+        yield target, get_file
 
 
 def get_tests_by_day():
     logger.info("========Tests by Day==========")
 
-    # file, dl = next(get_test_dav_files(ext="xlsx"))
-    # dl()
-    # tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
-    url = "https://data.go.th/dataset/9f6d900f-f648-451f-8df4-89c676fce1c4/resource/0092046c-db85-4608-b519-ce8af099315e/download/thailand_covid-19_testing_data_update091064.csv"  # NOQA
-    file, _, _ = next(iter(web_files(url, dir="inputs/testing_moph")))
-    tests = pd.read_csv(file, parse_dates=True, usecols=[0, 1, 2])
-    pos = tests[tests["Date"] == "Cannot specify date"]['positive']
-    total = tests[tests["Date"] == "Cannot specify date"]['Total Testing']
-    tests = tests[tests["Date"] != "Cannot specify date"]
+    def from_reports():
+        file, dl = next(get_test_files(ext="xlsx"))
+        dl()
+        tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+        tests.dropna(how="any", inplace=True)  # get rid of totals row
+        # tests.drop("Cannot specify date", inplace=True)
+        tests = tests.iloc[1:]  # Get rid of first row with unspecified data
+        return file, tests
+
+    def from_data():
+        url = "https://data.go.th/dataset/9f6d900f-f648-451f-8df4-89c676fce1c4/resource/0092046c-db85-4608-b519-ce8af099315e/download/thailand_covid-19_testing_data_update091064.csv"  # NOQA
+        file, _, _ = next(iter(web_files(url, dir="inputs/testing_moph")))
+        tests = pd.read_csv(file, parse_dates=True, usecols=[0, 1, 2])
+        return file, tests.rename(columns={'positive': "Pos", 'Total Testing': "Total"})
+
+    file, tests = from_reports()
     tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
     tests = tests.set_index("Date")
 
-    # tests.dropna(how="any", inplace=True)  # get rid of totals row
-    # tests.drop("Cannot specify date", inplace=True)
-    # Need to redistribute the unknown values across known values
-    # Documentation tells us it was 11 labs and only before 3 April
-    unknown_end_date = datetime.datetime(day=3, month=4, year=2020)
-    all_pos = tests["positive"][:unknown_end_date].sum()
-    all_total = tests["Total Testing"][:unknown_end_date].sum()
-    for index, row in tests.iterrows():
-        if index > unknown_end_date:
-            continue
-        row['positive'] = float(row['positive']) + row['positive'] / all_pos * pos
-        row['Total Testing'] = float(row['Total Testing']) + row['Total Testing'] / all_total * total
-    # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
-    # print(tests["Pos"].sum(), pos + all_pos)
-    # print(tests["Total"].sum(), total + all_total)
-    # fix datetime
-    # tests.reset_index(drop=False, inplace=True)
+    def redistribute():
+        pos = tests[tests["Date"] == "Cannot specify date"]['Pos']
+        total = tests[tests["Date"] == "Cannot specify date"]['Total']
+        tests = tests[tests["Date"] != "Cannot specify date"]
 
-    tests.rename(columns={'positive': "Pos XLS", 'Total Testing': "Tests XLS"}, inplace=True)
+        # Need to redistribute the unknown values across known values
+        # Documentation tells us it was 11 labs and only before 3 April
+        unknown_end_date = datetime.datetime(day=3, month=4, year=2020)
+        all_pos = tests["positive"][:unknown_end_date].sum()
+        all_total = tests["Total Testing"][:unknown_end_date].sum()
+        for index, row in tests.iterrows():
+            if index > unknown_end_date:
+                continue
+            row['positive'] = float(row['positive']) + row['positive'] / all_pos * pos
+            row['Total Testing'] = float(row['Total Testing']) + row['Total Testing'] / all_total * total
+        # TODO: still doesn't redistribute all missing values due to rounding. about 200 left
+        # print(tests["Pos"].sum(), pos + all_pos)
+        # print(tests["Total"].sum(), total + all_total)
+        # fix datetime
+        # tests.reset_index(drop=False, inplace=True)
+
+    tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
     logger.info("{} {}", file, len(tests))
 
     return tests
@@ -2054,7 +2089,7 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
-    for file, dl in get_test_dav_files(ext=".pptx"):
+    for file, dl in get_test_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
             data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
@@ -2064,7 +2099,7 @@ def get_test_reports():
         assert not data.empty
         # TODO: assert for pubpriv too. but disappeared after certain date
     # Also need pdf copies because of missing pptx
-    for file, dl in get_test_dav_files(ext=".pdf"):
+    for file, dl in get_test_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
         for page in pages:
@@ -3122,12 +3157,14 @@ def scrape_and_combine():
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
 
         situation = pool.apply_async(get_situation)
-        tests_reports = pool.apply_async(get_test_reports)
-        tests = pool.apply_async(get_tests_by_day)
+
         cases_demo__risks_prov = pool.apply_async(get_cases_by_demographics_api)
 
         tweets_prov__twcases = pool.apply_async(get_cases_by_prov_tweets)
         timelineapi = pool.apply_async(get_cases)
+
+        tests = pool.apply_async(get_tests_by_day)
+        tests_reports = pool.apply_async(get_test_reports)
 
         xcess_deaths = pool.apply_async(excess_deaths)
         case_api_by_area = pool.apply_async(get_cases_by_area_api)  # can be very wrong for the last days
@@ -3140,7 +3177,6 @@ def scrape_and_combine():
         dash_by_province = dash_by_province.get()
         dash_trends_prov = dash_trends_prov.get()
 
-        tests_reports = tests_reports.get()
         vac = vac.get()
         briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
         cases_demo, risks_prov = cases_demo__risks_prov.get()
@@ -3149,6 +3185,7 @@ def scrape_and_combine():
         timelineapi = timelineapi.get()
 
         tests = tests.get()
+        tests_reports = tests_reports.get()
 
         xcess_deaths.get()
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
