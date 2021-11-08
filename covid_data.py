@@ -3145,8 +3145,6 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
 
-        tests = pool.apply_async(get_tests_by_day)
-        tests_reports = pool.apply_async(get_test_reports)
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
@@ -3164,6 +3162,9 @@ def scrape_and_combine():
 
         tweets_prov__twcases = pool.apply_async(get_cases_by_prov_tweets)
         timelineapi = pool.apply_async(get_cases)
+
+        tests = pool.apply_async(get_tests_by_day)
+        tests_reports = pool.apply_async(get_test_reports)
 
         xcess_deaths = pool.apply_async(excess_deaths)
         case_api_by_area = pool.apply_async(get_cases_by_area_api)  # can be very wrong for the last days
@@ -3184,6 +3185,7 @@ def scrape_and_combine():
         timelineapi = timelineapi.get()
 
         tests = tests.get()
+        tests_reports = tests_reports.get()
 
         xcess_deaths.get()
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
