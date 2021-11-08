@@ -192,7 +192,7 @@ jobs:
           description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
           state: 'success'
           sha: ${{github.event.pull_request.head.sha || github.sha}}
-          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
       - name: Netlify prod build
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: netlify/actions/cli@master
@@ -208,7 +208,7 @@ jobs:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://practical-ritchie-cca141.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
