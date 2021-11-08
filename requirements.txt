@@ -15,5 +15,7 @@ matplotlib
 pythainlp
 TableauScraper
 pytest
+#pytest-xdist
+#pytest-parallel
 mpld3
 loguru

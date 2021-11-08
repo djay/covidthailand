@@ -10,7 +10,7 @@ on:
     - cron: "19 00 * * *" # 07:00 Dashboard
     - cron: "20 00 * * *" # 08:00 Dashboard
     - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
-    - cron: "*/30 06-09 * * *" # Quick checks for briefing after 1pm
+    - cron: "*/45 06-09 * * *" # Quick checks for briefing after 1pm
     # - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
     # - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
     # - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    permissions:
-      statuses: write 
+    # permissions:
+    #   statuses: write 
     steps:
       - uses: actions/checkout@v2
       # - name: Get Cached docs
@@ -124,17 +124,44 @@ jobs:
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest
+        env:
+           TIKA_VERSION: 1.24 # Prevent delays in upgrades
+           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: Scrape Covid Data
         id: update
         if: ${{ steps.go.outcome == 'success' }}
         run: |
             python covid_plot.py
         env:
-          TIKA_VERSION: 1.24 # Prevent delays in upgrades
+           TIKA_VERSION: 1.24 # Prevent delays in upgrades
+           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: outputfiles.txt
         continue-on-error: true
         run: 
           du inputs | tee outputfiles.txt
+      - name: Make cached docs bundle
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        run: |
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs    
+      - name: Upload Cached docs to existing release
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./inputs.tar.gz
+          asset_name: inputs.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+      # - name: Push cached docs to repo
+      #   run: |
+      #     cd inputs
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add .
+      #     git commit -m "generated"
+      #     git push
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6 # Not needed with a .ruby-version file
@@ -148,7 +175,7 @@ jobs:
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
-      - name: Netlify preview deploy
+      - name: Netlify preview build
         if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
@@ -162,11 +189,11 @@ jobs:
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: 'Netlify preview deployed'
-          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
           state: 'success'
           sha: ${{github.event.pull_request.head.sha || github.sha}}
-          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--${{ secrets.NETLIFY_SITE_ID }}.netlify.app
-      - name: Netlify prod deploy
+          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
+      - name: Netlify prod build
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: netlify/actions/cli@master
         with:
@@ -174,14 +201,14 @@ jobs:
         env:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      - name: Netlify prod deploy
+      - name: Netlify prod deployed
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: Sibz/github-status-action@v1.1.1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           context: Netlify preview
           state: success
-          target_url: ${{ secrets.NETLIFY_SITE_ID }}.netlify.app
+          target_url: https://practical-ritchie-cca141.netlify.app
       - name: Upload png to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
@@ -198,25 +225,3 @@ jobs:
             include-patterns: "*"
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}  
-      - name: Make cached docs bundle
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        run: |
-           tar --exclude="inputs/.git" --exclude="._*" -czvf inputs.tar.gz inputs    
-      - name: Upload Cached docs to existing release
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./inputs.tar.gz
-          asset_name: inputs.tar.gz
-          tag: 1.0
-          overwrite: true
-          body: "Updated docs"
-      # - name: Push cached docs to repo
-      #   run: |
-      #     cd inputs
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git add .
-      #     git commit -m "generated"
-      #     git push

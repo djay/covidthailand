@@ -403,6 +403,34 @@ def sanitize_filename(filename):
     # Windows Filename Compatibility: '?*:<>|'
 
 
+def local_files(ext=".pdf", dir=os.getcwd()):
+    client_list = [
+        (
+            f"{file}",
+            f"{datetime.datetime.fromtimestamp(file.stat().st_mtime, tz=datetime.timezone.utc):%a, %d %b %Y %H:%M:%S %Z}"
+        )
+        for file in Path(dir).glob('**/*') if file.is_file()
+    ]
+    # important we get them sorted newest files first as we only fill in NaN from each additional file
+    files = sorted(
+        client_list,
+        key=lambda info: info[1],
+        reverse=True,
+    )
+    i = 0
+    for info in files:
+        file = info[0].split("/")[-1]
+        if not any([ext == file[-len(ext):] for ext in ext.split()]):
+            continue
+        target = os.path.join(dir, file)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        if i > 0 and is_cutshort(target, info[1], False):
+            break
+        do_dl = lambda target=target: target
+        i += 1
+        yield target, do_dl
+
+
 def dav_files(url, username=None, password=None,
               ext=".pdf .pptx", dir=os.getcwd()):
 
@@ -416,7 +444,7 @@ def dav_files(url, username=None, password=None,
     use_cache = False
     try:
         client_list = [(info["path"], info["modified"]) for info in client.list(get_info=True)]
-    except (NoConnection, ResponseErrorCode):
+    except (Exception):
         client_list = [
             (
                 f"{file}",

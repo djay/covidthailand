@@ -584,20 +584,20 @@ def save_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
-    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', ]
-    legends = ['Tests Performed (All)', 'Tests Performed (Public)', 'PUI', 'PUI (Public)', ]
+    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', 'Tests ATK Proactive']
+    legends = ['PCR Tests (All)', 'PCT Tests (Public)', 'PUI', 'PUI (Public)', 'ATK Tests (NHSO provided/Proactive)']
     plot_area(df=df,
-              title='PCR Tests and PUI - Thailand', 
+              title='PCR Tests and PUI - Thailand',
               legends=legends,
               png_prefix='tests', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              actuals=['Tests XLS'],
-              footnote='Note: Totals exclude some proactive testing.\n'
-                        + 'PCR: Polymerase Chain Reaction\n'
-                        + 'PUI: Person Under Investigation\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+              # actuals=['Tests XLS'],
+              footnote='Note: PCR tests likely higher than shown ( due to cases > PCR Positives)\n'
+              'PCR: Polymerase Chain Reaction\n'
+              'PUI: Person Under Investigation\n'
+              'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Tested Cum',
@@ -606,25 +606,25 @@ def save_plots(df: pd.DataFrame) -> None:
             'Tested Quarantine Cum',
             'Tested PUI Walkin Private Cum',
             'Tested PUI Walkin Public Cum']
-    plot_area(df=df, 
+    plot_area(df=df,
               title='PCR Tests and PUI - Thailand',
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='Note: Excludes some proactive tests.\n'
-                        + 'PCR: Polymerase Chain Reaction\n'
-                        + 'PUI: Person Under Investigation\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+                       'PCR: Polymerase Chain Reaction\n'
+                       'PUI: Person Under Investigation\n'
+                       'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
-    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'ATK']
+    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'Tests ATK Proactive']
     legend = [
-        "Cases (PCR)", 
-        "Proactive Cases (PCR)", 
-        "PCR Tests", 
-        "Probable Case (Registered for home isolation from ATK)"
+        "Cases (PCR)",
+        "Proactive Cases (PCR)",
+        "PCR Tests",
+        "ATK Tests (NHSO provided/Proactive)",
     ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
@@ -635,7 +635,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+                       'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left='Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
     ###############
@@ -649,21 +649,31 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
     df['Cases per PUI3'] = df['Cases'].divide(df['Tested PUI']) / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
+    df['Postive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
+    df['Postive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK Proactive']) / \
+        (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
+    df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
     cols = [
         'Positivity Public+Private',
         'Positivity Cases/Tests',
-        'Cases per PUI3',
-        'Positivity Walkins/PUI3',
+        # 'Cases per PUI3',
+        # 'Positivity Walkins/PUI3',
+        'Postive Rate ATK Proactive',
+        'Postive Rate PCR + ATK',
+        'Positive Rate Dash %',
     ]
     legends = [
         'Positive Results per PCR Test (%) (Positive Rate)',
         'Confirmed Cases per PCR Test (%)',
-        'Confirmed Cases per PUI*3 (%)',
-        'Walkin Cases per PUI*3 (%)'
+        # 'Confirmed Cases per PUI*3 (%)',
+        # 'Walkin Cases per PUI*3 (%)',
+        'Postive Results per ATK Test (NHSO provided/Proactive)',
+        'Postive Results per PCR + ATK (NHSO provided) Test',
+        'Positive Rate from DDC Dashboard',
     ]
     plot_area(df=df,
-              title='Positive Rate: Is enough testing happening? - Thailand',
+              title='Positive Rate (PCR + ATK Proactive) - Thailand',
               legends=legends,
               highlight=['Positivity Public+Private'],
               png_prefix='positivity', cols_subset=cols,
@@ -671,12 +681,10 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote='\nPUI: Person Under Investigation\n'
-                        + 'PCR: Polymerase Chain Reaction\n'
-                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
-                        + 'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
-                        + 'so it is included for when testing data is delayed. It is not the actual positive rate.',
-              footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              footnote='While PCR test data is missing, Cases per Test might be a better estimate of Positive Rate\n'
+              'WHO recommends < 5% *assuming tests are > 7k per day over 2 weeks\n'
+              'NHSO provided ATK go to "high risk" areas so should show higher than normal positive rate',
+              footnote_left=f'\n{source}Data Sources: DMSC Test Reports, MOPH Covid-19 Dashboard')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI'] * 3 / df['Cases']
@@ -701,9 +709,9 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nPUI: Person Under Investigation\n'
-                        + 'PCR: Polymerase Chain Reaction\n'
-                        + 'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
-                        + 'so it is included for when testing data is delayed. It is not the actual positive rate.',
+                       'PCR: Polymerase Chain Reaction\n'
+                       'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
+                       'so it is included for when testing data is delayed. It is not the actual positive rate.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = ['Positivity Cases/Tests',
@@ -756,23 +764,26 @@ def save_plots(df: pd.DataFrame) -> None:
     cols = ['Cases',
             'Cases Walkin',
             'Pos XLS',
-            'Pos Public',
+            # 'Pos Public',
             'ATK',
+            'Pos ATK Proactive',
             ]
     legends = ['Confirmed Cases',
                'Walkin Confirmed Cases',
-               'Positive Test Results (All)',
-               'Positive Test Results (Public)',
-               "Probable Case (Registered for home isolation from ATK)"]
+               'Positive PCR Test Results (All)',
+               #    'Positive PCR Test Results (Public)',
+               "Probable Case (Registered for home isolation from ATK)",
+               "Positive ATK Test Resilts (NHSO provided/Proactive)"]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               legends=legends,
               png_prefix='cases', cols_subset=cols,
-              actuals=["Cases", "Pos XLS"],
+              #   actuals=["Cases", "Pos XLS"],
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap="tab10",
-              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit',
+              footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                       'Cases higher than PCR positive tests likely due to missing PCR test data',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = [
@@ -788,14 +799,15 @@ def save_plots(df: pd.DataFrame) -> None:
         'Positive Test Results',
     ]
     plot_area(df=df,
-        title='Covid Cases vs. Positive Tests - Thailand',
-        legends=legends,
-        png_prefix='cases_tests', cols_subset=cols,
-        ma_days=21,
-        kind='line', stacked=False, percent_fig=False,
-        cmap="tab10",
-        footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
-        footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              title='Covid Cases vs. Positive Tests - Thailand',
+              legends=legends,
+              png_prefix='cases_tests', cols_subset=cols,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap="tab10",
+              footnote='Proactive: Testing done at high risk locations, rather than random sampling.\n'
+              'Cases higher than PCR positive tests likely due to missing PCR test data',
+              footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     df['Cases 3rd Cum'] = df['2021-04-01':]['Cases'].cumsum()
     df['Cases outside Prison 3rd Cum'] = df['2021-04-01':]['Cases outside Prison'].cumsum()

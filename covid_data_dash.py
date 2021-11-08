@@ -123,7 +123,6 @@ def dash_daily():
     assert df[df['Recovered'] == 0.0].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")  # "json" for caching, api so it's downloadable
     return df
 
 
@@ -173,13 +172,11 @@ def dash_ages():
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
     export(df, "moph_dashboard_ages", csv_only=True, dir="inputs/json")
-    # "json" for caching, api so it's downloadable
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
     return df
 
 
 def dash_trends_prov():
-    df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+    df = import_csv("moph_dashboard_prov_trends", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
@@ -211,7 +208,7 @@ def dash_trends_prov():
         logger.info("{} DASH Trend prov {}", row.last_valid_index(),
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
-    export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")  # Speeds up things locally
+    export(df, "moph_dashboard_prov_trends", csv_only=True, dir="inputs/json")  # Speeds up things locally
 
     return df
 
@@ -363,17 +360,17 @@ def skip_valid(df, idx_value, allow_na={}):
             return False
         if pd.isna(val):
             return False
-        if mins:
-            min_val, *max_val = mins
-            if min_val > val:
-                return False
-            elif max_val and val > max_val[0]:
-                return False
-            else:
-                return True 
-        else:
+        if not mins:
             return True
-
+        
+        min_val, *max_val = mins
+        if min_val > val:
+            return False
+        elif max_val and val > max_val[0]:
+            return False
+        else:
+            return True 
+ 
     # allow certain fields null if before set date
     nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
     if not nulls:

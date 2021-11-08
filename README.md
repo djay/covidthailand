@@ -147,15 +147,12 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Positive Rate](https://github.com/djay/covidthailand/wiki/positivity_3.png)
 
-- *NOTE* Walkin Cases/3x PUI seems to give an estimate of positive rate (when cases are high), so it is included for when testing data is delayed. *Note* it is not the actual positive rate.
-- Positive rate is little like fishing in a lake. If you get few nibbles each time you put your line in you can guess that there is few fish in the lake. Less positives per test, less infections likely in the population.
 - [WHO considers enough testing is happening if positive rate is under %5](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html) rather than tests per population but only if 0.1% of the population is being tested per week (avg 7k tests per day for Thailand). Note this recommendation works best if everyone who might have COVID-19 is equally likely to get tested and there are reasons why this might not be the case in Thailand.
-- It's likely [Thailand excludes some test data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results) so there could be more tests than this data shows. Excluding
-proactive tests from positive rate is perhaps better for [comparison with other countries](https://ourworldindata.org/grapher/positive-rate-daily-smoothed) they are less random and more likely to be positive as its testing known clusters.
-- Rapid antigen tests are not included in the test data, or in confirmed case numbers (unless they also had a positive PCR test). This is similar to most countries however some like [UK count antigen tests in both tests and confirmed cases](https://coronavirus.data.gov.uk/details/about-data#testing-capacity).
+- It's likely there is [missing test data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results). Using confirmed cases migth be more accurate.
+- Confirmed cases excludes ATK Positives (unless they also had a positive PCR test). This is similar to most countries however some like Malaysia, India and [UK count antigen tests in both tests and confirmed cases](https://coronavirus.data.gov.uk/details/about-data#testing-capacity)
 - This positive rate is based on [DMSC: Thailand Laboratory testing data](downloads#dl-testing). In the [Daily MOPH Situation Reports](downloads#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki).
 - see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case_3.png) (Positive rate inverted) could be easier to understand.
-- Sources: [DMSC: Thailand Laboratory testing data](downloads#dl-testing), [Daily situation Reports](downloads#dl-situation-reports)
+- Sources: [DMSC: Thailand Laboratory testing data](downloads#dl-testing), [Daily situation Reports](downloads#dl-situation-reports), [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
 ## PCR Tests in Thailand by day
 
