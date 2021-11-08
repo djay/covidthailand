@@ -1923,6 +1923,7 @@ def get_cases_by_area_api():
 def get_test_files(ext="pdf", dir="inputs/testing_moph"):
     key = os.environ.get('DRIVE_API_KEY', None)
     if key is None:
+        logger.warning("env DRIVE_API_KEY missing: Using local cahced testing data only")
         yield from local_files(ext, dir)
         return
     folder_id = "1yUVwstf5CmdvBVtKBs0uReV0BTbjQYlT"
