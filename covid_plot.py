@@ -308,6 +308,7 @@ def plot_area(df: pd.DataFrame,
                          linewidth=2,
                          style="--",
                          kind="line",
+                         alpha=0.5,
                          zorder=4,
                          legend=False,
                          x_compat=kind == 'bar'  # Putting lines on bar plots doesn't work well
