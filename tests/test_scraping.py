@@ -4,9 +4,9 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_atk, briefing_case_types, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, \
+from covid_data import briefing_atk, briefing_case_types, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_test_files, \
                        get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
-                       get_test_dav_files, vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
+                       vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
                        vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
                        situation_pui_en, briefing_province_cases, situation_cases_new
 import pandas as pd
@@ -179,11 +179,11 @@ def test_vac_manuf_given(fname, testdf, get_file):
 
 
 def find_testing_pptx(check):
-    return [(file, None, dl) for file, dl in get_test_dav_files(ext=".pptx")]
+    return [(file, None, dl) for file, dl in get_test_files(ext=".pptx")]
 
 
 def find_testing_pdf(check):
-    return [(file, None, dl) for file, dl in get_test_dav_files(ext=".pdf")]
+    return [(file, None, dl) for file, dl in get_test_files(ext=".pdf")]
 
 
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pptx", find_testing_pptx))
