@@ -650,20 +650,27 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Cases per PUI3'] = df['Cases'].divide(df['Tested PUI']) / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
     df['Postive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
+    df['Postive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK Proactive']) / \
+        (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
+    df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
     cols = [
         'Positivity Public+Private',
         'Positivity Cases/Tests',
         # 'Cases per PUI3',
         # 'Positivity Walkins/PUI3',
-        'Postive Rate ATK Proactive'
+        'Postive Rate ATK Proactive',
+        'Postive Rate PCR + ATK',
+        'Positive Rate Dash %',
     ]
     legends = [
         'Positive Results per PCR Test (%) (Positive Rate)',
         'Confirmed Cases per PCR Test (%)',
         # 'Confirmed Cases per PUI*3 (%)',
         # 'Walkin Cases per PUI*3 (%)',
-        'Postive Results per ATK Test (NHSO provided/Proactive)'
+        'Postive Results per ATK Test (NHSO provided/Proactive)',
+        'Postive Results per PCR + ATK (NHSO provided) Test',
+        'Positive Rate from DDC Dashboard',
     ]
     plot_area(df=df,
               title='Positive Rate (PCR + ATK Proactive) - Thailand',
@@ -674,10 +681,10 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote='\nPUI: Person Under Investigation\n'
-                       'PCR: Polymerase Chain Reaction\n'
-                       'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n',
-              footnote_left=f'\n{source}Data Sources: Daily Situation Reports, DMSC: Thailand Laboratory Testing Data')
+              footnote='While PCR test data is missing, Cases per Test might be a better estimate of Positive Rate\n'
+              'WHO recommends < 5% *assuming tests are > 7k per day over 2 weeks\n'
+              'NHSO provided ATK go to "high risk" areas so should show higher than normal positive rate',
+              footnote_left=f'\n{source}Data Sources: DMSC Test Reports, MOPH Covid-19 Dashboard')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI'] * 3 / df['Cases']
