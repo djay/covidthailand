@@ -3194,7 +3194,10 @@ def scrape_and_combine():
     # Combine dashboard data
     dash_by_province = dash_trends_prov.combine_first(dash_by_province)
     export(dash_by_province, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")  # "json" for caching, api so it's downloadable
+    # "json" for caching, api so it's downloadable
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
