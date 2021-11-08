@@ -427,9 +427,9 @@ def add_regions_to_axis(axis, table_regions):
                    provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow], 
                    [(0, 0, 0, 0), trend_color], trend_color)
 
-    # create the table    
+    # create the table
     axis.set_axis_off() 
-    table = axis.table(cellLoc='right',  loc='upper right',
+    table = axis.table(cellLoc='right', loc='upper right',
                        rowLabels=row_labels, cellText=row_texts, cellColours=row_colors)       
     table.auto_set_column_width((0, 1))
     table.auto_set_font_size(False)
@@ -463,10 +463,14 @@ def fill_province_tables(ax_provinces, table_provinces):
     #ma = table_provinces[['Cases','region']]
     ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
     # set a new col called inc with the now / 14 days earlier
+    trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
+    trend = trend[~trend.index.duplicated()]
     ma = ma.to_frame("MA").assign(
-        Trend=ma.groupby("Province").apply(lambda df: ((df - df.shift(14)) / df)),
+        Trend=trend,
+        # Trend=ma.groupby("Province").apply(lambda df: ((df - df.shift(14)) / df)),
         Value=table_provinces
     )
+
 
     ma = ma.reset_index("Province")
     last_day = ma.loc[ma.last_valid_index()]
@@ -1694,7 +1698,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
-              ma_days=7,
+              ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               table = cases['Cases'],
@@ -1702,7 +1706,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
-                      increasing(cases_per_capita('Cases Walkin'), 5),
+                      increasing(cases_per_capita('Cases Walkin'), 14),
                       cases_per_capita('Cases Walkin'),
                       name="Province Cases Walkin (7d MA)",
                       other_name="Other Provinces",
@@ -1711,7 +1715,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_walkins_increasing', cols_subset=cols,
-              ma_days=7,
+              ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nNote: Per 100,000 people.\n'
