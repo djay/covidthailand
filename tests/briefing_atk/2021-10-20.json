@@ -1,0 +1,39 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Tests ATK Proactive",
+        "type":"integer"
+      },
+      {
+        "name":"Tests ATK Proactive Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Pos ATK Proactive",
+        "type":"integer"
+      },
+      {
+        "name":"Pos ATK Proactive Cum",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-10-20T00:00:00.000Z",
+      "Tests ATK Proactive":55760,
+      "Tests ATK Proactive Cum":2715319,
+      "Pos ATK Proactive":3060,
+      "Pos ATK Proactive Cum":174027
+    }
+  ]
+}
