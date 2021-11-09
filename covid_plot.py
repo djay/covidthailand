@@ -406,7 +406,7 @@ def add_regions_to_axis(axis, table_regions):
     regions = list(table_regions.loc[:, 'region'].tolist()) 
     if regions[0] == 'Bangkok Metropolitan Region': regions[0] = 'Bangkok'
     current_region = regions[0]
-    append_row(row_labels, row_texts, row_colors, trend_colors, '- ' + current_region + ' Region -')
+    append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
     # get the remaining values
     provinces = list(table_regions.index)
@@ -420,7 +420,7 @@ def add_regions_to_axis(axis, table_regions):
         if not current_region == regions[row_number]:
             append_row(row_labels, row_texts, row_colors, trend_colors)
             current_region = regions[row_number]
-            append_row(row_labels, row_texts, row_colors, trend_colors, '- ' + current_region + ' Region -')
+            append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
         trend_arrow, trend_color = trend_indicator(trends[row_number])
         append_row(row_labels, row_texts, row_colors, trend_colors, 
@@ -440,6 +440,8 @@ def add_regions_to_axis(axis, table_regions):
     for cell in table.get_celld().values():
         cell.set_text_props(color=theme_light_text)
     for row_number, color in enumerate(trend_colors):
+        if row_labels[row_number].endswith('Region'):
+            table[(row_number, -1)].set_text_props(color=theme_label_text)
         table[(row_number, 1)].set_text_props(color='blue')
         table[(row_number, 1)].set_color(color)
         table[(row_number, -1)].set_color(theme_light_back)
