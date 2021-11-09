@@ -450,7 +450,7 @@ def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
     regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
-    regions_to_add.sort_values(by=['region', 'Value'], ascending=False, inplace=True)
+    regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
     add_regions_to_axis(axis, regions_to_add)
 
 
