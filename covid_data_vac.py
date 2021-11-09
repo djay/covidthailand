@@ -199,7 +199,7 @@ def vaccination_daily(daily, date, file, page):
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
             ld1, ld2 = len(clean_num(d1_num)), len(clean_num(d2_num))
-            error = f"ERROR number of first doses ({ld1}) does not equal number of second doses ({ld2}) in {file} for {date}", 
+            error = f"ERROR number of first doses ({ld1}) does not equal number of second doses ({ld2}) in {file} for {date}",
             logger.error(error)
             assert False, error
         else:
@@ -791,4 +791,3 @@ def vac_slides():
             df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
     return df
-

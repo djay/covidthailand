@@ -4,16 +4,18 @@ from utils_thai import file2date
 
 from bs4 import BeautifulSoup
 from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data import briefing_atk, briefing_case_types, briefing_deaths_provinces, briefing_deaths_summary, briefing_documents, get_test_files, \
-                       get_tests_by_area_chart_pptx, get_thai_situation_files, situation_pui_th, \
-                       vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
-                       vaccination_reports_files2, vaccination_tables, get_tests_by_area_pdf, get_english_situation_files, \
-                       situation_pui_en, briefing_province_cases, situation_cases_new
+from covid_data_briefing import briefing_atk, briefing_case_types, briefing_deaths_provinces, \
+    briefing_deaths_summary, briefing_documents, briefing_province_cases
+from covid_data_testing import get_test_files, get_tests_by_area_chart_pptx
+from covid_data_situation import get_thai_situation_files, situation_pui_th, get_tests_by_area_pdf, \
+    get_english_situation_files, situation_pui_en, situation_cases_new
+from covid_data_vac import vac_briefing_totals, vac_manuf_given, vac_slides_files, vaccination_daily, \
+    vaccination_reports_files2, vaccination_tables
 import pandas as pd
 import pytest
 import dateutil
 import functools
-from tika import parser, config
+from tika import config
 
 
 # do any tika install now before we start the run and use multiple processes
