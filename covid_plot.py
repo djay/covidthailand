@@ -463,11 +463,11 @@ def fill_province_tables(ax_provinces, table_provinces):
     #ma = table_provinces[['Cases','region']]
     ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
     # set a new col called inc with the now / 14 days earlier
-    trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
-    trend = trend[~trend.index.duplicated()]
+    # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
+    trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
+    trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?
     ma = ma.to_frame("MA").assign(
         Trend=trend,
-        # Trend=ma.groupby("Province").apply(lambda df: ((df - df.shift(14)) / df)),
         Value=table_provinces
     )
 
@@ -1702,7 +1702,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               table = cases['Cases'],
-              footnote='Note: Table shows total cases for that province',
+              footnote='Note: Table todays cases and 7 day trend compared to peak',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
