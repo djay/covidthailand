@@ -12,8 +12,7 @@ from utils_pandas import daterange, export
 from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, get_next_number, get_next_numbers, \
     pairwise, parse_file, parse_numbers, seperate, split, \
     strip, web_files, NUM_OR_DASH, logger
-from utils_thai import file2date, \
-    find_thai_date, get_province, join_provinces, parse_gender, today
+from utils_thai import file2date, find_thai_date, get_province, join_provinces, parse_gender, today
 
 
 def briefing_case_detail_lines(soup):
