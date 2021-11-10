@@ -29,7 +29,6 @@ def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
               title: str,
-              table: pd.DataFrame = [],
               footnote: str = None,
               footnote_left: str = None,
               legends: List[str] = None,
@@ -38,6 +37,8 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
+              table: pd.DataFrame = [],
+              trend_sensitivity: float = 15.0,
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
@@ -262,7 +263,7 @@ def plot_area(df: pd.DataFrame,
             ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 4), colspan=1, rowspan=1))
             add_footnote(footnote, 'right')
 
-            fill_province_tables(ax_provinces, table)
+            fill_province_tables(ax_provinces, table, trend_sensitivity)
         else:
             add_footnote(footnote_left, 'left')
             add_footnote(footnote, 'right')
@@ -456,7 +457,7 @@ def add_to_table(axis, table, regions):
     add_regions_to_axis(axis, regions_to_add)
 
 
-def fill_province_tables(ax_provinces, table_provinces):
+def fill_province_tables(ax_provinces, table_provinces, sensitivity=15):
     """Create an info table showing province values."""
 
         # #Modi was here... 
@@ -464,9 +465,18 @@ def fill_province_tables(ax_provinces, table_provinces):
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
     ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
-    # set a new col called inc with the now / 14 days earlier
+
+    # Too sensitive to changes
     # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
-    trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
+
+    # Works ok but tends to make places that had a big peak in the past appear flat
+    # trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
+
+    # Use the per population number
+    ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
+    peak = ma.max().max() / ma_pop['Population'].max().max()
+    trend = ma_pop.groupby("Province", group_keys=False).apply(lambda df: ((df['Value'] - df['Value'].shift(7)) / df['Population'])) / peak * sensitivity
+
     trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?
     ma = ma.to_frame("MA").assign(
         Trend=trend,
@@ -1716,6 +1726,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               table = cases['Cases'],
+              trend_sensitivity = 25,
               footnote='Note: Table todays cases and 7 day trend compared to peak',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
