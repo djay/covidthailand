@@ -1259,7 +1259,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='active_severe', cols_subset=cols,
               actuals=False,
               ma_days=7,
-              kind='line', stacked=True, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab10', 
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
