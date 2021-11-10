@@ -210,6 +210,8 @@ def get_hospital_resources():
 #   - https://datagov.mot.go.th/dataset/covid-19/resource/71a552d0-0fea-4e05-b78c-42d58aa88db6
 #   - doesn't have pre 2020 dailies though
 
+
+
 def scrape_and_combine():
     os.makedirs("api", exist_ok=True)
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))
@@ -230,14 +232,18 @@ def scrape_and_combine():
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
         dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
-        vac = pool.apply_async(covid_data_vac.get_vaccinations)
+        vac_slides = pool.apply_async(covid_data_vac.vac_slides)
+        vac_reports_and_prov = pool.apply_async(covid_data_vac.vaccination_reports)
+
         # TODO: split vac slides as that's the slowest
 
         briefings_prov__cases_briefings = pool.apply_async(covid_data_briefing.get_cases_by_prov_briefings)
 
         dash_ages = pool.apply_async(covid_data_dash.dash_ages)
 
-        situation = pool.apply_async(covid_data_situation.get_situation)
+        # today_situation = pool.apply_async(covid_data_situation.get_situation_today)
+        th_situation = pool.apply_async(covid_data_situation.get_thai_situation)
+        en_situation = pool.apply_async(covid_data_situation.get_en_situation)
 
         cases_demo__risks_prov = pool.apply_async(covid_data_api.get_cases_by_demographics_api)
 
@@ -251,14 +257,17 @@ def scrape_and_combine():
         case_api_by_area = pool.apply_async(covid_data_api.get_cases_by_area_api)  # can be very wrong for the last days
 
         # Now block getting until we get each of the data
-        situation = situation.get()
+        # today_situation = today_situation.get()
+        th_situation = th_situation.get()
+        en_situation = en_situation.get()
 
         dash_daily = dash_daily.get()
         dash_ages = dash_ages.get()
         dash_by_province = dash_by_province.get()
         dash_trends_prov = dash_trends_prov.get()
 
-        vac = vac.get()
+        vac_reports, vac_reports_prov = vac_reports_and_prov.get()
+        vac_slides = vac_slides.get()
         briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
         cases_demo, risks_prov = cases_demo__risks_prov.get()
 
@@ -301,9 +310,18 @@ def scrape_and_combine():
     cases_by_area = cases_by_area.combine_first(by_area).combine_first(case_api_by_area)
     export(cases_by_area, "cases_by_area")
 
+    # Export situation
+    situation = import_csv("situation_reports", ["Date"],
+                           not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
+    # if covid_data_situation.is_new_pui(today, situation):
+    #     situation = situation.combine_first(today_situation)
+    export(situation, "situation_reports")
+
+    vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, vac_slides)
+
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, en_situation, th_situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 
