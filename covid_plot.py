@@ -1789,22 +1789,44 @@ def save_plots(df: pd.DataFrame) -> None:
     def top(func, _):
         return func
 
-    for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
-        top5 = cases.pipe(topprov,
-                          direction(cases_per_capita('Hospitalized Severe'), 5),
-                          cases_per_capita('Hospitalized Severe'),
-                          name="Province Active Cases Severe (7d MA)",
-                          other_name="Other Provinces",
-                          num=8)
-        cols = top5.columns.to_list()
-        plot_area(df=top5,
-            title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
-            png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
-            ma_days=14,
-            kind='line', stacked=False, percent_fig=False,
-            cmap='tab10',
-            footnote='Note: Per 100,000 people.',
-            footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+    # sev_region = cases.reset_index()
+    # sev_region = pd.crosstab(sev_region['Date'], sev_region['region'], values=sev_region['Hospitalized Severe'], aggfunc="sum")
+    # plot_area(df=sev_region / pop_region,
+    #           title='Severe Hospitalations/100k - by Region - Thailand',
+    #           png_prefix='active_severe_region', cols_subset=reg_cols,
+    #           ma_days=7,
+    #           kind='line', stacked=False, percent_fig=False,
+    #           cmap='tab10',
+    #           table = cases['Hospitalized Severe'],
+    #           trend_sensitivity = 25,
+    #           footnote='Table of latest Severe Cases and 7 day trend per 100k',
+    #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    # plot_area(df=sev_region,
+    #           title='Severe Hospitalations/ - by Region - Thailand',
+    #           png_prefix='active_severe_region_stacked', cols_subset=reg_cols,
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab10',
+    #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+
+    # for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
+    #     top5 = cases.pipe(topprov,
+    #                       direction(cases_per_capita('Hospitalized Severe'), 5),
+    #                       cases_per_capita('Hospitalized Severe'),
+    #                       name="Province Active Cases Severe (7d MA)",
+    #                       other_name="Other Provinces",
+    #                       num=8)
+    #     cols = top5.columns.to_list()
+    #     plot_area(df=top5,
+    #         title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
+    #         png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
+    #         ma_days=14,
+    #         kind='line', stacked=False, percent_fig=False,
+    #         cmap='tab10',
+    #         footnote='Note: Per 100,000 people.',
+    #         footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)

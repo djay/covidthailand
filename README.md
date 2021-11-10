@@ -104,11 +104,6 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
-![Top Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_top_3.png)
-
-![Trending Up Severe Hospitalisations](https://github.com/djay/covidthailand/wiki/active_severe_increasing_3.png)
-
-
 - Break down of active case status only available from 2020-04-24 onwards.
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  
   confirmed (for 14days at least)
