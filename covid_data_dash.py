@@ -229,7 +229,7 @@ def dash_by_province():
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
         "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
         # all the non-series will take too long to get historically
-        "Cases Walkin": d("2021-08-01"),
+        "Cases Walkin": d("2021-07-01"),
         "Cases Proactive": d("2021-08-01"),
         "Cases Area Prison": d("2021-08-01"),
         "Cases Imported": d("2021-08-01"),
