@@ -1187,42 +1187,6 @@ def save_plots(df: pd.DataFrame) -> None:
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
-    #########################
-    # Case by area plots
-    #########################
-    cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
-    plot_area(df=df,
-              title='Covid Cases by Health District - Thailand',
-              legends=AREA_LEGEND + ['Imported Cases'],
-              png_prefix='cases_areas', cols_subset=cols,
-              unknown_name="Unknown District", unknown_total="Cases",
-              ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
-              cmap='tab20',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
-
-    cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
-              title='"Walk-in" Covid Cases by Health District - Thailand',
-              legends=AREA_LEGEND,
-              png_prefix='cases_areas_walkins', cols_subset=cols,
-              ma_days=None,
-              kind='area', stacked=True, percent_fig=False,
-              cmap='tab20',
-              footnote='Walk-in: Testing done at hospital or test lab (PCR test).\n'
-                        + 'PCR: Polymerase Chain Reaction',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
-
-    cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
-              title='"Proactive" Covid Cases by Health District - Thailand',
-              legends=AREA_LEGEND,
-              png_prefix='cases_areas_proactive', cols_subset=cols,
-              ma_days=None,
-              kind='area', stacked=True, percent_fig=False,
-              cmap='tab20',
-              footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Case-Pos {area}'] = (
@@ -1675,6 +1639,64 @@ def save_plots(df: pd.DataFrame) -> None:
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
 
+
+    cases_region = cases.reset_index()
+    pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
+    reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+    cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
+    plot_area(df=cases_region / pop_region,
+              title='Cases/100k - by Region - Thailand',
+              png_prefix='cases_region', cols_subset=reg_cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = cases['Cases'],
+              trend_sensitivity = 25,
+              footnote='Table of latest Cases and 7 day trend per 100k',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    plot_area(df=cases_region,
+              title='Cases - by Region - Thailand',
+              png_prefix='cases_region_stacked', cols_subset=reg_cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='Covid Cases by Health District - Thailand',
+    #           legends=AREA_LEGEND + ['Imported Cases'],
+    #           png_prefix='cases_areas', cols_subset=cols,
+    #           unknown_name="Unknown District", unknown_total="Cases",
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab20',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    # cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='"Walk-in" Covid Cases by Health District - Thailand',
+    #           legends=AREA_LEGEND,
+    #           png_prefix='cases_areas_walkins', cols_subset=cols,
+    #           ma_days=None,
+    #           kind='area', stacked=True, percent_fig=False,
+    #           cmap='tab20',
+    #           footnote='Walk-in: Testing done at hospital or test lab (PCR test).\n'
+    #                     + 'PCR: Polymerase Chain Reaction',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    # cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='"Proactive" Covid Cases by Health District - Thailand',
+    #           legends=AREA_LEGEND,
+    #           png_prefix='cases_areas_proactive', cols_subset=cols,
+    #           ma_days=None,
+    #           kind='area', stacked=True, percent_fig=False,
+    #           cmap='tab20',
+    #           footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     def cases_per_capita(col):
         def func(adf):
             return adf[col] / adf['Population'] * 100000
@@ -1726,9 +1748,6 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = cases['Cases'],
-              trend_sensitivity = 25,
-              footnote='Note: Table todays cases and 7 day trend compared to peak',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,

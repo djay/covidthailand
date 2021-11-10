@@ -22,7 +22,7 @@ Links to all data sources are including in [Downloads](downloads)
 
 # Cases <a name="cases">
 
-## Daily Averages as % of Peak
+## Summary
 
 ![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png)
 
@@ -36,15 +36,13 @@ Links to all data sources are including in [Downloads](downloads)
   [MOPH daily situation report](downloads#dl-situation-reports)
  
 
+## Cases by Region
 
-## Cases by Health District
+![Cases/100k by Region](https://github.com/djay/covidthailand/wiki/cases_region_3.png)
 
-![Cases by Health District](https://github.com/djay/covidthailand/wiki/cases_areas_3.png)
+![Cases by Region](https://github.com/djay/covidthailand/wiki/cases_region_stacked_3.png)
 
-- To see cases for every province go to [The Researcher Covid Tracker](https://covid-19.researcherth.co/)
-- [Cases by Health District: Full Year](https://github.com/djay/covidthailand/wiki/cases_areas_all.png)
-- [Thailand Health Districts](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-- You can also see [Cases by District broken down by walk-in vs proactive](downloads#dl-situation-reports) but there is no longer a data source to keep this updated.
+- [Cases by Region: Full Year](https://github.com/djay/covidthailand/wiki/cases_region_all.png)
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings)
 
 ## Cases by Province
