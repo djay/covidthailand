@@ -55,6 +55,8 @@ def get_case_details_csv():
             #cases = pd.read_excel(file)
         elif file.endswith(".csv"):
             confirmedcases = pd.read_csv(file)
+            if "risk" not in confirmedcases.columns:
+                confirmedcases.columns = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(",")
             if '�' in confirmedcases.loc[0]['risk']:
                 # bad encoding
                 with codecs.open(file, encoding="tis-620") as fp:
