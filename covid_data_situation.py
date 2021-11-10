@@ -327,8 +327,22 @@ def get_en_situation():
         missing,
         columns=["Date", "Cases Local Transmission Cum", "Cases Proactive Cum", "Cases Proactive"]
     ).set_index("Date")
-    results = missing[["Cases Local Transmission Cum", "Cases Proactive Cum", ]].combine_first(results)
-    return results
+    situation = missing[["Cases Local Transmission Cum", "Cases Proactive Cum", ]].combine_first(results)
+
+    cum = cum2daily(situation)
+
+    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
+
+    # TODO: Not sure but 5 days have 0 PUI. Take them out for now
+    # Date
+    # 2020-02-12    0.0
+    # 2020-02-14    0.0
+    # 2020-10-13    0.0
+    # 2020-12-29    0.0
+    # 2021-05-02    0.0
+    situation['Tested PUI'] = situation['Tested PUI'].replace(0, np.nan)
+
+    return situation
 
 
 def situation_pui_th_death(dfsit, parsed_pdf, date, file):
@@ -509,6 +523,19 @@ def get_thai_situation():
         results = situation_pui_th(results, parsed_pdf, date, file)
         results = situation_pui_th_death(results, parsed_pdf, date, file)
 
+    cum = cum2daily(results)
+
+    results = results.combine_first(cum)  # any direct non-cum are trusted more
+
+    # TODO: Not sure but 5 days have 0 PUI. Take them out for now
+    # Date
+    # 2020-02-12    0.0
+    # 2020-02-14    0.0
+    # 2020-10-13    0.0
+    # 2020-12-29    0.0
+    # 2021-05-02    0.0
+    results['Tested PUI'] = results['Tested PUI'].replace(0, np.nan)
+
     return results
 
 
@@ -535,38 +562,15 @@ def get_situation_today():
     ).set_index("Date")
 
 
-def get_situation():
-    logger.info("========Situation Reports==========")
-
-    today_situation = get_situation_today()
-    th_situation = get_thai_situation()
-    en_situation = get_en_situation()
-    situation = import_csv("situation_reports", ["Date"],
-                           not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
-
-    cum = cum2daily(situation)
-
-    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
-
-    # TODO: Not sure but 5 days have 0 PUI. Take them out for now
-    # Date
-    # 2020-02-12    0.0
-    # 2020-02-14    0.0
-    # 2020-10-13    0.0
-    # 2020-12-29    0.0
-    # 2021-05-02    0.0
-    situation['Tested PUI'] = situation['Tested PUI'].replace(0, np.nan)
-
+def is_new_pui(today, situation):
     # Only add in the live stats if they have been updated with new info
     today = today_situation.index.max()
     yesterday = today - datetime.timedelta(days=1)
     stoday = today_situation.loc[today]
     syesterday = situation.loc[str(yesterday)] if str(yesterday) in situation else None
     if syesterday is None:
-        situation = situation.combine_first(today_situation)
+        return True
     elif syesterday['Tested PUI Cum'] < stoday['Tested PUI Cum'] and \
             syesterday['Tested PUI'] != stoday['Tested PUI']:
-        situation = situation.combine_first(today_situation)
-
-    export(situation, "situation_reports")
-    return situation
+        return True
+    return False

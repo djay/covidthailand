@@ -613,13 +613,11 @@ def get_vac_coldchain():
     return vac_import, vac_delivered, vacct
 
 
-def get_vaccinations():
+def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
     # TODO: replace the vacct per prov data with the dashboard data
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
 
-    vac_reports, vac_reports_prov = vaccination_reports()
-    vac_slides_data = vac_slides()
     # vac_reports_prov.drop(columns=["Vac Given 1 %", "Vac Given 1 %"], inplace=True)
 
     # Not currently used as it is too likely to result in missing numbers
