@@ -18,7 +18,6 @@ from requests.exceptions import Timeout, ConnectionError
 from requests.adapters import HTTPAdapter, Retry
 from tika import parser, config
 from webdav3.client import Client
-from webdav3.exceptions import NoConnection, ResponseErrorCode
 import pythainlp
 
 
