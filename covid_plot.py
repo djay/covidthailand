@@ -1944,14 +1944,17 @@ def save_plots(df: pd.DataFrame) -> None:
     # Do a % of peak chart for death vs cases
     cols = ['Cases', 'Deaths']
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100 # pops.sum() is 72034815.0
+    cols += ['Vaccinated']
     plot_area(df=peaks,
-              title='Daily Averages as % of Peak - Thailand',
+              title='Covid 19 Trends - Thailand',
               png_prefix='cases_peak', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
-              cmap='tab20_r',
+              cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing',
+              footnote="% of peak (except vaccinated).\nVaccinated is % of population with 2 jabs.")
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
     cols = ['Cases', 'Tests XLS', 'ATK']
