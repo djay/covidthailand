@@ -25,6 +25,10 @@ theme_dark_text = '#424242'
 theme_light_back = '#202020'
 theme_dark_back = '#0C1111'
 
+reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+
+
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
@@ -1532,10 +1536,11 @@ def save_plots(df: pd.DataFrame) -> None:
     #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
     # Add them all up
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
-    vac = vac.join(get_provinces()['Population'], on='Province')
+    vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
     # Bring in vac populations
     pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population")  # It's not on all data
     vac = vac.join(pops, rsuffix="2")
+
 
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
@@ -1550,6 +1555,48 @@ def save_plots(df: pd.DataFrame) -> None:
     #           y_formatter=perc_format,
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
+
+    vac_prov_daily = vac.groupby("Province", group_keys=True).apply(cum2daily)
+    vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
+    vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
+
+    by_region = vac_prov_daily.reset_index()
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2'], aggfunc="sum")
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
+    plot_area(df=by_region_2 / pop_region * 100000,
+              title='Vacccinatations/100k - 2nd Dose - by Region - Thailand',
+              png_prefix='vac_region_daily_2', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = vac_prov_daily['Vac Given 2'],
+              trend_sensitivity = 25,
+              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              )
+    plot_area(df=by_region_1 / pop_region * 100000,
+              title='Vacccinatations/100k - 1st Dose - by Region - Thailand',
+              png_prefix='vac_region_daily_1', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = vac_prov_daily['Vac Given 1'],
+              trend_sensitivity = 25,
+              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              )
+
+    # TODO: to make this work have to fix negative values 
+    # plot_area(df=by_region,
+    #           title='Covid Deaths - by Region - Thailand',
+    #           png_prefix='vac_region_daily_stacked', cols_subset=reg_cols, legends=reg_leg,
+    #           ma_days=14,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab10',
+    #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     pred = pred_vac(top5)
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -1562,7 +1609,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
@@ -1642,7 +1689,6 @@ def save_plots(df: pd.DataFrame) -> None:
 
     cases_region = cases.reset_index()
     pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
-    reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
     cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
     plot_area(df=cases_region / pop_region * 100000,
               title='Cases/100k - by Region - Thailand',

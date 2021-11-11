@@ -138,7 +138,7 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Vaccinations by Region/Province
 
-![Vaccine Doses given by Health District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
+![Vaccine Doses given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_2_3.png)
 
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
 ![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_3.png)
@@ -147,7 +147,9 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
-- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) | [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
+- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) | 
+[Vaccinations 1st given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_1_3.png) | 
+[Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Active Cases/Hospitalisations <a name="active-cases">
 
