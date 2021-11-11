@@ -128,32 +128,26 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
 
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
-
 ![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
 
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
-
 ![Progress towards Full Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_full_3.png)
-
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 ![Progress towards Half Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_half_3.png)
 
 - Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
+## Vaccinations by Region/Province
+
+![Vaccine Doses given by Health District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
+
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
-![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
 ![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_3.png)
-![Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png)
+
+![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
-![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
-
-- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-- see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
+- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) | [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Active Cases/Hospitalisations <a name="active-cases">
 
