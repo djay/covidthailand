@@ -1770,22 +1770,22 @@ def save_plots(df: pd.DataFrame) -> None:
     def top(func, _):
         return func
 
-    for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
-        top5 = cases.pipe(topprov,
-                          direction(cases_per_capita('Hospitalized Severe')),
-                          cases_per_capita('Hospitalized Severe'),
-                          name="Province Active Cases Severe (7d MA)",
-                          other_name="Other Provinces",
-                          num=8)
-        cols = top5.columns.to_list()
-        plot_area(df=top5,
-            title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
-            png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
-            ma_days=14,
-            kind='line', stacked=False, percent_fig=False,
-            cmap='tab10',
-            footnote='Note: Per 100,000 people.',
-            footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+    # for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
+    #     top5 = cases.pipe(topprov,
+    #                       direction(cases_per_capita('Hospitalized Severe')),
+    #                       cases_per_capita('Hospitalized Severe'),
+    #                       name="Province Active Cases Severe (7d MA)",
+    #                       other_name="Other Provinces",
+    #                       num=8)
+    #     cols = top5.columns.to_list()
+    #     plot_area(df=top5,
+    #         title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
+    #         png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
+    #         ma_days=14,
+    #         kind='line', stacked=False, percent_fig=False,
+    #         cmap='tab10',
+    #         footnote='Note: Per 100,000 people.',
+    #         footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
