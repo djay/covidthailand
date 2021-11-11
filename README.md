@@ -8,7 +8,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml).
 
-## [Cases](#cases) | [Active Cases](#active-cases) | [Deaths](#deaths) | [Testing](#testing) | [Vaccinations](#vaccinations) | [Downloads](downloads) | [About](#about)
+## [Cases](#cases) |  [Deaths](#deaths) | [Vaccinations](#vaccinations) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](downloads) | [About](#about)
 
 **NEW** [Excess Deaths](#excess-deaths)
 
@@ -23,9 +23,7 @@ Links to all data sources are including in [Downloads](downloads)
 
 # Trends
 
-![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png)
-
-![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
+![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png) ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
 - For forecasts of total infections/deaths/hospitalisations see 
   [IHME Thailand](https://covid19.healthdata.org/thailand) |
@@ -50,25 +48,25 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Cases by Province
 
-![Provinces with Most Cases](https://github.com/djay/covidthailand/wiki/cases_prov_top_3.png)
+![Provinces with Most Cases/100k](https://github.com/djay/covidthailand/wiki/cases_prov_top_3.png)
 
 ![Trending Up Confirmed Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_prov_increasing_3.png)
 
-![Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_3.png)
+- [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_3.png)
 
 ![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
 
 ![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png)
 
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
-
 - see also
-   [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_3.png),
+   [Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_3.png)
    [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png),
    [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png),
    [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_3.png),
    [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_3.png) and
    [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_3.png)
+
+- Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 ## Cases by Where Tested
 
