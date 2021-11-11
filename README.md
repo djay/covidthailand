@@ -4,9 +4,7 @@
 
 Thailand COVID-19 case/test/vaccination data gathered and combined from various government sources for others to view or download.
 
-- Updated daily 8-9am summary info, 1-3pm from full briefing. Testing data is updated every 1-3 weeks.
-
-[![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml).
+- Updated daily 8-9am summary info, 1-3pm from full briefing. Testing data is updated every 1-3 weeks. [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml).
 
 ## [Cases](#cases) |  [Deaths](#deaths) | [Vaccinations](#vaccinations) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](downloads) | [About](#about)
 

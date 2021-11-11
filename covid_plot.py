@@ -43,6 +43,7 @@ def plot_area(df: pd.DataFrame,
               percent_fig: bool = False,
               table: pd.DataFrame = [],
               trend_sensitivity: float = 15.0,
+              trend_up: bool = False,
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
@@ -267,7 +268,7 @@ def plot_area(df: pd.DataFrame,
             ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 4), colspan=1, rowspan=1))
             add_footnote(footnote, 'right')
 
-            fill_province_tables(ax_provinces, table, trend_sensitivity)
+            fill_province_tables(ax_provinces, table, trend_sensitivity, trend_up=trend_up)
         else:
             add_footnote(footnote_left, 'left')
             add_footnote(footnote, 'right')
@@ -382,13 +383,14 @@ def plot_area(df: pd.DataFrame,
     return None
 
 
-def trend_indicator(trend):
+def trend_indicator(trend, trend_up=False):
     """Get the trend indicator and corresponding color."""
     if trend == 0.00042 or np.isnan(trend):
         return '?', (0, 0, 0, 0)
     arrows = ('→', '↗', '↑', '↓', '↘')
     trend = min(max(trend, -1), 1)  # limit the trend
-    trend_color = (1, 0, 0, trend*trend) if trend > 0 else (0, 1, 0, trend*trend)
+
+    trend_color = (1, 0, 0, trend*trend) if (trend > 0) != (trend_up) else (0, 1, 0, trend*trend)
     return arrows[round(trend * 2)], trend_color
 
 
@@ -401,7 +403,7 @@ def append_row(row_labels, row_texts, row_colors, trend_colors,
     trend_colors.append(trend_color)
 
 
-def add_regions_to_axis(axis, table_regions):
+def add_regions_to_axis(axis, table_regions, trend_up=False):
     """Add a sorted table with multiple regions to the axis."""
     row_labels = []
     row_texts = []
@@ -428,7 +430,7 @@ def add_regions_to_axis(axis, table_regions):
             current_region = regions[row_number]
             append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
-        trend_arrow, trend_color = trend_indicator(trends[row_number])
+        trend_arrow, trend_color = trend_indicator(trends[row_number], trend_up=trend_up)
         append_row(row_labels, row_texts, row_colors, trend_colors, 
                    provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow], 
                    [(0, 0, 0, 0), trend_color], trend_color)
@@ -454,18 +456,18 @@ def add_regions_to_axis(axis, table_regions):
         table[(row_number, 0)].set_color(theme_light_back)
 
 
-def add_to_table(axis, table, regions):
+def add_to_table(axis, table, regions, trend_up=False):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
     regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
     regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
-    add_regions_to_axis(axis, regions_to_add)
+    add_regions_to_axis(axis, regions_to_add, trend_up=trend_up)
 
 
-def fill_province_tables(ax_provinces, table_provinces, sensitivity=15):
+def fill_province_tables(ax_provinces, table_provinces, sensitivity=15, trend_up=False):
     """Create an info table showing province values."""
 
-        # #Modi was here... 
+    # #Modi was here... 
 
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
@@ -494,11 +496,11 @@ def fill_province_tables(ax_provinces, table_provinces, sensitivity=15):
     last_day = join_provinces(last_day, "Province", ["region"])
     last_day = last_day.reset_index().set_index("Province").drop(columns="Date")
 
-    add_to_table(ax_provinces[0], last_day, ['Bangkok Metropolitan Region', 'Central', ])
-    add_to_table(ax_provinces[1], last_day, ['Western', 'Eastern'])
-    add_to_table(ax_provinces[2], last_day, ['Northeastern'])
-    add_to_table(ax_provinces[3], last_day, ['Northern'])
-    add_to_table(ax_provinces[4], last_day, ['Southern'])
+    add_to_table(ax_provinces[0], last_day, ['Bangkok Metropolitan Region', 'Central', ], trend_up=trend_up)
+    add_to_table(ax_provinces[1], last_day, ['Western', 'Eastern'], trend_up=trend_up)
+    add_to_table(ax_provinces[2], last_day, ['Northeastern'], trend_up=trend_up)
+    add_to_table(ax_provinces[3], last_day, ['Northern'], trend_up=trend_up)
+    add_to_table(ax_provinces[4], last_day, ['Southern'], trend_up=trend_up)
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
@@ -1571,7 +1573,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               table = vac_prov_daily['Vac Given 2'],
-              trend_sensitivity = 25,
+              trend_sensitivity = 10, trend_up=True,
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
               )
@@ -1582,7 +1584,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               table = vac_prov_daily['Vac Given 1'],
-              trend_sensitivity = 25,
+              trend_sensitivity = 10, trend_up=True,
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
               )
