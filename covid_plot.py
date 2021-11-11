@@ -1644,7 +1644,7 @@ def save_plots(df: pd.DataFrame) -> None:
     pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
     reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
     cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
-    plot_area(df=cases_region / pop_region,
+    plot_area(df=cases_region / pop_region * 100000,
               title='Cases/100k - by Region - Thailand',
               png_prefix='cases_region', cols_subset=reg_cols,
               ma_days=7,
@@ -1903,7 +1903,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     by_region = cases.reset_index()
     by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
-    plot_area(df=by_region / pop_region,
+    plot_area(df=by_region / pop_region * 100000,
               title='Covid Deaths/100k - by Region - Thailand',
               png_prefix='deaths_region', cols_subset=reg_cols,
               ma_days=7,
