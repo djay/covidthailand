@@ -13,8 +13,10 @@ import numpy as np
 from matplotlib import colors as mcolors
 import mpld3
 from dateutil.relativedelta import relativedelta
+import functools
 
 from utils_scraping import logger
+
 
 def daterange(start_date, end_date, offset=0):
     "return a range of dates from start_date until before end_date. Offset extends range by offset days"
@@ -245,13 +247,13 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="ap
         return old
 
 
-def increasing(col, ma=3):
+def increasing(col, ma=7):
     def increasing_func(adf: pd.DataFrame) -> pd.DataFrame:
         if callable(col):
             series = col(adf)
         else:
             series = adf[col]
-        return series.tail(ma * 2).rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline_slow)
+        return series.rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline)
     return increasing_func
 
 
