@@ -1935,8 +1935,6 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = cases['Deaths'],
-              footnote='Note: Table shows todays Deaths and change from 7 days compared to peak',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
 

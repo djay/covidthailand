@@ -20,21 +20,24 @@ This sites only intention is to give an accurate representation of all the avail
 
 Links to all data sources are including in [Downloads](downloads)
 
-# Cases <a name="cases">
 
-## Summary
+# Trends
 
 ![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png)
 
-- For predictions of total infections/deaths see [IHME Thailand](https://covid19.healthdata.org/thailand), 
-  [IHME Thailand Report](http://www.healthdata.org/covid/updates),  
-  [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/),  
-  [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/),
-  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA),
+![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
+
+- For forecasts of total infections/deaths/hospitalisations see 
+  [IHME Thailand](https://covid19.healthdata.org/thailand) |
+  [IHME Thailand Report](http://www.healthdata.org/covid/updates) |
+  [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/) |
+  [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
+  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
   [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) 
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings),
   [MOPH daily situation report](downloads#dl-situation-reports)
  
+# Cases <a name="cases">
 
 ## Cases by Region
 
@@ -96,20 +99,6 @@ Links to all data sources are including in [Downloads](downloads)
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-# Active Cases/Hospitalisations <a name="active-cases">
-
-![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/active_hospital_3.png)
-
-![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
-
-![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
-
-- Break down of active case status only available from 2020-04-24 onwards.
-- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  
-  confirmed (for 14days at least)
-- see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
-- Source: [CCSA Daily Briefing](downloads#dl-briefings)
-
 # Deaths <a name="deaths">
 
 ## COVID-19 Deaths
@@ -118,7 +107,7 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Thailand Covid Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_region_3.png)
 
-![Thailand Covid Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_region_unstacked_3.png)
+![Thailand Covid Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_region_stacked_3.png)
 
 ![Deaths Top Provinces](https://github.com/djay/covidthailand/wiki/deaths_prov_top_3.png)
 
@@ -133,6 +122,53 @@ Links to all data sources are including in [Downloads](downloads)
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_dash_3.png)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
+
+
+# Vaccinations <a name="vaccinations">
+
+## Vaccinations by Priority Groups
+
+![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
+
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
+
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+![Progress towards Full Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_full_3.png)
+
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+![Progress towards Half Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_half_3.png)
+
+- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
+![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
+![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_3.png)
+![Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png)
+
+- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
+
+- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
+
+- see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
+
+# Active Cases/Hospitalisations <a name="active-cases">
+
+![Thailand Active Cases](https://github.com/djay/covidthailand/wiki/active_hospital_3.png)
+
+![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
+
+- Break down of active case status only available from 2020-04-24 onwards.
+- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  
+  confirmed (for 14days at least)
+- see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
+- Source: [CCSA Daily Briefing](downloads#dl-briefings)
+
 
 # Testing <a name="testing">
 
@@ -175,38 +211,6 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
-# Vaccinations <a name="vaccinations">
-
-## Vaccinations by Priority Groups
-
-![Daily Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_daily_30d.png)
-
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-![Vaccinations in Thailand](https://github.com/djay/covidthailand/wiki/vac_groups_3.png)
-
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-![Progress towards Full Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_full_3.png)
-
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-![Progress towards Half Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_half_3.png)
-
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
-![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
-![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_3.png)
-![Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png)
-
-- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-![Vaccine Doses given by Heath District](https://github.com/djay/covidthailand/wiki/vac_areas_3.png)
-
-- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
-
-- see also [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Excess Deaths <a name="excess-deaths">
 
