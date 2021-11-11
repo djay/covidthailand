@@ -1692,7 +1692,7 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
     plot_area(df=cases_region / pop_region * 100000,
               title='Cases/100k - by Region - Thailand',
-              png_prefix='cases_region', cols_subset=reg_cols,
+              png_prefix='cases_region', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
@@ -1703,7 +1703,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=cases_region,
               title='Cases - by Region - Thailand',
-              png_prefix='cases_region_stacked', cols_subset=reg_cols,
+              png_prefix='cases_region_stacked', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
@@ -1951,7 +1951,7 @@ def save_plots(df: pd.DataFrame) -> None:
     by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
     plot_area(df=by_region / pop_region * 100000,
               title='Covid Deaths/100k - by Region - Thailand',
-              png_prefix='deaths_region', cols_subset=reg_cols,
+              png_prefix='deaths_region', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
@@ -1962,7 +1962,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=by_region,
               title='Covid Deaths - by Region - Thailand',
-              png_prefix='deaths_region_stacked', cols_subset=reg_cols,
+              png_prefix='deaths_region_stacked', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
