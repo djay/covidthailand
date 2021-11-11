@@ -1901,6 +1901,27 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    by_region = cases.reset_index()
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
+    plot_area(df=by_region / pop_region,
+              title='Covid Deaths/100k - by Region - Thailand',
+              png_prefix='deaths_region', cols_subset=reg_cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = cases['Deaths'],
+              trend_sensitivity = 25,
+              footnote='Table of latest Deaths and 7 day trend per 100k',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    plot_area(df=by_region,
+              title='Covid Deaths - by Region - Thailand',
+              png_prefix='deaths_region_stacked', cols_subset=reg_cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
     top5 = cases.pipe(topprov,
                       cases_per_capita("Deaths"),
                       name="Province Cases",

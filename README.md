@@ -116,17 +116,11 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Thailand Covid Deaths by Reason](https://github.com/djay/covidthailand/wiki/deaths_reason_3.png)
 
-- source: [CCSA Daily Briefing](downloads#dl-briefings)
+![Thailand Covid Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_region_3.png)
 
+![Thailand Covid Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_region_unstacked_3.png)
 
 ![Deaths Top Provinces](https://github.com/djay/covidthailand/wiki/deaths_prov_top_3.png)
-
-- source: [CCSA Daily Briefing](downloads#dl-briefings)
-
-
-## COVID-19 Deaths by Health District
-
-![Thailand Covid Deaths by Health District](https://github.com/djay/covidthailand/wiki/deaths_by_area_3.png)
 
 - source: [CCSA Daily Briefing](downloads#dl-briefings)
 
@@ -173,11 +167,11 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Positive Rate by Province
 
+![Average Positive Rate by Region - Thailand](https://github.com/djay/covidthailand/wiki/positivity_region_3.png)
+
 ![Positive Rate - Top Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_top_3.png)
 
 ![Positive Rate - Lowest Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_low_3.png)
-
-![Average Positive Rate by Region - Thailand](https://github.com/djay/covidthailand/wiki/positivity_region_3.png)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
