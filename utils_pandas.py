@@ -257,7 +257,7 @@ def increasing(col, ma=7):
     return increasing_func
 
 
-def decreasing(col, ma=3):
+def decreasing(col, ma=7):
     inc_func = increasing(col, ma)
 
     def decreasing_func(adf: pd.DataFrame) -> pd.DataFrame:
@@ -276,7 +276,7 @@ def value_ma(col, ma=3):
 
 
 def trendline(data: pd.DataFrame) -> float:
-    slope = list(data)[-1] - list(data)[0] / len(data.index.values)
+    slope = (list(data)[-1] - list(data)[0]) / len(data.index.values)
     return float(slope)
 
 
