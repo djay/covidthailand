@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import numpy as np
 from pandas.tseries.offsets import MonthEnd
+import re
 
 from covid_data import get_ifr, scrape_and_combine
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, \
@@ -1354,19 +1355,20 @@ def save_plots(df: pd.DataFrame) -> None:
     # Vaccines
     ####################
 
-    def clean_vac_leg(c, first="(1 Jab)", second="(2 Jabs)"):
-        return c.replace(
-            ' Cum', '').replace(
-            'Vac ', '').replace(
-            "Group ", "").replace(
-            'Only 1', first).replace(
-            ' 1', " " + first).replace(
-            ' 2', " " + second).replace(
-            'Given 3', "3rd Booster").replace(
-            'Risk: Location', 'Aged 18-59').replace(
-            'All', 'Staff & Volunteers').replace(
-            'Risk: Disease', 'Risk Disease under 60'
-            )
+    def clean_vac_leg(label, first="1st Jab", second="2nd Jab"):
+        c = label
+        c = re.sub(r"(?:Vac )?(?:Group )?(.*) (?:1|Only 1)(?: Cum)?", fr"{first} - \1", c)
+        c = re.sub(r"(?:Vac )?(?:Group )?(.*) 2(?: Cum)?", fr"{second} - \1", c)
+        c = re.sub(r"(?:Vac )?(?:Group )?(.*) 3(?: Cum)?", fr"3rd Booster - \1", c)
+        c = re.sub(r"(.*) Only", fr"\1", c)
+        c = c.replace(
+            'Risk: Location', 'General Population (0-59)').replace(
+            'Student', 'Students 12-17').replace(
+            'Medical All', 'Medical Staff & Volunteers').replace(
+            'Risk: Disease', 'Risk from 7 Diseases',).replace(
+            'Risk: Pregnant', 'Pregnant',
+        )
+        return c
 
     groups = [c for c in df.columns if str(c).startswith('Vac Group')]
     df_vac_groups = df['2021-02-28':][groups]
@@ -1421,7 +1423,7 @@ def save_plots(df: pd.DataFrame) -> None:
             # 'Doses per day needed to run out in a week',
             'Rate for 70% 1st Jab in 2021',
             'Rate for 70% 2nd Jab in 2021'
-        ] + [clean_vac_leg(c, "(1st jab)", "(2nd jab)") for c in daily_cols],  # bar puts the line first?
+        ] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
         legend_cols=2,
         png_prefix='vac_groups_daily', cols_subset=daily_cols,
         between=[
@@ -1491,9 +1493,10 @@ def save_plots(df: pd.DataFrame) -> None:
     # village health volunteers 1,000,000
     # frontline workers 1,900,000
     # underlying diseases 6,347,125
-    # general public  28,634,733
+    # general public  28,634,733 - 46,169,508
     # elderly over 60 10,906,142
     # pregnant 500,000
+    # Students 12-17 4,500,000
     # Target total 50,000,000
     goals = [
         ('Medical All', 1000000 + 712000),
@@ -1502,8 +1505,10 @@ def save_plots(df: pd.DataFrame) -> None:
         ('Other Frontline Staff', 1900000),
         ['Over 60', 10906142],
         ('Risk: Disease', 6347125),
-        ('Risk: Location', 28634733),
+        ('Risk: Location', 46169508),
         ('Risk: Pregnant', 500000),
+        ('Student', 4500000),
+
     ]
     for d in [2, 1]:
         for group, goal in goals:
@@ -1513,7 +1518,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     dose1 = vac_cum[[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
     dose2 = vac_cum[[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
-    pred1, pred2 = pred_vac(dose1, dose2)
+    pred1, pred2 = pred_vac(dose1, dose2, lag=40)
     pred1 = pred1.clip(upper=pred1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred2 = pred2.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     vac_cum = vac_cum.combine_first(pred1).combine_first(pred2)
@@ -1531,7 +1536,7 @@ def save_plots(df: pd.DataFrame) -> None:
         y_formatter=perc_format,
         cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
         footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
-        footnote='Assumes 2 months between doses')
+        footnote='Assumes avg 40day gap between doses')
 
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
