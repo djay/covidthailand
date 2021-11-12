@@ -195,8 +195,8 @@ def plot_area(df: pd.DataFrame,
     if is_dates:
         periods = {
             'all': df_clean,
-            '1': df_clean[:'2020-06-01'],
-            '2': df_clean['2020-12-12':],
+            # '1': df_clean[:'2020-06-01'],
+            # '2': df_clean['2020-12-12':],
             '3': df_clean['2021-04-01':],
             '30d': df_clean.last('30d')
         }
@@ -204,7 +204,7 @@ def plot_area(df: pd.DataFrame,
         if periods_to_plot:
             pass
         elif quick:
-            periods_to_plot = ['all']
+            periods_to_plot = ['3']
         else:
             periods_to_plot = set(periods.keys())
 
@@ -1428,7 +1428,7 @@ def save_plots(df: pd.DataFrame) -> None:
             # '7d Runway Rate',
             'Target Rate 1',
             'Target Rate 2'],
-        periods_to_plot=["30d", "2"],  # too slow to do all
+        periods_to_plot=["30d", "3"],  # too slow to do all
         ma_days=None,
         kind='bar', stacked=True, percent_fig=False,
         cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
@@ -1681,7 +1681,7 @@ def save_plots(df: pd.DataFrame) -> None:
         return func
 
     top5 = cases.pipe(topprov,
-                      increasing(cases_per_capita("Cases"), 3),
+                      increasing(cases_per_capita("Cases")),
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
@@ -1697,7 +1697,7 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
-                      decreasing(cases_per_capita("Cases"), 3),
+                      decreasing(cases_per_capita("Cases")),
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
@@ -1751,7 +1751,7 @@ def save_plots(df: pd.DataFrame) -> None:
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
         top5 = cases.pipe(topprov,
-                          increasing(cases_per_capita(f"Cases Risk: {risk}"), 5),
+                          increasing(cases_per_capita(f"Cases Risk: {risk}")),
                           cases_per_capita(f"Cases Risk: {risk}"),
                           name=f"Province Cases {risk} (7d MA)",
                           other_name="Other Provinces",
@@ -1770,22 +1770,22 @@ def save_plots(df: pd.DataFrame) -> None:
     def top(func, _):
         return func
 
-    for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
-        top5 = cases.pipe(topprov,
-                          direction(cases_per_capita('Hospitalized Severe'), 5),
-                          cases_per_capita('Hospitalized Severe'),
-                          name="Province Active Cases Severe (7d MA)",
-                          other_name="Other Provinces",
-                          num=8)
-        cols = top5.columns.to_list()
-        plot_area(df=top5,
-            title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
-            png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
-            ma_days=14,
-            kind='line', stacked=False, percent_fig=False,
-            cmap='tab10',
-            footnote='Note: Per 100,000 people.',
-            footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+    # for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
+    #     top5 = cases.pipe(topprov,
+    #                       direction(cases_per_capita('Hospitalized Severe')),
+    #                       cases_per_capita('Hospitalized Severe'),
+    #                       name="Province Active Cases Severe (7d MA)",
+    #                       other_name="Other Provinces",
+    #                       num=8)
+    #     cols = top5.columns.to_list()
+    #     plot_area(df=top5,
+    #         title=f'Severe Active Covid Cases/100k - {title}Provinces - Thailand',
+    #         png_prefix=f'active_severe_{direction.__name__}', cols_subset=cols,
+    #         ma_days=14,
+    #         kind='line', stacked=False, percent_fig=False,
+    #         cmap='tab10',
+    #         footnote='Note: Per 100,000 people.',
+    #         footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
