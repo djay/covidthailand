@@ -311,17 +311,13 @@ def scrape_and_combine():
     export(cases_by_area, "cases_by_area")
 
     # Export situation
-    situation = import_csv("situation_reports", ["Date"],
-                           not USE_CACHE_DATA).combine_first(th_situation).combine_first(en_situation)
-    # if covid_data_situation.is_new_pui(today, situation):
-    #     situation = situation.combine_first(today_situation)
-    export(situation, "situation_reports")
+    situation = covid_data_situation.export_situation(th_situation, en_situation)
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, vac_slides)
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, en_situation, th_situation, vac, dash_ages, dash_daily]:
+    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 

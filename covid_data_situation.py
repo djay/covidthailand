@@ -329,19 +329,6 @@ def get_en_situation():
     ).set_index("Date")
     situation = missing[["Cases Local Transmission Cum", "Cases Proactive Cum", ]].combine_first(results)
 
-    cum = cum2daily(situation)
-
-    situation = situation.combine_first(cum)  # any direct non-cum are trusted more
-
-    # TODO: Not sure but 5 days have 0 PUI. Take them out for now
-    # Date
-    # 2020-02-12    0.0
-    # 2020-02-14    0.0
-    # 2020-10-13    0.0
-    # 2020-12-29    0.0
-    # 2021-05-02    0.0
-    situation['Tested PUI'] = situation['Tested PUI'].replace(0, np.nan)
-
     return situation
 
 
@@ -523,19 +510,6 @@ def get_thai_situation():
         results = situation_pui_th(results, parsed_pdf, date, file)
         results = situation_pui_th_death(results, parsed_pdf, date, file)
 
-    cum = cum2daily(results)
-
-    results = results.combine_first(cum)  # any direct non-cum are trusted more
-
-    # TODO: Not sure but 5 days have 0 PUI. Take them out for now
-    # Date
-    # 2020-02-12    0.0
-    # 2020-02-14    0.0
-    # 2020-10-13    0.0
-    # 2020-12-29    0.0
-    # 2021-05-02    0.0
-    results['Tested PUI'] = results['Tested PUI'].replace(0, np.nan)
-
     return results
 
 
@@ -574,3 +548,16 @@ def is_new_pui(today, situation):
             syesterday['Tested PUI'] != stoday['Tested PUI']:
         return True
     return False
+
+
+def export_situation(th_situation, en_situation):
+    situation = import_csv("situation_reports", ["Date"], not USE_CACHE_DATA)
+    situation = situation.combine_first(th_situation).combine_first(en_situation)
+    situation = situation.combine_first(cum2daily(situation))  # any direct non-cumulative are trusted more
+    # TODO: Not sure why but 5 days have 0 PUI. Take them out for now
+    # 2020-02-12  2020-02-14 2020-10-13  2020-12-29 2021-05-02 
+    situation['Tested PUI'] = situation['Tested PUI'].replace(0, np.nan)
+    # if covid_data_situation.is_new_pui(today, situation):
+    #     situation = situation.combine_first(today_situation)
+    export(situation, "situation_reports")
+    return situation
