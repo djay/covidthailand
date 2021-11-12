@@ -268,7 +268,7 @@ def briefing_province_cases(file, date, pages):
             continue
         if not re.search(r"(?:ที่|ที)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
             continue
-        if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายใหม่)", text):
+        if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายให)", text):
             continue
         parts = [p.get_text() for p in soup.find_all("p")]
         parts = [line for line in parts if line]
