@@ -1359,8 +1359,8 @@ def save_plots(df: pd.DataFrame) -> None:
         c = label
         c = re.sub(r"(?:Vac )?(?:Group )?(.*) (?:1|Only 1)(?: Cum)?", fr"{first} - \1", c)
         c = re.sub(r"(?:Vac )?(?:Group )?(.*) 2(?: Cum)?", fr"{second} - \1", c)
-        c = re.sub(r"(?:Vac )?(?:Group )?(.*) 3(?: Cum)?", fr"3rd Booster - \1", c)
-        c = re.sub(r"(.*) Only", fr"\1", c)
+        c = re.sub(r"(?:Vac )?(?:Group )?(.*) 3(?: Cum)?", fr"3rd Booster/Other \1", c)
+        c = re.sub(r"(.*) (?:Only|Given)", fr"\1", c)
         c = c.replace(
             'Risk: Location', 'General Population (0-59)').replace(
             'Student', 'Students 12-17').replace(
