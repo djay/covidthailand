@@ -394,7 +394,7 @@ def trend_indicator(trend, style):
     arrows = ('→', '↗', '↑', '↓', '↘')
     trend = min(max(trend, -1), 1)  # limit the trend
 
-    trend_color = (1, 0, 0, trend * trend) if (trend > 0) != (style == "green_up") else (0, 1, 0, trend * trend)
+    trend_color = (1, 0, 0, trend * trend) if (trend > 0) != ("_up" in style) else (0, 1, 0, trend * trend)
     return arrows[round(trend * 2)], trend_color
 
 
