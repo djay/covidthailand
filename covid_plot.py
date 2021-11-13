@@ -1532,29 +1532,35 @@ def save_plots(df: pd.DataFrame) -> None:
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     by_region = vac.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2 Cum'], aggfunc="sum")
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1 Cum'], aggfunc="sum")
-    plot_area(df=by_region_2 / pop_region * 100,
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1 Cum'], aggfunc="sum") / pop_region * 100
+    pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
+    pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+
+    plot_area(df=by_region_2.combine_first(pred_2),
               title='Vacccinated - 2nd Dose - by Region - Thailand',
               png_prefix='vac_region_2', cols_subset=reg_cols, legends=reg_leg,
-              ma_days=21,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              actuals=list(pred_2.columns),
               table = trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
-              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote='Table of % vaccinated and 7 day trend in change in rank',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
               )
-    plot_area(df=by_region_1 / pop_region * 100,
+    plot_area(df=by_region_1.combine_first(pred_1),
               title='Vacccinatated - 1st Dose - by Region - Thailand',
               png_prefix='vac_region_1', cols_subset=reg_cols, legends=reg_leg,
-              ma_days=21,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              actuals=list(pred_1.columns),
               table = trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
-              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote='Table of % vaccinated and 7 day trend in change in rank',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
               )
 
@@ -1565,7 +1571,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
 
     by_region = vac_prov_daily.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
     by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2'], aggfunc="sum")
     by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
     plot_area(df=by_region_2 / pop_region * 100000,
