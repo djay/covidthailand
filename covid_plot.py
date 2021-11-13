@@ -414,6 +414,7 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
     # get the regions and add the heading
     regions = list(table_regions.loc[:, 'region'].tolist()) 
     if regions[0] == 'Bangkok Metropolitan Region': regions[0] = 'Bangkok'
+    if regions[0] == 'Northeastern': regions[0] = 'Northeast'
     current_region = regions[0]
     append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
@@ -425,7 +426,9 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
     # generate the the cell values and colors
     for row_number, province in enumerate(provinces):
         if provinces[row_number] == 'Phra Nakhon Si Ayutthaya': provinces[row_number] = 'Ayutthaya'
+        if provinces[row_number] == 'Nakhon Si Thammarat': provinces[row_number] = 'Nakhon Si Tham.'
         if regions[row_number] == 'Bangkok Metropolitan Region': regions[row_number] = 'Bangkok'
+        if regions[row_number] == 'Northeastern': regions[row_number] = 'Northeast'
         if not current_region == regions[row_number]:
             append_row(row_labels, row_texts, row_colors, trend_colors)
             current_region = regions[row_number]
@@ -447,7 +450,7 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
 
     # fix the formating and trend colors
     for cell in table.get_celld().values():
-        cell.set_text_props(color=theme_light_text)
+        cell.set_text_props(color=theme_light_text, fontsize=15)
     for row_number, color in enumerate(trend_colors):
         if row_labels[row_number].endswith('Region'):
             table[(row_number, -1)].set_text_props(color=theme_label_text)
@@ -1533,6 +1536,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
+
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
 
@@ -1580,7 +1584,7 @@ def save_plots(df: pd.DataFrame) -> None:
               table = vac_prov_daily['Vac Given 2'],
               trend_sensitivity = 10, trend_up=True,
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               )
     plot_area(df=by_region_1 / pop_region * 100000,
               title='Vacccinatations/100k - 1st Dose - by Region - Thailand',
@@ -1591,7 +1595,7 @@ def save_plots(df: pd.DataFrame) -> None:
               table = vac_prov_daily['Vac Given 1'],
               trend_sensitivity = 10, trend_up=True,
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               )
 
     # TODO: to make this work have to fix negative values 
@@ -1616,7 +1620,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
