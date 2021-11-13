@@ -264,6 +264,13 @@ def get_cases_by_demographics_api():
         20210731.03: "เดินทางมาจากพื้นที่เสี่ยงที่มีการระบาดของโรค:Community",
         20210806.01: "ท้ายบ้าน:Unknown",
         20210806.02: "อื่นๆ:Unknown",  # Other
+        20211113.01: "Phuket Sandbox:Imported",
+        20211113.02: "Chonburi Sandbox:Imported",
+        20211113.03: "Test and Go:Imported",
+        20211113.04: "ผู้ที่เดินทางมาจากต่างประเทศ และเข้า AQ:Imported",
+        20211113.05: "สถานศึกษา:Work",  # educational institutions
+        20211113.06: "สัมผัสผู้ป่วยยืนยัน ภายในครอบครัว/ชุมชน/เพื่อน:Contact",
+        20211113.07: "10.อื่นๆ:Unknown",
     }
     for v in r.values():
         key, cat = v.split(":")

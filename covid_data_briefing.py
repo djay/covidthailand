@@ -332,7 +332,7 @@ def briefing_deaths_provinces(dtext, date, file):
     if not deaths_title_re.search(dtext):
         return pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
 
-    bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
+    bullets_re = re.compile(r"((?:•|� )[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
 
     # get rid of extra words in brackets to make easier
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
@@ -344,6 +344,9 @@ def briefing_deaths_provinces(dtext, date, file):
     text = re.sub(r"([\d]+\+?(?:ปี)? *\(\d+\))", " ", text)
     # (รายงานหลังเสียชีวิตเกิน 7 วัน 17  )  2021-09-07
     text = re.sub(r"\( *\S* *\d+ วัน *\d+ *\)", " ", text)
+
+    # # 2021-10-17 get 
+    # text = re.sub(r"� ", "• ", text)
 
     # remove the table header and page title.
     *pre, table_content = re.split(r"(?:โควิด[ \n-]*19\n\n|รวม\s*\(\s+\))", text, 1)
