@@ -332,7 +332,7 @@ def briefing_deaths_provinces(dtext, date, file):
     if not deaths_title_re.search(dtext):
         return pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
 
-    bullets_re = re.compile(r"(•[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")
+    bullets_re = re.compile(r"((?:•|�)[^\(]*?\( ?\d+ ?\)(?:[\n ]*\([^\)]+\))?)\n?")  
 
     # get rid of extra words in brackets to make easier
     text = re.sub(r"\b(ละ|จังหวัด|จังหวัด|อย่างละ|ราย)\b", " ", dtext)
