@@ -233,7 +233,7 @@ def test_briefing_deaths_provinces(date, testdf, dl):
         text = soup.get_text()
         df = briefing_deaths_provinces(text, dateutil.parser.parse(date), file)
         dfprov = dfprov.combine_first(df)
-    # write_scrape_data_back_to_test(raw, "briefing_deaths_provinces")
+    # write_scrape_data_back_to_test(dfprov, "briefing_deaths_provinces")
     pd.testing.assert_frame_equal(testdf, dfprov, check_dtype=False)
 
 
