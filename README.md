@@ -345,6 +345,7 @@ $ bundle exec jekyll serve
 - [Vincent Casagrande](https://github.com/flyingvince)
 - [Peter Scully](https://github.com/pmdscully)
 - [Jonathan Barratt](https://github.com/reduxionist) sponsored by [Intelligent-Bytes](https://github.com/intelligent-bytes)
+- [Reinhold Lauer](https://github.com/modiholodri)
 - join us?
 
 # About
