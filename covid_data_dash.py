@@ -198,7 +198,7 @@ def dash_trends_prov():
                 "DAY(date)-value": "Date",
                 "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
                 "AGG(stat_count)-alias": "Cases",
-                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
+                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Cases Proactive",
             },
         )
         if row.empty or province is None:

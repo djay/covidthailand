@@ -26,6 +26,10 @@ theme_dark_text = '#424242'
 theme_light_back = '#202020'
 theme_dark_back = '#0C1111'
 
+reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+
+
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
@@ -40,6 +44,7 @@ def plot_area(df: pd.DataFrame,
               percent_fig: bool = False,
               table: pd.DataFrame = [],
               trend_sensitivity: float = 15.0,
+              trend_up: bool = False,
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
@@ -264,7 +269,7 @@ def plot_area(df: pd.DataFrame,
             ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 4), colspan=1, rowspan=1))
             add_footnote(footnote, 'right')
 
-            fill_province_tables(ax_provinces, table, trend_sensitivity)
+            fill_province_tables(ax_provinces, table, trend_sensitivity, trend_up=trend_up)
         else:
             add_footnote(footnote_left, 'left')
             add_footnote(footnote, 'right')
@@ -379,13 +384,14 @@ def plot_area(df: pd.DataFrame,
     return None
 
 
-def trend_indicator(trend):
+def trend_indicator(trend, trend_up=False):
     """Get the trend indicator and corresponding color."""
     if trend == 0.00042 or np.isnan(trend):
         return '?', (0, 0, 0, 0)
     arrows = ('→', '↗', '↑', '↓', '↘')
     trend = min(max(trend, -1), 1)  # limit the trend
-    trend_color = (1, 0, 0, trend*trend) if trend > 0 else (0, 1, 0, trend*trend)
+
+    trend_color = (1, 0, 0, trend*trend) if (trend > 0) != (trend_up) else (0, 1, 0, trend*trend)
     return arrows[round(trend * 2)], trend_color
 
 
@@ -398,7 +404,7 @@ def append_row(row_labels, row_texts, row_colors, trend_colors,
     trend_colors.append(trend_color)
 
 
-def add_regions_to_axis(axis, table_regions):
+def add_regions_to_axis(axis, table_regions, trend_up=False):
     """Add a sorted table with multiple regions to the axis."""
     row_labels = []
     row_texts = []
@@ -425,7 +431,7 @@ def add_regions_to_axis(axis, table_regions):
             current_region = regions[row_number]
             append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
-        trend_arrow, trend_color = trend_indicator(trends[row_number])
+        trend_arrow, trend_color = trend_indicator(trends[row_number], trend_up=trend_up)
         append_row(row_labels, row_texts, row_colors, trend_colors, 
                    provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow], 
                    [(0, 0, 0, 0), trend_color], trend_color)
@@ -451,18 +457,18 @@ def add_regions_to_axis(axis, table_regions):
         table[(row_number, 0)].set_color(theme_light_back)
 
 
-def add_to_table(axis, table, regions):
+def add_to_table(axis, table, regions, trend_up=False):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
     regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
     regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
-    add_regions_to_axis(axis, regions_to_add)
+    add_regions_to_axis(axis, regions_to_add, trend_up=trend_up)
 
 
-def fill_province_tables(ax_provinces, table_provinces, sensitivity=15):
+def fill_province_tables(ax_provinces, table_provinces, sensitivity=15, trend_up=False):
     """Create an info table showing province values."""
 
-        # #Modi was here... 
+    # #Modi was here... 
 
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
@@ -491,11 +497,11 @@ def fill_province_tables(ax_provinces, table_provinces, sensitivity=15):
     last_day = join_provinces(last_day, "Province", ["region"])
     last_day = last_day.reset_index().set_index("Province").drop(columns="Date")
 
-    add_to_table(ax_provinces[0], last_day, ['Bangkok Metropolitan Region', 'Central', ])
-    add_to_table(ax_provinces[1], last_day, ['Western', 'Eastern'])
-    add_to_table(ax_provinces[2], last_day, ['Northeastern'])
-    add_to_table(ax_provinces[3], last_day, ['Northern'])
-    add_to_table(ax_provinces[4], last_day, ['Southern'])
+    add_to_table(ax_provinces[0], last_day, ['Bangkok Metropolitan Region', 'Central', ], trend_up=trend_up)
+    add_to_table(ax_provinces[1], last_day, ['Western', 'Eastern'], trend_up=trend_up)
+    add_to_table(ax_provinces[2], last_day, ['Northeastern'], trend_up=trend_up)
+    add_to_table(ax_provinces[3], last_day, ['Northern'], trend_up=trend_up)
+    add_to_table(ax_provinces[4], last_day, ['Southern'], trend_up=trend_up)
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
@@ -1188,42 +1194,6 @@ def save_plots(df: pd.DataFrame) -> None:
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
-    #########################
-    # Case by area plots
-    #########################
-    cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
-    plot_area(df=df,
-              title='Covid Cases by Health District - Thailand',
-              legends=AREA_LEGEND + ['Imported Cases'],
-              png_prefix='cases_areas', cols_subset=cols,
-              unknown_name="Unknown District", unknown_total="Cases",
-              ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
-              cmap='tab20',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
-
-    cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
-              title='"Walk-in" Covid Cases by Health District - Thailand',
-              legends=AREA_LEGEND,
-              png_prefix='cases_areas_walkins', cols_subset=cols,
-              ma_days=None,
-              kind='area', stacked=True, percent_fig=False,
-              cmap='tab20',
-              footnote='Walk-in: Testing done at hospital or test lab (PCR test).\n'
-                        + 'PCR: Polymerase Chain Reaction',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
-
-    cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
-              title='"Proactive" Covid Cases by Health District - Thailand',
-              legends=AREA_LEGEND,
-              png_prefix='cases_areas_proactive', cols_subset=cols,
-              ma_days=None,
-              kind='area', stacked=True, percent_fig=False,
-              cmap='tab20',
-              footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Case-Pos {area}'] = (
@@ -1573,10 +1543,11 @@ def save_plots(df: pd.DataFrame) -> None:
     #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
     # Add them all up
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
-    vac = vac.join(get_provinces()['Population'], on='Province')
+    vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
     # Bring in vac populations
     pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population")  # It's not on all data
     vac = vac.join(pops, rsuffix="2")
+
 
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
@@ -1591,6 +1562,48 @@ def save_plots(df: pd.DataFrame) -> None:
     #           y_formatter=perc_format,
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
+
+    vac_prov_daily = vac.groupby("Province", group_keys=True).apply(cum2daily)
+    vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
+    vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
+
+    by_region = vac_prov_daily.reset_index()
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2'], aggfunc="sum")
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
+    plot_area(df=by_region_2 / pop_region * 100000,
+              title='Vacccinatations/100k - 2nd Dose - by Region - Thailand',
+              png_prefix='vac_region_daily_2', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = vac_prov_daily['Vac Given 2'],
+              trend_sensitivity = 10, trend_up=True,
+              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              )
+    plot_area(df=by_region_1 / pop_region * 100000,
+              title='Vacccinatations/100k - 1st Dose - by Region - Thailand',
+              png_prefix='vac_region_daily_1', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = vac_prov_daily['Vac Given 1'],
+              trend_sensitivity = 10, trend_up=True,
+              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              )
+
+    # TODO: to make this work have to fix negative values 
+    # plot_area(df=by_region,
+    #           title='Covid Deaths - by Region - Thailand',
+    #           png_prefix='vac_region_daily_stacked', cols_subset=reg_cols, legends=reg_leg,
+    #           ma_days=14,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab10',
+    #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     pred = pred_vac(top5)
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -1603,7 +1616,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
@@ -1680,6 +1693,63 @@ def save_plots(df: pd.DataFrame) -> None:
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
 
+
+    cases_region = cases.reset_index()
+    pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
+    cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
+    plot_area(df=cases_region / pop_region * 100000,
+              title='Cases/100k - by Region - Thailand',
+              png_prefix='cases_region', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = cases['Cases'],
+              trend_sensitivity = 25,
+              footnote='Table of latest Cases and 7 day trend per 100k',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    plot_area(df=cases_region,
+              title='Cases - by Region - Thailand',
+              png_prefix='cases_region_stacked', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='Covid Cases by Health District - Thailand',
+    #           legends=AREA_LEGEND + ['Imported Cases'],
+    #           png_prefix='cases_areas', cols_subset=cols,
+    #           unknown_name="Unknown District", unknown_total="Cases",
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab20',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    # cols = rearrange([f'Cases Walkin Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='"Walk-in" Covid Cases by Health District - Thailand',
+    #           legends=AREA_LEGEND,
+    #           png_prefix='cases_areas_walkins', cols_subset=cols,
+    #           ma_days=None,
+    #           kind='area', stacked=True, percent_fig=False,
+    #           cmap='tab20',
+    #           footnote='Walk-in: Testing done at hospital or test lab (PCR test).\n'
+    #                     + 'PCR: Polymerase Chain Reaction',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    # cols = rearrange([f'Cases Proactive Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='"Proactive" Covid Cases by Health District - Thailand',
+    #           legends=AREA_LEGEND,
+    #           png_prefix='cases_areas_proactive', cols_subset=cols,
+    #           ma_days=None,
+    #           kind='area', stacked=True, percent_fig=False,
+    #           cmap='tab20',
+    #           footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     def cases_per_capita(col):
         def func(adf):
             return adf[col] / adf['Population'] * 100000
@@ -1731,9 +1801,6 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = cases['Cases'],
-              trend_sensitivity = 25,
-              footnote='Note: Table todays cases and 7 day trend compared to peak',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
@@ -1774,6 +1841,28 @@ def save_plots(df: pd.DataFrame) -> None:
 
     def top(func, _):
         return func
+
+    # sev_region = cases.reset_index()
+    # sev_region = pd.crosstab(sev_region['Date'], sev_region['region'], values=sev_region['Hospitalized Severe'], aggfunc="sum")
+    # plot_area(df=sev_region / pop_region,
+    #           title='Severe Hospitalations/100k - by Region - Thailand',
+    #           png_prefix='active_severe_region', cols_subset=reg_cols,
+    #           ma_days=7,
+    #           kind='line', stacked=False, percent_fig=False,
+    #           cmap='tab10',
+    #           table = cases['Hospitalized Severe'],
+    #           trend_sensitivity = 25,
+    #           footnote='Table of latest Severe Cases and 7 day trend per 100k',
+    #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    # plot_area(df=sev_region,
+    #           title='Severe Hospitalations/ - by Region - Thailand',
+    #           png_prefix='active_severe_region_stacked', cols_subset=reg_cols,
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab10',
+    #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
 
     # for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
     #     top5 = cases.pipe(topprov,
@@ -1865,6 +1954,27 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    by_region = cases.reset_index()
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
+    plot_area(df=by_region / pop_region * 100000,
+              title='Covid Deaths/100k - by Region - Thailand',
+              png_prefix='deaths_region', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              table = cases['Deaths'],
+              trend_sensitivity = 25,
+              footnote='Table of latest Deaths and 7 day trend per 100k',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    plot_area(df=by_region,
+              title='Covid Deaths - by Region - Thailand',
+              png_prefix='deaths_region_stacked', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
     top5 = cases.pipe(topprov,
                       cases_per_capita("Deaths"),
                       name="Province Cases",
@@ -1878,8 +1988,6 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = cases['Deaths'],
-              footnote='Note: Table shows todays Deaths and change from 7 days compared to peak',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
 
