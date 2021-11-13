@@ -685,10 +685,10 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     legends = [
         'PCR Tests',
-        'Public PCR Tests',
-        'Persons Under Investigation',
-        'Public Persons Under Investigation',
-        'Proactive ATK Tests (NHSO provided)',
+        'PCR Tests (Public Hospitals)',
+        'Persons Under Investigation (PUI)',
+        'Persons Under Investigation (Public Hospitals)',
+        'ATK Tests (NHSO provided)',
     ]
     plot_area(df=df,
               title='PCR Tests and PUI - Thailand',
@@ -713,15 +713,15 @@ def save_plots(df: pd.DataFrame) -> None:
         'Tested PUI Walkin Public Cum',
     ]
     legends = [
-        'Cumulative Tests',
-        'Cumulative Tests PUI',
-        'Cumulative Tests Proactive',
-        'Cumulative Tests Quarantine',
-        'Cumulative Tests Private PUI Walk-in',
-        'Cumulative Tests Public PUI Walk-in',
+        'People Checked',
+        'Person Under Investigation (PUI)',
+        'PUI Proactive',
+        'PUI Quarantine',
+        'PUI Walk-in (Private Hospital)',
+        'PUI Walk-in (Public Hospital)',
     ]
     plot_area(df=df,
-              title='PCR Tests and PUI - Thailand',
+              title='People Under Investigation (PUI) - Cumulative - Thailand',
               legends=legends,
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7,
@@ -744,7 +744,7 @@ def save_plots(df: pd.DataFrame) -> None:
         "Cases from PCR Tests",
         "Cases from Proactive PCR Tests",
         "PCR Tests",
-        "Proactive ATK Tests (NHSO provided)",
+        "ATK Tests (NHSO provided)",
     ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
@@ -788,7 +788,7 @@ def save_plots(df: pd.DataFrame) -> None:
         'Confirmed Cases per PCR Test',
         # 'Confirmed Cases per PUI*3',
         # 'Walkin Cases per PUI*3',
-        'Positive Results per Proactive ATK Test (NHSO provided)',
+        'Positive Results per ATK Test (NHSO provided)',
         'Positive Results per PCR + ATK Test (NHSO provided)',
         'Positive Rate from DDC Dashboard',
     ]
@@ -848,11 +848,11 @@ def save_plots(df: pd.DataFrame) -> None:
         'Positivity Public+Private',
     ]
     legends = [
-        'Confirmed Cases per Public Tests',
-        'Positive Results per Public Tests',
+        'Confirmed Cases per PCR Test (Public Hospital)',
+        'Positive Results per PCR Test (Private Hospital)',
         'Confirmed Cases per PUI',
-        'Positive Results per Private Tests',
-        'Positive Results per All Tests',
+        'Positive Results per PCR Test (Private Hospital)',
+        'Positive Results per PCR Test',
     ]
     plot_area(df=df,
               title='Positive Rate - Thailand',
@@ -981,10 +981,10 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     legends = [
         'Cases',
-        'Positive Area Test Results',
+        'Positive PCR Test Results (Health Districts Combined)',
         'Positive PCR Test Results',
-        'Positive Public PCR Test Results',
-        'Positive Private PCR Test Results',
+        'Positive PCR Test Results (Public Hospitals)',
+        'Positive PCR Test Results (Private Hospitals)',
         'Positive Test Results',
     ]
     plot_area(df=df,
@@ -1008,7 +1008,7 @@ def save_plots(df: pd.DataFrame) -> None:
     legends=[
         'Tests in Quarantine/Imported',
         'Walk-ins/Traced Tests in Hospital',
-        'Proactive Tests in Mobile Community',
+        'Mobile Proactive Tests in Community',
         'Proactive Tests in Prison',
         # "Rapid Testing (Antigen/ATK)"
     ]
@@ -1385,7 +1385,7 @@ def save_plots(df: pd.DataFrame) -> None:
         'In Serious Condition without Ventilator',
         'In Hospital/Mild Condition',
         'In Field Hospital',
-        'Recovered from Cases since 1st April',
+        'Recovered from Cases Confirmed since 1st April',
     ]
     plot_area(df=df,
               title='Covid Cases by Current Outcome since 1st April 2021 - Thailand',
