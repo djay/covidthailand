@@ -375,7 +375,7 @@ def plot_area(df: pd.DataFrame,
                   loc=legend_pos,
                   ncol=legend_cols)
 
-        plt.tight_layout(pad=1.08, w_pad=-11.0, h_pad=1.0)
+        plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
         logger.info("Plot: {}", path)
@@ -441,12 +441,12 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
 
     # create the table
     axis.set_axis_off() 
-    table = axis.table(cellLoc='right', loc='upper right',
+    table = axis.table(cellLoc='right', loc='upper right', colWidths=[0.6, 0.17],
                        rowLabels=row_labels, cellText=row_texts, cellColours=row_colors)       
     table.auto_set_column_width((0, 1))
     table.auto_set_font_size(False)
     table.set_fontsize(15)
-    table.scale(1, 1.35)
+    table.scale(1.1, 1.42)
 
     # fix the formating and trend colors
     for cell in table.get_celld().values():
