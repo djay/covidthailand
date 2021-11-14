@@ -60,12 +60,17 @@ def check_cum(df, results, cols):
 
 def cum2daily(results):
     cum = results[(c for c in results.columns if " Cum" in c)]
+    inames = cum.index.names
+    if inames != ["Date"]:
+        #cum = cum.reset_index().set_index("Date")
+        cum = cum.droplevel(list(set(inames) - set(["Date"])))
     all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
     cum = cum.reindex(all_days)  # put in missing days with NaN
     # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
     cum = cum - cum.shift(+1)  # we got cumilitive data
     renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
     cum = cum.rename(columns=renames)
+    # cum = cum.reset_index().set_index(inames)
     return cum
 
 

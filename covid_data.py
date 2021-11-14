@@ -231,7 +231,8 @@ def scrape_and_combine():
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
         # These 3 are slowest so should go first
         dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
-        dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
+        # This doesn't add any more info since severe cases was a mistake
+        # dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac_slides = pool.apply_async(covid_data_vac.vac_slides)
         vac_reports_and_prov = pool.apply_async(covid_data_vac.vaccination_reports)
 
@@ -264,7 +265,7 @@ def scrape_and_combine():
         dash_daily = dash_daily.get()
         dash_ages = dash_ages.get()
         dash_by_province = dash_by_province.get()
-        dash_trends_prov = dash_trends_prov.get()
+        # dash_trends_prov = dash_trends_prov.get()
 
         vac_reports, vac_reports_prov = vac_reports_and_prov.get()
         vac_slides = vac_slides.get()
@@ -281,7 +282,7 @@ def scrape_and_combine():
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
 
     # Combine dashboard data
-    dash_by_province = dash_trends_prov.combine_first(dash_by_province)
+    # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
     export(dash_by_province, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     # "json" for caching, api so it's downloadable
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
@@ -301,6 +302,10 @@ def scrape_and_combine():
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
+    if "Hospitalized Severe" in dfprov.columns:
+        # Made a mistake. This is really Cases Proactive
+        dfprov["Cases Proactve"] = dfprov["Hospitalized Severe"]
+        dfprov = dfprov.drop(columns=["Hospitalized Severe"])
     export(dfprov, "cases_by_province")
 
     # Export per district (except tests which are dodgy?)
