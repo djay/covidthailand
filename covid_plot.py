@@ -1549,7 +1549,7 @@ def save_plots(df: pd.DataFrame) -> None:
               table = trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
               footnote='Table of % vaccinated and 7 day trend in change in rank',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
     plot_area(df=by_region_1.combine_first(pred_1),
               title='Vacccinatated - 1st Dose - by Region - Thailand',
@@ -1561,7 +1561,7 @@ def save_plots(df: pd.DataFrame) -> None:
               table = trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
               footnote='Table of % vaccinated and 7 day trend in change in rank',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
 
 
@@ -1571,7 +1571,7 @@ def save_plots(df: pd.DataFrame) -> None:
     vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
 
     by_region = vac_prov_daily.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
     by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2'], aggfunc="sum")
     by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
     plot_area(df=by_region_2 / pop_region * 100000,
@@ -1582,7 +1582,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
 #              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
     plot_area(df=by_region_1 / pop_region * 100000,
               title='Vacccinatations/100k - 1st Dose - by Region - Thailand',
@@ -1592,10 +1592,8 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
 #              table = trend_table(vac_prov_daily['Vac Given 1'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
-
-
 
 
     # TODO: to make this work have to fix negative values 
