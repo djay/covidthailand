@@ -17,7 +17,7 @@ from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_c
     import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov, pred_vac, fix_gaps
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2
+    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2, trend_table
 
 theme = 'Black'
 theme_label_text = '#F1991F'
@@ -43,8 +43,6 @@ def plot_area(df: pd.DataFrame,
               stacked=False,
               percent_fig: bool = False,
               table: pd.DataFrame = [],
-              trend_sensitivity: float = 15.0,
-              trend_up: bool = False,
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
               unknown_total: str = None,
@@ -269,7 +267,12 @@ def plot_area(df: pd.DataFrame,
             ax_provinces.append(plt.subplot2grid((grid_rows, grid_columns), (grid_offset, 4), colspan=1, rowspan=1))
             add_footnote(footnote, 'right')
 
-            fill_province_tables(ax_provinces, table, trend_sensitivity, trend_up=trend_up)
+            add_to_table(ax_provinces[0], table, ['Bangkok Metropolitan Region', 'Central', ])
+            add_to_table(ax_provinces[1], table, ['Western', 'Eastern'])
+            add_to_table(ax_provinces[2], table, ['Northeastern'])
+            add_to_table(ax_provinces[3], table, ['Northern'])
+            add_to_table(ax_provinces[4], table, ['Southern'])
+
         else:
             add_footnote(footnote_left, 'left')
             add_footnote(footnote, 'right')
@@ -384,14 +387,14 @@ def plot_area(df: pd.DataFrame,
     return None
 
 
-def trend_indicator(trend, trend_up=False):
+def trend_indicator(trend, style):
     """Get the trend indicator and corresponding color."""
     if trend == 0.00042 or np.isnan(trend):
         return '?', (0, 0, 0, 0)
     arrows = ('→', '↗', '↑', '↓', '↘')
     trend = min(max(trend, -1), 1)  # limit the trend
 
-    trend_color = (1, 0, 0, trend*trend) if (trend > 0) != (trend_up) else (0, 1, 0, trend*trend)
+    trend_color = (1, 0, 0, trend * trend) if (trend > 0) != ("_up" in style) else (0, 1, 0, trend * trend)
     return arrows[round(trend * 2)], trend_color
 
 
@@ -404,7 +407,7 @@ def append_row(row_labels, row_texts, row_colors, trend_colors,
     trend_colors.append(trend_color)
 
 
-def add_regions_to_axis(axis, table_regions, trend_up=False):
+def add_regions_to_axis(axis, table_regions):
     """Add a sorted table with multiple regions to the axis."""
     row_labels = []
     row_texts = []
@@ -413,7 +416,8 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
 
     # get the regions and add the heading
     regions = list(table_regions.loc[:, 'region'].tolist()) 
-    if regions[0] == 'Bangkok Metropolitan Region': regions[0] = 'Bangkok'
+    if regions[0] == 'Bangkok Metropolitan Region': 
+        regions[0] = 'Bangkok'
     current_region = regions[0]
     append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
@@ -421,6 +425,11 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
     provinces = list(table_regions.index)
     values = list(table_regions.loc[:, 'Value'].tolist())
     trends = list(table_regions.loc[:, 'Trend'].tolist())
+    if "Trend_style" in table_regions.columns:
+        styles = list(table_regions.loc[:, 'Trend_style'].tolist())
+    else:
+        styles = None
+
 
     # generate the the cell values and colors
     for row_number, province in enumerate(provinces):
@@ -431,7 +440,7 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
             current_region = regions[row_number]
             append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
-        trend_arrow, trend_color = trend_indicator(trends[row_number], trend_up=trend_up)
+        trend_arrow, trend_color = trend_indicator(trends[row_number], style=styles[row_number] if styles else "green_up")
         append_row(row_labels, row_texts, row_colors, trend_colors, 
                    provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow], 
                    [(0, 0, 0, 0), trend_color], trend_color)
@@ -457,51 +466,12 @@ def add_regions_to_axis(axis, table_regions, trend_up=False):
         table[(row_number, 0)].set_color(theme_light_back)
 
 
-def add_to_table(axis, table, regions, trend_up=False):
+def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
     regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
     regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
-    add_regions_to_axis(axis, regions_to_add, trend_up=trend_up)
-
-
-def fill_province_tables(ax_provinces, table_provinces, sensitivity=15, trend_up=False):
-    """Create an info table showing province values."""
-
-    # #Modi was here... 
-
-    # 14day MA just for cases
-    #ma = table_provinces[['Cases','region']]
-    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
-
-    # Too sensitive to changes
-    # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
-
-    # Works ok but tends to make places that had a big peak in the past appear flat
-    # trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
-
-    # Use the per population number
-    ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
-    peak = ma.max().max() / ma_pop['Population'].max().max()
-    trend = ma_pop.groupby("Province", group_keys=False).apply(lambda df: ((df['Value'] - df['Value'].shift(7)) / df['Population'])) / peak * sensitivity
-
-    trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?
-    ma = ma.to_frame("MA").assign(
-        Trend=trend,
-        Value=table_provinces
-    )
-
-
-    ma = ma.reset_index("Province")
-    last_day = ma.loc[ma.last_valid_index()]
-    last_day = join_provinces(last_day, "Province", ["region"])
-    last_day = last_day.reset_index().set_index("Province").drop(columns="Date")
-
-    add_to_table(ax_provinces[0], last_day, ['Bangkok Metropolitan Region', 'Central', ], trend_up=trend_up)
-    add_to_table(ax_provinces[1], last_day, ['Western', 'Eastern'], trend_up=trend_up)
-    add_to_table(ax_provinces[2], last_day, ['Northeastern'], trend_up=trend_up)
-    add_to_table(ax_provinces[3], last_day, ['Northern'], trend_up=trend_up)
-    add_to_table(ax_provinces[4], last_day, ['Southern'], trend_up=trend_up)
+    add_regions_to_axis(axis, regions_to_add)
 
 
 def rewrite_legends(df, legends, cols, y_formatter):
@@ -514,13 +484,13 @@ def rewrite_legends(df, legends, cols, y_formatter):
     for number, value in enumerate(values):
         if not np.isnan(value) and number < len(legends): 
             new_legends.append(f'{y_formatter(value, 0)} {legends[number]}')
-    
+
     # add the remaining legends without values
     while len(new_legends) < len(legends):
         new_legends.append(legends[len(new_legends)])
 
     return new_legends
-        
+
 
 def add_footnote(footnote, location):
     """Add left or right footnotes."""
@@ -570,7 +540,7 @@ def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27)
     else:
         for number, value in enumerate(values):
             if not np.isnan(value) and number < len(legend.get_lines()): 
-                ticks.append(Tick(value, y_formatter(value,0), legend.get_lines()[number].get_color()))
+                ticks.append(Tick(value, y_formatter(value, 0), legend.get_lines()[number].get_color()))
 
     set_ticks(new_axis, ticks)
 
@@ -648,7 +618,6 @@ class Ticks:
     def get_color(self, number): 
         """Get a single tick color."""
         return self.ticks[number].color
-    
 
 class Tick:
     """A single tick including tickmarks, labels and colors."""
@@ -1562,6 +1531,40 @@ def save_plots(df: pd.DataFrame) -> None:
     #           y_formatter=perc_format,
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
+    by_region = vac.reset_index()
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1 Cum'], aggfunc="sum") / pop_region * 100
+    pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
+    pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+
+    plot_area(df=by_region_2.combine_first(pred_2),
+              title='Vacccinated - 2nd Dose - by Region - Thailand',
+              png_prefix='vac_region_2', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              actuals=list(pred_2.columns),
+              table = trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
+              y_formatter=perc_format,
+              footnote='Table of % vaccinated and 7 day trend in change in rank',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
+              )
+    plot_area(df=by_region_1.combine_first(pred_1),
+              title='Vacccinatated - 1st Dose - by Region - Thailand',
+              png_prefix='vac_region_1', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              actuals=list(pred_1.columns),
+              table = trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
+              y_formatter=perc_format,
+              footnote='Table of % vaccinated and 7 day trend in change in rank',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
+              )
+
+
 
     vac_prov_daily = vac.groupby("Province", group_keys=True).apply(cum2daily)
     vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
@@ -1577,10 +1580,9 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = vac_prov_daily['Vac Given 2'],
-              trend_sensitivity = 10, trend_up=True,
+#              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
     plot_area(df=by_region_1 / pop_region * 100000,
               title='Vacccinatations/100k - 1st Dose - by Region - Thailand',
@@ -1588,11 +1590,11 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = vac_prov_daily['Vac Given 1'],
-              trend_sensitivity = 10, trend_up=True,
+#              table = trend_table(vac_prov_daily['Vac Given 1'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
+
 
     # TODO: to make this work have to fix negative values 
     # plot_area(df=by_region,
@@ -1703,8 +1705,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = cases['Cases'],
-              trend_sensitivity = 25,
+              table = trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
@@ -1962,8 +1963,7 @@ def save_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              table = cases['Deaths'],
-              trend_sensitivity = 25,
+              table = trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
               footnote='Table of latest Deaths and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
