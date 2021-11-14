@@ -652,8 +652,20 @@ def save_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
 
-    cols = ['Tests XLS', 'Tests Public', 'Tested PUI', 'Tested PUI Walkin Public', 'Tests ATK Proactive']
-    legends = ['PCR Tests (All)', 'PCT Tests (Public)', 'PUI', 'PUI (Public)', 'ATK Tests (NHSO provided/Proactive)']
+    cols = [
+        'Tests XLS',
+        'Tests Public',
+        'Tested PUI',
+        'Tested PUI Walkin Public',
+        'Tests ATK Proactive'
+    ]
+    legends = [
+        'PCR Tests',
+        'PCR Tests (Public Hospitals)',
+        'Persons Under Investigation (PUI)',
+        'Persons Under Investigation (Public Hospitals)',
+        'ATK Tests (NHSO provided)',
+    ]
     plot_area(df=df,
               title='PCR Tests and PUI - Thailand',
               legends=legends,
@@ -668,14 +680,25 @@ def save_plots(df: pd.DataFrame) -> None:
               'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
-    cols = ['Tested Cum',
-            'Tested PUI Cum',
-            'Tested Proactive Cum',
-            'Tested Quarantine Cum',
-            'Tested PUI Walkin Private Cum',
-            'Tested PUI Walkin Public Cum']
+    cols = [
+        'Tested Cum',
+        'Tested PUI Cum',
+        'Tested Proactive Cum',
+        'Tested Quarantine Cum',
+        'Tested PUI Walkin Private Cum',
+        'Tested PUI Walkin Public Cum',
+    ]
+    legends = [
+        'People Checked',
+        'Person Under Investigation (PUI)',
+        'PUI Proactive',
+        'PUI Quarantine',
+        'PUI Walk-in (Private Hospital)',
+        'PUI Walk-in (Public Hospital)',
+    ]
     plot_area(df=df,
-              title='PCR Tests and PUI - Thailand',
+              title='People Under Investigation (PUI) - Cumulative - Thailand',
+              legends=legends,
               png_prefix='tested_pui', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -687,17 +710,22 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
-    cols = ['Cases', 'Cases Proactive', 'Tests XLS', 'Tests ATK Proactive']
-    legend = [
-        "Cases (PCR)",
-        "Proactive Cases (PCR)",
+    cols = [
+        'Cases',
+        'Cases Proactive',
+        'Tests XLS',
+        'Tests ATK Proactive',
+    ]
+    legends = [
+        "Cases from PCR Tests",
+        "Cases from Proactive PCR Tests",
         "PCR Tests",
-        "ATK Tests (NHSO provided/Proactive)",
+        "ATK Tests (NHSO provided)",
     ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
               title='Tests as % of Peak - Thailand',
-              png_prefix='tests_peak', cols_subset=cols, legends=legend,
+              png_prefix='tests_peak', cols_subset=cols, legends=legends,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab10',
@@ -732,12 +760,12 @@ def save_plots(df: pd.DataFrame) -> None:
         'Positive Rate Dash %',
     ]
     legends = [
-        'Positive Results per PCR Test (%) (Positive Rate)',
-        'Confirmed Cases per PCR Test (%)',
-        # 'Confirmed Cases per PUI*3 (%)',
-        # 'Walkin Cases per PUI*3 (%)',
-        'Postive Results per ATK Test (NHSO provided/Proactive)',
-        'Postive Results per PCR + ATK (NHSO provided) Test',
+        'Positive Results per PCR Test (Positive Rate)',
+        'Confirmed Cases per PCR Test',
+        # 'Confirmed Cases per PUI*3',
+        # 'Walkin Cases per PUI*3',
+        'Positive Results per ATK Test (NHSO provided)',
+        'Positive Results per PCR + ATK Test (NHSO provided)',
         'Positive Rate from DDC Dashboard',
     ]
     plot_area(df=df,
@@ -761,13 +789,19 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Tests per case'] = df['Tests XLS'] / df['Cases']
     df['Tests per positive'] = df['Tests XLS'] / df['Pos XLS']
 
-    cols = ['Tests per positive', 'Tests per case', 'PUI per Case', 'PUI3 per Case', 'PUI per Walkin']
+    cols = [
+        'Tests per positive',
+        'Tests per case',
+        'PUI per Case',
+        'PUI3 per Case',
+        'PUI per Walkin',
+    ]
     legends = [
-        'PCR Tests per Positive',
+        'PCR Tests per Positive Result',
         'PCR Tests per Case',
         'PUI per Case',
         'PUI*3 per Case',
-        'PUI per Walkin Case',
+        'PUI per Walk-in Case',
     ]
     plot_area(df=df,
               title='Tests per Confirmed Covid Cases - Thailand',
@@ -782,17 +816,19 @@ def save_plots(df: pd.DataFrame) -> None:
                        'so it is included for when testing data is delayed. It is not the actual positive rate.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
-    cols = ['Positivity Cases/Tests',
-            'Positivity Public',
-            'Positivity PUI',
-            'Positive Rate Private',
-            'Positivity Public+Private']
+    cols = [
+        'Positivity Cases/Tests',
+        'Positivity Public',
+        'Positivity PUI',
+        'Positive Rate Private',
+        'Positivity Public+Private',
+    ]
     legends = [
-        'Confirmed Cases / Tests Performed (Public)',
-        'Positive Results / Tests Performed (Public)',
-        'Confirmed Cases / PUI',
-        'Positive Results / Tests Performed (Private)',
-        'Positive Results / Tests Performed (All)',
+        'Confirmed Cases per PCR Test (Public Hospital)',
+        'Positive Results per PCR Test (Private Hospital)',
+        'Confirmed Cases per PUI',
+        'Positive Results per PCR Test (Private Hospital)',
+        'Positive Results per PCR Test',
     ]
     plot_area(df=df,
               title='Positive Rate - Thailand',
@@ -813,7 +849,12 @@ def save_plots(df: pd.DataFrame) -> None:
     df['Positive Rate Private Ratio'] = (df['Pos Private'] / (df['Tests Private'])
                                          / (df['Pos Public'] / df['Tests Public'])).rolling('7d').mean()
     df['PUI Private Ratio'] = (df['Tested PUI Walkin Private'] / df['Tested PUI Walkin Public']).rolling('7d').mean()
-    cols = ['Tests Private Ratio', 'Tests Positive Private Ratio', 'PUI Private Ratio', 'Positive Rate Private Ratio']
+    cols = [
+        'Tests Private Ratio',
+        'Tests Positive Private Ratio',
+        'PUI Private Ratio',
+        'Positive Rate Private Ratio',
+    ]
     plot_area(df=df,
               title='Testing Private Ratio - Thailand',
               png_prefix='tests_private_ratio', cols_subset=cols,
@@ -829,19 +870,22 @@ def save_plots(df: pd.DataFrame) -> None:
     ##################
     df["Cases outside Prison"] = df["Cases Local Transmission"].sub(df["Cases Area Prison"], fill_value=0)
 
-    cols = ['Cases',
-            'Cases Walkin',
-            'Pos XLS',
-            # 'Pos Public',
-            'ATK',
-            'Pos ATK Proactive',
-            ]
-    legends = ['Confirmed Cases',
-               'Walkin Confirmed Cases',
-               'Positive PCR Test Results (All)',
-               #    'Positive PCR Test Results (Public)',
-               "Probable Case (Registered for home isolation from ATK)",
-               "Positive ATK Test Resilts (NHSO provided/Proactive)"]
+    cols = [
+        'Cases',
+        'Cases Walkin',
+        'Pos XLS',
+        # 'Pos Public',
+        'ATK',
+        'Pos ATK Proactive',
+    ]
+    legends = [
+        'Confirmed Cases',
+        'Confirmed Walk-in Cases',
+        'Positive PCR Test Results',
+        #    'Positive PCR Test Results (Public)',
+        'Probable Cases from ATK Tests (home isolation)',
+        'Positive Proactive ATK Test Results (NHSO provided)',
+    ]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
               legends=legends,
@@ -862,9 +906,9 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     legends = [
         'Confirmed Cases',
-        'Confirmed Cases (excl. Prisons)',
-        'Confirmed Cases (excl. All Proactive Cases)',
-        'Positive Test Results',
+        'Confirmed Cases excl. Prison Cases',
+        'Confirmed Cases excl. Proactive Cases',
+        'Positive PCR Test Results',
     ]
     plot_area(df=df,
               title='Covid Cases vs. Positive Tests - Thailand',
@@ -889,9 +933,9 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
     legends = [
         'Confirmed Cases',
-        'Confirmed Cases (excl. Prisons)',
-        'Confirmed Cases (excl. All Proactive Cases)',
-        'Positive Test Results',
+        'Confirmed Cases excl. Prison Cases',
+        'Confirmed Cases excl. Proactive Cases',
+        'Positive PCR Test Results',
     ]
     plot_area(df=df,
         title='3rd Wave Cumulative Covid Cases and Positive Tests - Thailand',
@@ -903,14 +947,25 @@ def save_plots(df: pd.DataFrame) -> None:
         footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
         footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
-    cols = ['Cases',
-            'Pos Area',
-            'Pos XLS',
-            'Pos Public',
-            'Pos Private',
-            'Pos']
+    cols = [
+        'Cases',
+        'Pos Area',
+        'Pos XLS',
+        'Pos Public',
+        'Pos Private',
+        'Pos',
+    ]
+    legends = [
+        'Cases',
+        'Positive PCR Test Results (Health Districts Combined)',
+        'Positive PCR Test Results',
+        'Positive PCR Test Results (Public Hospitals)',
+        'Positive PCR Test Results (Private Hospitals)',
+        'Positive Test Results',
+    ]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',
+              legends=legends,
               png_prefix='cases_all', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -920,15 +975,22 @@ def save_plots(df: pd.DataFrame) -> None:
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive']  # .sub(df['Cases Area Prison'], fill_value=0)
     #df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
-    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive Community', 'Cases Area Prison']
+    cols = [
+        'Cases Imported',
+        'Cases Walkin',
+        'Cases Proactive Community',
+        'Cases Area Prison',
+    ]
+    legends=[
+        'Tests in Quarantine/Imported',
+        'Walk-ins/Traced Tests in Hospital',
+        'Mobile Proactive Tests in Community',
+        'Proactive Tests in Prison',
+        # "Rapid Testing (Antigen/ATK)"
+    ]
     plot_area(df=df,
               title='Covid Cases by Where Tested - Thailand',
-              legends=[
-                  "Quarantine (Imported)", "Hospital (Walk-ins/Traced)",
-                  "Mobile Community Testing (Proactive)",
-                  "Prison (Proactive)",
-                  # "Rapid Testing (Antigen/ATK)"
-              ],
+              legends=legends,
               png_prefix='cases_types', cols_subset=cols,
               unknown_name='Cases Unknown', unknown_total='Cases',
               ma_days=7,
@@ -943,9 +1005,17 @@ def save_plots(df: pd.DataFrame) -> None:
                         + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
-    cols = ['Cases Symptomatic', 'Cases Asymptomatic']
+    cols = [
+        'Cases Symptomatic',
+        'Cases Asymptomatic',
+    ]
+    legends = [
+        'Symptomatic Cases',
+        'Asymptomatic Cases',
+    ]
     plot_area(df=df,
               title='Covid Cases by Symptoms - Thailand',
+              legends=legends,
               png_prefix='cases_sym', cols_subset=cols,
               unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
               ma_days=None,
@@ -963,7 +1033,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df,
               title='Covid Cases by Age - Thailand',
               png_prefix='cases_ages', cols_subset=cols,
-              unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
+              unknown_name='Cases Unknown Age', unknown_total='Cases', unknown_percent=False,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(cols) + 1),
@@ -1089,10 +1159,10 @@ def save_plots(df: pd.DataFrame) -> None:
     pos_areas = area_crosstab(pos_areas, "Positive Rate Dash", aggfunc="mean") * 100
     cols = rearrange([f'Positive Rate Dash Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     topcols = df[cols].sort_values(by=df[cols].last_valid_index(), axis=1, ascending=False).columns[:5]
-    legend = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c) + 1 for c in topcols])[:5]
+    legends = rearrange(AREA_LEGEND_ORDERED, *[cols.index(c) + 1 for c in topcols])[:5]
     plot_area(df=pos_areas,
               title='Average Positive Rate - by Health District - Thailand',
-              legends=legend,
+              legends=legends,
               png_prefix='positivity_area_unstacked', cols_subset=topcols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
@@ -1194,16 +1264,34 @@ def save_plots(df: pd.DataFrame) -> None:
                                                                                                            axis=1)
 
     df["Hospitalized Hospital"] = df["Hospitalized"].sub(non_split, fill_value=None)
-    cols = ["Hospitalized Respirator", "Hospitalized Severe excl vent", "Hospitalized Hospital", "Hospitalized Field"]
-    legends = ['On Ventilator', 'In Serious Condition', 'In Isolation/Hospital', 'In Field Hospital']
+    cols = [
+        'Hospitalized Respirator',
+        'Hospitalized Severe excl vent',
+        'Hospitalized Hospital',
+        'Hospitalized Field',
+    ]
+    legends = [
+        'In Serious Condition on Ventilator',
+        'In Serious Condition without Ventilator',
+        'In Isolation/Hospital',
+        'In Field Hospital',
+    ]
     # plot_area(df=df, png_prefix='cases_active', cols_subset=cols,
     #           title='Thailand Active Covid Cases\n(Severe, Field, and Respirator only available from '
     #                 '2021-04-24 onwards)',
     #           legends=legends,
     #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
-    cols = ["Hospitalized Severe", "Hospitalized Severe excl vent", "Hospitalized Respirator"]
-    legends = ["In Serious Condition", 'In Serious Condition (without ventilator)', 'On Ventilator']
+    cols = [
+        'Hospitalized Severe',
+        'Hospitalized Severe excl vent',
+        'Hospitalized Respirator',
+    ]
+    legends = [
+        'In Serious Condition',
+        'In Serious Condition without Ventilator',
+        'In Serious Condition on Ventilator',
+    ]
     plot_area(df=df,
               title='Active Covid Cases in Serious Condition - Thailand',
               legends=legends,
@@ -1232,8 +1320,12 @@ def save_plots(df: pd.DataFrame) -> None:
         'Recovered since 2021-04-01',
     ]
     legends = [
-        'Deaths from Cases since 1st April', 'On Ventilator', 'In Serious Condition (without Ventilator)',
-        'In Hospital/Mild', 'In Field Hospital', 'Recovered from Cases since 1st April'
+        'Deaths from Cases since 1st April',
+        'In Serious Condition on Ventilator',
+        'In Serious Condition without Ventilator',
+        'In Hospital/Mild Condition',
+        'In Field Hospital',
+        'Recovered from Cases Confirmed since 1st April',
     ]
     plot_area(df=df,
               title='Covid Cases by Current Outcome since 1st April 2021 - Thailand',
@@ -1247,21 +1339,33 @@ def save_plots(df: pd.DataFrame) -> None:
     # TODO: I think we can replace the recovered since april with plot showing just hospitalisations?
     df["Hospitalized Field Unknown"] = df["Hospitalized Field"].sub(df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0)
 
-    cols = ['Hospitalized Respirator', 'Hospitalized Severe', "Hospitalized Field Unknown", "Hospitalized Field Hospitel", "Hospitalized Field HICI",]
+    cols = [
+        'Hospitalized Respirator',
+        'Hospitalized Severe',
+        'Hospitalized Field Unknown',
+        'Hospitalized Field Hospitel',
+        'Hospitalized Field HICI',
+        ]
     df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
-    cols = ['Hospitalized Respirator', 'Hospitalized Severe',
-            "Hospitalized Mild", "Hospitalized Field Unknown",
-            "Hospitalized Field Hospitel",
-            "Hospitalized Field HICI", ]
-    legend = [
-        'Serious On Ventilator', 'Serious without Ventilator',
-        'Mild In Hospital', 'Mild In Field Hospital/Other',
-        "Mild in Hotel Field Hospital (Hospitel)",
-        "Mild in Home/Community Isolation (HICI)"
+    cols = [
+        'Hospitalized Respirator',
+        'Hospitalized Severe',
+        'Hospitalized Mild', 
+        'Hospitalized Field Unknown',
+        'Hospitalized Field Hospitel',
+        'Hospitalized Field HICI',
+    ]
+    legends = [
+        'In Serious Condition on Ventilator',
+        'In Serious Condition without Ventilator',
+        'In Mild Condition in Hospital',
+        'In Mild Condition in Field Hospital/Other',
+        'In Mild Condition in Hotel Field Hospital (Hospitel)',
+        'In Mild Condition in Home/Community Isolation (HICI)',
     ]
     plot_area(df=df,
-              title='Acive Cases by Condition - Thailand',
-              png_prefix='active_hospital', cols_subset=cols, legends=legend,
+              title='Active Cases by Condition - Thailand',
+              png_prefix='active_hospital', cols_subset=cols, legends=legends,
               # unknown_name='Hospitalized Other', unknown_total='Hospitalized', unknown_percent=True,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
@@ -1270,14 +1374,14 @@ def save_plots(df: pd.DataFrame) -> None:
 
     df["Hospitalized All Mild"] = df["Hospitalized Mild"] + df["Hospitalized Field"]
     cols = [
-        "Hospitalized Respirator",
-        "Hospitalized Severe",
-        "Hospitalized All Mild",
+        'Hospitalized Respirator',
+        'Hospitalized Severe',
+        'Hospitalized All Mild',
     ]
     legends = [
-        "Serious Condition with Ventilator",
-        "Serious Condition without Ventilator",
-        "Mild Condition",
+        'In Serious Condition on Ventilator',
+        'In Serious Condition without Ventilator',
+        'In Mild Condition',
     ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
@@ -1901,11 +2005,17 @@ def save_plots(df: pd.DataFrame) -> None:
     cases_est = cases_est.join(df['Deaths'], on="Date")
     # cases_est['Cases (MA)'] = cases_est['Cases'].rolling("7d").mean()
     cases_est["Infections Estimate Simple"] = cases_est["Deaths"].shift(-11) / 0.0054
-    cols = ["Cases", "Infections Estimate", ]
-    legend = ["Confirmed Cases", "Infections Estimate (based on deaths)"]
+    cols = [
+        'Cases',
+        'Infections Estimate',
+    ]
+    legends = [
+        'Confirmed Cases',
+        'Infections Estimate based on Deaths',
+    ]
     plot_area(df=cases_est,
               title='Covid Infections (unofficial estimate) - Thailand',
-              legends=legend,
+              legends=legends,
               png_prefix='cases_infections_estimate', cols_subset=cols,
               actuals=True,
               ma_days=7,
@@ -1922,10 +2032,19 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # TODO: predict median age of death based on population demographics
 
-    cols = ['Deaths', 'Deaths Risk Family', 'Deaths Comorbidity None']
+    cols = [
+        'Deaths',
+        'Deaths Risk Family',
+        'Deaths Comorbidity None',
+    ]
+    legends = [
+        'Deaths',
+        'Deaths Infected from Family',
+        'Deaths without Underlying Diseases',
+    ]
     plot_area(df=df,
               title='Covid Deaths - Thailand',
-              legends=['Deaths', 'Infected from Family', 'No Underlying Diseases'],
+              legends=legends,
               png_prefix='deaths_reason', cols_subset=cols,
               actuals=['Deaths'],
               ma_days=7,
@@ -1934,9 +2053,19 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
-    cols = ['Deaths Age Median (MA)', 'Deaths Age Max', 'Deaths Age Min']
+    cols = [
+        'Deaths Age Median (MA)',
+        'Deaths Age Max',
+        'Deaths Age Min',
+    ]
+    legends = [
+        'Median Age of Deaths',
+        'Maximum Age of Deaths',
+        'Minimum Age of Deaths',
+    ]
     plot_area(df=df,
               title='Covid Deaths Age Range - Thailand',
+              legends=legends,
               highlight=['Deaths Age Median (MA)'],
               between=['Deaths Age Max', 'Deaths Age Min'],
               png_prefix='deaths_age', cols_subset=cols,
@@ -2014,7 +2143,7 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=w3_cases,
               title='Covid Cases by Age - Thailand',
               png_prefix='cases_ages2', cols_subset=cols,
-              unknown_name='Unknown', unknown_total='Cases', unknown_percent=False,
+              unknown_name='Cases Unknown Age', unknown_total='Cases', unknown_percent=False,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap=get_cycle('summer_r', len(cols), extras=["gainsboro"]),
@@ -2032,10 +2161,10 @@ def save_plots(df: pd.DataFrame) -> None:
     deaths_by_age = cum2daily(case_ages_cum)
     death_cols = [f'Deaths Age {age}' for age in age_ranges]
     deaths_by_age['Deaths'] = df['Deaths']
-    deaths_by_age['Deaths (MA)'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
+    deaths_by_age['Deaths Ages Median'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
     deaths_by_age['Deaths Ages Sum'] = deaths_by_age[death_cols].sum(axis=1)
-    deaths_by_age = deaths_by_age.pipe(normalise_to_total, death_cols, 'Deaths (MA)')
-    cols = death_cols + ['Deaths (MA)', 'Deaths Ages Sum']
+    deaths_by_age = deaths_by_age.pipe(normalise_to_total, death_cols, 'Deaths Ages Median')
+    cols = death_cols + ['Deaths Ages Median', 'Deaths Ages Sum']
     plot_area(df=deaths_by_age,
               title='Covid Deaths Age Range - Thailand',
               png_prefix='deaths_age_bins', cols_subset=cols,
@@ -2060,14 +2189,17 @@ def save_plots(df: pd.DataFrame) -> None:
     plot_area(df=df,
               title='Covid Deaths Age Distribution - Thailand',
               png_prefix='deaths_age_dash', cols_subset=death_cols,
-              unknown_name='Unknown', unknown_total='Deaths', unknown_percent=False,
+              unknown_name='Deaths Unknown Age', unknown_total='Deaths', unknown_percent=False,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     # Do a % of peak chart for death vs cases
-    cols = ['Cases', 'Deaths']
+    cols = [
+        'Cases',
+        'Deaths',
+    ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100 # pops.sum() is 72034815.0
     cols += ['Vaccinated']
@@ -2082,12 +2214,21 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote="% of peak (except vaccinated).\nVaccinated is % of population with 2 jabs.")
 
     # kind of dodgy since ATK is subset of positives but we don't know total ATK
-    cols = ['Cases', 'Tests XLS', 'ATK']
+    cols = [
+        'Cases',
+        'Tests XLS',
+        'ATK',
+    ]
     peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
-    legend = ["Cases (PCR Tested Only)", "PCR Tests", "Home Isolation from ATK Positive"]
+    legends = [
+        'Cases from PCR Tests',
+        'PCR Tests',
+        'Home Isolation from Positive ATK Tests',
+    ]
     plot_area(df=peaks,
               title='Tests as % of Peak - Thailand',
-              png_prefix='tests_peak', cols_subset=cols, legends=legend,
+              legends=legends,
+              png_prefix='tests_peak', cols_subset=cols,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab20_r',
@@ -2118,7 +2259,7 @@ def save_plots(df: pd.DataFrame) -> None:
         for year in [2020, 2021]:
             res = pd.DataFrame()
             res['Excess Deaths'] = (months[year] - death5_avg)
-            res['PScore'] = res['Excess Deaths'] / death5_avg * 100
+            res['P-Score'] = res['Excess Deaths'] / death5_avg * 100
             res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
             res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
@@ -2127,7 +2268,7 @@ def save_plots(df: pd.DataFrame) -> None:
             res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
                                          format='%Y-%m') + MonthEnd(0)
             result = result.combine_first(res.reset_index().set_index("Date"))
-        result = result.dropna(subset=['PScore'])
+        result = result.dropna(subset=['P-Score'])
         return result.drop(columns=["Month"])
 
     excess = import_csv("deaths_all", dir="inputs/json", date_cols=[])
@@ -2141,10 +2282,14 @@ def save_plots(df: pd.DataFrame) -> None:
     all['Deaths 2021 (ex. Known Covid)'] = all['Deaths 2021'] - all['Deaths Covid']
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
+    legends = [
+        'Deviation from Normal Deaths excl. Covid Deaths',
+        'Deviation from Normal Deaths Average 2015-19',
+    ]
     plot_area(df=all, png_prefix='deaths_pscore',
               title='Monthly Deaths above Normal - Thailand',
-              legends=["Deviation from Normal Deaths (Removing Covid Deaths)", "Deviation from Normal Deaths (Average 2015-19)"],
-              cols_subset=['Deviation from expected Deaths', 'PScore'],
+              legends=legends,
+              cols_subset=['Deviation from expected Deaths', 'P-Score'],
               ma_days=None, 
               kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
@@ -2281,9 +2426,13 @@ see https://djay.github.io/covidthailand/#excess-deaths
         note = (footnote5 if len(years) > 4 else footnote3).format(year_span=year_span)
         suffix = "_5y" if len(years) > 4 else ""
 
+        legends = [
+            'Deaths excl. Covid Deaths',
+            'Confirmed Covid Deaths',
+        ]
         plot_area(df=pan_months,
                   title=f'Deaths from All Causes {year_span} - Thailand',
-                  legends=["Deaths (ex. Covid)", "Confirmed Covid Deaths"],
+                  legends=legends,
                   legend_cols=2, legend_pos="lower center",
                   png_prefix=f'deaths_excess_covid{suffix}',
                   cols_subset=['Deaths (ex. Known Covid)', 'Deaths Covid'],
@@ -2362,7 +2511,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_age = excess.pipe(cut_ages, [15, 65, 75, 85]).groupby(["Age Group"]).apply(calc_pscore)
-    by_age = by_age.reset_index().pivot(values=["PScore"], index="Date", columns="Age Group")
+    by_age = by_age.reset_index().pivot(values=["P-Score"], index="Date", columns="Age Group")
     by_age.columns = [' '.join(c) for c in by_age.columns]
 
     plot_area(df=by_age,
