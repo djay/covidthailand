@@ -28,7 +28,7 @@ theme_dark_back = '#0C1111'
 
 reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
 reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-
+reg_colours = "Set2"
 
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
@@ -1168,20 +1168,20 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
+              footnote='Positivity Rate: The % of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
     pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
     plot_area(df=pos_areas,
-              title='Positive Rate - Median per Region - Thailand',
-              png_prefix='positivity_region', cols_subset=list(pos_areas.columns),
+              title='PCR Positive Rate - Median per Region - Thailand',
+              png_prefix='positivity_region', cols_subset=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
               y_formatter=perc_format,
               table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down"),
-              footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
+              footnote='Positivity Rate: The % of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = dash_prov.pipe(topprov,
@@ -1649,7 +1649,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='vac_region_2', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
               actuals=list(pred_2.columns),
               table = trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
@@ -1661,7 +1661,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='vac_region_1', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
               actuals=list(pred_1.columns),
               table = trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
@@ -1684,7 +1684,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='vac_region_daily_2', cols_subset=reg_cols, legends=reg_leg,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
 #              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
@@ -1694,7 +1694,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='vac_region_daily_1', cols_subset=reg_cols, legends=reg_leg,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
 #              table = trend_table(vac_prov_daily['Vac Given 1'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
@@ -1707,7 +1707,7 @@ def save_plots(df: pd.DataFrame) -> None:
     #           png_prefix='vac_region_daily_stacked', cols_subset=reg_cols, legends=reg_leg,
     #           ma_days=14,
     #           kind='area', stacked=True, percent_fig=True,
-    #           cmap='tab10',
+    #           cmap=reg_colours,
     #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
 
@@ -1809,7 +1809,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_region', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
               table = trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
@@ -1819,7 +1819,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='cases_region_stacked', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
-              cmap='tab10',
+              cmap=reg_colours,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
@@ -2092,7 +2092,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='deaths_region', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
+              cmap=reg_colours,
               table = trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
               footnote='Table of latest Deaths and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
@@ -2102,7 +2102,7 @@ def save_plots(df: pd.DataFrame) -> None:
               png_prefix='deaths_region_stacked', cols_subset=reg_cols, legends=reg_leg,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
-              cmap='tab10',
+              cmap=reg_colours,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = cases.pipe(topprov,
