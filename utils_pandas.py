@@ -330,7 +330,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         return series[cols]
 
 
-def pred_vac(dose1, dose2=None, ahead=90, lag=60, suffix=" Pred"):
+def pred_vac(dose1, dose2=None, ahead=90, lag=40, suffix=" Pred"):
     "Pred dose 1 using linear progression using 14 day rate and dose {lag} using 2month from dose1"
     cur = dose1.last_valid_index()
     rate = (dose1.loc[cur] - dose1.loc[cur - relativedelta(days=14)]) / 14
