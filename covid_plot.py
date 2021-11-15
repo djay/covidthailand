@@ -1172,14 +1172,15 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
-    pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="mean") * 100
+    pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
     plot_area(df=pos_areas,
-              title='Average Positive Rate - by Region - Thailand',
+              title='Positive Rate - Median per Region - Thailand',
               png_prefix='positivity_region', cols_subset=list(pos_areas.columns),
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
+              table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down"),
               footnote='Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
