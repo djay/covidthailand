@@ -136,6 +136,8 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Vaccinations by Region/Province
 
+![Vaccinated given by Region](https://github.com/djay/covidthailand/wiki/vac_region_2_3.png)
+
 ![Vaccine Doses given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_2_3.png)
 
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
