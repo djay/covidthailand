@@ -1175,8 +1175,8 @@ def save_plots(df: pd.DataFrame) -> None:
     pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
     plot_area(df=pos_areas,
               title='PCR Positive Rate - Median per Region - Thailand',
-              png_prefix='positivity_region', cols_subset=reg_leg,
-              ma_days=7,
+              png_prefix='positivity_region', cols_subset=reg_cols, legends=reg_leg,
+              ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap=reg_colours,
               y_formatter=perc_format,
