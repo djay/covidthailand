@@ -2201,12 +2201,13 @@ def save_plots(df: pd.DataFrame) -> None:
         'Cases',
         'Deaths',
     ]
-    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100 # pops.sum() is 72034815.0
     cols += ['Vaccinated']
+    legend = ["Confirmed Cases (% of peak)", "Reported Covid Deaths (% of peak)", "Vaccinated - 2nd dose (% of Thai Pop.)"]
     plot_area(df=peaks,
               title='Covid 19 Trends - Thailand',
-              png_prefix='cases_peak', cols_subset=cols,
+              png_prefix='cases_peak', cols_subset=cols, legends=legend,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, clean_end=True,
               cmap='tab10',
