@@ -1181,7 +1181,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap=reg_colours,
               y_formatter=perc_format,
               table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down"),
-              footnote='Positivity Rate: The % of COVID-19 tests that come back positive.',
+              footnote='Positivity Rate: The % of COVID-19 tests that come back positive.\nDashboard positive rate differs from testing reports',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = dash_prov.pipe(topprov,
@@ -2086,21 +2086,21 @@ def save_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     by_region = cases.reset_index()
-    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")    
     plot_area(df=by_region / pop_region * 100000,
               title='Covid Deaths/100k - by Region - Thailand',
               png_prefix='deaths_region', cols_subset=reg_cols, legends=reg_leg,
-              ma_days=7,
+              ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap=reg_colours,
               table = trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
               footnote='Table of latest Deaths and 7 day trend per 100k',
-              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     plot_area(df=by_region,
               title='Covid Deaths - by Region - Thailand',
               png_prefix='deaths_region_stacked', cols_subset=reg_cols, legends=reg_leg,
-              ma_days=7,
+              ma_days=21,
               kind='area', stacked=True, percent_fig=True,
               cmap=reg_colours,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
