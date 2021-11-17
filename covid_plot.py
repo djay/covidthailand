@@ -378,7 +378,7 @@ def plot_area(df: pd.DataFrame,
                   loc=legend_pos,
                   ncol=legend_cols)
 
-        plt.tight_layout(pad=1.08, w_pad=-11.0, h_pad=1.0)
+        plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
         logger.info("Plot: {}", path)
@@ -415,9 +415,9 @@ def add_regions_to_axis(axis, table_regions):
     trend_colors = []
 
     # get the regions and add the heading
-    regions = list(table_regions.loc[:, 'region'].tolist()) 
-    if regions[0] == 'Bangkok Metropolitan Region': 
-        regions[0] = 'Bangkok'
+    regions = list(table_regions.loc[:, 'region'].tolist())
+    # TODO: should fix region name at the source so appears everywhere
+    regions[0] = {'Bangkok Metropolitan Region': 'Bangkok', 'Northeastern': 'Northeast'}.get(regions[0], regions[0])
     current_region = regions[0]
     append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
@@ -434,7 +434,9 @@ def add_regions_to_axis(axis, table_regions):
     # generate the the cell values and colors
     for row_number, province in enumerate(provinces):
         if provinces[row_number] == 'Phra Nakhon Si Ayutthaya': provinces[row_number] = 'Ayutthaya'
+        if provinces[row_number] == 'Nakhon Si Thammarat': provinces[row_number] = 'Nakhon Si Tham.'
         if regions[row_number] == 'Bangkok Metropolitan Region': regions[row_number] = 'Bangkok'
+        if regions[row_number] == 'Northeastern': regions[row_number] = 'Northeast'
         if not current_region == regions[row_number]:
             append_row(row_labels, row_texts, row_colors, trend_colors)
             current_region = regions[row_number]
@@ -447,16 +449,16 @@ def add_regions_to_axis(axis, table_regions):
 
     # create the table
     axis.set_axis_off() 
-    table = axis.table(cellLoc='right', loc='upper right',
+    table = axis.table(cellLoc='right', loc='upper right', colWidths=[0.6, 0.17],
                        rowLabels=row_labels, cellText=row_texts, cellColours=row_colors)       
     table.auto_set_column_width((0, 1))
     table.auto_set_font_size(False)
     table.set_fontsize(15)
-    table.scale(1, 1.35)
+    table.scale(1.1, 1.42)
 
     # fix the formating and trend colors
     for cell in table.get_celld().values():
-        cell.set_text_props(color=theme_light_text)
+        cell.set_text_props(color=theme_light_text, fontsize=15)
     for row_number, color in enumerate(trend_colors):
         if row_labels[row_number].endswith('Region'):
             table[(row_number, -1)].set_text_props(color=theme_label_text)
@@ -1607,6 +1609,7 @@ def save_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
+
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
 
@@ -1723,7 +1726,7 @@ def save_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, DDC Daily Vaccination Reports',
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
