@@ -52,25 +52,13 @@ Links to all data sources are including in [Downloads](downloads)
 
 - [Trending Down Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_prov_decreasing_3.png)
 
-![Trending Up Contact Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
-
-![Trending Up "Unknown" Cases (by Provinces)](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png)
-
-- see also
-   [Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_3.png)
-   [Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png),
-   [Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png),
-   [Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_3.png),
-   [Trending Up Work Cases](https://github.com/djay/covidthailand/wiki/cases_work_increasing_3.png) and
-   [Trending Up Proactive Cases](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_3.png)
-
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 ## Cases by Where Tested
 
 ![Source of Confirmed Cases](https://github.com/djay/covidthailand/wiki/cases_types_3.png)
 
-- [Source of Confirmed Cases: 2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
+- see also [Provinces with Most Walkin Cases](https://github.com/djay/covidthailand/wiki/cases_walkins_increasing_3.png) | [2020-2021](https://github.com/djay/covidthailand/wiki/cases_types_all.png)
 - Contact tracing normally counts as a "Walk-in"
 - Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings),
@@ -80,6 +68,17 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_3.png)
 
+![Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_3.png) |
+![Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
+
+- Provinces Trending Up Cases from
+   [Unknown](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png) |
+   [Work](https://github.com/djay/covidthailand/wiki/cases_work_increasing_3.png) |
+   [Proactive](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_3.png)
+- Provinces Trending Down Cases from
+   [Unknown](https://github.com/djay/covidthailand/wiki/cases_unknown_decreasing_3.png) |
+   [Work](https://github.com/djay/covidthailand/wiki/cases_work_decreasing_3.png) |
+   [Proactive](https://github.com/djay/covidthailand/wiki/cases_proactive_decreasing_3.png)
 - Grouped from original data which has over 70 risk categories. Clusters have
   been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
 - Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to separate out SS cluster cases
@@ -208,26 +207,19 @@ Assumes easy access to tests for everyone.
 
 Shows Deaths from all causes in comparison to the min, max and mean of Deaths from the 5 years pre-pandemic.
 
-- *Note: there are many possible factors alter deaths up or down other than uncounted Covid Deaths*
-
-![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_5y_all.png)
-
-- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png)
-
-![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
-
-- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png)
+- *Note: there are many possible factors that alter deaths up or down other than uncounted Covid Deaths*
 
 ![Thailand Excess deaths with Covid Deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
 
-- [Compare 2015-2018 only](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png)
+![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
+
+![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_5y_all.png)
 
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
-Notes
 
-- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Links excluding 2019 have additionally been included as
-  it's not yet clear which range of years provides the best baseline to compare against.
+- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Excess deaths Plots excluding 2019 
+[All](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png) | [by region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png) | [by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png) show clearer baseline more similar to other countries.
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
 - Source [Office of Registration Administration, Department of Provincial Administration](downloads#dl-deaths-all)
