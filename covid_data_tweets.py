@@ -77,7 +77,8 @@ def parse_moph_tweet(df, date, text, url):
     recovered, _ = get_next_number(text, "หายป่วย", "หายป่วยกลับบ้าน", until="ราย")
     deaths, _ = get_next_number(text, "เสียชีวิต", "เสียชีวิต", until="ราย")
 
-    if any_in([None], deaths, cases):
+    if any_in([None], cases):
+        # https://twitter.com/thaimoph/status/1460412804880424963 no deaths
         raise Exception(f"Can't parse tweet {date} {text}")
     numbers, _ = get_next_numbers(text, "ราย", until="ตั้งแต่")  # TODO: test len to make sure we didn't miss something
 

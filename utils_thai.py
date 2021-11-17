@@ -517,3 +517,44 @@ def region_crosstab(df, col, suffix="", aggfunc="sum"):
         f"{col} Region: {c}{suffix}" for c in given_by_area_2.columns
     ]
     return given_by_area_2
+
+
+def trend_table(table_provinces, sensitivity=25, style="green_up"):
+    """Given Series indexed by date,province with a single value.
+    Return latest values indexed by province with trend between (-1, +1)
+    """
+    # 14day MA just for cases
+    #ma = table_provinces[['Cases','region']]
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
+
+    # Too sensitive to changes
+    # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
+
+    # Works ok but tends to make places that had a big peak in the past appear flat
+    # trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
+
+    # Use the per population number
+    if "rank" in style:
+        rank = ma.groupby("Date").apply(lambda df: df.rank())
+        peak = rank.max().max()
+        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(7)) / peak * sensitivity)
+    else:
+        ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
+        peak = ma.max().max() / ma_pop['Population'].max().max()
+        trend = ma_pop.groupby("Province", group_keys=False).apply(
+            lambda df: ((df['Value'] - df['Value'].shift(7)) / df['Population'])
+        ) / peak * sensitivity
+
+    trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?
+    ma = ma.to_frame("MA").assign(
+        Trend=trend,
+        Value=table_provinces
+    )
+
+    ma = ma.reset_index("Province")
+    last_day = ma.loc[ma.last_valid_index()]
+    last_day = join_provinces(last_day, "Province", ["region"])
+    last_day = last_day.reset_index().set_index("Province").drop(columns="Date")
+    last_day["Trend_style"] = style
+
+    return last_day
