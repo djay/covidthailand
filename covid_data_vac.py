@@ -319,7 +319,7 @@ def vaccination_tables(df, date, page, file):
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
     ]
-    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer"]
+    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna",]
 
     # def add(df, prov, numbers, cols):
     #     if not df.empty:
@@ -409,7 +409,7 @@ def vaccination_tables(df, date, page, file):
                 pop, given1, perc1, given2, perc2, = numbers
                 row = [given1, perc1, given2, perc2]
                 add(prov, row, givencols)
-            elif table == "july" and len(numbers) in [31, 33, 27, 21, 22, 17]:  # from 2021-08-05
+            elif table == "july" and len(numbers) in [31, 32, 33, 27, 21, 22, 17]:  # from 2021-08-05
                 # Actually cumulative totals
                 if len(numbers) == 21:
                     # Givens is a single total only 2021-08-16
@@ -430,14 +430,22 @@ def vaccination_tables(df, date, page, file):
                     pop, alloc, groups = numbers[0], numbers[1:6], numbers[7:]
                     # TODO: put in manuf given per province?
                     givens = [np.nan] * 6
+                elif len(numbers) == 32:  # 2021-11-17
+                    pop, alloc, groups = numbers[0], numbers[1:7], numbers[8:]
+                    # TODO: put in manuf given per province?
+                    givens = [np.nan] * 6
                 else:
                     assert False
+                sp = md = np.nan
                 if len(alloc) == 4:  # 2021-08-06
                     sv, az, pf, total_alloc = alloc
-                    sp = np.nan
-                else:  # 2021-08-15
+                elif len(alloc) == 5:  # 2021-08-15
                     sv, az, sp, pf, total_alloc = alloc
-                assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp] if not pd.isna(m)]) == total_alloc
+                elif len(alloc) == 6:  # 2021-08-15
+                    sv, az, sp, pf, md, total_alloc = alloc
+                else:
+                    assert False
+                assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
                 if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
@@ -445,7 +453,7 @@ def vaccination_tables(df, date, page, file):
                 if len(groups) < 24:
                     groups = groups + [np.nan] * 3  # students
                 add(prov, givens + groups + [pop], vaccols8x3 + ["Vac Population"])
-                add(prov, [sv, az, sp, pf], alloc4)
+                add(prov, [sv, az, sp, pf, md], alloc4)
             elif table == "percent" and len(numbers) in [13]:  # 2021-08-10
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
@@ -455,7 +463,7 @@ def vaccination_tables(df, date, page, file):
                 pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             else:
-                assert False
+                assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
         assert added is None or added > 7
     rows = pd.DataFrame.from_dict(rows, orient='index')
     rows = rows.set_index(["Date", "Province"]).fillna(np.nan) if not rows.empty else rows
