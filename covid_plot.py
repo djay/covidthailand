@@ -12,6 +12,7 @@ from covid_plot_tests import save_tests_plots
 from covid_plot_vacs import save_vacs_plots
 from covid_plot_cases import save_cases_plots
 from covid_plot_deaths import save_deaths_plots
+from covid_plot_active import save_active_plots
 
 
 def save_plots(df: pd.DataFrame) -> None:
@@ -36,6 +37,9 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # Deaths Plots
     save_deaths_plots(df)
+
+    # active/hosp Plots
+    save_active_plots(df)
 
 
 if __name__ == "__main__":

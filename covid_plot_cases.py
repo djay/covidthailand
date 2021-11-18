@@ -18,6 +18,94 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Cases Plots ==========')
     source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
+
+    # No longer include prisons in proactive number
+    df['Cases Proactive Community'] = df['Cases Proactive']  # .sub(df['Cases Area Prison'], fill_value=0)
+    #df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
+    cols = [
+        'Cases Imported',
+        'Cases Walkin',
+        'Cases Proactive Community',
+        'Cases Area Prison',
+    ]
+    legends=[
+        'Tests in Quarantine/Imported',
+        'Walk-ins/Traced Tests in Hospital',
+        'Mobile Proactive Tests in Community',
+        'Proactive Tests in Prison',
+        # "Rapid Testing (Antigen/ATK)"
+    ]
+    plot_area(df=df,
+              title='Covid Cases by Where Tested - Thailand',
+              legends=legends,
+              png_prefix='cases_types', cols_subset=cols,
+              unknown_name='Cases Unknown', unknown_total='Cases',
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              actuals=["Cases"],
+              cmap="tab10",
+              footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
+                        + 'Contact tracing counts as a Walk-in.\n'
+                        + 'PCR: Polymerase Chain Reaction\n'
+                        + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                        + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
+
+    cols = [
+        'Cases Symptomatic',
+        'Cases Asymptomatic',
+    ]
+    legends = [
+        'Symptomatic Cases',
+        'Asymptomatic Cases',
+    ]
+    plot_area(df=df,
+              title='Covid Cases by Symptoms - Thailand',
+              legends=legends,
+              png_prefix='cases_sym', cols_subset=cols,
+              unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
+              ma_days=None,
+              kind='area', stacked=True, percent_fig=False, clean_end=True,
+              cmap='tab10',
+              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
+
+    # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
+    # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
+    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+
+    # Thailand Covid Cases by Age
+    #cols = ["Age 0-9", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    cols = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Cases Age")
+    plot_area(df=df,
+              title='Covid Cases by Age - Thailand',
+              png_prefix='cases_ages', cols_subset=cols,
+              unknown_name='Cases Unknown Age', unknown_total='Cases', unknown_percent=False,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
+              cmap=get_cycle('summer_r', len(cols) + 1),
+              footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
+
+    # Thailand Covid Cases by Risk
+    cols = [c for c in df.columns if str(c).startswith("Risk: ")]
+    cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia",
+                     "Risk: Community", "Risk: Contact", "Risk: Work",
+                     "Risk: Entertainment", "Risk: Proactive Search",
+                     "Risk: Unknown")
+    plot_area(df=df,
+              title='Covid Cases by Risk - Thailand',
+              png_prefix='cases_causes', cols_subset=cols,
+              unknown_name='Risk: Investigating', unknown_total='Cases',
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True, clean_end=True,
+              actuals=['Cases'],
+              cmap='tab10',
+              footnote='Grouped from original data which has over 70 risk categories.\n'
+                        + 'Clusters have been grouped into either Work (factories),\n'
+                        + 'Entertainment (bars/gambling...) or Community (markets) related.\n'
+                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+              footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
+
     #######################
     # Cases by provinces
     #######################
