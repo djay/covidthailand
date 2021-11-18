@@ -9,16 +9,13 @@ from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_c
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2, trend_table
+import utils_thai
 
-from covid_plot_utils import plot_area
+from covid_plot_utils import plot_area, source
 
-reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_colours = "Set2"
 
 def save_vacs_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Vaccinations Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
     ####################
     # Vaccines
@@ -314,10 +311,10 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=by_region_2.combine_first(pred_2),
               title='Vacccinated - 2nd Dose - by Region - Thailand',
-              png_prefix='vac_region_2', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='vac_region_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               actuals=list(pred_2.columns),
               table = trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
@@ -326,10 +323,10 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               )
     plot_area(df=by_region_1.combine_first(pred_1),
               title='Vacccinatated - 1st Dose - by Region - Thailand',
-              png_prefix='vac_region_1', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='vac_region_1', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               actuals=list(pred_1.columns),
               table = trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
@@ -349,20 +346,20 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
     plot_area(df=by_region_2 / pop_region * 100000,
               title='Vacccinatations/100k - 2nd Dose - by Region - Thailand',
-              png_prefix='vac_region_daily_2', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='vac_region_daily_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
 #              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
     plot_area(df=by_region_1 / pop_region * 100000,
               title='Vacccinatations/100k - 1st Dose - by Region - Thailand',
-              png_prefix='vac_region_daily_1', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='vac_region_daily_1', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
 #              table = trend_table(vac_prov_daily['Vac Given 1'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
@@ -372,10 +369,10 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     # TODO: to make this work have to fix negative values 
     # plot_area(df=by_region,
     #           title='Covid Deaths - by Region - Thailand',
-    #           png_prefix='vac_region_daily_stacked', cols_subset=reg_cols, legends=reg_leg,
+    #           png_prefix='vac_region_daily_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
     #           ma_days=14,
     #           kind='area', stacked=True, percent_fig=True,
-    #           cmap=reg_colours,
+    #           cmap=utils_thai.REG_COLOURS,
     #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
 

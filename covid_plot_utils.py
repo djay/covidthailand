@@ -13,6 +13,9 @@ from utils_pandas import get_cycle, human_format, perc_format, set_time_series_l
 from utils_scraping import remove_suffix, logger
 from utils_thai import thaipop, thaipop2
 
+source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
+
+
 theme = 'Black'
 theme_label_text = '#F1991F'
 theme_light_text = '#E9E8E9'

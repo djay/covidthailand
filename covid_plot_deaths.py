@@ -8,17 +8,13 @@ from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_c
 from utils_scraping import remove_prefix, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
     FIRST_AREAS, area_crosstab, join_provinces, trend_table
+import utils_thai
 
-from covid_plot_utils import plot_area
+from covid_plot_utils import plot_area, source
 
-reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_colours = "Set2"
 
 def save_deaths_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Deaths Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
-
 
     #######################
     # Cases by provinces
@@ -107,20 +103,20 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")    
     plot_area(df=by_region / pop_region * 100000,
               title='Covid Deaths/100k - by Region - Thailand',
-              png_prefix='deaths_region', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='deaths_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               table = trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
               footnote='Table of latest Deaths and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     plot_area(df=by_region,
               title='Covid Deaths - by Region - Thailand',
-              png_prefix='deaths_region_stacked', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='deaths_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='area', stacked=True, percent_fig=True,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = cases.pipe(topprov,

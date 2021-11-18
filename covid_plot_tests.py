@@ -11,16 +11,12 @@ from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_c
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2, trend_table
+import utils_thai
 
-from covid_plot_utils import plot_area
-
-reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_colours = "Set2"
+from covid_plot_utils import plot_area, source
 
 def save_tests_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Tests Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
     # # matplotlib global settings
     # matplotlib.use('AGG')
@@ -476,10 +472,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
     plot_area(df=pos_areas,
               title='PCR Positive Rate - Median per Region - Thailand',
-              png_prefix='positivity_region', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='positivity_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               y_formatter=perc_format,
               table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down"),
               footnote='Positivity Rate: The % of COVID-19 tests that come back positive.\nDashboard positive rate differs from testing reports',

@@ -7,16 +7,13 @@ from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_c
 from utils_scraping import remove_prefix, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
     FIRST_AREAS, area_crosstab, join_provinces, trend_table
+import utils_thai
 
-from covid_plot_utils import plot_area
+from covid_plot_utils import plot_area, source
 
-reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_colours = "Set2"
 
 def save_cases_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Cases Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
 
     # No longer include prisons in proactive number
@@ -128,20 +125,20 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
     plot_area(df=cases_region / pop_region * 100000,
               title='Cases/100k - by Region - Thailand',
-              png_prefix='cases_region', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='cases_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               table = trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     plot_area(df=cases_region,
               title='Cases - by Region - Thailand',
-              png_prefix='cases_region_stacked', cols_subset=reg_cols, legends=reg_leg,
+              png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
-              cmap=reg_colours,
+              cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
@@ -274,7 +271,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     # sev_region = pd.crosstab(sev_region['Date'], sev_region['region'], values=sev_region['Hospitalized Severe'], aggfunc="sum")
     # plot_area(df=sev_region / pop_region,
     #           title='Severe Hospitalations/100k - by Region - Thailand',
-    #           png_prefix='active_severe_region', cols_subset=reg_cols,
+    #           png_prefix='active_severe_region', cols_subset=utils_thai.REG_COLS,
     #           ma_days=7,
     #           kind='line', stacked=False, percent_fig=False,
     #           cmap='tab10',
@@ -285,7 +282,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     # plot_area(df=sev_region,
     #           title='Severe Hospitalations/ - by Region - Thailand',
-    #           png_prefix='active_severe_region_stacked', cols_subset=reg_cols,
+    #           png_prefix='active_severe_region_stacked', cols_subset=utils_thai.REG_COLS,
     #           ma_days=7,
     #           kind='area', stacked=True, percent_fig=True,
     #           cmap='tab10',

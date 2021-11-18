@@ -17,7 +17,6 @@ from covid_plot_active import save_active_plots
 
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
     # matplotlib global settings
     matplotlib.use('AGG')

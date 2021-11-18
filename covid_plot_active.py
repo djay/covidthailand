@@ -11,18 +11,13 @@ from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_c
 from utils_scraping import remove_prefix, remove_suffix, any_in, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
     AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2, trend_table
+import utils_thai
 
-from covid_plot_utils import plot_area
-
-reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
-reg_colours = "Set2"
+from covid_plot_utils import plot_area, source
 
 
 def save_active_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Tests Plots ==========')
-    source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
-
 
     #######################
     # Hospital plots
