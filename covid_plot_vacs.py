@@ -16,8 +16,8 @@ reg_cols = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Nor
 reg_leg = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
 reg_colours = "Set2"
 
-def save_vac_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Vaccination Plots ==========')
+def save_vacs_plots(df: pd.DataFrame) -> None:
+    logger.info('======== Generating Vaccinations Plots ==========')
     source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 
     ####################

@@ -8,10 +8,11 @@ import pandas as pd
 from covid_data import scrape_and_combine
 from utils_scraping import logger
 
-from covid_plot_prov import save_prov_plots
-from covid_plot_vac import save_vac_plots
+from covid_plot_tests import save_tests_plots
+from covid_plot_vacs import save_vacs_plots
 from covid_plot_cases import save_cases_plots
 from covid_plot_deaths import save_deaths_plots
+
 
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
@@ -24,11 +25,11 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    # Province Plots
-    save_prov_plots(df)
+    # Tests Plots
+    save_tests_plots(df)
 
-    # Province Plots
-    save_vac_plots(df)
+    # Vaccinations Plots
+    save_vacs_plots(df)
 
     # Cases Plots
     save_cases_plots(df)
