@@ -154,7 +154,7 @@ def briefing_case_types(date, pages, url):
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
             cases, walkins, proactive, *quarantine = numbers
             domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
-            if domestic:
+            if domestic and date not in [d("2021-11-22")]:
                 assert domestic <= cases
                 assert domestic == walkins + proactive
             quarantine = quarantine[0] if quarantine else 0
