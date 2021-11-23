@@ -468,7 +468,7 @@ def briefing_deaths_summary(text, date, file):
         disease: get_next_number(text, *thdiseases, default=0, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
-    if date not in [d("2021-8-10"), d("2021-09-23")]:
+    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22")]:
         assert sum(comorbidity.values()) >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
 
     risks = {
