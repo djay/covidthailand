@@ -111,11 +111,13 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote='Table of latest Deaths and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    by_region['Deaths'] = df['Deaths']
     plot_area(df=by_region,
               title='Covid Deaths - by Region - Thailand',
               png_prefix='deaths_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='area', stacked=True, percent_fig=True,
+    #          unknown_name="Imported/Prisons", unknown_total="Deaths",  # I don't think deaths get seperated
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 

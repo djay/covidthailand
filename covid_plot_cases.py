@@ -133,11 +133,13 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
+    cases_region['Cases'] = df['Cases']
     plot_area(df=cases_region,
               title='Cases - by Region - Thailand',
               png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
+              unknown_name="Imported/Prisons", unknown_total="Cases",
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
