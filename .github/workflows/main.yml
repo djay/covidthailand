@@ -142,14 +142,25 @@ jobs:
       - name: Make cached docs bundle
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs    
-      - name: Upload Cached docs to existing release
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
+           tar -czvf datasets.tar.gz api inputs/json/*.csv    
+      - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./inputs.tar.gz
           asset_name: inputs.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+      - name: Upload datasets.tar.gz to existing release
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./datasets.tar.gz
+          asset_name: datasets.tar.gz
           tag: 1
           overwrite: true
           body: "Updated docs"
