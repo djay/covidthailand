@@ -7,15 +7,15 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
-    - cron: "19 00 * * *" # 07:00 Dashboard
-    - cron: "20 00 * * *" # 08:00 Dashboard
-    - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
+    - cron: "30 23 * * *" # 07:30 Dashboard
+    - cron: "15 00 * * *" # 08:15 Dashboard
+#    - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
     - cron: "*/45 06-09 * * *" # Quick checks for briefing after 1pm
     # - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
     # - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
     # - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
 #    - cron: "20 10 * * *" # 17:20 new PUI number
-#    - cron: "20 16 * * *" # 23:20 test data/situation report/vaccination report
+#    - cron: "20 14 * * *" # 23:20 test data/situation report/vaccination report
 jobs:
   build:
     runs-on: ubuntu-latest
