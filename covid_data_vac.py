@@ -690,13 +690,18 @@ def vac_manuf_given(df, page, file, page_num, url):
     sp1, sp2, sp3 = [0] * 3
     pf1, pf2, pf3 = [0] * 3
     az3, sv3, sp3 = [0] * 3
+    mod1, mod2, mod3 = [0] * 3
     total3 = 0
-    if "pfizer" in doses.lower():
+    if "moderna" in doses.lower():
+        total1, sv1, az1, sp1, pf1, mod1, total2, sv2, az2, sp2, pf2, mod2, total3, az3, pf3, mod3 = numbers
+    elif "pfizer" in doses.lower():
         total1, sv1, az1, sp1, pf1, total2, sv2, az2, sp2, pf2, total3, *dose3 = numbers
         if len(dose3) == 2:
             az3, pf3 = dose3
-        else:
+        elif len(dose3) == 4:
             sv3, az3, sp3, pf3 = dose3
+        else:
+            assert False, f"wrong number of vac in {file}.{date}\n{page}"
     elif "Sinopharm" in doses:
         total1, sv1, az1, sp1, total2, sv2, az2, sp2 = numbers
     else:
@@ -706,12 +711,12 @@ def vac_manuf_given(df, page, file, page_num, url):
             # vaccinations/1620456296431.pdf # somehow ends up inside brackets
             total1, sv1, az1, sv2, az2 = numbers
             total2 = sv2 + az2
-    assert total1 == sv1 + az1 + sp1 + pf1
+    assert total1 == sv1 + az1 + sp1 + pf1 + mod1
     #assert total2 == sv2 + az2 + sp2 + pf2
     # 1% tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
-    assert total3 == 0 or date in [d("2021-08-15")] or 0.99 <= total3 / (sv3 + az3 + sp3 + pf3) <= 1.01
-    row = [date, sv1, az1, sp1, pf1, sv2, az2, sp2, pf2, sv3, az3, sp3, pf3]
-    cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer"]]
+    assert total3 == 0 or date in [d("2021-08-15")] or 0.99 <= total3 / (sv3 + az3 + sp3 + pf3 + mod3) <= 1.01
+    row = [date, sv1, az1, sp1, pf1, mod1, sv2, az2, sp2, pf2, mod2, sv3, az3, sp3, pf3, mod3]
+    cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]]
     row = pd.DataFrame([row], columns=['Date'] + cols)
     logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
     return df.combine_first(row.set_index("Date"))

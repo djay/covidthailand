@@ -176,6 +176,8 @@ def test_vac_manuf_given(fname, testdf, get_file):
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for i, page in enumerate(parse_file(file), 1):
         df = vac_manuf_given(df, page, file, i, "")
+    df = df.dropna(axis=1)  # don't compare empty cols
+    testdf = testdf.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
