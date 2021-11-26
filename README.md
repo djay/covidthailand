@@ -284,7 +284,14 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
   USE_CACHE_DATA=True python covid_data.py
   ```
 
-- To do just plots
+- To do just plots get latest dataset; change into the root directory of your clone of the repository and then:
+
+  ```sh
+  wget https://github.com/djay/covidthailand/releases/download/1/datsets.tar.gz && \
+  tar xzf datasets.tar.gz && \
+  rm datasets.tar.gz
+  ```
+
 
   ```sh
   USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
