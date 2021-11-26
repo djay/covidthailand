@@ -89,8 +89,8 @@ def get_vaccination_coldchain(request_json, join_prov=False):
             date_col = None
             for field, column in zip(fields, colmuns):
                 fieldname = dict(_vaccinated_on_='Date',
-                                 _manuf_name_='Vaccine',
-                                 datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
+                                _manuf_name_='Vaccine',
+                                datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
                 nullIndex = column['nullIndex']
                 del column['nullIndex']
                 if column:
@@ -187,14 +187,14 @@ def vaccination_daily(daily, date, file, page):
     gtext, *_ = re.split("หรับรำยงำนจ", page)
 
     d1_num, rest1 = get_next_numbers(gtext,
-                                     r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
-                                     r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
-                                     r"ซีนเข็มที่ 1 จ",
-                                     until=r"(?:2 เข็ม)", return_until=True, require_until=True)
+                                    r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
+                                    r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
+                                    r"ซีนเข็มที่ 1 จ",
+                                    until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
-                                     r"ได้รับวัคซีน 2 เข็ม",
-                                     r"ไดรับวัคซีน 2 เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
+                                    r"ได้รับวัคซีน 2 เข็ม",
+                                    r"ไดรับวัคซีน 2 เข็ม",
+                                    until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):

@@ -19,6 +19,12 @@ DISTRICT_RANGE_UNKNOWN = [str(i) for i in range(1, 14)] + ["Prison", "Unknown"]
 POS_COLS = [f"Pos Area {i}" for i in DISTRICT_RANGE_SIMPLE]
 TEST_COLS = [f"Tests Area {i}" for i in DISTRICT_RANGE_SIMPLE]
 
+
+REG_COLS = ["Bangkok Metropolitan Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+REG_LEG = ["Bangkok Region", "Central", "Eastern", "Western", "Northeastern", "Northern", "Southern"]
+REG_COLOURS = "Set2"
+
+
 prov_guesses = pd.DataFrame(columns=["Province", "ProvinceEn", "count"])
 
 
