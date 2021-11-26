@@ -25,6 +25,7 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
+
     # Tests Plots
     save_tests_plots(df)
 
