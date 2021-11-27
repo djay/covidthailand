@@ -248,7 +248,72 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
   .venv/bin/pip install -r requirements.txt
   ```
 
-### Adding tests
+### Running just plots (or latest files)
+
+
+- The easiest way to produce the plots is get the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) release and extract it into the top level
+  of the project. It will put csv files into ```api``` and ```inputs/json``` folders.
+
+  - with linux(or WSL); change into the root directory of your clone of the repository and then:
+    ```sh
+    wget https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz && \
+    tar xzf datasets.tar.gz && \
+    rm datasets.tar.gz
+    ```
+
+  - Once extracted to run on the commandline (linux)
+  ```sh
+  USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
+  ```
+  - OR setup a run profile in your IDE similar to this
+  ```
+          {
+            "name": "covidthailand - plot",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "env": {
+                "USE_CACHE_DATA":"True",
+                "MAX_DAYS":"0",
+            }
+        }
+  ```
+
+
+- If you need to run scraping you can download the [latest input files (1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz) into the root of your checkout and prevent you having to redownload all the files from scratch.
+
+  - on linux; change into the root directory of your clone of the repository and then:
+
+  ```sh
+  wget https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz && \
+  tar xzf inputs.tar.gz && \
+  rm inputs.tar.gz
+  ```
+
+- To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
+
+  ```sh
+  USE_CACHE_DATA=True python covid_data.py
+  ```
+
+
+- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
+
+### Running full code (warning will take a long time)
+
+You can just use the test framework without a full download if you want to work on scraping.
+
+- to download only the files that interest you first, you can comment out or rearrange the lines in covid_data.scrape_and_combine
+- to work on plots you can download the csv files from the website into the api directory and set env MAX_DAYS=0
+
+- To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
+
+  ```sh
+  bin/python covid_plot.py
+  ```
+
+### Adding tests (scraping)
 
 - To run the tests (will only get files needed for tests)
 
@@ -267,51 +332,6 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
   - If the results are correct there is commented out code in the test function to export the data to the test json file.
     - if you are using vscode to run pytests you need to refresh the tests list at this point for some reason
   - Note that not all scrapers have a test framework setup yet. But follow the existing code to add one or ask for help.
-
-### Running just plots (or latest files)
-
-- To get latest files; change into the root directory of your clone of the repository and then:
-
-  ```sh
-  wget https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz && \
-  tar xzf inputs.tar.gz && \
-  rm inputs.tar.gz
-  ```
-
-- To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
-
-  ```sh
-  USE_CACHE_DATA=True python covid_data.py
-  ```
-
-- To do just plots get latest dataset; change into the root directory of your clone of the repository and then:
-
-  ```sh
-  wget https://github.com/djay/covidthailand/releases/download/1/datsets.tar.gz && \
-  tar xzf datasets.tar.gz && \
-  rm datasets.tar.gz
-  ```
-
-
-  ```sh
-  USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
-  ```
-
-- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
-
-### Running full code (warning will take a long time)
-
-You can just use the test framework without a full download if you want to work on scraping.
-
-- to download only the files that interest you first, you can comment out or rearrange the lines in covid_data.scrape_and_combine
-- to work on plots you can download the csv files from the website into the api directory and set env MAX_DAYS=0
-
-- To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
-
-  ```sh
-  bin/python covid_plot.py
-  ```
-
 ### Building Site
 
 ```
