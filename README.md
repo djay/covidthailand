@@ -241,15 +241,16 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 
 ### Install
 
+- If you are using anaconda you will need to also run this
+  ```sh
+  conda install -c conda-forge python-crfsuite
+  ```
+
 - To install (requires python >=3.9)
 
   ```sh
   python -m venv .venv
   .venv/bin/pip install -r requirements.txt
-  ```
-- If you are using anaconda you will need to also run this to ensure the pip install works
-  ```sh
-  conda install -c conda-forge python-crfsuite
   ```
 
 ### Running just plots (or latest files)
