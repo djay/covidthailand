@@ -19,8 +19,14 @@ from utils_thai import DISTRICT_RANGE, join_provinces, to_thaiyear, today
 #################################
 
 
-def get_cases():
+def get_cases_old():
     logger.info("========Covid19 Timeline==========")
+    # https://covid19.th-stat.com/json/covid19v2/getTimeline.json
+    # https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all
+    # https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all
+    # {"Date":"01\/01\/2020","NewConfirmed":0,"NewRecovered":0,"NewHospitalized":0,"NewDeaths":0,"Confirmed":0,"Recovered":0,"Hospitalized":0,"Deaths":0}
+    # {"txn_date":"2021-03-31","new_case":42,"total_case":28863,"new_case_excludeabroad":24,"total_case_excludeabroad":25779,"new_death":0,"total_death":94,"new_recovered":47,"total_recovered":27645}
+    # "txn_date":"2021-04-01","new_case":26,"total_case":28889,"new_case_excludeabroad":21,"total_case_excludeabroad":25800,"new_death":0,"total_death":94,"new_recovered":122,"total_recovered":27767,"update_date":"2021-09-01 07:40:49"}
     try:
         file, text, url = next(
             web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="inputs/json", check=True))
@@ -32,6 +38,31 @@ def get_cases():
     data = data.set_index("Date")
     cases = data[["NewConfirmed", "NewDeaths", "NewRecovered", "Hospitalized"]]
     cases = cases.rename(columns=dict(NewConfirmed="Cases", NewDeaths="Deaths", NewRecovered="Recovered"))
+    cases["Source Cases"] = url
+    return cases
+
+
+def get_cases():
+    logger.info("========Covid19 Timeline==========")
+    # https://covid19.th-stat.com/json/covid19v2/getTimeline.json
+    # https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all
+    # https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all
+    # {"Date":"01\/01\/2020","NewConfirmed":0,"NewRecovered":0,"NewHospitalized":0,"NewDeaths":0,"Confirmed":0,"Recovered":0,"Hospitalized":0,"Deaths":0}
+    # {"txn_date":"2021-03-31","new_case":42,"total_case":28863,"new_case_excludeabroad":24,"total_case_excludeabroad":25779,"new_death":0,"total_death":94,"new_recovered":47,"total_recovered":27645}
+    # "txn_date":"2021-04-01","new_case":26,"total_case":28889,"new_case_excludeabroad":21,"total_case_excludeabroad":25800,"new_death":0,"total_death":94,"new_recovered":122,"total_recovered":27767,"update_date":"2021-09-01 07:40:49"}
+    url1 = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all"
+    url2 = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all"
+    try:
+        _, json1, url = next(web_files(url1, dir="inputs/json", check=False))
+        _, json2, url = next(web_files(url2, dir="inputs/json", check=True))
+    except ConnectionError:
+        # I think we have all this data covered by other sources. It's a little unreliable.
+        return pd.DataFrame()
+    data = pd.read_json(json1).append(pd.read_json(json2))
+    data['Date'] = pd.to_datetime(data['txn_date'])
+    data = data.set_index("Date")
+    data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
+    cases = data[["Cases", "Deaths", "Recovered"]]
     cases["Source Cases"] = url
     return cases
 
