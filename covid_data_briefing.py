@@ -437,7 +437,8 @@ def briefing_deaths_summary(text, date, file):
 
     # deaths over 60
     if date > d("2021-08-02"):
-        deaths_60 = get_next_number(text, r"60\s*(?:ปี|ปี|ป9|ป)ขึ้นไป", return_rest=False)
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
+        assert deaths_60 is not None
     else:
         deaths_60 = np.nan
     
