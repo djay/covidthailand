@@ -19,6 +19,8 @@ from requests.adapters import HTTPAdapter, Retry
 from tika import parser, config
 from webdav3.client import Client
 import pythainlp
+import camelot
+import pandas as pd
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -636,3 +638,15 @@ def replace_matcher(matches, replacements=None):
                 return r
         return item
     return replace_match
+
+
+def camelot_cache(file, page_num, process_background=False, table=0):
+    fname = f"{os.path.basename(file)}.{page_num}.{table}.{process_background}.json"
+    os.makedirs("inputs/camelot", exist_ok=True)
+    cache_file = os.path.join("inputs/camelot", fname)
+    if os.path.exists(cache_file):
+        return pd.read_json(cache_file)
+    else:
+        tables = camelot.read_pdf(file, pages=str(page_num), process_background=process_background)
+        tables[table].df.to_json(cache_file)
+        return tables[table].df
