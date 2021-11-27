@@ -435,6 +435,12 @@ def briefing_deaths_summary(text, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
+    # deaths over 60
+    if date > d("2021-08-02"):
+        deaths_60 = get_next_number(text, r"60\s*(?:ปี|ปี|ป9|ป)ขึ้นไป", return_rest=False)
+    else:
+        deaths_60 = np.nan
+    
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date != d("2021-08-09"):
         male, female, *_ = genders
@@ -507,10 +513,10 @@ def briefing_deaths_summary(text, date, file):
     cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
     row = pd.DataFrame(
         [[date, deaths_title, med_age, min_age, max_age, male, female] + list(risk.values())
-         + list(comorbidity.values())],
+         + list(comorbidity.values()) + [deaths_60]],
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
-        ] + risk_cols + cm_cols).set_index("Date")
+        ] + risk_cols + cm_cols + ["Deaths 60 Plus"]).set_index("Date")
     logger.info("{} Deaths: {}", date.date(), row.to_string(header=False, index=False), file)
     return row
 
