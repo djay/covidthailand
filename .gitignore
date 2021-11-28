@@ -1,5 +1,4 @@
 .env
-*.png
 *.pdf
 *.xlsx
 *.pptx
@@ -17,7 +16,7 @@ json/
 tweets/
 .env
 vaccinations/
-outputs/*.html
+outputs/
 _site/
 vendor/
 .sass-cache/
