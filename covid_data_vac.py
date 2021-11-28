@@ -800,3 +800,28 @@ def vac_slides():
             df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
     return df
+
+def mobility():
+    data = pd.DataFrame(columns = ['date', 'mobility_mean'])
+    
+    # listing out urls not very elegant, but this only need yearly update
+    urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
+    for url in urls:
+        file, _, _ = next(iter(web_files(url, dir="inputs/IHME")))
+        col_list = ["date", "location_name", "mobility_mean", "mobility_obs"]
+        data_in_file = pd.read_csv(file, usecols=col_list)
+        # mobility_obs = 1 means data is from observation, and not projected
+        data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand") & (data_in_file['mobility_obs'] == 1)]
+        data = data.append(data_in_file[['date', 'mobility_mean']])
+    data.columns = ['Date', 'Mobility Index']
+    data["Date"] = pd.to_datetime(data["Date"]).dt.date
+    data = data.sort_values(by="Date")
+    data = data.set_index("Date")
+
+    # Calculate Reduced Mobility Index
+    mobility_min = data['Mobility Index'].min()
+    mobility_max = data['Mobility Index'].max()
+    data['Reduced Mobility Index (% of peak)'] = (1 + (mobility_min - data['Mobility Index'])/(mobility_max - mobility_min)) * 100
+
+    return(data)

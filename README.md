@@ -94,6 +94,12 @@ Links to all data sources are including in [Downloads](downloads)
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Cases and Social Distancing
+
+![Number of confirmed cases and reduced movement of people](https://github.com/djay/covidthailand/wiki/mobility_3.png)
+- see [Cases and people movement 2020-2021]((https://github.com/djay/covidthailand/wiki/mobility_all.png))
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+
 # Deaths <a name="deaths">
 
 ## COVID-19 Deaths
@@ -391,6 +397,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
   - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
 - [MOPH ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322) - PUI + worldwide covid stats
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
+- [Institute for Health Metrics and Evaluation](http://www.healthdata.org/covid/data-downloads) - COVID estimates including mobility estimates from mobile phone data
 
 ## Change log
 

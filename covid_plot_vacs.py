@@ -287,6 +287,24 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
+    # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
+    cols = ['Cases']
+    peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
+
+    mobility = import_csv("mobility", ['Date'])
+    
+    peaks = peaks.combine_first(mobility)
+    cols += ['Reduced Mobility Index (% of peak)']
+    legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index (% of peak)"]
+    plot_area(df=peaks,
+              title='Social Distancing - Reduced Mobility and Number of New Cases',
+              png_prefix='mobility', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              periods_to_plot=["all", "3"],
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
 
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
