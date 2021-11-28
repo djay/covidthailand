@@ -102,6 +102,11 @@ Links to all data sources are including in [Downloads](downloads)
 - The chart then shows how reduced mobility and number of new cases progresses in time.
 - Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
 
+  ## Cases in Non-Thai
+
+![Cases by non-Thai nationality](https://github.com/djay/covidthailand/wiki/cases_nation_3.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 # Deaths <a name="deaths">
 
 ## COVID-19 Deaths
