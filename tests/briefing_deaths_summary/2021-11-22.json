@@ -43,22 +43,26 @@
       },
       {
         "name":"Deaths Risk Location",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Crowds",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Work",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk HCW",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Unknown",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Unvaccinated",
         "type":"integer"
       },
       {
@@ -127,11 +131,12 @@
       "Deaths Risk Family":3,
       "Deaths Risk Others":23,
       "Deaths Risk Residence":22,
-      "Deaths Risk Location":0,
-      "Deaths Risk Crowds":0,
-      "Deaths Risk Work":0,
-      "Deaths Risk HCW":0,
-      "Deaths Risk Unknown":0,
+      "Deaths Risk Location":null,
+      "Deaths Risk Crowds":null,
+      "Deaths Risk Work":null,
+      "Deaths Risk HCW":null,
+      "Deaths Risk Unknown":null,
+      "Deaths Risk Unvaccinated":23,
       "Deaths Comorbidity Hypertension":18,
       "Deaths Comorbidity Diabetes":12,
       "Deaths Comorbidity Hyperlipidemia":6,

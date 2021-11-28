@@ -492,9 +492,10 @@ def briefing_deaths_summary(text, date, file):
         "Work": ["อาชีพเสี่ยง", "อาชีพเ"],  # Risky occupations
         "HCW": ["HCW", "บุคลากรทางการแพทย์"],
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
+        "Unvaccinated": ["ไม่เคยได้รับวัคซีน"],
     }
     risk = {
-        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False, dash_as_zero=True)
+        en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)
         for en_risk, th_risks in risks.items()
     }
     # TODO: Get all bullets and fuzzy match them to categories
