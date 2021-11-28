@@ -10,7 +10,7 @@ import shutil
 import pandas as pd
 from requests.exceptions import ConnectionError
 
-from utils_pandas import export, fuzzy_join, import_csv, cut_ages
+from utils_pandas import export, fuzzy_join, import_csv, cut_ages, add_data
 from utils_scraping import web_files, s, logger
 from utils_thai import DISTRICT_RANGE, join_provinces, to_thaiyear, today
 
@@ -401,3 +401,25 @@ def get_cases_by_area_api():
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
     return case_areas
+
+# Get IHME dataset
+
+def ihme_dataset():
+    data = pd.DataFrame()
+    
+    # listing out urls not very elegant, but this only need yearly update
+    urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
+    for url in urls:
+        file, _, _ = next(iter(web_files(url, dir="inputs/IHME")))
+        data_in_file = pd.read_csv(file)
+        data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
+        data = add_data(data, data_in_file)
+    # already filtered for just Thailand data above
+    data.drop(['location_id', 'location_name'], axis = 1, inplace=True)
+    data.rename(columns = {'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
+    data["Date"] = pd.to_datetime(data["Date"]).dt.date
+    data = data.sort_values(by="Date")
+    data = data.set_index("Date")
+
+    return(data)
