@@ -23,12 +23,17 @@ from utils_thai import find_date_range, POS_COLS, TEST_COLS
 def get_test_files(ext="pdf", dir="inputs/testing_moph"):
     key = os.environ.get('DRIVE_API_KEY', None)
     if key is None:
-        logger.warning("env DRIVE_API_KEY missing: Using local cahced testing data only")
+        logger.warning("env DRIVE_API_KEY missing: Using local cached testing data only")
         yield from local_files(ext, dir)
         return
     folder_id = "1yUVwstf5CmdvBVtKBs0uReV0BTbjQYlT"
     url = f"https://www.googleapis.com/drive/v3/files?q=%27{folder_id}%27+in+parents&key={key}"
     res = requests.get(url).json()
+    if "files" not in res:
+        logger.warning(f"Error accessing drive files. Using local cache: {res}")
+        yield from local_files(ext, dir)
+        return
+
     for data in res['files']:
         id = data['id']
         name = data['name']
