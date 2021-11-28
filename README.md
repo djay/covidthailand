@@ -94,6 +94,11 @@ Links to all data sources are including in [Downloads](downloads)
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Cases by Non-Thai Nationality
+
+![Cases by non-Thai nationality](https://github.com/djay/covidthailand/wiki/cases_nation.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 # Deaths <a name="deaths">
 
 ## COVID-19 Deaths

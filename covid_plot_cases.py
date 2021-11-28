@@ -1,9 +1,11 @@
 import matplotlib.cm
 import pandas as pd
+import numpy as np
 
 from covid_data import get_ifr, scrape_and_combine
+from covid_data_api import get_case_details_csv
 from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, topprov
+    import_csv, increasing, normalise_to_total, rearrange, topprov, fuzzy_join
 from utils_scraping import remove_prefix, logger
 from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
     FIRST_AREAS, area_crosstab, join_provinces, trend_table
@@ -102,6 +104,50 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                         + 'Entertainment (bars/gambling...) or Community (markets) related.\n'
                         + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
+
+    #Thailand Covid Cases by Nationality
+    mapping = pd.DataFrame([['Thai', 'Thailand'],
+                            ['Thai', 'India-Thailand'],
+                            ['Thai', 'ไทยใหญ่'],
+                            ['Lao', 'laotian / Lao'],
+                            ['Lao', 'Laotian/Lao'],
+                            ['Lao', 'Laotian / Lao'],
+                            ['Lao', 'laos'],
+                            ['Lao', 'Laotian'],
+                            ['Lao', 'Laos'],
+                            ['Lao', 'ลาว'],
+                            ['Indian', 'India'],
+                            ['Indian', 'indian'],
+                            ['Cambodian', 'cambodian'],
+                            ['Cambodian', 'Cambodia'],
+                            ['South Korean', 'Korea, South'],
+                            ['South Korean', 'Korean'],
+                            ['Burmese', 'พม่า'],
+                            ['Burmese', 'burmese'],
+                            ['Burmese', 'Burma'],
+                            ['Chinese', 'จีน'],
+                            ['Chinese', 'China'],
+                            ],
+                           columns=['Nat Main', 'Nat Alt']).set_index('Nat Alt')
+    cases = get_case_details_csv().reset_index()
+    cases = fuzzy_join(cases, mapping, 'nationality')
+    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
+    nat_index = cases['nationality'].value_counts().index
+    top5_list = nat_index[~nat_index.isin(['Thai', 'Others'])][:5]
+    others_list = nat_index[~nat_index.isin(np.concatenate((top5_list, ['Thai'])))]
+    counts_by_nation = pd.crosstab(cases['Date'], cases['nationality'])
+    by_nationality_top5 = counts_by_nation[top5_list]
+    by_nationality_top5['Others'] = counts_by_nation[others_list].sum(axis=1)
+    cols = [c for c in by_nationality_top5.columns]
+    plot_area(df=by_nationality_top5,
+              title='Non-Thai Covid Cases - by Nationality - Thailand',
+              png_prefix='cases_nation', cols_subset=cols,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote='\n',
+              footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
+
 
     #######################
     # Cases by provinces
