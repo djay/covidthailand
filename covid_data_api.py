@@ -10,7 +10,7 @@ import shutil
 import pandas as pd
 from requests.exceptions import ConnectionError
 
-from utils_pandas import export, fuzzy_join, import_csv, cut_ages
+from utils_pandas import export, fuzzy_join, import_csv, cut_ages, add_data
 from utils_scraping import web_files, s, logger
 from utils_thai import DISTRICT_RANGE, join_provinces, to_thaiyear, today
 
@@ -100,9 +100,43 @@ def get_case_details_csv():
     cases = cases.reset_index("No.")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
-    cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
+    cases = cases.rename(columns=dict(announce_date="Date"))
     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
     #assert cases.index.max() <
+    # Fix typos in Nationality columns
+    # This won't include every possible misspellings and need some further improvement
+    mapping = pd.DataFrame([['Thai', 'Thailand'],
+                            ['Thai', 'Thai'],
+                            ['Thai', 'India-Thailand'],
+                            ['Thai', 'ไทยใหญ่'],
+                            ['Lao', 'laotian / Lao'],
+                            ['Lao', 'Lao'],
+                            ['Lao', 'Laotian/Lao'],
+                            ['Lao', 'Laotian / Lao'],
+                            ['Lao', 'laos'],
+                            ['Lao', 'Laotian'],
+                            ['Lao', 'Laos'],
+                            ['Lao', 'ลาว'],
+                            ['Indian', 'Indian'],
+                            ['Indian', 'India'],
+                            ['Indian', 'indian'],
+                            ['Cambodian', 'Cambodian'],
+                            ['Cambodian', 'cambodian'],
+                            ['Cambodian', 'Cambodia'],
+                            ['South Korean', 'South Korean'],
+                            ['South Korean', 'Korea, South'],
+                            ['South Korean', 'Korean'],
+                            ['Burmese', 'Burmese'],
+                            ['Burmese', 'พม่า'],
+                            ['Burmese', 'burmese'],
+                            ['Burmese', 'Burma'],
+                            ['Chinese', 'Chinese'],
+                            ['Chinese', 'จีน'],
+                            ['Chinese', 'China'],
+                            ],
+                           columns=['Nat Main', 'Nat Alt']).set_index('Nat Alt')
+    cases = fuzzy_join(cases, mapping, 'nationality')
+    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
     return cases
 
 
@@ -142,7 +176,7 @@ def get_case_details_api():
 def get_cases_by_demographics_api():
     logger.info("========Covid19Daily Demographics==========")
 
-    cases = get_case_details_csv().reset_index()
+    cases = get_case_details_csv()
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
     case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
@@ -401,3 +435,25 @@ def get_cases_by_area_api():
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
     return case_areas
+
+# Get IHME dataset
+
+def ihme_dataset():
+    data = pd.DataFrame()
+    
+    # listing out urls not very elegant, but this only need yearly update
+    urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
+    for url in urls:
+        file, _, _ = next(iter(web_files(url, dir="inputs/IHME")))
+        data_in_file = pd.read_csv(file)
+        data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
+        data = add_data(data, data_in_file)
+    # already filtered for just Thailand data above
+    data.drop(['location_id', 'location_name'], axis = 1, inplace=True)
+    data.rename(columns = {'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
+    data["Date"] = pd.to_datetime(data["Date"]).dt.date
+    data = data.sort_values(by="Date")
+    data = data.set_index("Date")
+
+    return(data)
