@@ -96,8 +96,10 @@ Links to all data sources are including in [Downloads](downloads)
 
 ## Cases and Social Distancing
 
-![Number of confirmed cases and reduced movement of people](https://github.com/djay/covidthailand/wiki/mobility_3.png)
-- see [Cases and people movement 2020-2021]((https://github.com/djay/covidthailand/wiki/mobility_all.png))
+![Number of confirmed cases and reduced movement of people](https://github.com/djay/covidthailand/wiki/mobility_all.png)
+- see also [Cases and people movement from April 2021]((https://github.com/djay/covidthailand/wiki/mobility_3.png))
+- Mobility (based on mobile phone data) estimates are from IHME dataset. The data is transformed and scaled to show relative social distancing (reduced mobility) compared to peak.
+- The chart then shows how reduced mobility and number of new cases progresses in time.
 - Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
 
 # Deaths <a name="deaths">
