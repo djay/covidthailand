@@ -4,10 +4,13 @@ from typing import Sequence, Union, List, Callable
 import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 from matplotlib.ticker import FuncFormatter
+from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
+from matplotlib.colors import ListedColormap
+
 import numpy as np
 import pandas as pd
-import numpy as np
 
 from utils_pandas import get_cycle, human_format, perc_format, set_time_series_labels_2
 from utils_scraping import remove_suffix, logger
@@ -23,6 +26,44 @@ theme_dark_text = '#424242'
 theme_light_back = '#202020'
 theme_dark_back = '#0C1111'
 
+cmap_regions = ListedColormap([
+    "#26e3fc", # Bangkok Region
+    "#ffdf00", # Central Region
+    "#77b251", # Eastern Region
+    "#fd9155", # Western Region
+    "#c89dfc", # Northeastern Region
+    "#267ce4", # Northern Region
+    "#fd583f", # Southern Region
+    "brown", # Prisons
+    "deeppink", # Imported
+    "silver", # Thailand
+    ],
+    name='Region Colors',
+    N=10,
+)
+
+region_colors = {
+    'Bangkok Metropolitan Region': cmap_regions(0),
+    '  Bangkok Region': cmap_regions(0),
+    'Central': cmap_regions(1),
+    '  Central Region': cmap_regions(1),
+    'Eastern': cmap_regions(2),
+    '  Eastern Region': cmap_regions(2),
+    'Western': cmap_regions(3),
+    '  Western Region': cmap_regions(3),
+    'Northeastern': cmap_regions(4),
+    '  Northeast Region': cmap_regions(4),
+    'Northern': cmap_regions(5),
+    '  Northern Region': cmap_regions(5),
+    'Southern': cmap_regions(6),
+    '  Southern Region': cmap_regions(6),
+    'Imported/Prisons': cmap_regions(7),
+    '  Prisons': cmap_regions(7),
+    '  Imported': cmap_regions(8),
+    'Thailand': cmap_regions(9),
+}
+
+
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
@@ -35,6 +76,7 @@ def plot_area(df: pd.DataFrame,
               kind: str = 'line',
               stacked=False,
               percent_fig: bool = False,
+              mini_map: bool = False,
               table: pd.DataFrame = [],
               limit_to_zero: bool = True,
               unknown_name: str = 'Unknown',
@@ -61,6 +103,7 @@ def plot_area(df: pd.DataFrame,
     :param kind: the type of plot (line chart or area chart)
     :param stacked: whether the line chart should use stacked lines
     :param percent_fig: whether the percentage chart should be included
+    :param mini_map: whether the mini map of Thailand should be shown and the region colors fixed
     :param limit_to_zero: limit the bottom of the y-axis to 0
     :param unknown_name: the column name containing data related to unknowns
     :param unknown_total: the column name (to be created) with unknown totals
@@ -159,6 +202,9 @@ def plot_area(df: pd.DataFrame,
         if unknown_total and not unknown_percent:
             df[f'{unknown_name}{ma_suffix} (%)'] = 0
         perccols = [f'{c} (%)' for c in perccols]
+
+    if mini_map:
+        cmap = cmap_regions
 
     subtitle = ''
     if ma_days:
@@ -371,6 +417,9 @@ def plot_area(df: pd.DataFrame,
                   loc=legend_pos,
                   ncol=legend_cols)
 
+        if mini_map:
+            add_minimap(a0)
+
         plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
@@ -379,6 +428,11 @@ def plot_area(df: pd.DataFrame,
 
     return None
 
+def add_minimap(axis):
+    image = mpimg.imread('regions.png')
+    imagebox = OffsetImage(image, zoom=0.3, interpolation='bilinear')
+    annotationbox = AnnotationBbox(imagebox, (0.23, 0.75), xycoords='axes fraction', frameon=False, zorder=66)
+    axis.add_artist(annotationbox)       
 
 def trend_indicator(trend, style):
     """Get the trend indicator and corresponding color."""
@@ -453,8 +507,8 @@ def add_regions_to_axis(axis, table_regions):
     for cell in table.get_celld().values():
         cell.set_text_props(color=theme_light_text, fontsize=15)
     for row_number, color in enumerate(trend_colors):
-        if row_labels[row_number].endswith('Region'):
-            table[(row_number, -1)].set_text_props(color=theme_label_text)
+        if row_labels[row_number] in region_colors:
+            table[(row_number, -1)].set_text_props(color=region_colors[row_labels[row_number]])
         table[(row_number, 1)].set_text_props(color='blue')
         table[(row_number, 1)].set_color(color)
         table[(row_number, -1)].set_color(theme_light_back)

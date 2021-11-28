@@ -127,7 +127,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               title='Cases/100k - by Region - Thailand',
               png_prefix='cases_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               table = trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote='Table of latest Cases and 7 day trend per 100k',
@@ -138,7 +138,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               title='Cases - by Region - Thailand',
               png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
+              kind='area', stacked=True, percent_fig=True, mini_map=True,
               unknown_name="Imported/Prisons", unknown_total="Cases",
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
