@@ -51,12 +51,14 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
         'Deaths',
         'Deaths Risk Family',
         'Deaths Comorbidity None',
+        'Deaths Risk Under 60 Comorbidity None',
         'Deaths Risk Unvaccinated',
     ]
     legends = [
         'Deaths',
         'Deaths Infected from Family',
         'Deaths without Underlying Diseases',
+        'Deaths Under 60yo without Underlying Diseases',
         'Deaths with no history of vaccination',
     ]
     plot_area(df=df,

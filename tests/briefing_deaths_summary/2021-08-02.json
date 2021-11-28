@@ -102,6 +102,10 @@
         "type":"integer"
       },
       {
+        "name":"Deaths Comorbidity Cancer",
+        "type":"number"
+      },
+      {
         "name":"Deaths Comorbidity Pregnant",
         "type":"integer"
       },
@@ -110,7 +114,15 @@
         "type":"integer"
       },
       {
-        "name":"Deaths 60 Plus",
+        "name":"Deaths Risk Under 60 Comorbidity ",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Under 60 Comorbidity None",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Over 60",
         "type":"number"
       }
     ],
@@ -146,9 +158,12 @@
       "Deaths Comorbidity Kidney disease":23,
       "Deaths Comorbidity Heart disease":9,
       "Deaths Comorbidity Bedridden":6,
+      "Deaths Comorbidity Cancer":null,
       "Deaths Comorbidity Pregnant":1,
       "Deaths Comorbidity None":25,
-      "Deaths 60 Plus":null
+      "Deaths Risk Under 60 Comorbidity ":null,
+      "Deaths Risk Under 60 Comorbidity None":null,
+      "Deaths Risk Over 60":null
     }
   ]
 }
