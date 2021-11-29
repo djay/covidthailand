@@ -1,18 +1,27 @@
+import codecs
 import datetime
 import functools
-from dateutil.relativedelta import relativedelta
 import json
 import os
 import re
-import codecs
 import shutil
 
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
-from utils_pandas import export, fuzzy_join, import_csv, cut_ages, add_data
-from utils_scraping import web_files, s, logger
-from utils_thai import DISTRICT_RANGE, join_provinces, to_thaiyear, today
+from utils_pandas import add_data
+from utils_pandas import cut_ages
+from utils_pandas import export
+from utils_pandas import fuzzy_join
+from utils_pandas import import_csv
+from utils_scraping import logger
+from utils_scraping import s
+from utils_scraping import web_files
+from utils_thai import DISTRICT_RANGE
+from utils_thai import join_provinces
+from utils_thai import to_thaiyear
+from utils_thai import today
 
 #################################
 # Cases Apis

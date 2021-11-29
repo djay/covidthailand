@@ -1,17 +1,23 @@
 import os
-from typing import Sequence, Union, List, Callable
+from typing import Callable
+from typing import List
+from typing import Sequence
+from typing import Union
 
-import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 import numpy as np
 import pandas as pd
-import numpy as np
+from matplotlib.ticker import FuncFormatter
 
-from utils_pandas import get_cycle, human_format, perc_format, set_time_series_labels_2
-from utils_scraping import remove_suffix, logger
-from utils_thai import thaipop, thaipop2
+from utils_pandas import get_cycle
+from utils_pandas import human_format
+from utils_pandas import perc_format
+from utils_pandas import set_time_series_labels_2
+from utils_scraping import logger
+from utils_scraping import remove_suffix
+from utils_thai import thaipop
+from utils_thai import thaipop2
 
 source = 'Source: https://djay.github.io/covidthailand - (CC BY)\n'
 

@@ -1,19 +1,21 @@
 import datetime
 import difflib
+import functools
 import os
-from typing import List, Union
+from typing import List
+from typing import Union
 
 import matplotlib.cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from matplotlib.pyplot import cycler
 import matplotlib.dates as mdates
-from cycler import Cycler
-import pandas as pd
-import numpy as np
-from matplotlib import colors as mcolors
 import mpld3
+import numpy as np
+import pandas as pd
+from cycler import Cycler
 from dateutil.relativedelta import relativedelta
-import functools
+from matplotlib import colors as mcolors
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import ListedColormap
+from matplotlib.pyplot import cycler
 
 from utils_scraping import logger
 

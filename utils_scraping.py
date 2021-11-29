@@ -1,26 +1,30 @@
 import datetime
-import dateutil
-from io import StringIO
-from itertools import compress, cycle
 import os
-from pathlib import Path
 import pickle
 import re
 import sys
 import urllib.parse
+from io import StringIO
+from itertools import compress
+from itertools import cycle
+from pathlib import Path
 
+import camelot
+import dateutil
+import pandas as pd
+import pythainlp
+import requests
 from bs4 import BeautifulSoup
 from loguru import logger
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
-import requests
-from requests.exceptions import Timeout, ConnectionError
-from requests.adapters import HTTPAdapter, Retry
-from tika import parser, config
+from requests.adapters import HTTPAdapter
+from requests.adapters import Retry
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
+from tika import config
+from tika import parser
 from webdav3.client import Client
-import pythainlp
-import camelot
-import pandas as pd
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))

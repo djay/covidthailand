@@ -2,15 +2,31 @@ import matplotlib.cm
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, topprov
-from utils_scraping import remove_prefix, logger
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
-    FIRST_AREAS, area_crosstab, join_provinces, trend_table
 import utils_thai
-
-from covid_plot_utils import plot_area, source
+from covid_data import get_ifr
+from covid_data import scrape_and_combine
+from covid_plot_utils import plot_area
+from covid_plot_utils import source
+from utils_pandas import cum2daily
+from utils_pandas import cut_ages
+from utils_pandas import cut_ages_labels
+from utils_pandas import decreasing
+from utils_pandas import get_cycle
+from utils_pandas import import_csv
+from utils_pandas import increasing
+from utils_pandas import normalise_to_total
+from utils_pandas import perc_format
+from utils_pandas import rearrange
+from utils_pandas import topprov
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_thai import area_crosstab
+from utils_thai import AREA_LEGEND
+from utils_thai import DISTRICT_RANGE
+from utils_thai import DISTRICT_RANGE_SIMPLE
+from utils_thai import FIRST_AREAS
+from utils_thai import join_provinces
+from utils_thai import trend_table
 
 
 def save_deaths_plots(df: pd.DataFrame) -> None:

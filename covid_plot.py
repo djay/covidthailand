@@ -1,18 +1,16 @@
 import pathlib
 
-import matplotlib
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from covid_data import scrape_and_combine
-from utils_scraping import logger
-
-from covid_plot_tests import save_tests_plots
-from covid_plot_vacs import save_vacs_plots
+from covid_plot_active import save_active_plots
 from covid_plot_cases import save_cases_plots
 from covid_plot_deaths import save_deaths_plots
-from covid_plot_active import save_active_plots
+from covid_plot_tests import save_tests_plots
+from covid_plot_vacs import save_vacs_plots
+from utils_scraping import logger
 
 
 def save_plots(df: pd.DataFrame) -> None:

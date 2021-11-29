@@ -1,17 +1,35 @@
 import datetime
-from dateutil.parser import parse as d
-from itertools import islice
 import re
+from itertools import islice
 
-from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
+from bs4 import BeautifulSoup
+from dateutil.parser import parse as d
 
-from utils_pandas import daterange, export
-from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, camelot_cache, get_next_number, get_next_numbers, \
-    pairwise, parse_file, parse_numbers, seperate, split, \
-    strip, web_files, NUM_OR_DASH, logger
-from utils_thai import file2date, find_thai_date, get_province, join_provinces, parse_gender, today
+from utils_pandas import daterange
+from utils_pandas import export
+from utils_scraping import any_in
+from utils_scraping import camelot_cache
+from utils_scraping import get_next_number
+from utils_scraping import get_next_numbers
+from utils_scraping import logger
+from utils_scraping import MAX_DAYS
+from utils_scraping import NUM_OR_DASH
+from utils_scraping import pairwise
+from utils_scraping import parse_file
+from utils_scraping import parse_numbers
+from utils_scraping import seperate
+from utils_scraping import split
+from utils_scraping import strip
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping import web_files
+from utils_thai import file2date
+from utils_thai import find_thai_date
+from utils_thai import get_province
+from utils_thai import join_provinces
+from utils_thai import parse_gender
+from utils_thai import today
 
 
 def briefing_case_detail_lines(soup):

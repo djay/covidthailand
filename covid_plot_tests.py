@@ -1,19 +1,46 @@
+import re
+
 import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import numpy as np
-import re
 
-from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov, pred_vac, fix_gaps
-from utils_scraping import remove_prefix, remove_suffix, any_in, logger
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2, trend_table
 import utils_thai
-
-from covid_plot_utils import plot_area, source
+from covid_data import get_ifr
+from covid_data import scrape_and_combine
+from covid_plot_utils import plot_area
+from covid_plot_utils import source
+from utils_pandas import cum2daily
+from utils_pandas import cut_ages
+from utils_pandas import cut_ages_labels
+from utils_pandas import decreasing
+from utils_pandas import fix_gaps
+from utils_pandas import get_cycle
+from utils_pandas import human_format
+from utils_pandas import import_csv
+from utils_pandas import increasing
+from utils_pandas import normalise_to_total
+from utils_pandas import perc_format
+from utils_pandas import pred_vac
+from utils_pandas import rearrange
+from utils_pandas import set_time_series_labels_2
+from utils_pandas import topprov
+from utils_scraping import any_in
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_scraping import remove_suffix
+from utils_thai import area_crosstab
+from utils_thai import AREA_LEGEND
+from utils_thai import AREA_LEGEND_ORDERED
+from utils_thai import AREA_LEGEND_SIMPLE
+from utils_thai import DISTRICT_RANGE
+from utils_thai import DISTRICT_RANGE_SIMPLE
+from utils_thai import FIRST_AREAS
+from utils_thai import get_provinces
+from utils_thai import join_provinces
+from utils_thai import thaipop
+from utils_thai import thaipop2
+from utils_thai import trend_table
 
 
 def save_tests_plots(df: pd.DataFrame) -> None:
