@@ -6,6 +6,7 @@ repos:
       hooks:
           - id: trailing-whitespace
           - id: end-of-file-fixer
+            files: *.py
           - id: check-yaml
           - id: check-added-large-files
           - id: check-case-conflict
@@ -15,7 +16,7 @@ repos:
           # - id: pretty-format-json
           # - id: check-merge-conflict
           - id: check-toml
-          - id: detect-aws-credentials
+          # - id: detect-aws-credentials
           - id: detect-private-key
           - id: fix-byte-order-marker
           - id: mixed-line-ending
