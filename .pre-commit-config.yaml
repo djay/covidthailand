@@ -19,19 +19,23 @@ repos:
           - id: detect-private-key
           - id: fix-byte-order-marker
           - id: mixed-line-ending
-    - repo: https://github.com/psf/black
-      rev: 21.5b1
+    # - repo: https://github.com/psf/black
+    #   rev: 21.5b1
+    #   hooks:
+    #       - id: black
+    # - repo: https://github.com/nbQA-dev/nbQA
+    #   rev: 1.1.0
+    #   hooks:
+    #   - id: nbqa-black
+    - repo: https://github.com/pre-commit/mirrors-autopep8
+      rev: v1.5.7
       hooks:
-          - id: black
-    - repo: https://github.com/nbQA-dev/nbQA
-      rev: 1.1.0
-      hooks:
-      - id: nbqa-black
+          - id: autopep8
     - repo: https://github.com/asottile/reorder_python_imports
       rev: v2.6.0
       hooks:
           - id: reorder-python-imports
-    # - repo: https://gitlab.com/pycqa/flake8
+        # - repo: https://gitlab.com/pycqa/flake8
     #   rev: 3.9.2
     #   hooks:
     #     - id: flake8
