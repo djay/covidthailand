@@ -94,6 +94,19 @@ Links to all data sources are including in [Downloads](downloads)
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Cases and Social Distancing
+
+![Number of confirmed cases and reduced movement of people](https://github.com/djay/covidthailand/wiki/mobility_all.png)
+- see also [Cases and people movement from April 2021]((https://github.com/djay/covidthailand/wiki/mobility_3.png))
+- Mobility (based on mobile phone data) estimates are from IHME dataset. The data is transformed and scaled to show relative social distancing (reduced mobility) compared to peak.
+- The chart then shows how reduced mobility and number of new cases progresses in time.
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+
+  ## Cases in Non-Thai
+
+![Cases by non-Thai nationality](https://github.com/djay/covidthailand/wiki/cases_nation_3.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 # Deaths <a name="deaths">
 
 ## COVID-19 Deaths
@@ -241,6 +254,11 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 
 ### Install
 
+- If you are using anaconda you will need to also run this
+  ```sh
+  conda install -c conda-forge python-crfsuite
+  ```
+
 - To install (requires python >=3.9)
 
   ```sh
@@ -250,22 +268,26 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 
 ### Running just plots (or latest files)
 
+The plots are produced from csv files made in covid_data.py.
 
-- The easiest way to produce the plots is get the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) release and extract it into the top level
-  of the project. It will put csv files into ```api``` and ```inputs/json``` folders.
+1. Get the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) release to speed up the process.
 
-  - with linux(or WSL); change into the root directory of your clone of the repository and then:
+  - Manually: extract [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz)
+ into the top level of the project. It will put csv files into ```api``` and ```inputs/json``` folders.
+
+  - CLI: linux(or WSL); change into the root directory of your clone of the repository and then:
     ```sh
     wget https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz && \
     tar xzf datasets.tar.gz && \
     rm datasets.tar.gz
     ```
+2. You can run only the plot function using the USE_CACHE_DATA=True MAX_DAYS=0 env vars
 
-  - Once extracted to run on the commandline (linux)
+  - CLI (linux)
   ```sh
   USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
   ```
-  - OR setup a run profile in your IDE similar to this
+  - IDE: setup a run profile in your IDE similar to this
   ```
           {
             "name": "covidthailand - plot",
@@ -280,32 +302,38 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
         }
   ```
 
+3. You can comment out parts of covid_plot.py to skip some plots. 
+   - In USE_CACHE_DATA  only ```*_3.png``` files are produced. 3 is for 3rd wave (since April 2021).
 
-- If you need to run scraping you can download the [latest input files (1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz) into the root of your checkout and prevent you having to redownload all the files from scratch.
+- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
 
-  - on linux; change into the root directory of your clone of the repository and then:
+### Running full code
 
+1. Extract the  [latest input files (~1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz).
+   This get the latest cache of documents to speed up scraping.   
+
+  - Manually: extract [latest input files (~1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz)
+ into the top level of the project. It will put documents/json etc ```inputs/*``` folders.
+
+  - CLI: linux(or WSL); change into the root directory of your clone of the repository and then:
   ```sh
   wget https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz && \
   tar xzf inputs.tar.gz && \
   rm inputs.tar.gz
   ```
+  - Manually
 
-- To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
+2. To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
 
   ```sh
   USE_CACHE_DATA=True python covid_data.py
   ```
 
+3. If many days have passed since the last run then return to step 1. or slightly slow but smaller download is to  
+   download the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) files
+   which will speed up dashboard scrapping which is the slowest part.
 
-- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
-
-### Running full code (warning will take a long time)
-
-You can just use the test framework without a full download if you want to work on scraping.
-
-- to download only the files that interest you first, you can comment out or rearrange the lines in covid_data.scrape_and_combine
-- to work on plots you can download the csv files from the website into the api directory and set env MAX_DAYS=0
+4. If you really need to ensure all the files are scraped again then
 
 - To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
 
@@ -313,7 +341,7 @@ You can just use the test framework without a full download if you want to work 
   bin/python covid_plot.py
   ```
 
-### Adding tests (scraping)
+### Running Tests (scraping)
 
 - To run the tests (will only get files needed for tests)
 
@@ -376,6 +404,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
   - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
 - [MOPH ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322) - PUI + worldwide covid stats
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
+- [Institute for Health Metrics and Evaluation](http://www.healthdata.org/covid/data-downloads) - COVID estimates including mobility estimates from mobile phone data
 
 ## Change log
 

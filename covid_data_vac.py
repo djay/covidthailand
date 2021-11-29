@@ -4,8 +4,6 @@ import json
 import os
 import re
 import copy
-
-import camelot
 import numpy as np
 import pandas as pd
 import requests
@@ -13,7 +11,7 @@ import requests
 from utils_pandas import daily2cum, export, import_csv
 from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, get_next_number, get_next_numbers, \
     pairwise, parse_file, parse_numbers, replace_matcher, split, \
-    web_files, web_links, NUM_OR_DASH, logger
+    web_files, web_links, NUM_OR_DASH, logger, camelot_cache
 from utils_thai import area_crosstab, find_thai_date, get_province, join_provinces, today
 
 
@@ -671,7 +669,7 @@ def vac_manuf_given(df, page, file, page_num, url):
         return df
     if "AstraZeneca" not in page or int(os.path.splitext(os.path.basename(file))[0]) <= 1620104912165:  # 2021-03-21
         return df
-    table = camelot.read_pdf(file, pages=str(page_num), process_background=True)[0].df
+    table = camelot_cache(file, page_num, process_background=True)
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
     title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
@@ -726,7 +724,7 @@ def vac_slides_groups(df, page, file, page_num):
     if "กลุ่มเปา้หมาย" not in page:
         return
     # does fairly good job
-    table = camelot.read_pdf(file, pages=str(page_num), process_background=False)[0].df
+    table = camelot_cache(file, page_num, process_background=False)
     table = table[2:]
     for i in range(1, 7):
         table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))

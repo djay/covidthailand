@@ -287,7 +287,6 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
                         + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
-
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
     # pred = pred_vac(top5)

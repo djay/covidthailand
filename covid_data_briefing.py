@@ -4,12 +4,11 @@ from itertools import islice
 import re
 
 from bs4 import BeautifulSoup
-import camelot
 import numpy as np
 import pandas as pd
 
 from utils_pandas import daterange, export
-from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, get_next_number, get_next_numbers, \
+from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, camelot_cache, get_next_number, get_next_numbers, \
     pairwise, parse_file, parse_numbers, seperate, split, \
     strip, web_files, NUM_OR_DASH, logger
 from utils_thai import file2date, find_thai_date, get_province, join_provinces, parse_gender, today
@@ -435,6 +434,13 @@ def briefing_deaths_summary(text, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
+    # deaths over 60
+    if date > d("2021-08-02"):
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
+        assert deaths_60 is not None
+    else:
+        deaths_60 = np.nan
+
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date != d("2021-08-09"):
         male, female, *_ = genders
@@ -507,10 +513,10 @@ def briefing_deaths_summary(text, date, file):
     cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
     row = pd.DataFrame(
         [[date, deaths_title, med_age, min_age, max_age, male, female] + list(risk.values())
-         + list(comorbidity.values())],
+         + list(comorbidity.values()) + [deaths_60]],
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
-        ] + risk_cols + cm_cols).set_index("Date")
+        ] + risk_cols + cm_cols + ["Deaths 60 Plus"]).set_index("Date")
     logger.info("{} Deaths: {}", date.date(), row.to_string(header=False, index=False), file)
     return row
 
@@ -602,7 +608,7 @@ def briefing_deaths(file, date, pages):
             cells = [soup.get_text()]
         else:
             # Individual case detail for death
-            orig = camelot.read_pdf(file, pages=str(i + 2), process_background=True)[0].df
+            orig = camelot_cache(file, i + 2, process_background=True)
             if len(orig.columns) != 11:
                 cells = [cell for r in orig.itertuples() for cell in r[1:] if cell]
             else:
