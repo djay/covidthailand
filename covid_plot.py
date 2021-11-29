@@ -20,11 +20,10 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # matplotlib global settings
     matplotlib.use('AGG')
-    plt.style.use('dark_background') 
+    plt.style.use('dark_background')
 
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
-
 
     # Tests Plots
     save_tests_plots(df)

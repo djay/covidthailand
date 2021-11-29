@@ -555,7 +555,7 @@ def export_situation(th_situation, en_situation):
     situation = situation.combine_first(th_situation).combine_first(en_situation)
     situation = situation.combine_first(cum2daily(situation))  # any direct non-cumulative are trusted more
     # TODO: Not sure why but 5 days have 0 PUI. Take them out for now
-    # 2020-02-12  2020-02-14 2020-10-13  2020-12-29 2021-05-02 
+    # 2020-02-12  2020-02-14 2020-10-13  2020-12-29 2021-05-02
     situation['Tested PUI'] = situation['Tested PUI'].replace(0, np.nan)
     # if covid_data_situation.is_new_pui(today, situation):
     #     situation = situation.combine_first(today_situation)

@@ -101,7 +101,7 @@ def to_thaiyear(year, short=False):
 def file2date(file):
     """
     return date of either 
-    
+
     #>>> file2date('files/10-02-21.json') 
     #datetime.datetime(2021, 2, 10, 0, 0)
 

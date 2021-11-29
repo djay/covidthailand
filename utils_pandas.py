@@ -95,6 +95,7 @@ def daily2cum(results):
     cum = cum.reset_index().set_index(names)
     return cum[cum.columns]
 
+
 def fix_gaps(df):
     # Some gaps in the data so fill them in. df.groupby("Province").apply(fix_gaps)
     df = df.reset_index("Province")
@@ -127,6 +128,7 @@ def sensible_precision(num: float) -> str:
             num = round(num)
             sensible_number = f'{num:.0f}'
     return sensible_number
+
 
 def human_format(num: float, pos: int) -> str:
     """Convert a number to a more human readable string."""
@@ -335,7 +337,7 @@ def pred_vac(dose1, dose2=None, ahead=90, lag=40, suffix=" Pred"):
     cur = dose1.last_valid_index()
     rate = (dose1.loc[cur] - dose1.loc[cur - relativedelta(days=14)]) / 14
     future_dates = pd.date_range(cur, cur + relativedelta(days=ahead), name="Date")
-    # increasing sequence 
+    # increasing sequence
     future1 = pd.DataFrame(dict([(col, pd.RangeIndex(1, ahead + 2)) for col in dose1.columns]), index=future_dates) * rate
     future1 = future1 + dose1.loc[dose1.last_valid_index()]
     future1.columns = [col + suffix for col in future1.columns]
@@ -520,6 +522,7 @@ def set_time_series_labels_2(df, ax):
     # Adjust tick label format last, else it may sometimes not be applied correctly
     ax.figure.autofmt_xdate(rotation=0, ha='center')
 
+
 class HighlightLines(mpld3.plugins.PluginBase):
     """A plugin to highlight lines on hover"""
 
@@ -556,12 +559,14 @@ class HighlightLines(mpld3.plugins.PluginBase):
                       "alpha_bg": lines[0].get_alpha(),
                       "alpha_fg": 1.0}
 
-# write value at nearest x 
+# write value at nearest x
 # - https://stackoverflow.com/questions/34886070/multiseries-line-chart-with-mouseover-tooltip/34887578#34887578
 # - https://stackoverflow.com/questions/21417298/d3js-chart-with-crosshair-as-tooltip-how-to-add-2-lines-which-intersect-at-curs
 # - https://stackoverflow.com/questions/32783433/d3-multiples-with-linked-focus-mouseover-tooltip-crosshair-focus-line-not-fitti
 # - http://jsfiddle.net/Nivaldo/79fxL/
 # - https://jsfiddle.net/gerardofurtado/ayta89cz/5/
+
+
 class MousePositionDatePlugin(mpld3.plugins.PluginBase):
     """Plugin for displaying mouse position with a datetime x axis."""
 
@@ -599,6 +604,7 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
     }
     };
     """
+
     def __init__(self, fontsize=14, xfmt="%Y-%m-%d %H:%M:%S", yfmt=".3g"):
         self.dict_ = {"type": "mousepositiondate",
                       "fontsize": fontsize,

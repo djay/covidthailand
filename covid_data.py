@@ -211,7 +211,6 @@ def get_hospital_resources():
 #   - doesn't have pre 2020 dailies though
 
 
-
 def scrape_and_combine():
     os.makedirs("api", exist_ok=True)
     quick = USE_CACHE_DATA and os.path.exists(os.path.join('api', 'combined.csv'))

@@ -344,7 +344,7 @@ def briefing_deaths_provinces(dtext, date, file):
     # (รายงานหลังเสียชีวิตเกิน 7 วัน 17  )  2021-09-07
     text = re.sub(r"\( *\S* *\d+ วัน *\d+ *\)", " ", text)
 
-    # # 2021-10-17 get 
+    # # 2021-10-17 get
     # text = re.sub(r"� ", "• ", text)
 
     # remove the table header and page title.
@@ -731,7 +731,8 @@ def get_cases_by_prov_briefings():
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d("2021-08-27"), d("2021-09-10")], f"Death details {ddeaths} didn't match total {ideaths}"
+            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d(
+                "2021-08-27"), d("2021-09-10")], f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)

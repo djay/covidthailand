@@ -70,7 +70,7 @@ def save_active_plots(df: pd.DataFrame) -> None:
               actuals=False,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
-              cmap='tab10', 
+              cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # show cumulative deaths, recoveries and hospitalisations (which should all add up to cases)
@@ -108,7 +108,8 @@ def save_active_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # TODO: I think we can replace the recovered since april with plot showing just hospitalisations?
-    df["Hospitalized Field Unknown"] = df["Hospitalized Field"].sub(df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0)
+    df["Hospitalized Field Unknown"] = df["Hospitalized Field"].sub(
+        df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0)
 
     cols = [
         'Hospitalized Respirator',
@@ -116,12 +117,12 @@ def save_active_plots(df: pd.DataFrame) -> None:
         'Hospitalized Field Unknown',
         'Hospitalized Field Hospitel',
         'Hospitalized Field HICI',
-        ]
+    ]
     df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
     cols = [
         'Hospitalized Respirator',
         'Hospitalized Severe',
-        'Hospitalized Mild', 
+        'Hospitalized Mild',
         'Hospitalized Field Unknown',
         'Hospitalized Field Hospitel',
         'Hospitalized Field HICI',
@@ -164,4 +165,3 @@ def save_active_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left='Data Source: MOPH Covid-19 Dashboard')
-

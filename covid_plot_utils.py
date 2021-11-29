@@ -23,6 +23,7 @@ theme_dark_text = '#424242'
 theme_light_back = '#202020'
 theme_dark_back = '#0C1111'
 
+
 def plot_area(df: pd.DataFrame,
               png_prefix: str,
               cols_subset: Union[str, Sequence[str]],
@@ -100,7 +101,7 @@ def plot_area(df: pd.DataFrame,
             "legend.frameon": True,
             "legend.framealpha": 0.3,
             "legend.shadow": True,
-            "axes.grid" : True, 
+            "axes.grid": True,
             "axes.facecolor": theme_dark_back,
             "axes.linewidth": 0,
             "grid.color": theme_label_text,
@@ -238,7 +239,6 @@ def plot_area(df: pd.DataFrame,
             main_rows = 2
         fig = plt.figure(figsize=[figure_width, 0.5 * figure_height + 0.4 * footnote_height])
 
-
         grid_offset = 0
         # main chart
         a0 = plt.subplot2grid((grid_rows, grid_columns), (0, 0), colspan=grid_columns, rowspan=main_rows)
@@ -349,7 +349,8 @@ def plot_area(df: pd.DataFrame,
             line.set_linewidth(4.0)
 
         clean_axis(a0, y_formatter)
-        if limit_to_zero: a0.set_ylim(bottom=0)
+        if limit_to_zero:
+            a0.set_ylim(bottom=0)
 
         if percent_fig:
             clean_axis(a1, perc_format)
@@ -391,7 +392,7 @@ def trend_indicator(trend, style):
     return arrows[round(trend * 2)], trend_color
 
 
-def append_row(row_labels, row_texts, row_colors, trend_colors, 
+def append_row(row_labels, row_texts, row_colors, trend_colors,
                labels='', texts=['', ''], colors=[(0, 0, 0, 0), (0, 0, 0, 0)], trend_color=(0, 0, 0, 0)):
     """Append a table row."""
     row_labels.append(labels)
@@ -423,27 +424,30 @@ def add_regions_to_axis(axis, table_regions):
     else:
         styles = None
 
-
     # generate the the cell values and colors
     for row_number, province in enumerate(provinces):
-        if provinces[row_number] == 'Phra Nakhon Si Ayutthaya': provinces[row_number] = 'Ayutthaya'
-        if provinces[row_number] == 'Nakhon Si Thammarat': provinces[row_number] = 'Nakhon Si Tham.'
-        if regions[row_number] == 'Bangkok Metropolitan Region': regions[row_number] = 'Bangkok'
-        if regions[row_number] == 'Northeastern': regions[row_number] = 'Northeast'
+        if provinces[row_number] == 'Phra Nakhon Si Ayutthaya':
+            provinces[row_number] = 'Ayutthaya'
+        if provinces[row_number] == 'Nakhon Si Thammarat':
+            provinces[row_number] = 'Nakhon Si Tham.'
+        if regions[row_number] == 'Bangkok Metropolitan Region':
+            regions[row_number] = 'Bangkok'
+        if regions[row_number] == 'Northeastern':
+            regions[row_number] = 'Northeast'
         if not current_region == regions[row_number]:
             append_row(row_labels, row_texts, row_colors, trend_colors)
             current_region = regions[row_number]
             append_row(row_labels, row_texts, row_colors, trend_colors, '  ' + current_region + ' Region')
 
         trend_arrow, trend_color = trend_indicator(trends[row_number], style=styles[row_number] if styles else "green_up")
-        append_row(row_labels, row_texts, row_colors, trend_colors, 
-                   provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow], 
+        append_row(row_labels, row_texts, row_colors, trend_colors,
+                   provinces[row_number], [f'{human_format(values[row_number], 0)}', trend_arrow],
                    [(0, 0, 0, 0), trend_color], trend_color)
 
     # create the table
-    axis.set_axis_off() 
+    axis.set_axis_off()
     table = axis.table(cellLoc='right', loc='upper right', colWidths=[0.6, 0.17],
-                       rowLabels=row_labels, cellText=row_texts, cellColours=row_colors)       
+                       rowLabels=row_labels, cellText=row_texts, cellColours=row_colors)
     table.auto_set_column_width((0, 1))
     table.auto_set_font_size(False)
     table.set_fontsize(15)
@@ -472,12 +476,13 @@ def add_to_table(axis, table, regions):
 def rewrite_legends(df, legends, cols, y_formatter):
     """Rewrite the legends."""
     new_legends = []
-    if y_formatter is thaipop: y_formatter = thaipop2
+    if y_formatter is thaipop:
+        y_formatter = thaipop2
 
     # add the values to the legends
     values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     for number, value in enumerate(values):
-        if not np.isnan(value) and number < len(legends): 
+        if not np.isnan(value) and number < len(legends):
             new_legends.append(f'{y_formatter(value, 0)} {legends[number]}')
 
     # add the remaining legends without values
@@ -496,7 +501,7 @@ def add_footnote(footnote, location):
                          fontsize=15, va='top', horizontalalignment='left')
         if location == 'right':
             plt.annotate(footnote, (1, 0), (0, -70),
-                         xycoords='axes fraction',textcoords='offset points',
+                         xycoords='axes fraction', textcoords='offset points',
                          fontsize=15, va='top', horizontalalignment='right')
 
 
@@ -520,7 +525,8 @@ def right_axis(axis, y_formatter):
 
 def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27):
     """Create clean secondary right axis showning actual values."""
-    if y_formatter is thaipop: y_formatter = thaipop2
+    if y_formatter is thaipop:
+        y_formatter = thaipop2
     new_axis = right_axis(axis, y_formatter)
 
     values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
@@ -530,11 +536,11 @@ def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27)
         sum = 0.0
         for number, value in enumerate(values):
             sum += value
-            if not np.isnan(value) and number < len(legend.get_patches()): 
-                ticks.append(Tick(sum - value/2.0, y_formatter(value,0), legend.get_patches()[number].get_facecolor()))
+            if not np.isnan(value) and number < len(legend.get_patches()):
+                ticks.append(Tick(sum - value / 2.0, y_formatter(value, 0), legend.get_patches()[number].get_facecolor()))
     else:
         for number, value in enumerate(values):
-            if not np.isnan(value) and number < len(legend.get_lines()): 
+            if not np.isnan(value) and number < len(legend.get_lines()):
                 ticks.append(Tick(value, y_formatter(value, 0), legend.get_lines()[number].get_color()))
 
     set_ticks(new_axis, ticks)
@@ -556,6 +562,7 @@ def sort_by_actual(e):
 
 class Ticks:
     """All the ticks of an axis."""
+
     def __init__(self, max_ticks, bottom, top):
         self.ticks = []
         self.max_ticks = max_ticks
@@ -576,7 +583,7 @@ class Ticks:
         self.ticks.sort(key=sort_by_actual)
         last_value = self.bottom - self.spacing
         for tick in self.ticks:
-            if tick.value < last_value + self.spacing: 
+            if tick.value < last_value + self.spacing:
                 tick.value = last_value + self.spacing
             last_value = tick.value
 
@@ -585,11 +592,11 @@ class Ticks:
         self.ticks.reverse()
         last_value = self.top + self.spacing
         for tick in self.ticks:
-            if tick.value > last_value - self.spacing: 
+            if tick.value > last_value - self.spacing:
                 tick.value = last_value - self.spacing
             else:
                 adjusted_last = False
-            if not adjusted_last and tick.value > tick.actual: 
+            if not adjusted_last and tick.value > tick.actual:
                 tick.value -= (tick.value - tick.actual) / 2.0
                 adjusted_last = True
             last_value = tick.value
@@ -598,24 +605,26 @@ class Ticks:
         self.ticks.reverse()
         last_value = self.bottom - self.spacing
         for tick in self.ticks:
-            if tick.value < last_value + self.spacing: 
+            if tick.value < last_value + self.spacing:
                 tick.value = last_value + self.spacing
             last_value = tick.value
 
-    def get_ticks(self): 
+    def get_ticks(self):
         """Get the tick marks list."""
-        return [ tick.value for tick in self.ticks ]
+        return [tick.value for tick in self.ticks]
 
-    def get_labels(self): 
+    def get_labels(self):
         """Get the tick labels list."""
-        return [ tick.label for tick in self.ticks ]
+        return [tick.label for tick in self.ticks]
 
-    def get_color(self, number): 
+    def get_color(self, number):
         """Get a single tick color."""
         return self.ticks[number].color
 
+
 class Tick:
     """A single tick including tickmarks, labels and colors."""
+
     def __init__(self, actual, label, color):
         self.value = actual
         self.actual = actual

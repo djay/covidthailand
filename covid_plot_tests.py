@@ -15,12 +15,13 @@ import utils_thai
 
 from covid_plot_utils import plot_area, source
 
+
 def save_tests_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Tests Plots ==========')
 
     # # matplotlib global settings
     # matplotlib.use('AGG')
-    # plt.style.use('dark_background') 
+    # plt.style.use('dark_background')
 
     # # create directory if it does not exists
     # pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
@@ -221,7 +222,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nPUI: Person Under Investigation\n'
-                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.',
+              + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ########################
@@ -245,7 +246,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nPUI: Person Under Investigation\n'
-                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.',
+              + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.',
               footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     ##################
@@ -321,14 +322,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Positive PCR Test Results',
     ]
     plot_area(df=df,
-        title='3rd Wave Cumulative Covid Cases and Positive Tests - Thailand',
-        legends=legends,
-        png_prefix='cases_tests_cum3', cols_subset=cols,
-        ma_days=None,
-        kind='line', stacked=False, percent_fig=False,
-        cmap="tab10",
-        footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
-        footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+              title='3rd Wave Cumulative Covid Cases and Positive Tests - Thailand',
+              legends=legends,
+              png_prefix='cases_tests_cum3', cols_subset=cols,
+              ma_days=None,
+              kind='line', stacked=False, percent_fig=False,
+              cmap="tab10",
+              footnote='Proactive: Testing done at high risk locations, rather than random sampling.',
+              footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = [
         'Cases',
@@ -355,27 +356,26 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
-
     ##########################
     # Tests by area
     ##########################
     plt.rc('legend', **{'fontsize': 12})
 
     cols = rearrange([f'Tests Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df, 
-              title='PCR Tests by Health District - Thailand', 
+    plot_area(df=df,
+              title='PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='tests_area', cols_subset=cols[0],
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
-                        + 'PCR: Polymerase Chain Reaction',
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+              + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=df, 
+    plot_area(df=df,
               title='PCR Positive Test Results by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='pos_area', cols_subset=cols,
@@ -383,8 +383,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
-                        + 'PCR: Polymerase Chain Reaction',
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+              + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -401,8 +401,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
-                        + 'PCR: Polymerase Chain Reaction',
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+              + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     for area in DISTRICT_RANGE_SIMPLE:
@@ -411,8 +411,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Pos Daily {area}'] = (df[f'Pos Area {area} (i)'] / df[pos_cols].sum(axis=1) * df['Pos'])
     cols = rearrange([f'Pos Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    
-    plot_area(df=df, 
+
+    plot_area(df=df,
               title='Positive PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='pos_area_daily', cols_subset=cols,
@@ -420,8 +420,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
-                        + 'PCR: Polymerase Chain Reaction',
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+              + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     # Workout positivity for each area as proportion of positivity for that period
@@ -443,11 +443,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               y_formatter=perc_format,
               footnote='PCR: Polymerase Chain Reaction\n'
-                        + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
-                        + 'Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+              + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
+              + 'Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
-
 
     # for area in DISTRICT_RANGE_SIMPLE:
     #     df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
@@ -469,7 +468,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
-    pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'], values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
+    pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'],
+                            values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
     plot_area(df=pos_areas,
               title='PCR Positive Rate - Median per Region - Thailand',
               png_prefix='positivity_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
@@ -482,10 +482,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = dash_prov.pipe(topprov,
-                      lambda df: df["Positive Rate Dash"] * 100,
-                      name="Province Positive Rate",
-                      other_name=None,
-                      num=5)
+                          lambda df: df["Positive Rate Dash"] * 100,
+                          name="Province Positive Rate",
+                          other_name=None,
+                          num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Positive Rate - Top Provinces - Thailand',
@@ -498,11 +498,11 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = dash_prov.pipe(topprov,
-                      lambda df: -df["Positive Rate Dash"] * 100,
-                      lambda df: df["Positive Rate Dash"] * 100,
-                      name="Province Positive Rate",
-                      other_name=None,
-                      num=5)
+                          lambda df: -df["Positive Rate Dash"] * 100,
+                          lambda df: df["Positive Rate Dash"] * 100,
+                          name="Province Positive Rate",
+                          other_name=None,
+                          num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Positive Rate - Lowest Provinces - Thailand',
@@ -519,7 +519,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
             df[f'Cases Area {area}'] / df[f'Tests Area {area}'] * 100
         )
     cols = [f'Cases/Tests {area}' for area in DISTRICT_RANGE_SIMPLE]
-    plot_area(df=df, 
+    plot_area(df=df,
               title='Highest Covid Cases/Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='casestests_area_unstacked', cols_subset=rearrange(cols, *FIRST_AREAS),
@@ -527,10 +527,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=False, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
-                        + 'PCR: Polymerase Chain Reaction',
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
+              + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
-
 
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Case-Pos {area}'] = (

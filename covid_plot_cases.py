@@ -375,7 +375,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                        + 'IFR: Infection Fatality Rate\n'
                        + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
-   
+
     # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
     cols = ['Cases']
     peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
@@ -388,8 +388,9 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     # Calculate Reduced Mobility Index
     mobility_min = mobility['Mobility Index'].min()
     mobility_max = mobility['Mobility Index'].max()
-    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min - mobility['Mobility Index'])/(mobility_max - mobility_min)) * 100
-    
+    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
+                                                                  mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
+
     peaks = peaks.combine_first(mobility)
     cols += ['Reduced Mobility Index - IHME (% of peak)']
     legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
