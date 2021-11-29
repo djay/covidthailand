@@ -6,12 +6,13 @@ repos:
       hooks:
           - id: trailing-whitespace
           - id: end-of-file-fixer
-            files: ".*py"
+            files: ".*py$"
           - id: check-yaml
           - id: check-added-large-files
           - id: check-case-conflict
           - id: check-executables-have-shebangs
           - id: check-json
+            exclude: ".vscode/launch.json"
           # - id: check-shebang-scripts-are-executable
           # - id: pretty-format-json
           # - id: check-merge-conflict
