@@ -1,18 +1,27 @@
+import codecs
 import datetime
 import functools
-from dateutil.relativedelta import relativedelta
 import json
 import os
 import re
-import codecs
 import shutil
 
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
-from utils_pandas import export, fuzzy_join, import_csv, cut_ages, add_data
-from utils_scraping import web_files, s, logger
-from utils_thai import DISTRICT_RANGE, join_provinces, to_thaiyear, today
+from utils_pandas import add_data
+from utils_pandas import cut_ages
+from utils_pandas import export
+from utils_pandas import fuzzy_join
+from utils_pandas import import_csv
+from utils_scraping import logger
+from utils_scraping import s
+from utils_scraping import web_files
+from utils_thai import DISTRICT_RANGE
+from utils_thai import join_provinces
+from utils_thai import to_thaiyear
+from utils_thai import today
 
 #################################
 # Cases Apis
@@ -87,7 +96,8 @@ def get_case_details_csv():
         elif file.endswith(".csv"):
             confirmedcases = pd.read_csv(file)
             if "risk" not in confirmedcases.columns:
-                confirmedcases.columns = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(",")
+                confirmedcases.columns = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
+                    ",")
             if '�' in confirmedcases.loc[0]['risk']:
                 # bad encoding
                 with codecs.open(file, encoding="tis-620") as fp:
@@ -438,9 +448,10 @@ def get_cases_by_area_api():
 
 # Get IHME dataset
 
+
 def ihme_dataset():
     data = pd.DataFrame()
-    
+
     # listing out urls not very elegant, but this only need yearly update
     urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
             'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
@@ -450,8 +461,8 @@ def ihme_dataset():
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)
     # already filtered for just Thailand data above
-    data.drop(['location_id', 'location_name'], axis = 1, inplace=True)
-    data.rename(columns = {'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
+    data.drop(['location_id', 'location_name'], axis=1, inplace=True)
+    data.rename(columns={'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
     data["Date"] = pd.to_datetime(data["Date"]).dt.date
     data = data.sort_values(by="Date")
     data = data.set_index("Date")

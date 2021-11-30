@@ -1,18 +1,37 @@
+import copy
 import datetime
-from dateutil.parser import parse as d
 import json
 import os
 import re
-import copy
+
 import numpy as np
 import pandas as pd
 import requests
+from dateutil.parser import parse as d
 
-from utils_pandas import daily2cum, export, import_csv
-from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, get_next_number, get_next_numbers, \
-    pairwise, parse_file, parse_numbers, replace_matcher, split, \
-    web_files, web_links, NUM_OR_DASH, logger, camelot_cache
-from utils_thai import area_crosstab, find_thai_date, get_province, join_provinces, today
+from utils_pandas import daily2cum
+from utils_pandas import export
+from utils_pandas import import_csv
+from utils_scraping import any_in
+from utils_scraping import camelot_cache
+from utils_scraping import get_next_number
+from utils_scraping import get_next_numbers
+from utils_scraping import logger
+from utils_scraping import MAX_DAYS
+from utils_scraping import NUM_OR_DASH
+from utils_scraping import pairwise
+from utils_scraping import parse_file
+from utils_scraping import parse_numbers
+from utils_scraping import replace_matcher
+from utils_scraping import split
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping import web_files
+from utils_scraping import web_links
+from utils_thai import area_crosstab
+from utils_thai import find_thai_date
+from utils_thai import get_province
+from utils_thai import join_provinces
+from utils_thai import today
 
 
 ################################
@@ -87,8 +106,8 @@ def get_vaccination_coldchain(request_json, join_prov=False):
             date_col = None
             for field, column in zip(fields, colmuns):
                 fieldname = dict(_vaccinated_on_='Date',
-                                _manuf_name_='Vaccine',
-                                datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
+                                 _manuf_name_='Vaccine',
+                                 datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
                 nullIndex = column['nullIndex']
                 del column['nullIndex']
                 if column:
@@ -185,14 +204,14 @@ def vaccination_daily(daily, date, file, page):
     gtext, *_ = re.split("หรับรำยงำนจ", page)
 
     d1_num, rest1 = get_next_numbers(gtext,
-                                    r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
-                                    r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
-                                    r"ซีนเข็มที่ 1 จ",
-                                    until=r"(?:2 เข็ม)", return_until=True, require_until=True)
+                                     r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
+                                     r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
+                                     r"ซีนเข็มที่ 1 จ",
+                                     until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
-                                    r"ได้รับวัคซีน 2 เข็ม",
-                                    r"ไดรับวัคซีน 2 เข็ม",
-                                    until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
+                                     r"ได้รับวัคซีน 2 เข็ม",
+                                     r"ไดรับวัคซีน 2 เข็ม",
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
@@ -226,15 +245,23 @@ def vaccination_daily(daily, date, file, page):
             if num_len >= 8:
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
-                medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
-                frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=False)
-                volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
-                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)", until="(?:ราย|รำย)", return_rest=False, asserted=True)
-                d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
+                medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)",
+                                          return_rest=False, thainorm=True, asserted=True)
+                frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)",
+                                            return_rest=False, thainorm=True, asserted=False)
+                volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)",
+                                            return_rest=False, thainorm=True, asserted=True)
+                over60 = get_next_number(rest, r"60 *(?:ปี|ป)\s*?\s*(?:ขึ|ปี|ข้ึ)",
+                                         until="(?:ราย|รำย)", return_rest=False, asserted=True)
+                d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)",
+                                                   return_rest=False, thainorm=True, asserted=True)
                 assert d7 == 7
-                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
-                area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=True)
-                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)", return_rest=False, thainorm=True, asserted=False)
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)",
+                                           return_rest=False, thainorm=True, asserted=True)
+                area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)",
+                                       return_rest=False, thainorm=True, asserted=True)
+                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)",
+                                           return_rest=False, thainorm=True, asserted=False)
                 if len(student) == 3:
                     d12, d17, student = student
                     assert (d12, d17) == (12, 17)
@@ -297,7 +324,8 @@ def vaccination_tables(df, date, page, file):
             "Risk: Location", "Student"
         ] for d in range(1, 4)
     ]
-    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]  # Student vaccination figures did not exist prior to 2021-10-06
+    # Student vaccination figures did not exist prior to 2021-10-06
+    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
 
@@ -317,7 +345,7 @@ def vaccination_tables(df, date, page, file):
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
     ]
-    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna",]
+    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna", ]
 
     # def add(df, prov, numbers, cols):
     #     if not df.empty:
@@ -672,7 +700,8 @@ def vac_manuf_given(df, page, file, page_num, url):
     table = camelot_cache(file, page_num, process_background=True)
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
-    title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]] if cell.strip()]  # + title3, totals + extras
+    title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]]
+                                           if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
     # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
     if len(rest) == 3 and date < d("2021-10-14"):
