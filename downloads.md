@@ -15,6 +15,7 @@
 
 Schema:
 
+| Column | |
 | -- | -- |
 | Date | e.g "2021-04-06" |
 | Cases | Total cases that day. (Cases Imported + Cases Local Transmission) |
@@ -48,6 +49,7 @@ Schema:
 
 Schema cases_by_province:
 
+| Column | |
 | -- | -- |
 | "Date |  e.g "2021-04-06" |
 | "Province |  e.g "Samut Sakhon" |
@@ -72,6 +74,7 @@ Schema cases_by_province:
 
 Schema cases_by_area:
 
+| Column | |
 | -- | -- |
 | Date |  e.g "2021-04-06" |
 | Cases Area {1-13} |  Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  |
@@ -97,6 +100,7 @@ source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | |
 | ATK | Probable cases/ATK Positives. Most likely represents those registered for home isolation without a PCR test |
@@ -126,6 +130,7 @@ Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | |
 | ATK | |
@@ -146,6 +151,7 @@ source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=select-trend-line
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | |
 | Cases Age {age-group} | |
@@ -171,6 +177,7 @@ Schema
 
 * no longer updated *
 
+| Column | |
 | -- | -- |
 | Date | e.g "2021-04-06" |
 | Cases | Total cases that day. Cases Imported + Cases Local Transmission |
@@ -221,6 +228,7 @@ Bureau, Chaeng Watthana"
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | e.g "2021-04-06" |
 | Tests | PCR tests |
@@ -242,6 +250,7 @@ Schema
 
 Schema
 
+| Column | |
 | -- | -- |
 | Start | e.g "2021-04-06" |
 | End | e.g "2021-04-13" |
@@ -265,6 +274,7 @@ Schema
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | 2021-04-25 |
 | Vac Allocated Sinovac {dose} | 3840.0 |
@@ -296,6 +306,7 @@ Schema
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | 2021-04-25" |
 | Province |  "Bangkok" |
@@ -317,6 +328,7 @@ Total deaths from all causes by province, month, age, gender
 
 Schema:
 
+| Column | |
 | -- | -- |
 | Year | 2012-2021 | |
 | Month | 1-12 | |
@@ -332,6 +344,7 @@ Source: briefing reports
 
 Schema
 
+| Column | |
 | -- | -- |
 | Date | 2021-04-27 |
 | death_num | 149.0 |
@@ -358,6 +371,7 @@ Schema
 
 Schema
 
+| Column | |
 | -- | -- |
 | Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'} | |
 | Cases Risk {Group} | Categorisation of Risk field from the covid-19-daily dataset  |
