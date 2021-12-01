@@ -15,6 +15,7 @@
 
 Schema:
 
+| -- | -- |
 | Date | e.g "2021-04-06" |
 | Cases | Total cases that day. (Cases Imported + Cases Local Transmission) |
 | Cases In Quarantine | "Cases found in quarantine facilities/centers" |
@@ -47,6 +48,7 @@ Schema:
 
 Schema cases_by_province:
 
+| -- | -- |
 | "Date |  e.g "2021-04-06" |
 | "Province |  e.g "Samut Sakhon" |
 | "Health District Number |  1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)   |
@@ -70,6 +72,7 @@ Schema cases_by_province:
 
 Schema cases_by_area:
 
+| -- | -- |
 | Date |  e.g "2021-04-06" |
 | Cases Area {1-13} |  Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  |
 | Deaths Area {1-13} |  Deaths that day in the health district |
@@ -94,6 +97,7 @@ source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
 
 Schema
 
+| -- | -- |
 | Date | |
 | ATK | Probable cases/ATK Positives. Most likely represents those registered for home isolation without a PCR test |
 | Cases | |
@@ -122,6 +126,7 @@ Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
 Schema
 
+| -- | -- |
 | Date | |
 | ATK | |
 | Cases | |
@@ -141,6 +146,7 @@ source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=select-trend-line
 
 Schema
 
+| -- | -- |
 | Date | |
 | Cases Age {age-group} | |
 | Deaths Age {age-group} | |
@@ -165,6 +171,7 @@ Schema
 
 * no longer updated *
 
+| -- | -- |
 | Date | e.g "2021-04-06" |
 | Cases | Total cases that day. Cases Imported + Cases Local Transmission |
 | Cases In Quarantine | "Cases found in quarantine facilities/centers" |
@@ -214,13 +221,14 @@ Bureau, Chaeng Watthana"
 
 Schema
 
- | Date | e.g "2021-04-06" |
- | Tests | PCR tests |
- | Tests Private | PCR tests from private labs.  *no longer updated* |
- | Pos | Positive result |
- | Pos Private | Positive result from private labs. *no longer updated* |
- | Pos XLS | Tests positive results (includes corrected date-less data) |
- | Tests XLS | Tests conducted (includes corrected date-less data) |
+| -- | -- |
+| Date | e.g "2021-04-06" |
+| Tests | PCR tests |
+| Tests Private | PCR tests from private labs.  *no longer updated* |
+| Pos | Positive result |
+| Pos Private | Positive result from private labs. *no longer updated* |
+| Pos XLS | Tests positive results (includes corrected date-less data) |
+| Tests XLS | Tests conducted (includes corrected date-less data) |
 
 - Notes:
 - Uses case history graphs from the latest PPTX
@@ -234,6 +242,7 @@ Schema
 
 Schema
 
+| -- | -- |
 | Start | e.g "2021-04-06" |
 | End | e.g "2021-04-13" |
 | Pos Area {1-13} | Positive test results (PCR) |
@@ -256,6 +265,7 @@ Schema
 
 Schema
 
+| -- | -- |
 | Date | 2021-04-25 |
 | Vac Allocated Sinovac {dose} | 3840.0 |
 | Vac Allocated AstraZeneca {dose} | 0.0 |
@@ -286,6 +296,7 @@ Schema
 
 Schema
 
+| -- | -- |
 | Date | 2021-04-25" |
 | Province |  "Bangkok" |
 | Vac Given Cum | 3189.0 |
@@ -306,6 +317,7 @@ Total deaths from all causes by province, month, age, gender
 
 Schema:
 
+| -- | -- |
 | Year | 2012-2021 | |
 | Month | 1-12 | |
 | Province | |
@@ -320,6 +332,7 @@ Source: briefing reports
 
 Schema
 
+| -- | -- |
 | Date | 2021-04-27 |
 | death_num | 149.0 |
 | gender | Male" |
@@ -345,6 +358,7 @@ Schema
 
 Schema
 
+| -- | -- |
 | Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'} | |
 | Cases Risk {Group} | Categorisation of Risk field from the covid-19-daily dataset  |
 | + See all the above for data definitions |
