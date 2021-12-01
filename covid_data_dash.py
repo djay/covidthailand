@@ -136,13 +136,16 @@ def dash_daily():
 def dash_ages():
     df = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
 
+    # Fix mistake in column name
+    df.columns = [c.replace("Hospitalized Severe", "Cases Proactive") for c in df.columns]
+
     # Get deaths by prov, date. and other stats - timeline
     #
     # ['< 10 ปี', '10-19 ปี', '20-29 ปี', '30-39 ปี', '40-49 ปี', '50-59 ปี', '60-69 ปี', '>= 70 ปี', 'ไม่ระบุ']
 
     # D4_TREND
     # cases = AGG(stat_count)-alias
-    # severe = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
+    # proactive = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
     # deaths = AGG(ผู้เสียชีวิต)-alias (and AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value  all patient groups)
     # cum cases = AGG(stat_accum)-alias
     # date  = DAY(date)-alias, DAY(date)-value
@@ -166,7 +169,7 @@ def dash_ages():
                 "DAY(date)-value": "Date",
                 "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
                 "AGG(stat_count)-alias": "Cases",
-                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
+                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Cases Proactive",
             },
         )
         if row.empty:

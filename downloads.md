@@ -14,8 +14,7 @@
 ### [cases_briefings.json](https://github.com/djay/covidthailand/wiki/cases_briefings) | [cases_briefings.csv](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
 
 Schema:
-| Column | Comments |
-| -- | -- |
+
 | Date | e.g "2021-04-06" |
 | Cases | Total cases that day. (Cases Imported + Cases Local Transmission) |
 | Cases In Quarantine | "Cases found in quarantine facilities/centers" |
@@ -32,9 +31,12 @@ Schema:
 | Deaths | Number of deaths annouced that day |
 | Deaths Age (Min,Max) | Range of ages of those who died |
 | Deaths Age Median |  Median age of those who died |
+| Deaths Comorbidity {comorbidity} | Deaths where a particular comorbidity was present |
 | Deaths Comorbidity None | Deaths where there wasn't a disease that increased risk |
 | Deaths {Female,Male} | Deaths for 2 of the genders |
-| Deaths Risk Family | Deaths who likely cause of transmission was via family member |
+| Deaths Risk {risk} | Risks that are the likely cause of catching the virus e.g. Family |
+| Tests ATK Proactive | Number of ATK free tests taken (likely NHSO provided) |
+| Pos ATK Proactive | Number of ATK free test positive results (likely NHSO provided) |
 | Source Cases |  Tweet, api or briefing the primary information came from |
 | Fields no longer updated |
 | Cases (Asymptomatic,Symptomatic) | - No longer reported in briefing reports |
@@ -45,12 +47,10 @@ Schema:
 
 Schema cases_by_province:
 
-| Column | Comments |
-| -- | -- |
 | "Date |  e.g "2021-04-06" |
 | "Province |  e.g "Samut Sakhon" |
-| "Cases |  Confirmed cases in this province |
 | "Health District Number |  1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)   |
+| "Cases |  Confirmed cases in this province |
 | "Deaths |  31.0 |
 | Vac Given 1 Cum | null |
 | Vac Given 2 Cum | null |
@@ -59,7 +59,6 @@ Schema cases_by_province:
 | The following comes from moph_dashboad_prov |
 | Cases Walkin |  Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria.  |
 | Cases Proactive |  Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. |
-| Cases Proactve | see moph_dashboad_prov |
 | Cases Area Prison | see moph_dashboad_prov |
 | Positive Rate Dash | see moph_dashboad_prov|
 | Tests | see moph_dashboad_prov. No longer updated |
@@ -68,9 +67,9 @@ Schema cases_by_province:
 
 ### Cases/Deaths per Health District
 #### [cases_by_area.json](https://github.com/djay/covidthailand/wiki/cases_by_area), [cases_by_area.csv](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
-- Schema cases_by_area:
-| Column | Comments |
-| -- | -- |
+
+Schema cases_by_area:
+
 | Date |  e.g "2021-04-06" |
 | Cases Area {1-13} |  Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  |
 | Deaths Area {1-13} |  Deaths that day in the health district |
@@ -94,8 +93,7 @@ Schema cases_by_province:
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
 
 Schema
-| Column | Comments |
-| -- | -- |
+
 | Date | |
 | ATK | Probable cases/ATK Positives. Most likely represents those registered for home isolation without a PCR test |
 | Cases | |
@@ -123,8 +121,7 @@ Schema
 Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
 Schema
-| Column | Comments |
-| -- | -- |
+
 | Date | |
 | ATK | |
 | Cases | |
@@ -143,12 +140,11 @@ Schema
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=select-trend-line
 
 Schema
-| Column | Comments |
-| -- | -- |
+
 | Date | |
 | Cases Age {age-group} | |
 | Deaths Age {age-group} | |
-| Hospitalized Severe Age {age-group} | This is incorrect. Ignore |
+| Cases Proactive Age {age-group} | |
 
 Age groups are {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'}
 
@@ -166,8 +162,9 @@ Case Types and PUI counts
 <img alt="Case Types" src="https://github.com/djay/covidthailand/wiki/cases_types_all.png" width=200>
 
 Schema
-| Column | Comments |
-| -- | -- |
+
+* no longer updated *
+
 | Date | e.g "2021-04-06" |
 | Cases | Total cases that day. Cases Imported + Cases Local Transmission |
 | Cases In Quarantine | "Cases found in quarantine facilities/centers" |
@@ -197,11 +194,10 @@ Bureau, Chaeng Watthana"
       - Recovered
       - Hospitalized
 
-## Testing Data <a name="dl-testing">
+## Testing Reports <a name="dl-testing">
 
 - Source:
- - [DMSC: Thailand Laboratory testing data - latest report](https://www3.dmsc.moph.go.th/) (updated weekly but sporadic)
- - [DMSC: Thailand Laboratory testing data - weekly summary reports](http://nextcloud.dmsc.moph.go.th/index.php/s/wbioWZAQfManokc)
+ - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://www3.dmsc.moph.go.th/) (updated weekly but sporadic)
  - also available via [data.go.th testing data](https://data.go.th/dataset/covid-19-testing-data)
  - [Other info on lab network](https://service.dmsc.moph.go.th/labscovid19/indexen.php)
  - This datasource is incomplete as not all tests go via this [DMSc’co-lab database](https://www3.dmsc.moph.go.th/post-view/974). In particular times with large amounts of proactive testing
@@ -218,13 +214,11 @@ Bureau, Chaeng Watthana"
 
 Schema
 
-| Column | Comments |
-| -- | -- |
  | Date | e.g "2021-04-06" |
  | Tests | PCR tests |
- | Tests Private | PCR tests from private labs |
+ | Tests Private | PCR tests from private labs.  *no longer updated* |
  | Pos | Positive result |
- | Pos Private | Positive result from private labs |
+ | Pos Private | Positive result from private labs. *no longer updated* |
  | Pos XLS | Tests positive results (includes corrected date-less data) |
  | Tests XLS | Tests conducted (includes corrected date-less data) |
 
@@ -237,14 +231,12 @@ Schema
 ### Tests by Health District
 #### [tests_by_area.json](https://github.com/djay/covidthailand/wiki/tests_by_area) [tests_by_area.csv](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
 
-* no longer updated *
 
 Schema
-| Column | Comments |
-| -- | -- |
+
 | Start | e.g "2021-04-06" |
 | End | e.g "2021-04-13" |
-| Pos Area {1-13} | Positive test results |
+| Pos Area {1-13} | Positive test results (PCR) |
 | Tests Area {1-13} | Total tests (PCR) |
 
 - Notes:
@@ -264,8 +256,6 @@ Schema
 
 Schema
 
-| Column | Comments |
-| -- | -- |
 | Date | 2021-04-25 |
 | Vac Allocated Sinovac {dose} | 3840.0 |
 | Vac Allocated AstraZeneca {dose} | 0.0 |
@@ -295,8 +285,7 @@ Schema
  - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 
 Schema
-| Column | Comments |
-| -- | -- |
+
 | Date | 2021-04-25" |
 | Province |  "Bangkok" |
 | Vac Given Cum | 3189.0 |
@@ -311,11 +300,12 @@ Schema
 
 ### [deaths_all.csv](https://github.com/djay/covidthailand/wiki/deaths_all.csv)
 
+Total deaths from all causes by province, month, age, gender
+
 - Source:  [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
 
 Schema:
-| Column | Comments |
-| -- | -- |
+
 | Year | 2012-2021 | |
 | Month | 1-12 | |
 | Province | |
@@ -330,8 +320,6 @@ Source: briefing reports
 
 Schema
 
-| Column | Comments |
-| -- | -- |
 | Date | 2021-04-27 |
 | death_num | 149.0 |
 | gender | Male" |
@@ -343,8 +331,9 @@ Schema
 | case_history |
 | risk_factor_sickness |
 | risk_factor_death |
+
 - Notes:
-| Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
+- Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
 
 ## Combined <a name="dl-combined">
@@ -356,8 +345,6 @@ Schema
 
 Schema
 
-| Column | Comments |
-| -- | -- |
 | Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'} | |
 | Cases Risk {Group} | Categorisation of Risk field from the covid-19-daily dataset  |
 | + See all the above for data definitions |
