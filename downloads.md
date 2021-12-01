@@ -4,7 +4,7 @@
 
 ## Daily CCSA Briefings <a name="dl-briefings">
 
-- Sources 
+- Sources
    - [CCSA Daily Briefing](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
    - [MOPH COVID 19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main)
    - [API: Details of all confirmed COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
@@ -13,7 +13,7 @@
 
 ### [cases_briefings.json](https://github.com/djay/covidthailand/wiki/cases_briefings) | [cases_briefings.csv](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
 
-- Schema: 
+- Schema:
   - Date: e.g "2021-04-06"
   - Cases: Total cases that day. (Cases Imported + Cases Local Transmission)
   - Cases In Quarantine: "Cases found in quarantine facilities/centers"
@@ -41,11 +41,11 @@
 
 #### [cases_by_province.json](https://github.com/djay/covidthailand/wiki/cases_by_province) | [cases_by_province.csv](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
 
-- Schema cases_by_province: 
+- Schema cases_by_province:
   - "Date": e.g "2021-04-06"
   - "Province": e.g "Samut Sakhon"
   - "Cases": Confirmed cases in this province
-  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - "Health District Number": 1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
   - The following is no longer updated
      - "Cases Walkin": Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria. *No longer updated*
      - "Cases Proactive": Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. *No longer updated*
@@ -53,16 +53,16 @@
 
 ### Cases/Deaths per Health District
 #### [cases_by_area.json](https://github.com/djay/covidthailand/wiki/cases_by_area), [cases_by_area.csv](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
-- Schema cases_by_area: 
+- Schema cases_by_area:
   - "Date": e.g "2021-04-06"
-  - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - "Cases Area {1-13}": Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
   - "Deaths Area {1-13}": Deaths that day in the health district
-  - "Cases Risk: {Group} Area {1-13}": Categorisation of Risk field from the covid-19-daily dataset  
+  - "Cases Risk: {Group} Area {1-13}": Categorisation of Risk field from the covid-19-daily dataset
   - The following are no longer updated but have some historical data
     - "Cases {Proactive,Walkin} Area {1-13}": Cases found by people where tested
 
 - Notes:
-  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  
+  - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 
 
 <img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
@@ -72,7 +72,7 @@
 
 ### Deaths by Province
 #### [deaths.json](https://github.com/djay/covidthailand/wiki/deaths), [deaths.csv](https://github.com/djay/covidthailand/wiki/deaths.csv)
-- Schema: 
+- Schema:
    - e.g
       - "Date":"2021-04-27"
       - "death_num":149.0,
@@ -140,7 +140,7 @@ Case Types and PUI counts
 
 ### [situation_reports.json](https://github.com/djay/covidthailand/wiki/situation_reports) | [situation_reports.csv](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
 
-- Sources: 
+- Sources:
   - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
   - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php) (Updated a few days later)
   - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Today's PUI count
@@ -181,9 +181,9 @@ Bureau, Chaeng Watthana"
         - Recovered
         - Hospitalized
 
-## Testing Data <a name="dl-testing"> 
+## Testing Data <a name="dl-testing">
 
-- Source: 
+- Source:
    - [DMSC: Thailand Laboratory testing data - latest report](https://www3.dmsc.moph.go.th/) (updated weekly but sporadic)
    - [DMSC: Thailand Laboratory testing data - weekly summary reports](http://nextcloud.dmsc.moph.go.th/index.php/s/wbioWZAQfManokc)
    - also available via [data.go.th testing data](https://data.go.th/dataset/covid-19-testing-data)
@@ -199,7 +199,7 @@ Bureau, Chaeng Watthana"
 
 ### Daily Tests Private+Public
 #### [tests_pubpriv.json](https://github.com/djay/covidthailand/wiki/tests_pubpriv) | [tests_pubpriv.csv](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
-- Schema: 
+- Schema:
    - Date: e.g "2021-04-06"
    - Tests: PCR tests
    - Tests Private: PCR tests from private labs
@@ -211,12 +211,12 @@ Bureau, Chaeng Watthana"
   - Uses case history graphs from the latest PPTX
   - data seems to exclude some non-PCR tests (likely used in some proactive testing)
   - The Test XLS data includes a number of tests and results for which the date is unknown. This has been redistributed into the Pos XLS and Tests XLS numbers. Other than this it
-  should be the same numbers as ```Pos``` and ```Tests```. 
+  should be the same numbers as ```Pos``` and ```Tests```.
 
-### Tests by Health District  
+### Tests by Health District
 #### [tests_by_area.json](https://github.com/djay/covidthailand/wiki/tests_by_area) [tests_by_area.csv](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
 
-- Schema: 
+- Schema:
    - Start: e.g "2021-04-06"
    - End: e.g "2021-04-13"
    - Pos Area {1-13} - Positive test results
@@ -231,7 +231,7 @@ Bureau, Chaeng Watthana"
 ## Daily DDC Vaccination Reports
 ### [vac_timeline.csv](https://github.com/djay/covidthailand/wiki/vac_timeline.csv)
 
-- Source: 
+- Source:
    - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
    - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 - Schema e.g.
@@ -252,14 +252,14 @@ Bureau, Chaeng Watthana"
    - The previous data per province is no longer updated in the reports so this download has been removed.
    - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
    - 1/2 refers to shot 1 or shot 2.
-   - Some days some tables are images so there is missing data. 
+   - Some days some tables are images so there is missing data.
    - Summary vaccination data included in the combine download
    - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
    - #TODO: put in thai group explanations.
 
 ## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety <a name="dl-vac-prov">
 ### [vaccinations.csv](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
-- Source: 
+- Source:
    - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
    - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 
@@ -279,7 +279,7 @@ Bureau, Chaeng Watthana"
 
 ### [deaths_all.csv](https://github.com/djay/covidthailand/wiki/deaths_all.csv)
 
-- Source: 
+- Source:
    - [Office of Registration Administration, Department of Provincial Administration](https://stat.bora.dopa.go.th/stat/statnew/statMONTH/statmonth/#/mainpage)
 - Schema:
   - Year: 2012-2021
@@ -287,17 +287,17 @@ Bureau, Chaeng Watthana"
   - Province:
   - Gender: Male|Female
   - Age: 0-101
-  - Deaths: 
+  - Deaths:
 
 
 
 ## Combined <a name="dl-combined">
 ### [combined.csv](https://github.com/djay/covidthailand/wiki/combined.csv)
 
-- Source: 
+- Source:
   - All the above daily sources combined
   - plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
-- Schema: 
+- Schema:
   - Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'}
-  - Cases Risk {Group}: Categorisation of Risk field from the covid-19-daily dataset  
+  - Cases Risk {Group}: Categorisation of Risk field from the covid-19-daily dataset
   - + See all the above for data definitions

@@ -1,18 +1,35 @@
 import datetime
-from dateutil.parser import parse as d
-from itertools import islice
 import re
+from itertools import islice
 
-from bs4 import BeautifulSoup
-import camelot
 import numpy as np
 import pandas as pd
+from bs4 import BeautifulSoup
+from dateutil.parser import parse as d
 
-from utils_pandas import daterange, export
-from utils_scraping import MAX_DAYS, USE_CACHE_DATA, any_in, get_next_number, get_next_numbers, \
-    pairwise, parse_file, parse_numbers, seperate, split, \
-    strip, web_files, NUM_OR_DASH, logger
-from utils_thai import file2date, find_thai_date, get_province, join_provinces, parse_gender, today
+from utils_pandas import daterange
+from utils_pandas import export
+from utils_scraping import any_in
+from utils_scraping import camelot_cache
+from utils_scraping import get_next_number
+from utils_scraping import get_next_numbers
+from utils_scraping import logger
+from utils_scraping import MAX_DAYS
+from utils_scraping import NUM_OR_DASH
+from utils_scraping import pairwise
+from utils_scraping import parse_file
+from utils_scraping import parse_numbers
+from utils_scraping import seperate
+from utils_scraping import split
+from utils_scraping import strip
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping import web_files
+from utils_thai import file2date
+from utils_thai import find_thai_date
+from utils_thai import get_province
+from utils_thai import join_provinces
+from utils_thai import parse_gender
+from utils_thai import today
 
 
 def briefing_case_detail_lines(soup):
@@ -345,7 +362,7 @@ def briefing_deaths_provinces(dtext, date, file):
     # (รายงานหลังเสียชีวิตเกิน 7 วัน 17  )  2021-09-07
     text = re.sub(r"\( *\S* *\d+ วัน *\d+ *\)", " ", text)
 
-    # # 2021-10-17 get 
+    # # 2021-10-17 get
     # text = re.sub(r"� ", "• ", text)
 
     # remove the table header and page title.
@@ -435,6 +452,13 @@ def briefing_deaths_summary(text, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
+    # deaths over 60
+    if date > d("2021-08-02"):
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
+        assert deaths_60 is not None
+    else:
+        deaths_60 = np.nan
+
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date != d("2021-08-09"):
         male, female, *_ = genders
@@ -507,10 +531,10 @@ def briefing_deaths_summary(text, date, file):
     cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
     row = pd.DataFrame(
         [[date, deaths_title, med_age, min_age, max_age, male, female] + list(risk.values())
-         + list(comorbidity.values())],
+         + list(comorbidity.values()) + [deaths_60]],
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
-        ] + risk_cols + cm_cols).set_index("Date")
+        ] + risk_cols + cm_cols + ["Deaths 60 Plus"]).set_index("Date")
     logger.info("{} Deaths: {}", date.date(), row.to_string(header=False, index=False), file)
     return row
 
@@ -602,7 +626,7 @@ def briefing_deaths(file, date, pages):
             cells = [soup.get_text()]
         else:
             # Individual case detail for death
-            orig = camelot.read_pdf(file, pages=str(i + 2), process_background=True)[0].df
+            orig = camelot_cache(file, i + 2, process_background=True)
             if len(orig.columns) != 11:
                 cells = [cell for r in orig.itertuples() for cell in r[1:] if cell]
             else:
@@ -725,7 +749,8 @@ def get_cases_by_prov_briefings():
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d("2021-08-27"), d("2021-09-10")], f"Death details {ddeaths} didn't match total {ideaths}"
+            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d(
+                "2021-08-27"), d("2021-09-10")], f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)

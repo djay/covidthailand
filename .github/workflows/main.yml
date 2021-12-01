@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
     # permissions:
-    #   statuses: write 
+    #   statuses: write
     steps:
       - uses: actions/checkout@v2
       # - name: Get Cached docs
@@ -87,7 +87,7 @@ jobs:
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
         run: |
           tar -xzvf inputs.tar.gz
-          rm inputs.tar.gz   
+          rm inputs.tar.gz
       - name: du
         run: |
           du -ha * | sort -h
@@ -120,7 +120,7 @@ jobs:
       #   run: |
       #       python covid_plot.py
       #   env:
-      #       CHECK_NEWER: True 
+      #       CHECK_NEWER: True
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest
@@ -137,19 +137,30 @@ jobs:
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: outputfiles.txt
         continue-on-error: true
-        run: 
+        run:
           du inputs | tee outputfiles.txt
       - name: Make cached docs bundle
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs    
-      - name: Upload Cached docs to existing release
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
+           tar -czvf datasets.tar.gz api inputs/json/*.csv
+      - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./inputs.tar.gz
           asset_name: inputs.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+      - name: Upload datasets.tar.gz to existing release
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./datasets.tar.gz
+          asset_name: datasets.tar.gz
           tag: 1
           overwrite: true
           body: "Updated docs"
@@ -216,7 +227,7 @@ jobs:
             source-directory: "outputs"
             include-patterns: "*.png"
         env:
-            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}      
+            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Upload json to wiki
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
@@ -224,4 +235,4 @@ jobs:
             source-directory: "api"
             include-patterns: "*"
         env:
-            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}  
+            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}

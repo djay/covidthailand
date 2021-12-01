@@ -1,12 +1,16 @@
+import datetime
 import itertools
 import json
-from utils_scraping import any_in, fix_timeouts, logger
-import tableauscraper
-import pandas as pd
-import numpy as np
 import time
-import datetime
+
+import numpy as np
+import pandas as pd
 import requests
+import tableauscraper
+
+from utils_scraping import any_in
+from utils_scraping import fix_timeouts
+from utils_scraping import logger
 
 
 ###########################

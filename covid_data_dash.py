@@ -1,13 +1,20 @@
-from utils_scraping_tableau import workbook_flatten, workbook_iterate
-import pandas as pd
+import os
+import shutil
+
 import numpy as np
+import pandas as pd
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from utils_scraping import USE_CACHE_DATA, any_in, logger
-from utils_thai import get_province, today
-from utils_pandas import export, import_csv
-import shutil
-import os
+
+from utils_pandas import export
+from utils_pandas import import_csv
+from utils_scraping import any_in
+from utils_scraping import logger
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import workbook_flatten
+from utils_scraping_tableau import workbook_iterate
+from utils_thai import get_province
+from utils_thai import today
 
 
 ########################
@@ -362,15 +369,15 @@ def skip_valid(df, idx_value, allow_na={}):
             return False
         if not mins:
             return True
-        
+
         min_val, *max_val = mins
         if min_val > val:
             return False
         elif max_val and val > max_val[0]:
             return False
         else:
-            return True 
- 
+            return True
+
     # allow certain fields null if before set date
     nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
     if not nulls:

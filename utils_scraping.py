@@ -1,24 +1,30 @@
 import datetime
-import dateutil
-from io import StringIO
-from itertools import compress, cycle
 import os
-from pathlib import Path
 import pickle
 import re
 import sys
 import urllib.parse
+from io import StringIO
+from itertools import compress
+from itertools import cycle
+from pathlib import Path
 
+import camelot
+import dateutil
+import pandas as pd
+import pythainlp
+import requests
 from bs4 import BeautifulSoup
 from loguru import logger
 from pptx import Presentation
 from pytwitterscraper import TwitterScraper
-import requests
-from requests.exceptions import Timeout, ConnectionError
-from requests.adapters import HTTPAdapter, Retry
-from tika import parser, config
+from requests.adapters import HTTPAdapter
+from requests.adapters import Retry
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
+from tika import config
+from tika import parser
 from webdav3.client import Client
-import pythainlp
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -350,7 +356,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         remove = False
         err = ""
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
-            resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0  # go back 10% in case end of data changed (e.g csv)
+            # go back 10% in case end of data changed (e.g csv)
+            resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
 
             try:
@@ -425,7 +432,8 @@ def local_files(ext=".pdf", dir=os.getcwd()):
         os.makedirs(os.path.dirname(target), exist_ok=True)
         if i > 0 and is_cutshort(target, info[1], False):
             break
-        do_dl = lambda target=target: target
+
+        def do_dl(target=target): return target
         i += 1
         yield target, do_dl
 
@@ -472,7 +480,7 @@ def dav_files(url, username=None, password=None,
                 client.download_file(file, target)
                 return target
         else:
-            do_dl = lambda target=target: target
+            def do_dl(target=target): return target
         i += 1
         yield target, do_dl
 
@@ -636,3 +644,15 @@ def replace_matcher(matches, replacements=None):
                 return r
         return item
     return replace_match
+
+
+def camelot_cache(file, page_num, process_background=False, table=0):
+    fname = f"{os.path.basename(file)}.{page_num}.{table}.{process_background}.json"
+    os.makedirs("inputs/camelot", exist_ok=True)
+    cache_file = os.path.join("inputs/camelot", fname)
+    if os.path.exists(cache_file):
+        return pd.read_json(cache_file)
+    else:
+        tables = camelot.read_pdf(file, pages=str(page_num), process_background=process_background)
+        tables[table].df.to_json(cache_file)
+        return tables[table].df
