@@ -230,6 +230,8 @@ def dash_by_province():
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
+    if "Hospitalized Severe" in df.columns:
+        df = df.drop(columns=["Hospitalized Severe"])  # was actually proactive
 
     last_pos_rate = max(df["Positive Rate Dash"].last_valid_index()[0], today() - relativedelta(days=31))
     valid = {
@@ -245,7 +247,6 @@ def dash_by_province():
         "Cases Imported": d("2021-08-01"),
         "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
         "Cases": d("2021-06-28"),  # Only Lampang?
-        'Hospitalized Severe': today(),  # Comes from the trends data
     }
     # Dates with no data and doesn't seem to change
     skip = [

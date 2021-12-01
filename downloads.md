@@ -133,7 +133,6 @@ Schema
 | Column | |
 | -- | -- |
 | Date | |
-| ATK | |
 | Cases | |
 | Cases Area Prison | |
 | Cases Imported | |
@@ -143,7 +142,6 @@ Schema
 | Tests | No longer updated |
 | Vac Given {1-3} Cum | |
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
-| Hospitalized Severe | Should be the same value found in the briefing documents. |
 
 ### [moph_dashboad_ages.json](https://github.com/djay/covidthailand/wiki/moph_dashboard_ages) | [moph_dashboard_ages.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard_ages.csv)
 
