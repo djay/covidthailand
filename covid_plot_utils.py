@@ -1,4 +1,6 @@
 import os
+import xml.etree.ElementTree as ET
+from io import BytesIO
 from typing import Callable
 from typing import List
 from typing import Sequence
@@ -381,6 +383,7 @@ def plot_area(df: pd.DataFrame,
         plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
+        svg_hover(plt, fig, os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -636,3 +639,66 @@ class Tick:
         self.actual = actual
         self.label = label
         self.color = color
+
+
+def svg_hover(plt, fig, path):
+    f = BytesIO()
+    plt.savefig(f, format="svg")
+
+    # --- Add interactivity ---
+    ax = fig.axes[0]
+    tooltip = ax.annotate(labels[i], xy=item.get_xy(), xytext=(0, 0),
+                          textcoords='offset points', color='w', ha='center',
+                          fontsize=8, bbox=dict(boxstyle='round, pad=.5',
+                                                fc=(.1, .1, .1, .92),
+                                                ec=(1., 1., 1.), lw=1,
+                                                zorder=1))
+
+    tooltip.set_gid('tooltip')
+
+    # Create XML tree from the SVG file.
+    tree, xmlid = ET.XMLID(f.getvalue())
+    tree.set('onload', 'init(event)')
+
+    # patch_2
+    box = xmlid["patch_2"]
+    box.set('onmouseover', "ShowTooltip(this)")
+    box.set('onmouseout', "HideTooltip(this)")
+
+    tooltip = xmlid["tooltip"]
+    tooltip.set('visibility', 'hidden')
+
+    # TODO: get values indexed by x ord
+    # TODO: set values on move
+
+    # This is the script defining the ShowTooltip and HideTooltip functions.
+    script = """
+        <script type="text/ecmascript">
+        <![CDATA[
+
+        function init(event) {
+            if ( window.svgDocument == null ) {
+                svgDocument = event.target.ownerDocument;
+                }
+            }
+
+        function ShowTooltip(obj) {
+            var cur = obj.id.split("_")[1];
+            var tip = svgDocument.getElementById('mytooltip_' + cur);
+            tip.setAttribute('visibility', "visible")
+            # TODO: translate x to date to y values and put them in the tooltip with labels and date
+            }
+
+        function HideTooltip(obj) {
+            var cur = obj.id.split("_")[1];
+            var tip = svgDocument.getElementById('mytooltip_' + cur);
+            tip.setAttribute('visibility', "hidden")
+            }
+
+        ]]>
+        </script>
+        """
+
+    # Insert the script at the top of the file and save it.
+    tree.insert(0, ET.XML(script))
+    ET.ElementTree(tree).write(path)
