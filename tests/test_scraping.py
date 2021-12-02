@@ -128,7 +128,7 @@ def test_vac_reports(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
 
-#@pytest.mark.skip()
+@pytest.mark.skip()
 @pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
 def test_vac_reports_assert(link, content, get_file):
     assert get_file is not None
