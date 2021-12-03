@@ -31,9 +31,8 @@ from utils_thai import join_provinces
 from utils_thai import trend_table
 
 
-def save_cases_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Cases Plots ==========')
-
+########################################################################
+def plot_cases_by_where_tested(df: pd.DataFrame) -> None:
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive']  # .sub(df['Cases Area Prison'], fill_value=0)
     # df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
@@ -67,6 +66,10 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
+    return None
+
+
+def plot_cases_by_symptoms(df: pd.DataFrame) -> None:
     cols = [
         'Cases Symptomatic',
         'Cases Asymptomatic',
@@ -85,6 +88,10 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
+    return None
+
+
+def plot_cases_by_age(df: pd.DataFrame) -> None:
     # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
     # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
     #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
@@ -101,6 +108,10 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               cmap=get_cycle('summer_r', len(cols) + 1),
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
 
+    return None
+
+
+def plot_cases_by_risk(df: pd.DataFrame) -> None:
     # Thailand Covid Cases by Risk
     cols = [c for c in df.columns if str(c).startswith("Risk: ")]
     cols = rearrange(cols, "Risk: Imported", "Risk: Pneumonia",
@@ -121,6 +132,10 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
 
+    return None
+
+
+def plot_cases_by_nationality() -> None:
     """ Thailand Covid Cases by Nationality """
 
     cases = get_case_details_csv()
@@ -138,6 +153,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     by_nationality_top5 = counts_by_nation[top5_list]
     by_nationality_top5['Others'] = counts_by_nation[others_list].sum(axis=1)
     cols = [c for c in by_nationality_top5.columns]
+
     plot_area(df=by_nationality_top5,
               title='Non-Thai Covid Cases - by Nationality - Thailand',
               png_prefix='cases_nation', cols_subset=cols,
@@ -147,10 +163,23 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               footnote='\n*Thai cases are excluded',
               footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
 
+    return None
+
+########################################################################
+
+
+def save_cases_plots(df: pd.DataFrame) -> None:
+    logger.info('======== Generating Cases Plots ==========')
+
+    plot_cases_by_where_tested(df)
+    plot_cases_by_symptoms(df)
+    plot_cases_by_age(df)
+    plot_cases_by_risk(df)
+    plot_cases_by_nationality()
+
     #######################
     # Cases by provinces
     #######################
-
     cases = import_csv("cases_by_province")
     # fill in missing provinces
     cases_pivot = cases.fillna(0).pivot_table(index="Date", columns="Province", values="Cases")
