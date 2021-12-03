@@ -647,53 +647,66 @@ def svg_hover(plt, fig, path):
 
     # --- Add interactivity ---
     ax = fig.axes[0]
-    tooltip = ax.annotate(labels[i], xy=item.get_xy(), xytext=(0, 0),
-                          textcoords='offset points', color='w', ha='center',
-                          fontsize=8, bbox=dict(boxstyle='round, pad=.5',
-                                                fc=(.1, .1, .1, .92),
-                                                ec=(1., 1., 1.), lw=1,
-                                                zorder=1))
-
-    tooltip.set_gid('tooltip')
 
     # Create XML tree from the SVG file.
     tree, xmlid = ET.XMLID(f.getvalue())
     tree.set('onload', 'init(event)')
 
-    # patch_2
-    box = xmlid["patch_2"]
-    box.set('onmouseover', "ShowTooltip(this)")
-    box.set('onmouseout', "HideTooltip(this)")
+    # # patch_2
+    # box = xmlid["patch_2"]
+    # box.set('onmouseover', "ShowTooltip(this)")
+    # box.set('onmouseout', "HideTooltip(this)")
 
-    tooltip = xmlid["tooltip"]
-    tooltip.set('visibility', 'hidden')
+    # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
+    tooltipsvg = """
+    <g transform="scale(0.9)" xmlns="http://www.w3.org/2000/svg">
+        <g class="tooltip mouse" visibility="hidden">
+            <!-- The rectangle and text are positioned
+                 to the right and above the <g> element's
+                 0,0 point, purely to help with all the
+                 overlapping tooltips! -->
+          <rect width="7em" height="2.5em"
+                  x="-7em" y="-2.5em"/>
+          <text x="-3.5em" y="-2.5em" text-anchor="middle">
+            <tspan dy="1em">Mouse-tracking</tspan>
+            <tspan x="-3.5em" dy="1.25em">SVG Tip</tspan>
+          </text>
+        </g>
+    </g>
+    """
+    xmlid["figure_1"].append(ET.XML(tooltipsvg))
 
-    # TODO: get values indexed by x ord
-    # TODO: set values on move
+    # TODO: get json list with [[start, date, [color, label, val_avg, val],...],...]). start is ratio
+    # TODO: on mousemove turn coords into ratio and lookup date etc
+    # TODO: insert values and resize tooltip as needed (maybe sort based on value?)
+    # TODO: hide the legend. make the tooltip look like the legend (fonts colours etc)
+    # TODO: put colored dots on the lines at the right place
+    # TODO: have a vertical line that moves
+    # TODO: move tooltip out of the way. maybe flip down on lower half and up on upper half?
+    # TODO: show % as well as avg and actual (or maybe only when there is a % chart visible?)
 
     # This is the script defining the ShowTooltip and HideTooltip functions.
     script = """
-        <script type="text/ecmascript">
+        <script type="text/ecmascript" xmlns="http://www.w3.org/2000/svg">
         <![CDATA[
 
         function init(event) {
-            if ( window.svgDocument == null ) {
-                svgDocument = event.target.ownerDocument;
-                }
-            }
+            var tooltip = d3.select("g.tooltip.mouse");
 
-        function ShowTooltip(obj) {
-            var cur = obj.id.split("_")[1];
-            var tip = svgDocument.getElementById('mytooltip_' + cur);
-            tip.setAttribute('visibility', "visible")
-            # TODO: translate x to date to y values and put them in the tooltip with labels and date
-            }
+            d3.select("#patch_2").on("mousemove", function (evt) {
+                // from https://codepen.io/billdwhite/pen/rgEbc
+                tooltip.attr('visibility', "visible")
+                var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
+                tooltip
+                    .attr("transform", "translate("
+                        + (mouseCoords[0]-10) + ","
+                        + (mouseCoords[1] - 10) + ")");
+            })
+            .on("mouseout", function () {
+                return tooltip.attr('visibility', "hidden");
+            });
 
-        function HideTooltip(obj) {
-            var cur = obj.id.split("_")[1];
-            var tip = svgDocument.getElementById('mytooltip_' + cur);
-            tip.setAttribute('visibility', "hidden")
-            }
+        }
 
         ]]>
         </script>
@@ -701,4 +714,6 @@ def svg_hover(plt, fig, path):
 
     # Insert the script at the top of the file and save it.
     tree.insert(0, ET.XML(script))
+    tree.insert(0, ET.XML('<script href="https://d3js.org/d3.v7.min.js" xmlns="http://www.w3.org/2000/svg"></script>'))
+
     ET.ElementTree(tree).write(path)
