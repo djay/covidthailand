@@ -23,16 +23,16 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png) ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
-- For forecasts of total infections/deaths/hospitalisations see 
+- For forecasts of total infections/deaths/hospitalisations see
   [IHME Thailand](https://covid19.healthdata.org/thailand) |
   [IHME Thailand Report](http://www.healthdata.org/covid/updates) |
   [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/) |
   [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
   [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
-  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) 
+  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings),
   [MOPH daily situation report](downloads#dl-situation-reports)
- 
+
 # Cases <a name="cases">
 
 ## Cases by Region
@@ -94,6 +94,19 @@ Links to all data sources are including in [Downloads](downloads)
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Cases and Social Distancing
+
+![Number of confirmed cases and reduced movement of people](https://github.com/djay/covidthailand/wiki/mobility_all.png)
+- see also [Cases and people movement from April 2021]((https://github.com/djay/covidthailand/wiki/mobility_3.png))
+- Mobility (based on mobile phone data) estimates are from IHME dataset. The data is transformed and scaled to show relative social distancing (reduced mobility) compared to peak.
+- The chart then shows how reduced mobility and number of new cases progresses in time.
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+
+  ## Cases in Non-Thai
+
+![Cases by non-Thai nationality](https://github.com/djay/covidthailand/wiki/cases_nation_3.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+
 # Deaths <a name="deaths">
 
 ## COVID-19 Deaths
@@ -146,8 +159,8 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
-- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) | 
-[Vaccinations 1st given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_1_3.png) | 
+- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) |
+[Vaccinations 1st given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_1_3.png) |
 [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Active Cases/Hospitalisations <a name="active-cases">
@@ -157,7 +170,7 @@ Links to all data sources are including in [Downloads](downloads)
 ![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
-- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  
+- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is
   confirmed (for 14days at least)
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [CCSA Daily Briefing](downloads#dl-briefings)
@@ -175,7 +188,7 @@ Links to all data sources are including in [Downloads](downloads)
 Assumes easy access to tests for everyone.
 - It's likely there is [missing test data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results). Using confirmed cases migth be more accurate.
 - This positive rate is based on [DMSC: Thailand Laboratory testing data](downloads#dl-testing). In the [Daily MOPH Situation Reports](downloads#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki).
-- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case_3.png) (Positive rate inverted) could be easier to understand, 
+- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case_3.png) (Positive rate inverted) could be easier to understand,
 [Positive Rate - Top Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_top_3.png),
 [Positive Rate - Lowest Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_low_3.png)
 
@@ -218,7 +231,7 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
 
-- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Excess deaths Plots excluding 2019 
+- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Excess deaths Plots excluding 2019
 [All](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png) | [by region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png) | [by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png) show clearer baseline more similar to other countries.
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
@@ -241,6 +254,11 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 
 ### Install
 
+- If you are using anaconda you will need to also run this
+  ```sh
+  conda install -c conda-forge python-crfsuite
+  ```
+
 - To install (requires python >=3.9)
 
   ```sh
@@ -248,7 +266,82 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
   .venv/bin/pip install -r requirements.txt
   ```
 
-### Adding tests
+### Running just plots (or latest files)
+
+The plots are produced from csv files made in covid_data.py.
+
+1. Get the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) release to speed up the process.
+
+  - Manually: extract [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz)
+ into the top level of the project. It will put csv files into ```api``` and ```inputs/json``` folders.
+
+  - CLI: linux(or WSL); change into the root directory of your clone of the repository and then:
+    ```sh
+    wget https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz && \
+    tar xzf datasets.tar.gz && \
+    rm datasets.tar.gz
+    ```
+2. You can run only the plot function using the USE_CACHE_DATA=True MAX_DAYS=0 env vars
+
+  - CLI (linux)
+  ```sh
+  USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
+  ```
+  - IDE: setup a run profile in your IDE similar to this
+  ```
+          {
+            "name": "covidthailand - plot",
+            "type": "python",
+            "request": "launch",
+            "program": "covid_plot.py",
+            "console": "integratedTerminal",
+            "env": {
+                "USE_CACHE_DATA":"True",
+                "MAX_DAYS":"0",
+            }
+        }
+  ```
+
+3. You can comment out parts of covid_plot.py to skip some plots.
+   - In USE_CACHE_DATA  only ```*_3.png``` files are produced. 3 is for 3rd wave (since April 2021).
+
+- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
+
+### Running full code
+
+1. Extract the  [latest input files (~1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz).
+   This get the latest cache of documents to speed up scraping.
+
+  - Manually: extract [latest input files (~1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz)
+ into the top level of the project. It will put documents/json etc ```inputs/*``` folders.
+
+  - CLI: linux(or WSL); change into the root directory of your clone of the repository and then:
+  ```sh
+  wget https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz && \
+  tar xzf inputs.tar.gz && \
+  rm inputs.tar.gz
+  ```
+  - Manually
+
+2. To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
+
+  ```sh
+  USE_CACHE_DATA=True python covid_data.py
+  ```
+
+3. If many days have passed since the last run then return to step 1. or slightly slow but smaller download is to
+   download the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) files
+   which will speed up dashboard scrapping which is the slowest part.
+
+4. If you really need to ensure all the files are scraped again then
+
+- To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
+
+  ```sh
+  bin/python covid_plot.py
+  ```
+
+### Running Tests (scraping)
 
 - To run the tests (will only get files needed for tests)
 
@@ -267,44 +360,6 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
   - If the results are correct there is commented out code in the test function to export the data to the test json file.
     - if you are using vscode to run pytests you need to refresh the tests list at this point for some reason
   - Note that not all scrapers have a test framework setup yet. But follow the existing code to add one or ask for help.
-
-### Running just plots (or latest files)
-
-- To get latest files; change into the root directory of your clone of the repository and then:
-
-  ```sh
-  wget https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz && \
-  tar xzf inputs.tar.gz && \
-  rm inputs.tar.gz
-  ```
-
-- To build the CSV files needed for plotting from the inputs downloaded above, from the root directory of the repo, run:
-
-  ```sh
-  USE_CACHE_DATA=True python covid_data.py
-  ```
-
-- To do just plots
-
-  ```sh
-  USE_CACHE_DATA=True MAX_DAYS=0 bin/python covid_plot.py
-  ```
-
-- When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
-
-### Running full code (warning will take a long time)
-
-You can just use the test framework without a full download if you want to work on scraping.
-
-- to download only the files that interest you first, you can comment out or rearrange the lines in covid_data.scrape_and_combine
-- to work on plots you can download the csv files from the website into the api directory and set env MAX_DAYS=0
-
-- To run the full scrape (warning this will take a long time as it downloads all the documents into a local cache)
-
-  ```sh
-  bin/python covid_plot.py
-  ```
-
 ### Building Site
 
 ```
@@ -349,6 +404,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
   - [DMSC PR: FB](https://www.facebook.com/DMSc.PR.Network)
 - [MOPH ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/210413ebb5ff49bb8914808af6473322) - PUI + worldwide covid stats
 - [MOPH OPS Dashboard: ArcGIS](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0?) - current usage of hospital resource but seems no longer updated (since mid last year?)
+- [Institute for Health Metrics and Evaluation](http://www.healthdata.org/covid/data-downloads) - COVID estimates including mobility estimates from mobile phone data
 
 ## Change log
 

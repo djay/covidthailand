@@ -1,11 +1,15 @@
-from dateutil.parser import parse as d
 import re
 
 import pandas as pd
+from dateutil.parser import parse as d
 
 from utils_pandas import cum2daily
-from utils_scraping import any_in, get_next_number, get_next_numbers, \
-    get_tweets_from, toint, logger
+from utils_scraping import any_in
+from utils_scraping import get_next_number
+from utils_scraping import get_next_numbers
+from utils_scraping import get_tweets_from
+from utils_scraping import logger
+from utils_scraping import toint
 
 
 ##################################

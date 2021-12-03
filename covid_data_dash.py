@@ -1,13 +1,20 @@
-from utils_scraping_tableau import workbook_flatten, workbook_iterate
-import pandas as pd
+import os
+import shutil
+
 import numpy as np
+import pandas as pd
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from utils_scraping import USE_CACHE_DATA, any_in, logger
-from utils_thai import get_province, today
-from utils_pandas import export, import_csv
-import shutil
-import os
+
+from utils_pandas import export
+from utils_pandas import import_csv
+from utils_scraping import any_in
+from utils_scraping import logger
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import workbook_flatten
+from utils_scraping_tableau import workbook_iterate
+from utils_thai import get_province
+from utils_thai import today
 
 
 ########################
@@ -129,13 +136,16 @@ def dash_daily():
 def dash_ages():
     df = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
 
+    # Fix mistake in column name
+    df.columns = [c.replace("Hospitalized Severe", "Cases Proactive") for c in df.columns]
+
     # Get deaths by prov, date. and other stats - timeline
     #
     # ['< 10 ปี', '10-19 ปี', '20-29 ปี', '30-39 ปี', '40-49 ปี', '50-59 ปี', '60-69 ปี', '>= 70 ปี', 'ไม่ระบุ']
 
     # D4_TREND
     # cases = AGG(stat_count)-alias
-    # severe = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
+    # proactive = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
     # deaths = AGG(ผู้เสียชีวิต)-alias (and AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value  all patient groups)
     # cum cases = AGG(stat_accum)-alias
     # date  = DAY(date)-alias, DAY(date)-value
@@ -159,13 +169,13 @@ def dash_ages():
                 "DAY(date)-value": "Date",
                 "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
                 "AGG(stat_count)-alias": "Cases",
-                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
+                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Cases Proactive",
             },
         )
         if row.empty:
             continue
         row['Age'] = age_group
-        row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
+        row = row.pivot(values=["Deaths", "Cases", "Cases Proactive"], columns="Age")
         row.columns = [f"{n} Age {v}" for n, v in row.columns]
         df = row.combine_first(df)
         logger.info("{} MOPH Ages {} {}", row.last_valid_index(), range2eng(age_group),
@@ -220,6 +230,8 @@ def dash_by_province():
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
+    if "Hospitalized Severe" in df.columns:
+        df = df.drop(columns=["Hospitalized Severe"])  # was actually proactive
 
     last_pos_rate = max(df["Positive Rate Dash"].last_valid_index()[0], today() - relativedelta(days=31))
     valid = {
@@ -235,7 +247,6 @@ def dash_by_province():
         "Cases Imported": d("2021-08-01"),
         "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
         "Cases": d("2021-06-28"),  # Only Lampang?
-        'Hospitalized Severe': today(),  # Comes from the trends data
     }
     # Dates with no data and doesn't seem to change
     skip = [
@@ -362,15 +373,15 @@ def skip_valid(df, idx_value, allow_na={}):
             return False
         if not mins:
             return True
-        
+
         min_val, *max_val = mins
         if min_val > val:
             return False
         elif max_val and val > max_val[0]:
             return False
         else:
-            return True 
- 
+            return True
+
     # allow certain fields null if before set date
     nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
     if not nulls:

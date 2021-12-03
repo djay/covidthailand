@@ -2,15 +2,31 @@ import matplotlib.cm
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
-from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, topprov
-from utils_scraping import remove_prefix, logger
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
-    FIRST_AREAS, area_crosstab, join_provinces, trend_table
 import utils_thai
-
-from covid_plot_utils import plot_area, source
+from covid_data import get_ifr
+from covid_data import scrape_and_combine
+from covid_plot_utils import plot_area
+from covid_plot_utils import source
+from utils_pandas import cum2daily
+from utils_pandas import cut_ages
+from utils_pandas import cut_ages_labels
+from utils_pandas import decreasing
+from utils_pandas import get_cycle
+from utils_pandas import import_csv
+from utils_pandas import increasing
+from utils_pandas import normalise_to_total
+from utils_pandas import perc_format
+from utils_pandas import rearrange
+from utils_pandas import topprov
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_thai import area_crosstab
+from utils_thai import AREA_LEGEND
+from utils_thai import DISTRICT_RANGE
+from utils_thai import DISTRICT_RANGE_SIMPLE
+from utils_thai import FIRST_AREAS
+from utils_thai import join_provinces
+from utils_thai import trend_table
 
 
 def save_deaths_plots(df: pd.DataFrame) -> None:
@@ -100,14 +116,14 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     by_region = cases.reset_index()
-    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")    
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
     plot_area(df=by_region / pop_region * 100000,
               title='Covid Deaths/100k - by Region - Thailand',
               png_prefix='deaths_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table = trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
+              table=trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
               footnote='Table of latest Deaths and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -135,7 +151,6 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
-
 
     # Work out Death ages from CFR from situation reports
     age_ranges = ["15-39", "40-59", "60-"]
@@ -212,7 +227,6 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
-
     # Excess Deaths
 
     # TODO: look at causes of death
@@ -223,6 +237,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     # Just normal ageing population
 
     #  Take avg(2015-2019)/(2021) = p num. (can also correct for population changes?)
+
     def calc_pscore(adf):
         months = adf.groupby(["Year", "Month"], as_index=False).sum().pivot(columns="Year", values="Deaths", index="Month")
         death3_avg = months[years3].mean(axis=1)
@@ -266,7 +281,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               title='Monthly Deaths above Normal - Thailand',
               legends=legends,
               cols_subset=['Deviation from expected Deaths', 'P-Score'],
-              ma_days=None, 
+              ma_days=None,
               kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               y_formatter=perc_format,
@@ -282,7 +297,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     by_month = years2020.combine_first(years2021).sort_values("Date")
     cols = cols + cols2021
 
-    plot_area(df=by_month, 
+    plot_area(df=by_month,
               title='Excess Deaths - Thailand',
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
@@ -449,7 +464,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
     by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
     top5 = by_province.pipe(topprov, lambda adf: (adf["Excess Deaths"] - adf['Deaths Covid']) / adf['Pre 5 Avg'] * 100, num=5)
     cols = top5.columns.to_list()
-    plot_area(df=top5, 
+    plot_area(df=top5,
               title='Deviation from Expected Monthly Deaths - Thailand',
               png_prefix='deaths_expected_prov', cols_subset=cols,
               periods_to_plot=['all'],
@@ -472,10 +487,11 @@ see https://djay.github.io/covidthailand/#excess-deaths
 
     by_district = excess.groupby("Health District Number").apply(calc_pscore)
     by_district['Deaths Covid'] = cases.groupby(["Health District Number", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
-    by_district['Deviation from expected Deaths'] = (by_district['Excess Deaths'] - by_district['Deaths Covid']) / by_district['Pre 5 Avg'] * 100
+    by_district['Deviation from expected Deaths'] = (
+        by_district['Excess Deaths'] - by_district['Deaths Covid']) / by_district['Pre 5 Avg'] * 100
     top5 = area_crosstab(by_district, "Deviation from expected Deaths", "")
     cols = rearrange([f'Deviation from expected Deaths Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=top5, 
+    plot_area(df=top5,
               title='Deviation from Expected Monthly Deaths - Thailand',
               legends=AREA_LEGEND,
               png_prefix='deaths_expected_area', cols_subset=cols,

@@ -1,26 +1,41 @@
+import codecs
 import datetime
 import functools
-from dateutil.relativedelta import relativedelta
 import json
 import os
 import re
-import codecs
 import shutil
 
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
-from utils_pandas import export, fuzzy_join, import_csv, cut_ages
-from utils_scraping import web_files, s, logger
-from utils_thai import DISTRICT_RANGE, join_provinces, to_thaiyear, today
+from utils_pandas import add_data
+from utils_pandas import cut_ages
+from utils_pandas import export
+from utils_pandas import fuzzy_join
+from utils_pandas import import_csv
+from utils_scraping import logger
+from utils_scraping import s
+from utils_scraping import web_files
+from utils_thai import DISTRICT_RANGE
+from utils_thai import join_provinces
+from utils_thai import to_thaiyear
+from utils_thai import today
 
 #################################
 # Cases Apis
 #################################
 
 
-def get_cases():
+def get_cases_old():
     logger.info("========Covid19 Timeline==========")
+    # https://covid19.th-stat.com/json/covid19v2/getTimeline.json
+    # https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all
+    # https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all
+    # {"Date":"01\/01\/2020","NewConfirmed":0,"NewRecovered":0,"NewHospitalized":0,"NewDeaths":0,"Confirmed":0,"Recovered":0,"Hospitalized":0,"Deaths":0}
+    # {"txn_date":"2021-03-31","new_case":42,"total_case":28863,"new_case_excludeabroad":24,"total_case_excludeabroad":25779,"new_death":0,"total_death":94,"new_recovered":47,"total_recovered":27645}
+    # "txn_date":"2021-04-01","new_case":26,"total_case":28889,"new_case_excludeabroad":21,"total_case_excludeabroad":25800,"new_death":0,"total_death":94,"new_recovered":122,"total_recovered":27767,"update_date":"2021-09-01 07:40:49"}
     try:
         file, text, url = next(
             web_files("https://covid19.th-stat.com/json/covid19v2/getTimeline.json", dir="inputs/json", check=True))
@@ -32,6 +47,31 @@ def get_cases():
     data = data.set_index("Date")
     cases = data[["NewConfirmed", "NewDeaths", "NewRecovered", "Hospitalized"]]
     cases = cases.rename(columns=dict(NewConfirmed="Cases", NewDeaths="Deaths", NewRecovered="Recovered"))
+    cases["Source Cases"] = url
+    return cases
+
+
+def get_cases():
+    logger.info("========Covid19 Timeline==========")
+    # https://covid19.th-stat.com/json/covid19v2/getTimeline.json
+    # https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all
+    # https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all
+    # {"Date":"01\/01\/2020","NewConfirmed":0,"NewRecovered":0,"NewHospitalized":0,"NewDeaths":0,"Confirmed":0,"Recovered":0,"Hospitalized":0,"Deaths":0}
+    # {"txn_date":"2021-03-31","new_case":42,"total_case":28863,"new_case_excludeabroad":24,"total_case_excludeabroad":25779,"new_death":0,"total_death":94,"new_recovered":47,"total_recovered":27645}
+    # "txn_date":"2021-04-01","new_case":26,"total_case":28889,"new_case_excludeabroad":21,"total_case_excludeabroad":25800,"new_death":0,"total_death":94,"new_recovered":122,"total_recovered":27767,"update_date":"2021-09-01 07:40:49"}
+    url1 = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all"
+    url2 = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all"
+    try:
+        _, json1, url = next(web_files(url1, dir="inputs/json", check=False))
+        _, json2, url = next(web_files(url2, dir="inputs/json", check=True))
+    except ConnectionError:
+        # I think we have all this data covered by other sources. It's a little unreliable.
+        return pd.DataFrame()
+    data = pd.read_json(json1).append(pd.read_json(json2))
+    data['Date'] = pd.to_datetime(data['txn_date'])
+    data = data.set_index("Date")
+    data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
+    cases = data[["Cases", "Deaths", "Recovered"]]
     cases["Source Cases"] = url
     return cases
 
@@ -56,7 +96,8 @@ def get_case_details_csv():
         elif file.endswith(".csv"):
             confirmedcases = pd.read_csv(file)
             if "risk" not in confirmedcases.columns:
-                confirmedcases.columns = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(",")
+                confirmedcases.columns = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
+                    ",")
             if '�' in confirmedcases.loc[0]['risk']:
                 # bad encoding
                 with codecs.open(file, encoding="tis-620") as fp:
@@ -69,9 +110,43 @@ def get_case_details_csv():
     cases = cases.reset_index("No.")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
-    cases = cases.rename(columns=dict(announce_date="Date")).set_index("Date")
+    cases = cases.rename(columns=dict(announce_date="Date"))
     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
     #assert cases.index.max() <
+    # Fix typos in Nationality columns
+    # This won't include every possible misspellings and need some further improvement
+    mapping = pd.DataFrame([['Thai', 'Thailand'],
+                            ['Thai', 'Thai'],
+                            ['Thai', 'India-Thailand'],
+                            ['Thai', 'ไทยใหญ่'],
+                            ['Lao', 'laotian / Lao'],
+                            ['Lao', 'Lao'],
+                            ['Lao', 'Laotian/Lao'],
+                            ['Lao', 'Laotian / Lao'],
+                            ['Lao', 'laos'],
+                            ['Lao', 'Laotian'],
+                            ['Lao', 'Laos'],
+                            ['Lao', 'ลาว'],
+                            ['Indian', 'Indian'],
+                            ['Indian', 'India'],
+                            ['Indian', 'indian'],
+                            ['Cambodian', 'Cambodian'],
+                            ['Cambodian', 'cambodian'],
+                            ['Cambodian', 'Cambodia'],
+                            ['South Korean', 'South Korean'],
+                            ['South Korean', 'Korea, South'],
+                            ['South Korean', 'Korean'],
+                            ['Burmese', 'Burmese'],
+                            ['Burmese', 'พม่า'],
+                            ['Burmese', 'burmese'],
+                            ['Burmese', 'Burma'],
+                            ['Chinese', 'Chinese'],
+                            ['Chinese', 'จีน'],
+                            ['Chinese', 'China'],
+                            ],
+                           columns=['Nat Main', 'Nat Alt']).set_index('Nat Alt')
+    cases = fuzzy_join(cases, mapping, 'nationality')
+    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
     return cases
 
 
@@ -111,7 +186,7 @@ def get_case_details_api():
 def get_cases_by_demographics_api():
     logger.info("========Covid19Daily Demographics==========")
 
-    cases = get_case_details_csv().reset_index()
+    cases = get_case_details_csv()
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
     case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
@@ -370,3 +445,26 @@ def get_cases_by_area_api():
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
     case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
     return case_areas
+
+# Get IHME dataset
+
+
+def ihme_dataset():
+    data = pd.DataFrame()
+
+    # listing out urls not very elegant, but this only need yearly update
+    urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
+    for url in urls:
+        file, _, _ = next(iter(web_files(url, dir="inputs/IHME")))
+        data_in_file = pd.read_csv(file)
+        data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
+        data = add_data(data, data_in_file)
+    # already filtered for just Thailand data above
+    data.drop(['location_id', 'location_name'], axis=1, inplace=True)
+    data.rename(columns={'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
+    data["Date"] = pd.to_datetime(data["Date"]).dt.date
+    data = data.sort_values(by="Date")
+    data = data.set_index("Date")
+
+    return(data)

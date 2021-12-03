@@ -1,17 +1,45 @@
-import matplotlib.cm
-import pandas as pd
-import numpy as np
 import re
 
-from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, human_format, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, set_time_series_labels_2, topprov, pred_vac, fix_gaps
-from utils_scraping import remove_prefix, remove_suffix, any_in, logger
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, AREA_LEGEND_SIMPLE, \
-    AREA_LEGEND_ORDERED, FIRST_AREAS, area_crosstab, get_provinces, join_provinces, thaipop, thaipop2, trend_table
-import utils_thai
+import matplotlib.cm
+import numpy as np
+import pandas as pd
 
-from covid_plot_utils import plot_area, source
+import utils_thai
+from covid_data import get_ifr
+from covid_data import scrape_and_combine
+from covid_plot_utils import plot_area
+from covid_plot_utils import source
+from utils_pandas import cum2daily
+from utils_pandas import cut_ages
+from utils_pandas import cut_ages_labels
+from utils_pandas import decreasing
+from utils_pandas import fix_gaps
+from utils_pandas import get_cycle
+from utils_pandas import human_format
+from utils_pandas import import_csv
+from utils_pandas import increasing
+from utils_pandas import normalise_to_total
+from utils_pandas import perc_format
+from utils_pandas import pred_vac
+from utils_pandas import rearrange
+from utils_pandas import set_time_series_labels_2
+from utils_pandas import topprov
+from utils_scraping import any_in
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_scraping import remove_suffix
+from utils_thai import area_crosstab
+from utils_thai import AREA_LEGEND
+from utils_thai import AREA_LEGEND_ORDERED
+from utils_thai import AREA_LEGEND_SIMPLE
+from utils_thai import DISTRICT_RANGE
+from utils_thai import DISTRICT_RANGE_SIMPLE
+from utils_thai import FIRST_AREAS
+from utils_thai import get_provinces
+from utils_thai import join_provinces
+from utils_thai import thaipop
+from utils_thai import thaipop2
+from utils_thai import trend_table
 
 
 def save_vacs_plots(df: pd.DataFrame) -> None:
@@ -61,13 +89,15 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
     df_vac_groups['Vac Given 3 Cum'] = df['Vac Given 3 Cum']
-    df_vac_groups['Vac Imported Cum'] = df_vac_groups[[c for c in df_vac_groups.columns if "Vac Imported" in c]].sum(axis=1, skipna=False)
+    df_vac_groups['Vac Imported Cum'] = df_vac_groups[[
+        c for c in df_vac_groups.columns if "Vac Imported" in c]].sum(axis=1, skipna=False)
 
     # now convert to daily and interpolate and then normalise to real daily total.
     vac_daily = cum2daily(df_vac_groups)
     # bring in any daily figures we might have collected first
     vac_daily = df[['Vac Given', 'Vac Given 1', 'Vac Given 2', 'Vac Given 3']].combine_first(vac_daily)
-    daily_cols = [c for c in vac_daily.columns if c.startswith('Vac Group') and ' 3' not in c] + ['Vac Given 3']  # Keep for unknown
+    daily_cols = [c for c in vac_daily.columns if c.startswith(
+        'Vac Group') and ' 3' not in c] + ['Vac Given 3']  # Keep for unknown
     # We have "Medical All" instead
     daily_cols = [c for c in daily_cols if not any_in(c, "Medical Staff", "Volunteer")]
     # interpolate to fill gaps and get some values for each group
@@ -84,23 +114,23 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     daily_cols = [c for c in daily_cols if "2" in c] + [c for c in daily_cols if "1" in c] + [c for c in daily_cols if "3" in c]
 
     plot_area(df=vac_daily,
-        title='Daily Covid Vaccinations by Priority Groups - Thailand',
-        legends=[
-            # 'Doses per day needed to run out in a week',
-            'Rate for 70% 1st Jab in 2021',
-            'Rate for 70% 2nd Jab in 2021'
-        ] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
-        legend_cols=2,
-        png_prefix='vac_groups_daily', cols_subset=daily_cols,
-        between=[
-            # '7d Runway Rate',
-            'Target Rate 1',
-            'Target Rate 2'],
-        periods_to_plot=["30d", "3"],  # too slow to do all
-        ma_days=None,
-        kind='bar', stacked=True, percent_fig=False,
-        cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
-        footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
+              title='Daily Covid Vaccinations by Priority Groups - Thailand',
+              legends=[
+                  # 'Doses per day needed to run out in a week',
+                  'Rate for 70% 1st Jab in 2021',
+                  'Rate for 70% 2nd Jab in 2021'
+              ] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
+              legend_cols=2,
+              png_prefix='vac_groups_daily', cols_subset=daily_cols,
+              between=[
+                  # '7d Runway Rate',
+                  'Target Rate 1',
+                  'Target Rate 2'],
+              periods_to_plot=["30d", "3"],  # too slow to do all
+              ma_days=None,
+              kind='bar', stacked=True, percent_fig=False,
+              cmap=get_cycle('tab20', len(daily_cols) - 1, extras=["grey"], unpair=True),
+              footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
     # # Now turn daily back to cumulative since we now have estimates for every day without dips
     # vac_cum = vac_daily.cumsum().combine_first(vac_daily[daily_cols].fillna(0).cumsum())
@@ -143,8 +173,6 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               y_formatter=thaipop,
               footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
-
-
     # Targets for groups
     # https://www.facebook.com/informationcovid19/photos/a.106455480972785/342985323986465/
 
@@ -181,7 +209,6 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
             vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
                 f'Vac Group {group} {d} Cum'] / goal * 100
 
-
     dose1 = vac_cum[[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
     dose2 = vac_cum[[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
     pred1, pred2 = pred_vac(dose1, dose2, lag=40)
@@ -192,31 +219,31 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(df=vac_cum.combine_first(pred2),
-        title='Full Covid Vaccination Progress - Thailand',
-        legends=legends,
-        png_prefix='vac_groups_goals_full', cols_subset=cols2,
-        kind='line',
-        actuals=list(pred2.columns),
-        ma_days=None,
-        stacked=False, percent_fig=False,
-        y_formatter=perc_format,
-        cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
-        footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
-        footnote='Assumes avg 40day gap between doses')
+              title='Full Covid Vaccination Progress - Thailand',
+              legends=legends,
+              png_prefix='vac_groups_goals_full', cols_subset=cols2,
+              kind='line',
+              actuals=list(pred2.columns),
+              ma_days=None,
+              stacked=False, percent_fig=False,
+              y_formatter=perc_format,
+              cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
+              footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
+              footnote='Assumes avg 40day gap between doses')
 
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(df=vac_cum.combine_first(pred1),
-        title='Half Covid Vaccination Progress - Thailand',
-        legends=legends,
-        png_prefix='vac_groups_goals_half', cols_subset=cols2,
-        actuals=list(pred1.columns),
-        ma_days=None,
-        kind='line', stacked=False, percent_fig=False,
-        y_formatter=perc_format,
-        cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
-        footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
+              title='Half Covid Vaccination Progress - Thailand',
+              legends=legends,
+              png_prefix='vac_groups_goals_half', cols_subset=cols2,
+              actuals=list(pred1.columns),
+              ma_days=None,
+              kind='line', stacked=False, percent_fig=False,
+              y_formatter=perc_format,
+              cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
+              footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-28':][cols].interpolate(limit_area="inside")
@@ -238,7 +265,8 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     # vac = dash_prov.combine_first(vac)
     #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
     # Add them all up
-    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(axis=1, skipna=False).to_frame("Vac Given Cum"))
+    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
+        axis=1, skipna=False).to_frame("Vac Given Cum"))
     vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
     # Bring in vac populations
     pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population")  # It's not on all data
@@ -250,7 +278,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
         'Deaths',
     ]
     peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
-    peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100 # pops.sum() is 72034815.0
+    peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
     cols += ['Vaccinated']
     legend = ["Confirmed Cases (% of peak)", "Reported Covid Deaths (% of peak)", "Vaccinated - 2nd dose (% of Thai Pop.)"]
     plot_area(df=peaks,
@@ -284,14 +312,13 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               cmap='tab20_r',
               y_formatter=perc_format,
               footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
-                        + 'PCR: Polymerase Chain Reaction',
+              + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
-
 
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
     # pred = pred_vac(top5)
-    # plot_area(df=top5, 
+    # plot_area(df=top5,
     #           title='Covid Vaccination Doses - Top Provinces - Thailand',
     #           png_prefix='vac_top5_doses', cols_subset=cols,
     #           ma_days=None,
@@ -303,8 +330,10 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
     by_region = vac.reset_index()
     pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
+                              values=by_region['Vac Given 2 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
+                              values=by_region['Vac Given 1 Cum'], aggfunc="sum") / pop_region * 100
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -316,7 +345,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               actuals=list(pred_2.columns),
-              table = trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
+              table=trend_table(vac['Vac Given 2 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
               footnote='Table of % vaccinated and 7 day trend in change in rank',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
@@ -328,13 +357,11 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               actuals=list(pred_1.columns),
-              table = trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
+              table=trend_table(vac['Vac Given 1 Cum'] / vac['Vac Population2'] * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
               footnote='Table of % vaccinated and 7 day trend in change in rank',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
-
-
 
     vac_prov_daily = vac.groupby("Province", group_keys=True).apply(cum2daily)
     vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
@@ -350,7 +377,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-#              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
+              #              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
@@ -360,13 +387,12 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-#              table = trend_table(vac_prov_daily['Vac Given 1'], sensitivity=10, style="green_up"),
+              #              table = trend_table(vac_prov_daily['Vac Given 1'], sensitivity=10, style="green_up"),
               footnote='Table of latest Vacciantions and 7 day trend per 100k',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
 
-
-    # TODO: to make this work have to fix negative values 
+    # TODO: to make this work have to fix negative values
     # plot_area(df=by_region,
     #           title='Covid Deaths - by Region - Thailand',
     #           png_prefix='vac_region_daily_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
@@ -374,7 +400,6 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     #           kind='area', stacked=True, percent_fig=True,
     #           cmap=utils_thai.REG_COLOURS,
     #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
-
 
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     pred = pred_vac(top5)
@@ -394,14 +419,14 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100)
     # since top5 might be different need to recalculate
     top5_dose1 = vac.pipe(
-        topprov, 
+        topprov,
         lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
         lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
     )
     _, pred = pred_vac(top5_dose1, top5)
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     cols = top5.columns.to_list()
-    plot_area(df=top5.combine_first(pred), 
+    plot_area(df=top5.combine_first(pred),
               title='Covid Vaccinations 2nd Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_2', cols_subset=cols,
               actuals=list(pred.columns),
@@ -418,7 +443,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     cols = top5.columns.to_list()
     pred = pred_vac(top5)
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
-    plot_area(df=top5.combine_first(pred), 
+    plot_area(df=top5.combine_first(pred),
               title='Covid Vaccination 1st Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_1', cols_subset=cols,
               actuals=list(pred.columns),
@@ -434,11 +459,11 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
                     other_name=None, num=7)
     cols = top5.columns.to_list()
     top5_dose1 = vac.pipe(topprov, lambda df: -df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
-                    lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
-                    other_name=None, num=7)
+                          lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100,
+                          other_name=None, num=7)
     _, pred = pred_vac(top5_dose1, top5)
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
-    plot_area(df=top5.combine_first(pred), 
+    plot_area(df=top5.combine_first(pred),
               title='Covid Vaccinations 2nd Dose - Lowest Provinces - Thailand',
               png_prefix='vac_low_doses_2', cols_subset=cols,
               actuals=list(pred.columns),

@@ -104,6 +104,10 @@
       {
         "name":"Deaths Comorbidity None",
         "type":"integer"
+      },
+      {
+        "name":"Deaths 60 Plus",
+        "type":"integer"
       }
     ],
     "primaryKey":[
@@ -138,7 +142,8 @@
       "Deaths Comorbidity Heart disease":0,
       "Deaths Comorbidity Bedridden":1,
       "Deaths Comorbidity Pregnant":1,
-      "Deaths Comorbidity None":30
+      "Deaths Comorbidity None":30,
+      "Deaths 60 Plus":191
     }
   ]
 }

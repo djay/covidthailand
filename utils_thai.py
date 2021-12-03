@@ -1,16 +1,22 @@
 import datetime
-import functools
-from dateutil.parser import parse as d
 import difflib
+import functools
 import json
 import os
 import re
-import pythainlp.tokenize
+
 import numpy as np
 import pandas as pd
+import pythainlp.tokenize
+from dateutil.parser import parse as d
 
-from utils_pandas import fuzzy_join, rearrange, sensible_precision
-from utils_scraping import remove_prefix, remove_suffix, web_files, logger
+from utils_pandas import fuzzy_join
+from utils_pandas import rearrange
+from utils_pandas import sensible_precision
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_scraping import remove_suffix
+from utils_scraping import web_files
 
 
 DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
@@ -100,12 +106,12 @@ def to_thaiyear(year, short=False):
 
 def file2date(file):
     """
-    return date of either 
-    
-    #>>> file2date('files/10-02-21.json') 
+    return date of either
+
+    #>>> file2date('files/10-02-21.json')
     #datetime.datetime(2021, 2, 10, 0, 0)
 
-    >>> file2date('files/report-100264.pdf') 
+    >>> file2date('files/report-100264.pdf')
     datetime.datetime(2021, 2, 10, 0, 0)
     """
 
@@ -173,19 +179,19 @@ def find_thai_date(content, remove=False):
     2021-10-20 00:00:00
 
     Can find inside a string
-    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ")) 
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส "))
     2021-05-10 00:00:00
 
     remove the date from the string
-    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส", remove=True)[1]) 
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส", remove=True)[1])
     สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่   ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส
 
     can handle mispellings
-    >>> print(find_thai_date("10 พฤษภาม 2564")) 
+    >>> print(find_thai_date("10 พฤษภาม 2564"))
     2021-05-10 00:00:00
 
     can handle mispellings
-    >>> print(find_thai_date("10 พฤษ 2564")) 
+    >>> print(find_thai_date("10 พฤษ 2564"))
     2021-05-10 00:00:00
 
     """

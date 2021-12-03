@@ -1,31 +1,49 @@
 import matplotlib.cm
+import numpy as np
 import pandas as pd
 
-from covid_data import get_ifr, scrape_and_combine
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, topprov
-from utils_scraping import remove_prefix, logger
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
-    FIRST_AREAS, area_crosstab, join_provinces, trend_table
 import utils_thai
-
-from covid_plot_utils import plot_area, source
+from covid_data import get_ifr
+from covid_data import scrape_and_combine
+from covid_data_api import get_case_details_csv
+from covid_plot_utils import plot_area
+from covid_plot_utils import source
+from utils_pandas import cum2daily
+from utils_pandas import cut_ages
+from utils_pandas import cut_ages_labels
+from utils_pandas import decreasing
+from utils_pandas import fuzzy_join
+from utils_pandas import get_cycle
+from utils_pandas import import_csv
+from utils_pandas import increasing
+from utils_pandas import normalise_to_total
+from utils_pandas import perc_format
+from utils_pandas import rearrange
+from utils_pandas import topprov
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_thai import area_crosstab
+from utils_thai import AREA_LEGEND
+from utils_thai import DISTRICT_RANGE
+from utils_thai import DISTRICT_RANGE_SIMPLE
+from utils_thai import FIRST_AREAS
+from utils_thai import join_provinces
+from utils_thai import trend_table
 
 
 def save_cases_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Cases Plots ==========')
 
-
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive']  # .sub(df['Cases Area Prison'], fill_value=0)
-    #df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
+    # df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
     cols = [
         'Cases Imported',
         'Cases Walkin',
         'Cases Proactive Community',
         'Cases Area Prison',
     ]
-    legends=[
+    legends = [
         'Tests in Quarantine/Imported',
         'Walk-ins/Traced Tests in Hospital',
         'Mobile Proactive Tests in Community',
@@ -42,11 +60,11 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               actuals=["Cases"],
               cmap="tab10",
               footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
-                        + 'Contact tracing counts as a Walk-in.\n'
-                        + 'PCR: Polymerase Chain Reaction\n'
-                        + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
-                        + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+                       + 'Contact tracing counts as a Walk-in.\n'
+                       + 'PCR: Polymerase Chain Reaction\n'
+                       + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+                       + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
+                       + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     cols = [
@@ -72,7 +90,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # Thailand Covid Cases by Age
-    #cols = ["Age 0-9", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
+    # cols = ["Age 0-9", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
     cols = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Cases Age")
     plot_area(df=df,
               title='Covid Cases by Age - Thailand',
@@ -98,10 +116,36 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               actuals=['Cases'],
               cmap='tab10',
               footnote='Grouped from original data which has over 70 risk categories.\n'
-                        + 'Clusters have been grouped into either Work (factories),\n'
-                        + 'Entertainment (bars/gambling...) or Community (markets) related.\n'
-                        + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+                       + 'Clusters have been grouped into either Work (factories),\n'
+                       + 'Entertainment (bars/gambling...) or Community (markets) related.\n'
+                       + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
+
+    """ Thailand Covid Cases by Nationality """
+
+    cases = get_case_details_csv()
+    # List out all nationalities by number of occurrences, select only 5 largest nationalities excluding Thai and others(non-labled)
+    nat_index = cases['nationality'].value_counts().index
+    top5_list = nat_index[~nat_index.isin(['Thai', 'Others'])][:5]
+
+    # List out all nationalities apart from Thai and top5
+    others_list = nat_index[~nat_index.isin(np.concatenate((top5_list, ['Thai'])))]
+
+    # Counts number of cases of each nationality by date
+    counts_by_nation = pd.crosstab(cases['Date'], cases['nationality'])
+
+    # Create another DataFrame containing top 5 and others (Others = Sum of every other nationality)
+    by_nationality_top5 = counts_by_nation[top5_list]
+    by_nationality_top5['Others'] = counts_by_nation[others_list].sum(axis=1)
+    cols = [c for c in by_nationality_top5.columns]
+    plot_area(df=by_nationality_top5,
+              title='Non-Thai Covid Cases - by Nationality - Thailand',
+              png_prefix='cases_nation', cols_subset=cols,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote='\n*Thai cases are excluded',
+              footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
 
     #######################
     # Cases by provinces
@@ -114,22 +158,24 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     all_days = pd.date_range(cases_pivot.index.min(), cases_pivot.index.max(), name="Date")
     cases_pivot = cases_pivot.reindex(all_days).fillna(0)  # put in missing days with NaN
     cases = cases.set_index(["Date", "Province"]).combine_first(cases_pivot.unstack().to_frame("Cases"))
-    cases = join_provinces(cases, "Province", ["Health District Number", "region"])  # to fill in missing health districts
+    cases = join_provinces(cases, "Province",
+                           ["Health District Number", "region"])  # to fill in missing health districts
     # cases = cases.fillna(0)  # all the other values
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
 
-
     cases_region = cases.reset_index()
-    pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
-    cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
+    pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"],
+                             aggfunc="sum")
+    cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"],
+                               aggfunc="sum")
     plot_area(df=cases_region / pop_region * 100000,
               title='Cases/100k - by Region - Thailand',
               png_prefix='cases_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table = trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
@@ -180,6 +226,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     def cases_per_capita(col):
         def func(adf):
             return adf[col] / adf['Population'] * 100000
+
         return func
 
     top5 = cases.pipe(topprov,
@@ -221,7 +268,6 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                       num=5)
     cols = top5.columns.to_list()
 
-
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
@@ -244,8 +290,8 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nNote: Per 100,000 people.\n'
-                        + 'PCR: Polymerase Chain Reaction\n'
-                        + 'Walk-in: Testing done at hospital or test lab (PCR test).',
+                       + 'PCR: Polymerase Chain Reaction\n'
+                       + 'Walk-in: Testing done at hospital or test lab (PCR test).',
               footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
@@ -258,12 +304,12 @@ def save_cases_plots(df: pd.DataFrame) -> None:
         cols = top5.columns.to_list()
         plot_area(df=top5,
                   title=f'{risk} Related Covid Cases/100k - Trending Up Provinces - Thailand',
-                  png_prefix=f'cases_{risk.lower().replace(" ","_")}_increasing', cols_subset=cols,
+                  png_prefix=f'cases_{risk.lower().replace(" ", "_")}_increasing', cols_subset=cols,
                   ma_days=14,
                   kind='line', stacked=False, percent_fig=False,
                   cmap='tab10',
                   footnote='\nNote: Per 100,000 people.\n'
-                            + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+                           + 'Proactive: Testing done at high risk locations, rather than random sampling.',
                   footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     def top(func, _):
@@ -289,7 +335,6 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     #           kind='area', stacked=True, percent_fig=True,
     #           cmap='tab10',
     #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
-
 
     # for direction, title in zip([increasing, decreasing, top], ["Trending Up ", "Trending Down ", ""]):
     #     top5 = cases.pipe(topprov,
@@ -344,7 +389,34 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='Note: Based on Deaths/IFR.\n'
-                        + 'IFR: Infection Fatality Rate\n'
-                        + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
+                       + 'IFR: Infection Fatality Rate\n'
+                       + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
 
+    # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
+    cols = ['Cases']
+    peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
+
+    ihme = import_csv("ihme", ['Date'])
+    col_list = ['Mobility Index', 'mobility_obs']
+    mobility = ihme[col_list]
+    # keep only observed mobility, removing forcasted part
+    mobility = mobility.loc[mobility['mobility_obs'] == 1]
+    # Calculate Reduced Mobility Index
+    mobility_min = mobility['Mobility Index'].min()
+    mobility_max = mobility['Mobility Index'].max()
+    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
+                                                                  mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
+
+    peaks = peaks.combine_first(mobility)
+    cols += ['Reduced Mobility Index - IHME (% of peak)']
+    legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
+    plot_area(df=peaks,
+              title='Social Distancing - Reduced Mobility and Number of New Cases',
+              png_prefix='mobility', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              periods_to_plot=["all", "3"],
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
