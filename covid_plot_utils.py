@@ -666,9 +666,9 @@ def svg_hover(plt, fig, path):
                  0,0 point, purely to help with all the
                  overlapping tooltips! -->
           <rect width="7em" height="2.5em"
-                  x="-7em" y="-2.5em"/>
-          <text x="-3.5em" y="-2.5em" text-anchor="middle">
-            <tspan dy="1em">Mouse-tracking</tspan>
+                  x="-7em" y="-2.5em" fill="black"/>
+          <text x="-3.5em" y="-2.5em" text-anchor="middle" fill="white">
+            <tspan dy="1em">2021-12-02</tspan>
             <tspan x="-3.5em" dy="1.25em">SVG Tip</tspan>
           </text>
         </g>
