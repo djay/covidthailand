@@ -19,3 +19,4 @@ pytest
 #pytest-parallel
 mpld3
 loguru
+pre-commit

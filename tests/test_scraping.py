@@ -152,6 +152,7 @@ def parse_vac_tables(*files):
     return df
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("get_file1, get_file2", pair(vaccination_reports_files2))
 def test_vac_tables_inc(get_file1, get_file2):
 
