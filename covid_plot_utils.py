@@ -5,14 +5,16 @@ from typing import Sequence
 from typing import Union
 
 import matplotlib.cm
-import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from matplotlib.ticker import FuncFormatter
-from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
-from matplotlib.colors import ListedColormap
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.colors import ListedColormap
+from matplotlib.offsetbox import AnnotationBbox
+from matplotlib.offsetbox import DrawingArea
+from matplotlib.offsetbox import OffsetImage
+from matplotlib.offsetbox import TextArea
+from matplotlib.ticker import FuncFormatter
 
 from utils_pandas import get_cycle
 from utils_pandas import human_format
@@ -34,17 +36,17 @@ theme_light_back = '#202020'
 theme_dark_back = '#0C1111'
 
 cmap_regions = ListedColormap([
-    "#BC8D5D", # Bangkok Region
-    "#FFC200", # Central Region
-    "#F68E4D", # Eastern Region
-    "#77B251", # Western Region
-    "#26E2FD", # Northeastern Region
-    "#277CE5", # Northern Region
-    "#BF2C54", # Southern Region
-    "olive", # Prisons
-    "lawngreen", # Imported
-    "silver", # Thailand
-    ],
+    "#BC8D5D",  # Bangkok Region
+    "#FFC200",  # Central Region
+    "#F68E4D",  # Eastern Region
+    "#77B251",  # Western Region
+    "#26E2FD",  # Northeastern Region
+    "#277CE5",  # Northern Region
+    "#BF2C54",  # Southern Region
+    "olive",  # Prisons
+    "lawngreen",  # Imported
+    "silver",  # Thailand
+],
     name='Region Colors',
     N=10,
 )
@@ -435,11 +437,13 @@ def plot_area(df: pd.DataFrame,
 
     return None
 
+
 def add_minimap(axis):
     image = mpimg.imread('regions.png')
     imagebox = OffsetImage(image, zoom=0.3, interpolation='bilinear')
     annotationbox = AnnotationBbox(imagebox, (0.23, 0.75), xycoords='axes fraction', frameon=False, zorder=66)
-    axis.add_artist(annotationbox)       
+    axis.add_artist(annotationbox)
+
 
 def trend_indicator(trend, style):
     """Get the trend indicator and corresponding color."""
