@@ -133,7 +133,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               png_prefix='deaths_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='area', stacked=True, percent_fig=True, mini_map=True,
-    #          unknown_name="Imported/Prisons", unknown_total="Deaths",  # I don't think deaths get seperated
+              #          unknown_name="Imported/Prisons", unknown_total="Deaths",  # I don't think deaths get seperated
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
