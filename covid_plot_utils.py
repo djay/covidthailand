@@ -441,7 +441,7 @@ def plot_area(df: pd.DataFrame,
 def add_minimap(axis):
     image = mpimg.imread('regions.png')
     imagebox = OffsetImage(image, zoom=0.3, interpolation='bilinear')
-    annotationbox = AnnotationBbox(imagebox, (0.23, 0.75), xycoords='axes fraction', frameon=False, zorder=66)
+    annotationbox = AnnotationBbox(imagebox, (0.23, 0.75), xycoords='axes fraction', frameon=False)
     axis.add_artist(annotationbox)
 
 
