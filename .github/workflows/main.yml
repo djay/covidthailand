@@ -3,9 +3,9 @@ on:
   push:
     branches:
       - main
-#   pull_request:
-#     branches-ignore:
-#       - "releases/**"
+  pull_request:
+    branches-ignore:
+      - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
     - cron: "30 23 * * *" # 07:30 Dashboard
     - cron: "15 00 * * *" # 08:15 Dashboard

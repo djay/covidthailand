@@ -501,7 +501,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               title='PCR Positive Rate - Median per Region - Thailand',
               png_prefix='positivity_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               y_formatter=perc_format,
               table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down"),
