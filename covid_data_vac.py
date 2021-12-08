@@ -28,6 +28,7 @@ from utils_scraping import USE_CACHE_DATA
 from utils_scraping import web_files
 from utils_scraping import web_links
 from utils_thai import area_crosstab
+from utils_thai import file2date
 from utils_thai import find_thai_date
 from utils_thai import get_province
 from utils_thai import join_provinces
@@ -471,7 +472,7 @@ def vaccination_tables(df, date, page, file):
                     sv, az, sp, pf, md, total_alloc = alloc
                 else:
                     assert False
-                if date in [d("2021-12-05")]:
+                if date in [d("2021-12-05"), d("2021-12-06")]:
                     pass
                 else:
                     assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
@@ -534,13 +535,22 @@ def vaccination_tables(df, date, page, file):
 def vaccination_reports_files2(check=True):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
-    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 13)]
 
-    links = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
-    # links = sorted(links, reverse=True)
-    links = reversed(list(links))
+    # more reliable from dec 2021 and updated quicker
+    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
+                        ext=None, match=re.compile("2564"))
+    links1 = (link for f in folders for link in web_links(f, ext=".pdf") if (
+        date := file2date(link)) is not None and date >= d("2021-01-01"))
+
+    # this set was more reliable for awhile. Need to match tests
+    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 12)]
+    links2 = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
+    links = list(links1) + list(reversed(list(links2)))
     count = 0
     for link in links:
+        if "1638863771691.pdf" in link:
+            # it's really slides
+            continue
 
         def get_file(link=link):
             try:
@@ -566,9 +576,13 @@ def vaccination_reports():
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
         for page in parse_file(file):
-            found_date = find_thai_date(page)
             if date is None:
-                date = found_date
+                *rest, with_date = page.split("ข้อมูล", 2)
+                if rest:
+                    # could be 2 dates on teh front page
+                    date = find_thai_date(with_date)
+                else:
+                    date = find_thai_date(page)
             table = vaccination_tables(table, date, page, file)
 
             vac_daily = vaccination_daily(vac_daily, date, file, page)
