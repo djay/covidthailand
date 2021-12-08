@@ -471,7 +471,10 @@ def vaccination_tables(df, date, page, file):
                     sv, az, sp, pf, md, total_alloc = alloc
                 else:
                     assert False
-                assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
+                if date in [d("2021-12-05")]:
+                    pass
+                else:
+                    assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
                 if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
