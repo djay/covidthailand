@@ -540,7 +540,7 @@ def vaccination_reports_files2(check=True):
     folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                         ext=None, match=re.compile("2564"))
     links1 = (link for f in folders for link in web_links(f, ext=".pdf") if (
-        date := file2date(link)) is not None and date >= d("2021-01-01"))
+        date := file2date(link)) is not None and date >= d("2021-12-01"))
 
     # this set was more reliable for awhile. Need to match tests
     folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 12)]
