@@ -36,10 +36,10 @@ theme_light_back = '#202020'
 theme_dark_back = '#0C1111'
 
 cmap_regions = ListedColormap([
-    "#BC8D5D",  # Bangkok Region
+    "#CC551B",  # Bangkok Region
     "#FFC200",  # Central Region
-    "#F68E4D",  # Eastern Region
-    "#77B251",  # Western Region
+    "#77B251",  # Eastern Region
+    "#F68E4D",  # Western Region
     "#26E2FD",  # Northeastern Region
     "#277CE5",  # Northern Region
     "#BF2C54",  # Southern Region
