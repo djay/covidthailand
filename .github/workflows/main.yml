@@ -187,8 +187,8 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
       - name: Netlify preview build
-        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
-        uses: jsmrcaga/action-netlify-deploy@v1.1.0
+        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && secrets.NETLIFY_AUTH_TOKEN }}
+        uses: jsmrcaga/action-netlify-deploy@v1.7.1
         with:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -196,7 +196,7 @@ jobs:
            deploy_alias:  ${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}
            NETLIFY_DEPLOY_TO_PROD: false
       - name: Netlify preview status update
-        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}  && ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && secrets.GITHUB_TOKEN }}
         uses: Sibz/github-status-action@v1.1.1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
@@ -206,15 +206,15 @@ jobs:
           sha: ${{github.event.pull_request.head.sha || github.sha}}
           target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
       - name: Netlify prod build
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}  && ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        uses: jsmrcaga/action-netlify-deploy@v1.1.0
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && secrets.GITHUB_TOKEN }}
+        uses: jsmrcaga/action-netlify-deploy@v1.7.1
         with:
            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
            build_directory: ./_site
            NETLIFY_DEPLOY_TO_PROD: true
       - name: Netlify prod deployed
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }} && ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && secrets.GITHUB_TOKEN }}
         uses: Sibz/github-status-action@v1.1.1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
@@ -222,7 +222,7 @@ jobs:
           state: success
           target_url: https://practical-ritchie-cca141.netlify.app
       - name: Upload png to wiki
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }} && ${{ secrets.GH_ACCESS_TOKEN }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && secrets.GH_ACCESS_TOKEN }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
@@ -230,7 +230,7 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Upload json to wiki
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }} && ${{ secrets.GH_ACCESS_TOKEN }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && secrets.GH_ACCESS_TOKEN }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"
