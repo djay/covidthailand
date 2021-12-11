@@ -383,7 +383,7 @@ def plot_area(df: pd.DataFrame,
         plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
-        svg_hover(plt, fig, os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
+        svg_hover(df_plot[cols + cols_subset], plt, fig, os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -641,7 +641,7 @@ class Tick:
         self.color = color
 
 
-def svg_hover(plt, fig, path):
+def svg_hover(df, plt, fig, path):
     f = BytesIO()
     plt.savefig(f, format="svg")
 
@@ -668,8 +668,8 @@ def svg_hover(plt, fig, path):
           <rect width="7em" height="2.5em"
                   x="-7em" y="-2.5em" fill="black"/>
           <text x="-3.5em" y="-2.5em" text-anchor="middle" fill="white">
-            <tspan dy="1em">2021-12-02</tspan>
-            <tspan x="-3.5em" dy="1.25em">SVG Tip</tspan>
+            <tspan id="date" dy="1em">2021-12-02</tspan>
+            <tspan id="value" x="-3.5em" dy="1.25em">SVG Tip</tspan>
           </text>
         </g>
     </g>
@@ -690,12 +690,21 @@ def svg_hover(plt, fig, path):
         <script type="text/ecmascript" xmlns="http://www.w3.org/2000/svg">
         <![CDATA[
 
+
         function init(event) {
             var tooltip = d3.select("g.tooltip.mouse");
+            var plot = d3.select("#patch_2");
+            var date_label = d3.select("#date");
+            var value = d3.select("#value");
 
             d3.select("#patch_2").on("mousemove", function (evt) {
                 // from https://codepen.io/billdwhite/pen/rgEbc
                 tooltip.attr('visibility', "visible")
+                var plotpos = d3.pointer(evt, plot.node())[0] - plot.node().getBBox().x;
+                var index = Math.floor(plotpos / plot.node().getBBox().width * data.index.length);
+                var date = data.index[index].split("T")[0];
+                date_label.node().textContent = date;
+                value.node().textContent = data.data[index][0];
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
                 tooltip
                     .attr("transform", "translate("
@@ -707,7 +716,9 @@ def svg_hover(plt, fig, path):
             });
 
         }
-
+        """
+    script += f"""
+        var data = {df.round().to_json(orient="split", date_format="iso")}
         ]]>
         </script>
         """
