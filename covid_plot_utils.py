@@ -434,7 +434,7 @@ def plot_area(df: pd.DataFrame,
         plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
-        svg_hover(df_plot[cols + cols_subset], plt, fig, os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
+        svg_hover(df_plot[cols + cols_subset], plt, fig, leg, stacked, os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -699,7 +699,7 @@ class Tick:
         self.color = color
 
 
-def svg_hover(df, plt, fig, path):
+def svg_hover(df, plt, fig, legend, stacked, path):
     f = BytesIO()
     plt.savefig(f, format="svg")
 
@@ -715,6 +715,19 @@ def svg_hover(df, plt, fig, path):
     # box.set('onmouseover', "ShowTooltip(this)")
     # box.set('onmouseout', "HideTooltip(this)")
 
+    value_tspans = ''
+    if stacked:
+        for number in range(len(legend.get_patches())):
+            color = legend.get_patches()[number].get_facecolor()
+            color = matplotlib.colors.to_hex(color, keep_alpha=False)
+            value_tspans += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}"></tspan>'
+
+    else:
+        for number in range(len(legend.get_lines())):
+            color = legend.get_lines()[number].get_color()
+            color = matplotlib.colors.to_hex(color, keep_alpha=False)
+            value_tspans += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}"></tspan>'
+
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = """
     <g transform="scale(0.9)" xmlns="http://www.w3.org/2000/svg">
@@ -723,11 +736,11 @@ def svg_hover(df, plt, fig, path):
                  to the right and above the <g> element's
                  0,0 point, purely to help with all the
                  overlapping tooltips! -->
-          <rect width="7em" height="2.5em"
-                  x="-7em" y="-2.5em" fill="black"/>
-          <text x="-3.5em" y="-2.5em" text-anchor="middle" fill="white">
+          <text id="tooltiptext" x="-3.5em" y="-2.5em" text-anchor="middle" fill="white">
             <tspan id="date" dy="1em">2021-12-02</tspan>
-            <tspan id="value" x="-3.5em" dy="1.25em">SVG Tip</tspan>
+    """
+    tooltipsvg += value_tspans
+    tooltipsvg += """
           </text>
         </g>
     </g>
@@ -753,7 +766,6 @@ def svg_hover(df, plt, fig, path):
             var tooltip = d3.select("g.tooltip.mouse");
             var plot = d3.select("#patch_2");
             var date_label = d3.select("#date");
-            var value = d3.select("#value");
 
             d3.select("#patch_2").on("mousemove", function (evt) {
                 // from https://codepen.io/billdwhite/pen/rgEbc
@@ -762,11 +774,20 @@ def svg_hover(df, plt, fig, path):
                 var index = Math.floor(plotpos / plot.node().getBBox().width * data.index.length);
                 var date = data.index[index].split("T")[0];
                 date_label.node().textContent = date;
-                value.node().textContent = data.data[index][0];
+
+                for ( let number = 0; number < data.data[index].length; number++ ) {
+                    if(data.data[index][number] == null) {
+                        d3.select("#value" + number).text("--");
+                    }
+                    else {
+                        d3.select("#value" + number).text(data.data[index][number]);
+                    }
+                }
+
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
                 tooltip
                     .attr("transform", "translate("
-                        + (mouseCoords[0]-10) + ","
+                        + (mouseCoords[0] - 10) + ","
                         + (mouseCoords[1] - 10) + ")");
             })
             .on("mouseout", function () {
