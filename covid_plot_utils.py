@@ -434,7 +434,8 @@ def plot_area(df: pd.DataFrame,
         plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
-        svg_hover(df_plot[cols + orig_cols], plt, fig, leg, stacked, os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
+        svg_hover(df_plot[cols + list(orig_cols)], plt, fig, leg, stacked,
+                  os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
         logger.info("Plot: {}", path)
         plt.close()
 
