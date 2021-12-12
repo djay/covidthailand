@@ -179,9 +179,9 @@ def plot_area(df: pd.DataFrame,
 
     if ma_days:
         ma_suffix = ' (MA)'
-        for c in cols:
-            df[f'{c}{ma_suffix}'] = df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
-        cols = [f'{c}{ma_suffix}' for c in cols]
+        mas = {f'{c}{ma_suffix}': df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean() for c in cols}
+        df = df.assign(**mas)
+        cols = list(mas.keys())
     else:
         ma_suffix = ''
 
@@ -536,7 +536,7 @@ def add_regions_to_axis(axis, table_regions):
 def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
-    regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
+    regions_to_add['Trend'].replace(np.nan, 0.00042, inplace=True)
     regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
     add_regions_to_axis(axis, regions_to_add)
 
