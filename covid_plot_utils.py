@@ -702,7 +702,7 @@ class Tick:
 
 def svg_hover(df, plt, fig, legend, stacked, path):
     f = BytesIO()
-    plt.savefig(f, format="svg")
+    plt.savefig(f, format="svg", facecolor=theme_light_back)
 
     # --- Add interactivity ---
     ax = fig.axes[0]
