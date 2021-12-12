@@ -217,6 +217,7 @@ def get_hospital_resources():
 # Public transport usage to determine mobility?
 #   - https://datagov.mot.go.th/dataset/covid-19/resource/71a552d0-0fea-4e05-b78c-42d58aa88db6
 #   - doesn't have pre 2020 dailies though
+# health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
 
 def scrape_and_combine():

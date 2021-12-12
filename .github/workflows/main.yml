@@ -139,6 +139,11 @@ jobs:
         continue-on-error: true
         run:
           du inputs | tee outputfiles.txt
+      - id: can-deploy
+        env:
+            MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        if: "${{ env.MY_KEY != '' }}"
+        run: echo "::set-output name=key::true"
       - name: Make cached docs bundle
         if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
@@ -187,42 +192,58 @@ jobs:
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
-      - name: Netlify preview build
-        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
-        uses: netlify/actions/cli@master
+      - name: Deploy to Netlify
+        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+        uses: nwtgck/actions-netlify@v1.2.2
         with:
-           args: deploy --dir=./_site --alias=${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}
+          publish-dir: './_site'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
         env:
-           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      - name: Netlify preview status update
-        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' }}
-        uses: Sibz/github-status-action@v1.1.1
-        with:
-          authToken: ${{ secrets.GITHUB_TOKEN }}
-          context: 'Netlify preview deployed'
-          description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
-          state: 'success'
-          sha: ${{github.event.pull_request.head.sha || github.sha}}
-          target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
-      - name: Netlify prod build
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: netlify/actions/cli@master
-        with:
-           args: deploy  --dir=./outputs --prod
-        env:
-           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      - name: Netlify prod deployed
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: Sibz/github-status-action@v1.1.1
-        with:
-          authToken: ${{ secrets.GITHUB_TOKEN }}
-          context: Netlify preview
-          state: success
-          target_url: https://practical-ritchie-cca141.netlify.app
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
+      # - name: Netlify preview build
+      #   if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+      #   uses: jsmrcaga/action-netlify-deploy@v1.7.1
+      #   with:
+      #      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      #      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      #      build_directory: ./_site
+      #      deploy_alias:  ${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}
+      #      NETLIFY_DEPLOY_TO_PROD: false
+      # - name: Netlify preview status update
+      #   if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+      #   uses: Sibz/github-status-action@v1.1.1
+      #   with:
+      #     authToken: ${{ secrets.GITHUB_TOKEN }}
+      #     context: 'Netlify preview deployed'
+      #     description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
+      #     state: 'success'
+      #     sha: ${{github.event.pull_request.head.sha || github.sha}}
+      #     target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
+      # - name: Netlify prod build
+      #   if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+      #   uses: jsmrcaga/action-netlify-deploy@v1.7.1
+      #   with:
+      #      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      #      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      #      build_directory: ./_site
+      #      NETLIFY_DEPLOY_TO_PROD: true
+      # - name: Netlify prod deployed
+      #   if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+      #   uses: Sibz/github-status-action@v1.1.1
+      #   with:
+      #     authToken: ${{ secrets.GITHUB_TOKEN }}
+      #     context: Netlify preview
+      #     state: success
+      #     target_url: https://practical-ritchie-cca141.netlify.app
       - name: Upload png to wiki
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
@@ -230,7 +251,7 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Upload json to wiki
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"

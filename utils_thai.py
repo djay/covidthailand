@@ -117,7 +117,7 @@ def file2date(file):
 
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
-    if m := re.search(r"\d{4}-\d{2}-\d{2}", file):
+    if m := re.search(r"\d{4}-\d{1,2}-\d{1,2}", file):
         return d(m.group(0))
     # date = file.rsplit(".pdf", 1)[0]
     # if "-" in file:

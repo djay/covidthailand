@@ -175,7 +175,7 @@ def dash_ages():
         if row.empty:
             continue
         row['Age'] = age_group
-        row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
+        row = row.pivot(values=["Deaths", "Cases", "Cases Proactive"], columns="Age")
         row.columns = [f"{n} Age {v}" for n, v in row.columns]
         df = row.combine_first(df)
         logger.info("{} MOPH Ages {} {}", row.last_valid_index(), range2eng(age_group),
