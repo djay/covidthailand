@@ -187,7 +187,7 @@ jobs:
           bundle config set --local path vendor/bundle
           bundler install --jobs 4 --retry 3
           sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/outputs/g' README.md
-          sed -i 's#!\[.*\](\(.*\)\.svg)#<object type="image\/svg+xml" data="\1.svg"><img src="\1.png" /></object>#g' README.md
+          sed -i 's#!\[.*\](\(.*_.*\)\.svg)#<a href="\1.svg" target="_black"><object width="100%" type="image/svg+xml" data="\1.svg"><img src="\1.png" /></object></a>#g' README.md
           sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/api/g' downloads.md
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
