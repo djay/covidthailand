@@ -590,14 +590,17 @@ def vaccination_reports():
             vac_daily = vac_problem(vac_daily, date, file, page)
         logger.info("{} Vac Tables {} {} {}", date, len(table), "Provinces parsed", file)
         # TODO: move this into vaccination_tables so can be tested
-        if d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
-            logger.info("{} Dropping table: too few provinces", date)
+        if date in [d("2021-12-11")] and table.empty:
+            logger.info("{} doc has slides instead of report", date)
+            continue
+        elif d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
+            logger.warning("{} Dropping table: too few provinces", date)
             continue
         elif d("2021-04-09") <= date <= d("2021-05-03") and table.groupby("Date").count().iloc[0]['Vac Group Risk: Location 1 Cum'] != 77:
             #counts = table.groupby("Date").count()
             #missing_data = counts[counts['Vac Allocated AstraZeneca'] > counts['Vac Group Risk: Location 2 Cum']]
             # if not missing_data.empty:
-            logger.info("{} Dropping table: alloc doesn't match prov", date)
+            logger.warning("{} Dropping table: alloc doesn't match prov", date)
             continue
         else:
             assert len(table) == 77 or date < d("2021-08-01")
