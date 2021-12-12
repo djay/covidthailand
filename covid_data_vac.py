@@ -472,7 +472,8 @@ def vaccination_tables(df, date, page, file):
                     sv, az, sp, pf, md, total_alloc = alloc
                 else:
                     assert False
-                if date in [d("2021-12-05"), d("2021-12-06")]:
+                if date >= d("2021-12-05"):
+                    # seems like they stopped having columns for moderna so total always more
                     pass
                 else:
                     assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
