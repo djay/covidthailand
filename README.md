@@ -21,7 +21,8 @@ Links to all data sources are including in [Downloads](downloads)
 
 # Trends
 
-![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.svg) ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.svg)
+![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.svg)
+![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.svg)
 
 - For forecasts of total infections/deaths/hospitalisations see
   [IHME Thailand](https://covid19.healthdata.org/thailand) |
