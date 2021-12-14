@@ -700,6 +700,16 @@ class Tick:
         self.color = color
 
 
+def make_tootip_entry(number, text, color):
+    """Make a single tooltip entry."""
+
+    color = matplotlib.colors.to_hex(color, keep_alpha=False)
+    text = text.replace("&", "&amp;")
+    entry = f'<tspan x="-3.5em" dy="1.25em" fill="{color}">{text}</tspan>'
+    entry += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}"></tspan>'
+    return entry
+
+
 def svg_hover(df, plt, fig, legend, stacked, path):
     f = BytesIO()
     plt.savefig(f, format="svg", facecolor=theme_light_back)
@@ -719,30 +729,30 @@ def svg_hover(df, plt, fig, legend, stacked, path):
     value_tspans = ''
     if stacked:
         for number in range(len(legend.get_patches())):
+            text = legend.get_texts()[number].get_text()
             color = legend.get_patches()[number].get_facecolor()
-            color = matplotlib.colors.to_hex(color, keep_alpha=False)
-            value_tspans += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}"></tspan>'
-
+            value_tspans += make_tootip_entry(number, text, color)
     else:
         for number in range(len(legend.get_lines())):
+            text = legend.get_texts()[number].get_text()
             color = legend.get_lines()[number].get_color()
-            color = matplotlib.colors.to_hex(color, keep_alpha=False)
-            value_tspans += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}"></tspan>'
+            value_tspans += make_tootip_entry(number, text, color)
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = """
-    <g transform="scale(0.9)" xmlns="http://www.w3.org/2000/svg">
-        <g class="tooltip mouse" visibility="hidden">
+      <g transform="scale(0.9)" xmlns="http://www.w3.org/2000/svg">
+        <g class="tooltip mouse" visibility="hidden" style="background:#0000ff50;">
             <!-- The rectangle and text are positioned
                  to the right and above the <g> element's
                  0,0 point, purely to help with all the
                  overlapping tooltips! -->
-          <text id="tooltiptext" x="-3.5em" y="-2.5em" text-anchor="middle" fill="white">
-            <tspan id="date" dy="1em">2021-12-02</tspan>
+            <rect id="tooltiprect" width="1" height="1" rx="5" style="fill:#01017799;stroke-width:1;stroke:#FEFE00" />
+            <text id="tooltiptext" x="3.5em" y="-0.5em" text-anchor="middle" fill="white">
+                <tspan id="date" x="-3.5em" dy="1.25em">2021-12-02</tspan>
     """
     tooltipsvg += value_tspans
     tooltipsvg += """
-          </text>
+            </text>
         </g>
     </g>
     """
@@ -781,15 +791,36 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                         d3.select("#value" + number).text("--");
                     }
                     else {
-                        d3.select("#value" + number).text(data.data[index][number]);
+                        var value = data.data[index][number];
+                        var sensible_number = "";
+                        if (Math.abs(value) < 10.0) {
+                            sensible_number = value.toString().replace(/[.]0+$/, '');
+                        }
+                        else if (Math.abs(value) < 100.0) {
+                            sensible_number = (Math.round(value*10)/10).toString().replace(/[.]0$/, '');
+                        }
+                        else {
+                            sensible_number = Math.round(value).toString();
+                        }
+                        sensible_number = sensible_number.replace(/[.]$/, '');
+
+                        d3.select("#value" + number).text(sensible_number);
                     }
                 }
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
                 tooltip
                     .attr("transform", "translate("
-                        + (mouseCoords[0] - 10) + ","
-                        + (mouseCoords[1] - 10) + ")");
+                        + (mouseCoords[0]) + ","
+                        + (mouseCoords[1] + 10) + ")");
+
+                let padding = 4;
+                bbox = d3.select("#tooltiptext").node().getBBox();
+                d3.select("#tooltiprect")
+                    .attr("x", bbox.x - padding)
+                    .attr("y", bbox.y - padding)
+                    .attr("height", bbox.height + 2*padding)
+                    .attr("width", bbox.width + 2*padding);
             })
             .on("mouseout", function () {
                 return tooltip.attr('visibility', "hidden");
@@ -798,7 +829,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
         }
         """
     script += f"""
-        var data = {df.round().to_json(orient="split", date_format="iso")}
+        var data = {df.round(2).to_json(orient="split", date_format="iso")}
         ]]>
         </script>
         """
