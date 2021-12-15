@@ -416,8 +416,12 @@ def briefing_deaths_provinces(dtext, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
-    assert deaths_title == dfprov['Deaths'].sum() or date in [d("2021-07-20")], msg
+    if date in [d("2021-07-20"), d("2021-12-15")]:
+        # 2021-12-15 - missing one from eastern
+        pass
+    else:
+        msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
+        assert deaths_title == dfprov['Deaths'].sum(), msg
     return dfprov
 
 
