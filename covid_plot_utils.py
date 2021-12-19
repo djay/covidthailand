@@ -757,6 +757,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
     </g>
     """
     xmlid["figure_1"].append(ET.XML(tooltipsvg))
+    xmlid["figure_1"].set("fill", "black")  # some browsers don't seem to respect background
 
     # TODO: get json list with [[start, date, [color, label, val_avg, val],...],...]). start is ratio
     # TODO: on mousemove turn coords into ratio and lookup date etc
@@ -778,7 +779,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
             var plot = d3.select("#patch_2");
             var date_label = d3.select("#date");
 
-            d3.select("#patch_2").on("mousemove", function (evt) {
+            d3.select("#figure_1").on("mousemove", function (evt) {
                 // from https://codepen.io/billdwhite/pen/rgEbc
                 tooltip.attr('visibility', "visible")
                 var plotpos = d3.pointer(evt, plot.node())[0] - plot.node().getBBox().x;
