@@ -700,16 +700,6 @@ class Tick:
         self.color = color
 
 
-def make_tootip_entry(number, text, color):
-    """Make a single tooltip entry."""
-
-    color = matplotlib.colors.to_hex(color, keep_alpha=False)
-    text = text.replace("&", "&amp;")
-    entry = f'<tspan x="-3.5em" dy="1.25em" fill="{color}">{text}</tspan>'
-    entry += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}"></tspan>'
-    return entry
-
-
 def svg_hover(df, plt, fig, legend, stacked, path):
     f = BytesIO()
     plt.savefig(f, format="svg", facecolor=theme_light_back)
@@ -725,6 +715,15 @@ def svg_hover(df, plt, fig, legend, stacked, path):
     # box = xmlid["patch_2"]
     # box.set('onmouseover', "ShowTooltip(this)")
     # box.set('onmouseout', "HideTooltip(this)")
+
+    def make_tootip_entry(number, text, color):
+        """Make a single tooltip entry."""
+
+        color = matplotlib.colors.to_hex(color, keep_alpha=False)
+        text = text.replace("&", "&amp;")
+        entry = f'<tspan x="-3.5em" dy="1.25em" fill="{color}">{text}</tspan>'
+        entry += f'<tspan id="value{number}" x="-3.5em" dy="1.25em" fill="{color}">0</tspan>'
+        return entry
 
     value_tspans = ''
     if stacked:
@@ -773,11 +772,20 @@ def svg_hover(df, plt, fig, legend, stacked, path):
         <script type="text/ecmascript" xmlns="http://www.w3.org/2000/svg">
         <![CDATA[
 
-
         function init(event) {
             var tooltip = d3.select("g.tooltip.mouse");
             var plot = d3.select("#patch_2");
             var date_label = d3.select("#date");
+            var border = d3.select("#tooltiprect");
+            var gap = 15;
+            let padding = 4;
+            let bbox = d3.select("#tooltiptext").node().getBBox();
+
+                border
+                    .attr("x", bbox.x - padding)
+                    .attr("y", bbox.y - padding)
+                    .attr("height", bbox.height + 2*padding)
+                    .attr("width", bbox.width + 2*padding);
 
             d3.select("#figure_1").on("mousemove", function (evt) {
                 // from https://codepen.io/billdwhite/pen/rgEbc
@@ -810,18 +818,16 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 }
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
+                let width = bbox.width + 2*padding;
+                var x = mouseCoords[0] - 100 - gap;
+                if (x < width) {
+                    x = mouseCoords[0] - 100 + width + gap;
+                }
                 tooltip
                     .attr("transform", "translate("
-                        + (mouseCoords[0]) + ","
-                        + (mouseCoords[1] + 10) + ")");
+                        + (x) + ","
+                        + (mouseCoords[1] - bbox.height/2) + ")");
 
-                let padding = 4;
-                bbox = d3.select("#tooltiptext").node().getBBox();
-                d3.select("#tooltiprect")
-                    .attr("x", bbox.x - padding)
-                    .attr("y", bbox.y - padding)
-                    .attr("height", bbox.height + 2*padding)
-                    .attr("width", bbox.width + 2*padding);
             })
             .on("mouseout", function () {
                 return tooltip.attr('visibility', "hidden");
