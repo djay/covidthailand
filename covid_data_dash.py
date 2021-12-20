@@ -287,8 +287,9 @@ def dash_by_province():
         if province is None:
             continue
         province = get_province(province)
-        if (date, province) in skip or skip_valid(df, (date, province), valid):
-            continue
+        if date < d("2021-12-15"):
+            if (date, province) in skip or skip_valid(df, (date, province), valid):
+                continue
         if (wb := get_wb()) is None:
             continue
         row = workbook_flatten(
@@ -326,6 +327,10 @@ def dash_by_province():
                 "DAY(txn_date)-value": "Date"
             },
         )
+        last_update = pd.to_datetime(wb.getWorksheet("D2_DeathTL").data['DAY(txn_date)-value']).max()
+        if date > last_update:
+            continue
+
         row['Province'] = province
         df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
         logger.info("{} MOPH Dashboard {}", date.date(),
