@@ -132,6 +132,7 @@ def workbook_iterate(url, **selects):
         fix_timeouts(ts.session, timeout=30)
         wb = ts.getWorkbook()
         return wb
+
     wb = do_reset()
     if wb is None:
         return

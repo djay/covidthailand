@@ -56,7 +56,7 @@ def dash_daily():
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
         'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
         'Recovered': (d('2021-01-01'), today(), 1),
-        'Cases Walkin': (d('2021-01-01'), today(), 1),
+        'Cases Walkin': (d('2021-01-01'), today(), 1, 1),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
@@ -70,6 +70,7 @@ def dash_daily():
         row = workbook_flatten(
             wb,
             date,
+            # D_UpdateTime="Last_Update",
             D_New="Cases",
             D_Walkin="Cases Walkin",
             D_Proact="Cases Proactive",
@@ -120,6 +121,13 @@ def dash_daily():
 
         if row.empty:
             break
+        last_update = wb.getWorksheet("D_UpdateTime").data
+        if not last_update.empty:
+            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            if last_update.normalize() < row.index.max():
+                # We got todays data too early
+                continue
+        # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
         if date < today() - relativedelta(days=30):  # TODO: should use skip_valid rules to work which are delayed rather than 0?
