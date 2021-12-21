@@ -56,14 +56,14 @@ def dash_daily():
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
         'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
         'Recovered': (d('2021-01-01'), today(), 1),
-        'Cases Walkin': (d('2021-01-01'), today(), 1, 1),
+        'Cases Walkin': (d('2021-01-01'), today(), 1),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
-    dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
+    dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, date in workbook_iterate(url, param_date=dates):
         date = next(iter(date))
-        if skip_valid(df, date, allow_na):
+        if date < d("2021-12-15") and skip_valid(df, date, allow_na):
             continue
         if (wb := get_wb()) is None:
             continue
@@ -135,7 +135,7 @@ def dash_daily():
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
     # We get negative values for field hospital before April
-    assert df[df['Recovered'] == 0.0].empty
+    assert df[df['Recovered'] == 0.0].loc["2021-03-05":].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
@@ -281,7 +281,7 @@ def dash_by_province():
         (d('2021-09-21'), 'Nan'),
     ]
 
-    dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
+    dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
         date, province = idx_value
         if province is None:
