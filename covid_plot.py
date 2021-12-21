@@ -23,14 +23,14 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
+    # Cases Plots
+    save_cases_plots(df)
+
     # Tests Plots
     save_tests_plots(df)
 
     # Vaccinations Plots
     save_vacs_plots(df)
-
-    # Cases Plots
-    save_cases_plots(df)
 
     # Deaths Plots
     save_deaths_plots(df)

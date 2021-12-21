@@ -131,6 +131,11 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
+## Case Fatality Rate (estimated)
+
+![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/cfr_region_3.png)
+
+- Source: [CCSA Daily Briefing](downloads#dl-briefings)
 
 # Vaccinations <a name="vaccinations">
 
