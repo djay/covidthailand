@@ -202,12 +202,12 @@ def vaccination_daily(daily, date, file, page):
 
     # Daily totals at the bottom often make it harder to get the right numbers
     # ส ำหรับรำยงำนจ ำนวนผู้ได้รับวัคซีนโควิด 19 เพิ่มขึ้นในวันที่ 17 ตุลำคม 2564 มีผู้ได้รับวัคซีนทั้งหมด
-    gtext, *_ = re.split("หรับรำยงำนจ", page)
+    gtext, *_ = re.split("(?:หรับรำยงำนจ|าหรับรายงานจ)", page)
 
     d1_num, rest1 = get_next_numbers(gtext,
                                      r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
                                      r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
-                                     r"ซีนเข็มที่ 1 จ",
+                                     r"นเข็มที่ 1 จ", r"ซนีเขม็ที่ 1 จ",
                                      until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
                                      r"ได้รับวัคซีน 2 เข็ม",
@@ -217,7 +217,7 @@ def vaccination_daily(daily, date, file, page):
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
             ld1, ld2 = len(clean_num(d1_num)), len(clean_num(d2_num))
-            error = f"ERROR number of first doses ({ld1}) does not equal number of second doses ({ld2}) in {file} for {date}",
+            error = f"ERROR groups first dose1=({ld1}). groups for dose2=({ld2}) in {file} for {date}",
             logger.error(error)
             assert False, error
         else:

@@ -91,7 +91,7 @@ def workbook_flatten(wb, date=None, **mappings):
             #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
             #end = max([end, df.index.max()])
             end = df.index.max()
-            assert date is None or end <= date
+            assert date is None or end <= date, f"getting {date} found {end}"
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
             try:
                 df = df.reindex(all_days, fill_value=0.0)
