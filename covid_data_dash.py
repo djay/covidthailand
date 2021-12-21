@@ -63,7 +63,7 @@ def dash_daily():
     dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, date in workbook_iterate(url, param_date=dates):
         date = next(iter(date))
-        if date < d("2021-12-15") and skip_valid(df, date, allow_na):
+        if skip_valid(df, date, allow_na):
             continue
         if (wb := get_wb()) is None:
             continue
@@ -287,9 +287,8 @@ def dash_by_province():
         if province is None:
             continue
         province = get_province(province)
-        if date < d("2021-12-15"):
-            if (date, province) in skip or skip_valid(df, (date, province), valid):
-                continue
+        if (date, province) in skip or skip_valid(df, (date, province), valid):
+            continue
         if (wb := get_wb()) is None:
             continue
         row = workbook_flatten(
