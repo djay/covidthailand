@@ -327,8 +327,14 @@ def dash_by_province():
                 "DAY(txn_date)-value": "Date"
             },
         )
-        last_update = pd.to_datetime(wb.getWorksheet("D2_DeathTL").data['DAY(txn_date)-value']).max()
+        # Need to work if the data has been updated yet. If it has last deaths should be today.
+        last_update = wb.getWorksheet("D2_DeathTL").data
+        if last_update.empty:
+            # Shouldn't happen. Something wrong. Better skip
+            continue
+        last_update = pd.to_datetime(last_update['DAY(txn_date)-value']).max()
         if date > last_update:
+            # the date we are trying to get isn't the last deaths we know about. No new data yet
             continue
 
         row['Province'] = province
