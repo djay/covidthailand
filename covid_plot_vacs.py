@@ -117,15 +117,16 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               title='Daily Covid Vaccinations by Priority Groups - Thailand',
               legends=[
                   # 'Doses per day needed to run out in a week',
-                  'Rate for 70% 1st Jab in 2021',
-                  'Rate for 70% 2nd Jab in 2021'
+                  # 'Rate for 70% 1st Jab in 2021',
+                  # 'Rate for 70% 2nd Jab in 2021'
               ] + [clean_vac_leg(c) for c in daily_cols],  # bar puts the line first?
               legend_cols=2,
               png_prefix='vac_groups_daily', cols_subset=daily_cols,
               between=[
                   # '7d Runway Rate',
-                  'Target Rate 1',
-                  'Target Rate 2'],
+                  # 'Target Rate 1',
+                  # 'Target Rate 2'
+              ],
               periods_to_plot=["30d", "3"],  # too slow to do all
               ma_days=None,
               kind='bar', stacked=True, percent_fig=False,
