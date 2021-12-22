@@ -131,10 +131,12 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
-## Case Fatality Rate (estimated)
+## Case Fatality Rate
 
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/cfr_region_3.png)
-
+- To show more recent trends last 90 days is used instead of total deaths / total cases which is normally used.
+- CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected
+- Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)
 - Source: [CCSA Daily Briefing](downloads#dl-briefings)
 
 # Vaccinations <a name="vaccinations">
