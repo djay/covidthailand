@@ -395,20 +395,20 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     # Do CFR for all regions. show vaccine effectiveness
     # cfr_est = lambda df: df['Deaths'].shift(11) / df['Cases'] * 100
-    def cfr_est(df): return df['Deaths'].rolling(14).mean().shift(11) / df['Cases'].rolling(14).mean() * 100
+    # TODO: use actual med time to death from briefing. It changes slightly over time.
+    def cfr_est(df): return df['Deaths'].rolling(90).mean() / df['Cases'].shift(11).rolling(90).mean() * 100
     by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
-    # cfr_region = cases.reset_index()
     cfr_region = by_region.groupby("region", group_keys=False).apply(cfr_est).to_frame("CFR Est").reset_index()
     cfr_region = pd.crosstab(cfr_region['Date'], cfr_region['region'], values=cfr_region["CFR Est"], aggfunc="sum")
     plot_area(df=cfr_region,
-              title='Case Fatality Rate Estimate - by Region - Thailand',
+              title='Case Fatality Rate - Last 90 days - by Region - Thailand',
               png_prefix='cfr_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
-              ma_days=7,
+              ma_days=0,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote="CFR is not the Infection fatality rate so doesn't tell the chance of dying if infected\n"
-              "CFR is affected by detection rate of cases/deaths. Deaths shifted by 11 days. 14 day avg used.",
+              "CFR is affected by detection rate of cases & deaths. Deaths shifted by 11 days (med. time till to death in Thailand)",
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
