@@ -397,6 +397,9 @@ def vaccination_tables(df, date, page, file):
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
+            if area == "ผู้ท่ีมีอายุต้ังแต่" and len(cols) < 6:
+                # 2021-12-21 - header down the bottom
+                continue
             if added is None:
                 added = 0
             if NUM_OR_DASH.match(area):
