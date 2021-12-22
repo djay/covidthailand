@@ -85,8 +85,8 @@ def dl_files(target_dir, dl_gen, check=False):
 
 def pair(files):
     "return paired up combinations and also wrap in a cache so they don't get done generated twice"
-    all_files = [get_file for _, _, get_file in files()]
-    return zip(all_files[:-1], all_files[1:])
+    all_files = [(link, get_file) for link, _, get_file in files()]
+    return zip([link for link, _ in all_files[:-1]], [f for _, f in all_files[:-1]], [f for _, f in all_files[1:]])
 
 
 def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
@@ -128,16 +128,16 @@ def test_vac_reports(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
 
-@pytest.mark.skip()
-@pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
-def test_vac_reports_assert(link, content, get_file):
-    assert get_file is not None
-    file = get_file()  # Actually download
-    if file is None:
-        return
-    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
-    for page in parse_file(file):
-        df = vaccination_daily(df, None, file, page)
+# @pytest.mark.skip()
+# @pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
+# def test_vac_reports_assert(link, content, get_file):
+#     assert get_file is not None
+#     file = get_file()  # Actually download
+#     if file is None:
+#         return
+#     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+#     for page in parse_file(file):
+#         df = vaccination_daily(df, None, file, page)
 
 
 @functools.lru_cache
@@ -152,9 +152,9 @@ def parse_vac_tables(*files):
     return df
 
 
-# @pytest.mark.skip()
-@pytest.mark.parametrize("get_file1, get_file2", pair(vaccination_reports_files2))
-def test_vac_tables_inc(get_file1, get_file2):
+@pytest.mark.skip()
+@pytest.mark.parametrize("link, get_file1, get_file2", pair(vaccination_reports_files2))
+def test_vac_tables_inc(link, get_file1, get_file2):
 
     if (df1 := parse_vac_tables(get_file1)).empty:
         return
