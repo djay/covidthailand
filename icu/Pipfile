@@ -1,0 +1,30 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+tabula-py = "*"
+tika = "*"
+webdavclient3 = "*"
+xlrd = "*"
+beautifulsoup4 = "*"
+python-pptx = "*"
+python-dateutil = "*"
+jupyter = "*"
+pytwitterscraper = "*"
+camelot-py = {version = "==0.8.2", extras = ["cv", "plot"]}
+pandas = "<1.3.0"
+numpy = "*"
+matplotlib = "*"
+pythainlp = "*"
+pytest = "*"
+mpld3 = "*"
+loguru = "*"
+TableauScraper = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
