@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 import requests
+import dateutil.parser
 import tableauscraper
 
 from utils_scraping import any_in
@@ -304,3 +305,11 @@ def force_setFilter(wb, ws_name, columnName, values):
         return tableauscraper.TableauWorkbook(
             scraper=scraper, originalData={}, originalInfo={}, data=[]
         )
+
+def get_woorkbook_updated_time(tableau_scapper: 'tableauscraper.TableauScraper') -> datetime.datetime:
+    time_str = tableau_scapper.tableauData.get('workbookLastPublishedAt')
+    if time_str is None:
+        tableau_scapper.logger.warn("please call `.loads()` first")
+        return None
+    
+    return dateutil.parser.isoparse(time_str)
