@@ -123,7 +123,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table=trend_table(cases['Deaths'], sensitivity=25, style="green_down"),
+              table=trend_table(cases['Deaths'], sensitivity=25, style="green_down", ma_days=21),
               footnote='Table of latest Deaths and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
