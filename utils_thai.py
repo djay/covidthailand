@@ -537,7 +537,7 @@ def trend_table(table_provinces, sensitivity=25, style="green_up"):
     """
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
-    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(7).mean())
 
     # Too sensitive to changes
     # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
