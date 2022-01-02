@@ -287,7 +287,7 @@ def dash_by_province():
         if province is None:
             continue
         province = get_province(province)
-        if (date, province) in skip or skip_valid(df, (date, province), valid):
+        if (date, province) in skip or skip_valid(df, (date, province), valid) and province not in ['Mukdahan']:
             continue
         if (wb := get_wb()) is None:
             continue
@@ -326,6 +326,7 @@ def dash_by_province():
                 "DAY(txn_date)-value": "Date"
             },
         )
+        # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
         # Need to work if the data has been updated yet. If it has last deaths should be today.
         last_update = wb.getWorksheet("D2_DeathTL").data
         if last_update.empty:
