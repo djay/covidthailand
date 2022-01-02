@@ -749,7 +749,9 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
 def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
-    if "AstraZeneca" not in page or int(os.path.splitext(os.path.basename(file))[0]) <= 1620104912165:  # 2021-03-21
+    fname = os.path.splitext(os.path.basename(file))[0]
+
+    if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
         return df
     table = camelot_cache(file, page_num, process_background=True)
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
