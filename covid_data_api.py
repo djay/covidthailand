@@ -461,7 +461,10 @@ def ihme_dataset():
             'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
             'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv']
     for url in urls:
-        file, _, _ = next(iter(web_files(url, dir="inputs/IHME", check=True, appending=False)))
+        try:
+            file, _, _ = next(iter(web_files(url, dir="inputs/IHME", check=True, appending=False)))
+        except StopIteration:
+            continue
         data_in_file = pd.read_csv(file)
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)
