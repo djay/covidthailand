@@ -536,23 +536,53 @@ def vaccination_tables(df, date, page, file):
 #         yield link, date, get_file
 
 
-def vaccination_reports_files2(check=True):
+# def vac_slides_files(check=True):
+#     # Also at https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd
+#     base = "https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth"
+#     folders = [f"{base}/{m}/10/{y}" for y in range(2021, 2023) for m in range(1, 13)]
+#     links = sorted((link for f in folders for link in web_links(f, ext=".pdf", check=check)), reverse=True)
+#     count = 0
+#     for link in links:
+#         if USE_CACHE_DATA and count > MAX_DAYS:
+#             break
+#         count += 1
+
+#         def dl_file(link=link):
+#             file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
+#             return file
+
+#         yield link, None, dl_file
+
+
+def vac_slides_files(check=True):
+    return vaccination_reports_files2(check=check,
+                                      base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd",
+                                      base2="https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m:02}/10/2021",
+                                      ext=".pdf"
+                                      )
+
+
+def vaccination_reports_files2(check=True,
+                               base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
+                               base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
+                               ext=".pdf",
+                               ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
-    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
-                        ext=None, match=re.compile("2564"), check=check)
+    folders = web_links(base1,
+                        ext=None, match=re.compile("(2564|2565)"), check=check)
     links1 = (link for f in folders for link in web_links(f, ext=".pdf", check=check) if (
         date := file2date(link)) is not None and date >= d("2021-12-01"))
 
     # this set was more reliable for awhile. Need to match tests
-    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 12)]
-    links2 = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
+    folders = [base2.format(m=m) for m in range(3, 12)]
+    links2 = (link for f in folders for link in web_links(f, ext=ext, check=check))
     links = list(links1) + list(reversed(list(links2)))
     count = 0
     for link in links:
-        if "1638863771691.pdf" in link:
+        if "1638863771691.pdf" in link and "Report" in base2:
             # it's really slides
             continue
 
@@ -719,7 +749,9 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
 def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
-    if "AstraZeneca" not in page or int(os.path.splitext(os.path.basename(file))[0]) <= 1620104912165:  # 2021-03-21
+    fname = os.path.splitext(os.path.basename(file))[0]
+
+    if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
         return df
     table = camelot_cache(file, page_num, process_background=True)
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
@@ -827,21 +859,6 @@ def vac_slides_groups(df, page, file, page_num):
 
 # กลุ่มเปา้หมาย
 # จ านวนผู้ที่ไดร้ับวคัซีน
-
-def vac_slides_files(check=True):
-    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
-    links = sorted((link for f in folders for link in web_links(f, ext=".pdf", check=check)), reverse=True)
-    count = 0
-    for link in links:
-        if USE_CACHE_DATA and count > MAX_DAYS:
-            break
-        count += 1
-
-        def dl_file(link=link):
-            file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
-            return file
-
-        yield link, None, dl_file
 
 
 def vac_slides():
