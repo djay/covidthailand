@@ -557,14 +557,14 @@ def vaccination_tables(df, date, page, file):
 def vac_slides_files(check=True):
     return vaccination_reports_files2(check=check,
                                       base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd",
-                                      base2="https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth",
+                                      base2="https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m:02}/10/2021",
                                       ext=".pdf"
                                       )
 
 
 def vaccination_reports_files2(check=True,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
-                               base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth",
+                               base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
                                ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
@@ -577,7 +577,7 @@ def vaccination_reports_files2(check=True,
         date := file2date(link)) is not None and date >= d("2021-12-01"))
 
     # this set was more reliable for awhile. Need to match tests
-    folders = [f"{base2}/{m:02}/9/2021" for m in range(3, 12)]
+    folders = [base2.format(m=m) for m in range(3, 12)]
     links2 = (link for f in folders for link in web_links(f, ext=ext, check=check))
     links = list(links1) + list(reversed(list(links2)))
     count = 0
