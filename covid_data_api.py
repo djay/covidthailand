@@ -458,7 +458,8 @@ def ihme_dataset():
     # listing out urls not very elegant, but this only need yearly update
     # TODO: get links directly from https://www.healthdata.org/covid/data-downloads so new year updates
     urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
-            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv']
     for url in urls:
         file, _, _ = next(iter(web_files(url, dir="inputs/IHME", check=True, appending=False)))
         data_in_file = pd.read_csv(file)
