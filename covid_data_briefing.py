@@ -810,7 +810,7 @@ def get_cases_by_prov_briefings():
         date_prov = date_prov.combine_first(date_prov_types)
 
     # Since Deaths by province doesn't list all provinces, ensure missing are 0
-    date_prov['Deaths'] = date_prov['Deaths'].unstack(fill_value=0).fillna(0).stack()
+    date_prov['Deaths'] = date_prov['Deaths'].unstack(fill_value=0).fillna(0).stack(dropna=False)
 
     return date_prov, types
 
