@@ -31,7 +31,7 @@
       },
       {
         "name":"Deaths Risk Family",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Others",
@@ -133,37 +133,37 @@
   },
   "data":[
     {
-      "Date":"2021-10-13T00:00:00.000Z",
-      "Deaths":82,
+      "Date":"2021-12-30T00:00:00.000Z",
+      "Deaths":25,
       "Deaths Age Median":72.0,
-      "Deaths Age Min":17.0,
-      "Deaths Age Max":92.0,
-      "Deaths Male":42,
-      "Deaths Female":40,
-      "Deaths Risk Family":7,
-      "Deaths Risk Others":37,
-      "Deaths Risk Residence":33,
+      "Deaths Age Min":26.0,
+      "Deaths Age Max":93.0,
+      "Deaths Male":15,
+      "Deaths Female":10,
+      "Deaths Risk Family":null,
+      "Deaths Risk Others":9,
+      "Deaths Risk Residence":14,
       "Deaths Risk Location":null,
       "Deaths Risk Crowds":null,
-      "Deaths Risk Work":2,
+      "Deaths Risk Work":0,
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
-      "Deaths Comorbidity Hypertension":59,
-      "Deaths Comorbidity Diabetes":32,
-      "Deaths Comorbidity Hyperlipidemia":21,
+      "Deaths Comorbidity Hypertension":11,
+      "Deaths Comorbidity Diabetes":8,
+      "Deaths Comorbidity Hyperlipidemia":3,
       "Deaths Comorbidity Lung disease":null,
-      "Deaths Comorbidity Obesity":23,
+      "Deaths Comorbidity Obesity":2,
       "Deaths Comorbidity Cerebrovascular":null,
-      "Deaths Comorbidity Kidney disease":15,
+      "Deaths Comorbidity Kidney disease":3,
       "Deaths Comorbidity Heart disease":null,
-      "Deaths Comorbidity Bedridden":2,
+      "Deaths Comorbidity Bedridden":1,
       "Deaths Comorbidity Cancer":null,
       "Deaths Comorbidity Pregnant":null,
       "Deaths Comorbidity None":null,
-      "Deaths Risk Under 60 Comorbidity ":10,
-      "Deaths Risk Under 60 Comorbidity None":5,
-      "Deaths Risk Over 60":66
+      "Deaths Risk Under 60 Comorbidity ":5,
+      "Deaths Risk Under 60 Comorbidity None":0,
+      "Deaths Risk Over 60":20
     }
   ]
 }

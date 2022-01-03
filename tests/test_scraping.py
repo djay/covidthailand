@@ -258,7 +258,7 @@ def test_briefing_deaths_provinces(date, testdf, dl):
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_summary", briefing_documents))
 def test_briefing_deaths_summary(date, testdf, dl):
-    dfprov = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     assert dl is not None
     file = dl()
     assert file is not None
@@ -268,12 +268,11 @@ def test_briefing_deaths_summary(date, testdf, dl):
 
     for i, soup in enumerate(pages):
         text = soup.get_text()
-        df = briefing_deaths_summary(text, dateutil.parser.parse(date), file)
-        dfprov = dfprov.combine_first(df)
-    # write_scrape_data_back_to_test(dfprov, "briefing_deaths_summary")
+        df = df.combine_first(briefing_deaths_summary(text, dateutil.parser.parse(date), file))
+    # write_scrape_data_back_to_test(df, "briefing_deaths_summary")
     if testdf.empty:
         return
-    pd.testing.assert_frame_equal(testdf.dropna(axis=1), dfprov.dropna(axis=1), check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))

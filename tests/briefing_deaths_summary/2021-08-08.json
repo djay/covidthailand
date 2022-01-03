@@ -55,11 +55,15 @@
       },
       {
         "name":"Deaths Risk HCW",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Unknown",
         "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Unvaccinated",
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity Hypertension",
@@ -98,15 +102,27 @@
         "type":"integer"
       },
       {
+        "name":"Deaths Comorbidity Cancer",
+        "type":"number"
+      },
+      {
         "name":"Deaths Comorbidity Pregnant",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity None",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Under 60 Comorbidity ",
         "type":"integer"
       },
       {
-        "name":"Deaths 60 Plus",
+        "name":"Deaths Risk Under 60 Comorbidity None",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Over 60",
         "type":"integer"
       }
     ],
@@ -130,8 +146,9 @@
       "Deaths Risk Location":73,
       "Deaths Risk Crowds":9,
       "Deaths Risk Work":2,
-      "Deaths Risk HCW":0,
+      "Deaths Risk HCW":null,
       "Deaths Risk Unknown":3,
+      "Deaths Risk Unvaccinated":null,
       "Deaths Comorbidity Hypertension":79,
       "Deaths Comorbidity Diabetes":43,
       "Deaths Comorbidity Hyperlipidemia":41,
@@ -141,9 +158,12 @@
       "Deaths Comorbidity Kidney disease":10,
       "Deaths Comorbidity Heart disease":6,
       "Deaths Comorbidity Bedridden":3,
-      "Deaths Comorbidity Pregnant":0,
-      "Deaths Comorbidity None":0,
-      "Deaths 60 Plus":102
+      "Deaths Comorbidity Cancer":null,
+      "Deaths Comorbidity Pregnant":null,
+      "Deaths Comorbidity None":null,
+      "Deaths Risk Under 60 Comorbidity ":22,
+      "Deaths Risk Under 60 Comorbidity None":12,
+      "Deaths Risk Over 60":102
     }
   ]
 }
