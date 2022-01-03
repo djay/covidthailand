@@ -490,9 +490,9 @@ def briefing_deaths_summary(text, date, file):
         disease: get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
-    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10")]:
+    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03")]:
         cm_sum = sum([n for n in comorbidity.values() if n is not np.nan])
-        assert cm_sum >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
+        assert cm_sum >= deaths_title, f"Potentially Missing comorbidity {comorbidity}\n{text}"
 
     # deaths over 60
     if date > d("2021-08-02"):
@@ -501,11 +501,16 @@ def briefing_deaths_summary(text, date, file):
     else:
         deaths_60 = np.nan
     # deaths under 60
-    numbers = get_next_numbers(text, "อายุน้อยกว่า 60", "อายุต่ ากว่า 60", "อยกว:า 60", return_rest=False)
+    numbers, rest = get_next_numbers(text, "อายุน้อยกว่า 60", "อายุต่ ากว่า 60", "อยกว:า 60", return_rest=True)
     if numbers:
         no_comorbid = comorbidity['None']
         comorbidity['None'] = np.nan
-        under_60_disease, _, under_60_none, _, *_ = numbers  # also preganancy
+        if len(numbers) == 2 and "รคเรื้อรัง" in rest:
+            # Just chronic disease under 60 2021-12-30
+            under_60_disease, *_ = numbers
+            under_60_none = 0
+        else:
+            under_60_disease, _, under_60_none, _, *_ = numbers  # also preganancy
         # assert no_comorbid is np.nan or no_comorbid == under_60_none
     else:
         under_60_disease, under_60_none = np.nan, np.nan
