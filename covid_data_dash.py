@@ -287,7 +287,7 @@ def dash_by_province():
         if province is None:
             continue
         province = get_province(province)
-        if (date, province) in skip or skip_valid(df, (date, province), valid) and province not in ['Mukdahan']:
+        if (date, province) in skip or skip_valid(df, (date, province), valid):
             continue
         if (wb := get_wb()) is None:
             continue
