@@ -1,20 +1,28 @@
 import json
 import os
-from multiprocessing import Pool
 import shutil
+from multiprocessing import Pool
 
 import pandas as pd
 
-from utils_pandas import add_data, export, import_csv
-from utils_scraping import CHECK_NEWER, USE_CACHE_DATA, web_files, logger
-from utils_thai import join_provinces, today, get_fuzzy_provinces, DISTRICT_RANGE
+import covid_data_api
+import covid_data_briefing
 import covid_data_dash
 import covid_data_situation
-import covid_data_briefing
-import covid_data_vac
-import covid_data_tweets
 import covid_data_testing
-import covid_data_api
+import covid_data_tweets
+import covid_data_vac
+from utils_pandas import add_data
+from utils_pandas import export
+from utils_pandas import import_csv
+from utils_scraping import CHECK_NEWER
+from utils_scraping import logger
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping import web_files
+from utils_thai import DISTRICT_RANGE
+from utils_thai import get_fuzzy_provinces
+from utils_thai import join_provinces
+from utils_thai import today
 
 
 def prov_to_districts(dfprov):
@@ -209,7 +217,7 @@ def get_hospital_resources():
 # Public transport usage to determine mobility?
 #   - https://datagov.mot.go.th/dataset/covid-19/resource/71a552d0-0fea-4e05-b78c-42d58aa88db6
 #   - doesn't have pre 2020 dailies though
-
+# health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
 
 def scrape_and_combine():

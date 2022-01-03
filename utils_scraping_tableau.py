@@ -1,12 +1,16 @@
+import datetime
 import itertools
 import json
-from utils_scraping import any_in, fix_timeouts, logger
-import tableauscraper
-import pandas as pd
-import numpy as np
 import time
-import datetime
+
+import numpy as np
+import pandas as pd
 import requests
+import tableauscraper
+
+from utils_scraping import any_in
+from utils_scraping import fix_timeouts
+from utils_scraping import logger
 
 
 ###########################
@@ -87,7 +91,7 @@ def workbook_flatten(wb, date=None, **mappings):
             #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
             #end = max([end, df.index.max()])
             end = df.index.max()
-            assert date is None or end <= date
+            assert date is None or end <= date, f"getting {date} found {end}"
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
             try:
                 df = df.reindex(all_days, fill_value=0.0)
@@ -128,6 +132,7 @@ def workbook_iterate(url, **selects):
         fix_timeouts(ts.session, timeout=30)
         wb = ts.getWorkbook()
         return wb
+
     wb = do_reset()
     if wb is None:
         return
@@ -208,6 +213,8 @@ def workbook_iterate(url, **selects):
 
 
 def force_setParameter(wb, parameterName, value):
+    "Allow for setting a parameter even if it's not present in getParameters"
+    # TODO: remove if they fix https://github.com/bertrandmartel/tableau-scraping/issues/49
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
     payload = (
@@ -245,6 +252,7 @@ def force_setParameter(wb, parameterName, value):
 # filterRemoveIndices: [2]
 def force_setFilter(wb, ws_name, columnName, values):
     "setFilter but ignore the listed filter options. also gets around wrong ordinal value which makes index value incorrect"
+    # TODO: remove if they fix https://github.com/bertrandmartel/tableau-scraping/issues/50
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)

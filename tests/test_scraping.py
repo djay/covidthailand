@@ -1,21 +1,37 @@
-import os
 import fnmatch
-from utils_thai import file2date
+import functools
+import os
 
-from bs4 import BeautifulSoup
-from utils_scraping import parse_file, pptx2chartdata, sanitize_filename
-from covid_data_briefing import briefing_atk, briefing_case_types, briefing_deaths_provinces, \
-    briefing_deaths_summary, briefing_documents, briefing_province_cases, vac_briefing_totals
-from covid_data_testing import get_test_files, get_tests_by_area_chart_pptx, get_tests_by_area_pdf
-from covid_data_situation import get_thai_situation_files, situation_pui_th, \
-    get_english_situation_files, situation_pui_en, situation_cases_new
-from covid_data_vac import vac_manuf_given, vac_slides_files, vaccination_daily, \
-    vaccination_reports_files2, vaccination_tables
+import dateutil
 import pandas as pd
 import pytest
-import dateutil
-import functools
+from bs4 import BeautifulSoup
 from tika import config
+
+from covid_data_briefing import briefing_atk
+from covid_data_briefing import briefing_case_types
+from covid_data_briefing import briefing_deaths_provinces
+from covid_data_briefing import briefing_deaths_summary
+from covid_data_briefing import briefing_documents
+from covid_data_briefing import briefing_province_cases
+from covid_data_briefing import vac_briefing_totals
+from covid_data_situation import get_english_situation_files
+from covid_data_situation import get_thai_situation_files
+from covid_data_situation import situation_cases_new
+from covid_data_situation import situation_pui_en
+from covid_data_situation import situation_pui_th
+from covid_data_testing import get_test_files
+from covid_data_testing import get_tests_by_area_chart_pptx
+from covid_data_testing import get_tests_by_area_pdf
+from covid_data_vac import vac_manuf_given
+from covid_data_vac import vac_slides_files
+from covid_data_vac import vaccination_daily
+from covid_data_vac import vaccination_reports_files2
+from covid_data_vac import vaccination_tables
+from utils_scraping import parse_file
+from utils_scraping import pptx2chartdata
+from utils_scraping import sanitize_filename
+from utils_thai import file2date
 
 
 # do any tika install now before we start the run and use multiple processes
@@ -69,8 +85,8 @@ def dl_files(target_dir, dl_gen, check=False):
 
 def pair(files):
     "return paired up combinations and also wrap in a cache so they don't get done generated twice"
-    all_files = [get_file for _, _, get_file in files()]
-    return zip(all_files[:-1], all_files[1:])
+    all_files = [(link, get_file) for link, _, get_file in files()]
+    return zip([link for link, _ in all_files[:-1]], [f for _, f in all_files[:-1]], [f for _, f in all_files[1:]])
 
 
 def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
@@ -112,16 +128,16 @@ def test_vac_reports(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
 
-#@pytest.mark.skip()
-@pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
-def test_vac_reports_assert(link, content, get_file):
-    assert get_file is not None
-    file = get_file()  # Actually download
-    if file is None:
-        return
-    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
-    for page in parse_file(file):
-        df = vaccination_daily(df, None, file, page)
+# @pytest.mark.skip()
+# @pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
+# def test_vac_reports_assert(link, content, get_file):
+#     assert get_file is not None
+#     file = get_file()  # Actually download
+#     if file is None:
+#         return
+#     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+#     for page in parse_file(file):
+#         df = vaccination_daily(df, None, file, page)
 
 
 @functools.lru_cache
@@ -136,8 +152,9 @@ def parse_vac_tables(*files):
     return df
 
 
-@pytest.mark.parametrize("get_file1, get_file2", pair(vaccination_reports_files2))
-def test_vac_tables_inc(get_file1, get_file2):
+@pytest.mark.skip()
+@pytest.mark.parametrize("link, get_file1, get_file2", pair(vaccination_reports_files2))
+def test_vac_tables_inc(link, get_file1, get_file2):
 
     if (df1 := parse_vac_tables(get_file1)).empty:
         return

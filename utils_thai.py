@@ -1,16 +1,22 @@
 import datetime
-import functools
-from dateutil.parser import parse as d
 import difflib
+import functools
 import json
 import os
 import re
-import pythainlp.tokenize
+
 import numpy as np
 import pandas as pd
+import pythainlp.tokenize
+from dateutil.parser import parse as d
 
-from utils_pandas import fuzzy_join, rearrange, sensible_precision
-from utils_scraping import remove_prefix, remove_suffix, web_files, logger
+from utils_pandas import fuzzy_join
+from utils_pandas import rearrange
+from utils_pandas import sensible_precision
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_scraping import remove_suffix
+from utils_scraping import web_files
 
 
 DISTRICT_RANGE_SIMPLE = [str(i) for i in range(1, 14)]
@@ -100,18 +106,18 @@ def to_thaiyear(year, short=False):
 
 def file2date(file):
     """
-    return date of either 
-    
-    #>>> file2date('files/10-02-21.json') 
+    return date of either
+
+    #>>> file2date('files/10-02-21.json')
     #datetime.datetime(2021, 2, 10, 0, 0)
 
-    >>> file2date('files/report-100264.pdf') 
+    >>> file2date('files/report-100264.pdf')
     datetime.datetime(2021, 2, 10, 0, 0)
     """
 
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
-    if m := re.search(r"\d{4}-\d{2}-\d{2}", file):
+    if m := re.search(r"\d{4}-\d{1,2}-\d{1,2}", file):
         return d(m.group(0))
     # date = file.rsplit(".pdf", 1)[0]
     # if "-" in file:
@@ -173,19 +179,19 @@ def find_thai_date(content, remove=False):
     2021-10-20 00:00:00
 
     Can find inside a string
-    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส ")) 
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส "))
     2021-05-10 00:00:00
 
     remove the date from the string
-    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส", remove=True)[1]) 
+    >>> print(find_thai_date("สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่ 10 พฤษภาคม 2564 ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส", remove=True)[1])
     สำหรับจำนวนผู้ได้รับวัคซีนโควิด 19 ในวันที่   ผู้ได้รับวัคซีนทั้งหมด 88,560 โดส
 
     can handle mispellings
-    >>> print(find_thai_date("10 พฤษภาม 2564")) 
+    >>> print(find_thai_date("10 พฤษภาม 2564"))
     2021-05-10 00:00:00
 
     can handle mispellings
-    >>> print(find_thai_date("10 พฤษ 2564")) 
+    >>> print(find_thai_date("10 พฤษ 2564"))
     2021-05-10 00:00:00
 
     """
@@ -525,13 +531,13 @@ def region_crosstab(df, col, suffix="", aggfunc="sum"):
     return given_by_area_2
 
 
-def trend_table(table_provinces, sensitivity=25, style="green_up"):
+def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     """Given Series indexed by date,province with a single value.
     Return latest values indexed by province with trend between (-1, +1)
     """
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
-    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(ma_days).mean())
 
     # Too sensitive to changes
     # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
@@ -543,12 +549,12 @@ def trend_table(table_provinces, sensitivity=25, style="green_up"):
     if "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
-        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(7)) / peak * sensitivity)
+        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(ma_days)) / peak * sensitivity)
     else:
         ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
         peak = ma.max().max() / ma_pop['Population'].max().max()
         trend = ma_pop.groupby("Province", group_keys=False).apply(
-            lambda df: ((df['Value'] - df['Value'].shift(7)) / df['Population'])
+            lambda df: ((df['Value'] - df['Value'].shift(ma_days)) / df['Population'])
         ) / peak * sensitivity
 
     trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?

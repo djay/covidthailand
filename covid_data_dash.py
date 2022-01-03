@@ -1,13 +1,20 @@
-from utils_scraping_tableau import workbook_flatten, workbook_iterate
-import pandas as pd
+import os
+import shutil
+
 import numpy as np
+import pandas as pd
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from utils_scraping import USE_CACHE_DATA, any_in, logger
-from utils_thai import get_province, today
-from utils_pandas import export, import_csv
-import shutil
-import os
+
+from utils_pandas import export
+from utils_pandas import import_csv
+from utils_scraping import any_in
+from utils_scraping import logger
+from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import workbook_flatten
+from utils_scraping_tableau import workbook_iterate
+from utils_thai import get_province
+from utils_thai import today
 
 
 ########################
@@ -53,7 +60,7 @@ def dash_daily():
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
-    dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
+    dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, date in workbook_iterate(url, param_date=dates):
         date = next(iter(date))
         if skip_valid(df, date, allow_na):
@@ -63,6 +70,7 @@ def dash_daily():
         row = workbook_flatten(
             wb,
             date,
+            # D_UpdateTime="Last_Update",
             D_New="Cases",
             D_Walkin="Cases Walkin",
             D_Proact="Cases Proactive",
@@ -113,6 +121,13 @@ def dash_daily():
 
         if row.empty:
             break
+        last_update = wb.getWorksheet("D_UpdateTime").data
+        if not last_update.empty:
+            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            if last_update.normalize() < row.index.max():
+                # We got todays data too early
+                continue
+        # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
         if date < today() - relativedelta(days=30):  # TODO: should use skip_valid rules to work which are delayed rather than 0?
@@ -120,7 +135,7 @@ def dash_daily():
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
     # We get negative values for field hospital before April
-    assert df[df['Recovered'] == 0.0].empty
+    assert df[df['Recovered'] == 0.0].loc["2021-03-05":].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
@@ -129,13 +144,16 @@ def dash_daily():
 def dash_ages():
     df = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
 
+    # Fix mistake in column name
+    df.columns = [c.replace("Hospitalized Severe", "Cases Proactive") for c in df.columns]
+
     # Get deaths by prov, date. and other stats - timeline
     #
     # ['< 10 ปี', '10-19 ปี', '20-29 ปี', '30-39 ปี', '40-49 ปี', '50-59 ปี', '60-69 ปี', '>= 70 ปี', 'ไม่ระบุ']
 
     # D4_TREND
     # cases = AGG(stat_count)-alias
-    # severe = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
+    # proactive = AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias,
     # deaths = AGG(ผู้เสียชีวิต)-alias (and AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value  all patient groups)
     # cum cases = AGG(stat_accum)-alias
     # date  = DAY(date)-alias, DAY(date)-value
@@ -159,13 +177,13 @@ def dash_ages():
                 "DAY(date)-value": "Date",
                 "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
                 "AGG(stat_count)-alias": "Cases",
-                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Hospitalized Severe",
+                "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Cases Proactive",
             },
         )
         if row.empty:
             continue
         row['Age'] = age_group
-        row = row.pivot(values=["Deaths", "Cases", "Hospitalized Severe"], columns="Age")
+        row = row.pivot(values=["Deaths", "Cases", "Cases Proactive"], columns="Age")
         row.columns = [f"{n} Age {v}" for n, v in row.columns]
         df = row.combine_first(df)
         logger.info("{} MOPH Ages {} {}", row.last_valid_index(), range2eng(age_group),
@@ -220,6 +238,8 @@ def dash_by_province():
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
+    if "Hospitalized Severe" in df.columns:
+        df = df.drop(columns=["Hospitalized Severe"])  # was actually proactive
 
     last_pos_rate = max(df["Positive Rate Dash"].last_valid_index()[0], today() - relativedelta(days=31))
     valid = {
@@ -235,7 +255,6 @@ def dash_by_province():
         "Cases Imported": d("2021-08-01"),
         "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
         "Cases": d("2021-06-28"),  # Only Lampang?
-        'Hospitalized Severe': today(),  # Comes from the trends data
     }
     # Dates with no data and doesn't seem to change
     skip = [
@@ -262,7 +281,7 @@ def dash_by_province():
         (d('2021-09-21'), 'Nan'),
     ]
 
-    dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
+    dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
         date, province = idx_value
         if province is None:
@@ -307,6 +326,17 @@ def dash_by_province():
                 "DAY(txn_date)-value": "Date"
             },
         )
+        # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
+        # Need to work if the data has been updated yet. If it has last deaths should be today.
+        last_update = wb.getWorksheet("D2_DeathTL").data
+        if last_update.empty:
+            # Shouldn't happen. Something wrong. Better skip
+            continue
+        last_update = pd.to_datetime(last_update['DAY(txn_date)-value']).max()
+        if date > last_update:
+            # the date we are trying to get isn't the last deaths we know about. No new data yet
+            continue
+
         row['Province'] = province
         df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
         logger.info("{} MOPH Dashboard {}", date.date(),
@@ -362,15 +392,15 @@ def skip_valid(df, idx_value, allow_na={}):
             return False
         if not mins:
             return True
-        
+
         min_val, *max_val = mins
         if min_val > val:
             return False
         elif max_val and val > max_val[0]:
             return False
         else:
-            return True 
- 
+            return True
+
     # allow certain fields null if before set date
     nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
     if not nulls:

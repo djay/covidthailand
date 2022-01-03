@@ -23,16 +23,16 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png) ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
-- For forecasts of total infections/deaths/hospitalisations see 
+- For forecasts of total infections/deaths/hospitalisations see
   [IHME Thailand](https://covid19.healthdata.org/thailand) |
   [IHME Thailand Report](http://www.healthdata.org/covid/updates) |
   [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/) |
   [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
   [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
-  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA) 
+  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings),
   [MOPH daily situation report](downloads#dl-situation-reports)
- 
+
 # Cases <a name="cases">
 
 ## Cases by Region
@@ -131,6 +131,13 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
+## Case Fatality Rate
+
+![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/cfr_region_3.png)
+- To show more recent trends last 90 days is used instead of total deaths / total cases which is normally used.
+- [CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected](https://ourworldindata.org/mortality-risk-covid#understanding-the-case-fatality-crude-mortality-and-the-infection-fatality-rate)
+- Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)
+- Source: [CCSA Daily Briefing](downloads#dl-briefings)
 
 # Vaccinations <a name="vaccinations">
 
@@ -159,8 +166,8 @@ Links to all data sources are including in [Downloads](downloads)
 
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
-- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) | 
-[Vaccinations 1st given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_1_3.png) | 
+- see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) |
+[Vaccinations 1st given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_1_3.png) |
 [Map of Vaccinations: The Researcher Covid Tracker](https://covid-19.researcherth.co/vaccination)
 
 # Active Cases/Hospitalisations <a name="active-cases">
@@ -170,7 +177,7 @@ Links to all data sources are including in [Downloads](downloads)
 ![Thailand Cases in ICU](https://github.com/djay/covidthailand/wiki/active_severe_3.png)
 
 - Break down of active case status only available from 2020-04-24 onwards.
-- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is  
+- Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is
   confirmed (for 14days at least)
 - see [Thailand Active Cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_active_all.png))
 - Source: [CCSA Daily Briefing](downloads#dl-briefings)
@@ -188,7 +195,7 @@ Links to all data sources are including in [Downloads](downloads)
 Assumes easy access to tests for everyone.
 - It's likely there is [missing test data](https://github.com/djay/covidthailand/wiki#more-cases-than-positive-results). Using confirmed cases migth be more accurate.
 - This positive rate is based on [DMSC: Thailand Laboratory testing data](downloads#dl-testing). In the [Daily MOPH Situation Reports](downloads#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://github.com/djay/covidthailand/wiki).
-- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case_3.png) (Positive rate inverted) could be easier to understand, 
+- see also [Positive Rate: Full year](https://github.com/djay/covidthailand/wiki/positivity_all.png), [Tests per Case Graph](https://github.com/djay/covidthailand/wiki/tests_per_case_3.png) (Positive rate inverted) could be easier to understand,
 [Positive Rate - Top Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_top_3.png),
 [Positive Rate - Lowest Provinces - Thailand](https://github.com/djay/covidthailand/wiki/positivity_prov_low_3.png)
 
@@ -231,7 +238,7 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
 
-- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Excess deaths Plots excluding 2019 
+- [2019 had an unusual increase in deaths compared to the previous 4 years](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png) but is unclear yet why. Excess deaths Plots excluding 2019
 [All](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_all.png) | [by region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_all.png) | [by age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_all.png) show clearer baseline more similar to other countries.
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
@@ -302,7 +309,7 @@ The plots are produced from csv files made in covid_data.py.
         }
   ```
 
-3. You can comment out parts of covid_plot.py to skip some plots. 
+3. You can comment out parts of covid_plot.py to skip some plots.
    - In USE_CACHE_DATA  only ```*_3.png``` files are produced. 3 is for 3rd wave (since April 2021).
 
 - When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
@@ -310,7 +317,7 @@ The plots are produced from csv files made in covid_data.py.
 ### Running full code
 
 1. Extract the  [latest input files (~1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz).
-   This get the latest cache of documents to speed up scraping.   
+   This get the latest cache of documents to speed up scraping.
 
   - Manually: extract [latest input files (~1.3G)](https://github.com/djay/covidthailand/releases/download/1/inputs.tar.gz)
  into the top level of the project. It will put documents/json etc ```inputs/*``` folders.
@@ -329,7 +336,7 @@ The plots are produced from csv files made in covid_data.py.
   USE_CACHE_DATA=True python covid_data.py
   ```
 
-3. If many days have passed since the last run then return to step 1. or slightly slow but smaller download is to  
+3. If many days have passed since the last run then return to step 1. or slightly slow but smaller download is to
    download the [latest datasets](https://github.com/djay/covidthailand/releases/download/1/datasets.tar.gz) files
    which will speed up dashboard scrapping which is the slowest part.
 

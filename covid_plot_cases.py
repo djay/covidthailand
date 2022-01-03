@@ -1,17 +1,34 @@
 import matplotlib.cm
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from covid_data import get_ifr, scrape_and_combine
-from covid_data_api import get_case_details_csv
-from utils_pandas import cum2daily, cut_ages, cut_ages_labels, decreasing, get_cycle, perc_format, \
-    import_csv, increasing, normalise_to_total, rearrange, topprov, fuzzy_join
-from utils_scraping import remove_prefix, logger
-from utils_thai import DISTRICT_RANGE, DISTRICT_RANGE_SIMPLE, AREA_LEGEND, \
-    FIRST_AREAS, area_crosstab, join_provinces, trend_table
 import utils_thai
-
-from covid_plot_utils import plot_area, source
+from covid_data import get_ifr
+from covid_data import scrape_and_combine
+from covid_data_api import get_case_details_csv
+from covid_plot_utils import plot_area
+from covid_plot_utils import source
+from utils_pandas import cum2daily
+from utils_pandas import cut_ages
+from utils_pandas import cut_ages_labels
+from utils_pandas import decreasing
+from utils_pandas import fuzzy_join
+from utils_pandas import get_cycle
+from utils_pandas import import_csv
+from utils_pandas import increasing
+from utils_pandas import normalise_to_total
+from utils_pandas import perc_format
+from utils_pandas import rearrange
+from utils_pandas import topprov
+from utils_scraping import logger
+from utils_scraping import remove_prefix
+from utils_thai import area_crosstab
+from utils_thai import AREA_LEGEND
+from utils_thai import DISTRICT_RANGE
+from utils_thai import DISTRICT_RANGE_SIMPLE
+from utils_thai import FIRST_AREAS
+from utils_thai import join_provinces
+from utils_thai import trend_table
 
 
 def save_cases_plots(df: pd.DataFrame) -> None:
@@ -156,9 +173,9 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               title='Cases/100k - by Region - Thailand',
               png_prefix='cases_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
-              kind='line', stacked=False, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              table=trend_table(cases['Cases'], sensitivity=25, style="green_down", ma_days=7),
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
@@ -167,7 +184,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               title='Cases - by Region - Thailand',
               png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
+              kind='area', stacked=True, percent_fig=True, mini_map=True,
               unknown_name="Imported/Prisons", unknown_total="Cases",
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
@@ -375,7 +392,25 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                        + 'IFR: Infection Fatality Rate\n'
                        + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
-   
+
+    # Do CFR for all regions. show vaccine effectiveness
+    # TODO: use actual med time to death from briefing. It changes slightly over time.
+    def cfr_est(df): return df['Deaths'].rolling(90).mean() / df['Cases'].shift(11).rolling(90).mean() * 100
+    by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
+    cfr_region = by_region.groupby("region", group_keys=False).apply(cfr_est).to_frame("CFR Est").reset_index()
+    cfr_region = pd.crosstab(cfr_region['Date'], cfr_region['region'], values=cfr_region["CFR Est"], aggfunc="sum")
+    plot_area(df=cfr_region,
+              title='Case Fatality Rate (CFR) - Last 90 days - by Region - Thailand',
+              png_prefix='cfr_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              ma_days=0,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
+              cmap=utils_thai.REG_COLOURS,
+              y_formatter=perc_format,
+              # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              footnote="CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected\n"
+              "Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)",
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
     cols = ['Cases']
     peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
@@ -388,8 +423,9 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     # Calculate Reduced Mobility Index
     mobility_min = mobility['Mobility Index'].min()
     mobility_max = mobility['Mobility Index'].max()
-    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min - mobility['Mobility Index'])/(mobility_max - mobility_min)) * 100
-    
+    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
+                                                                  mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
+
     peaks = peaks.combine_first(mobility)
     cols += ['Reduced Mobility Index - IHME (% of peak)']
     legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
