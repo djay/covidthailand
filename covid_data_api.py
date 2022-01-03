@@ -73,6 +73,8 @@ def get_cases():
     data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
     cases = data[["Cases", "Deaths", "Recovered"]]
     cases["Source Cases"] = url
+    # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
+    cases = cases[~cases.index.duplicated(keep='last')]
     return cases
 
 
