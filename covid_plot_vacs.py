@@ -278,15 +278,14 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
     cols = [
-        'Cases',
         'ATK',
+        'Cases',
         'Vaccinated',
         'Deaths',
     ]
-    cols += ['Vaccinated']
     legend = [
+        "Home Isolation based on ATK (Probable Case)",
         "Confirmed Cases (% of peak)",
-        "Home Isolation based on ATK",
         "Vaccinated - 2nd dose (% of Thai Pop.)",
         "Reported Covid Deaths (% of peak)",
     ]
