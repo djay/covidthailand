@@ -328,13 +328,11 @@ def dash_by_province():
         )
         # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
         # Need to work if the data has been updated yet. If it has last deaths should be today.
-        last_update = wb.getWorksheet("D2_DeathTL").data
-        if last_update.empty:
-            # Shouldn't happen. Something wrong. Better skip
-            continue
-        last_update = pd.to_datetime(last_update['DAY(txn_date)-value']).max()
-        if date > last_update:
+        last_update_df = wb.getWorksheet("D2_DeathTL").data
+        last_update = None
+        if last_update_df.empty or date > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()):
             # the date we are trying to get isn't the last deaths we know about. No new data yet
+            logger.warning("{} MOPH Dashboard {}", date.date(), f"Skipping {province} as data update={last_update}")
             continue
 
         row['Province'] = province
