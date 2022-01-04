@@ -274,14 +274,21 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     vac = vac.join(pops, rsuffix="2")
 
     # Do a % of peak chart for death vs cases
-    cols = [
-        'Cases',
-        'Deaths',
-    ]
+    cols = ['Cases', 'Deaths', 'ATK', ]
     peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
-    cols += ['Vaccinated']
-    legend = ["Confirmed Cases (% of peak)", "Reported Covid Deaths (% of peak)", "Vaccinated - 2nd dose (% of Thai Pop.)"]
+    cols = [
+        'ATK',
+        'Cases',
+        'Vaccinated',
+        'Deaths',
+    ]
+    legend = [
+        "Home Isolation based on ATK - Probable Case (% of peak)",
+        "Confirmed Cases (% of peak)",
+        "Vaccinated - 2nd dose (% of Thai Pop.)",
+        "Reported Covid Deaths (% of peak)",
+    ]
     plot_area(df=peaks,
               title='Covid 19 Trends - Thailand',
               png_prefix='cases_peak', cols_subset=cols, legends=legend,

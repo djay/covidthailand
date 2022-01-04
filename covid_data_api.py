@@ -73,6 +73,8 @@ def get_cases():
     data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
     cases = data[["Cases", "Deaths", "Recovered"]]
     cases["Source Cases"] = url
+    # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
+    cases = cases[~cases.index.duplicated(keep='first')]
     return cases
 
 
@@ -80,6 +82,8 @@ def get_cases():
 def get_case_details_csv():
     if False:
         return get_case_details_api()
+    cols = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
+        ",")
     url = "https://data.go.th/dataset/covid-19-daily"
     file, text, _ = next(web_files(url, dir="inputs/json", check=True))
     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
@@ -89,24 +93,24 @@ def get_case_details_csv():
     links = sorted([link for link in links if '.php' not in link and '.xlsx' not in link], reverse=True)
     # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
     cases = pd.DataFrame()
-    for file, _, _ in web_files(*links, dir="inputs/json", check=True, strip_version=True, appending=True):
-        if file.endswith(".xlsx"):
-            continue
-            #cases = pd.read_excel(file)
-        elif file.endswith(".csv"):
-            confirmedcases = pd.read_csv(file)
-            if "risk" not in confirmedcases.columns:
-                confirmedcases.columns = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
-                    ",")
-            if '�' in confirmedcases.loc[0]['risk']:
-                # bad encoding
-                with codecs.open(file, encoding="tis-620") as fp:
-                    confirmedcases = pd.read_csv(fp)
-            first, last, ldate = confirmedcases["No."].iloc[0], confirmedcases["No."].iloc[-1], confirmedcases["announce_date"].iloc[-1]
-            logger.info("Covid19daily: rows={} {}={} {} {}", len(confirmedcases), last - first, last - first, ldate, file)
-            cases = cases.combine_first(confirmedcases.set_index("No."))
-        else:
-            raise Exception(f"Unknown filetype for covid19daily {file}")
+    for link, check in zip(links, ([False] * len(links))[:-1] + [True]):
+        for file, _, _ in web_files(link, dir="inputs/json", check=check, strip_version=True, appending=True):
+            if file.endswith(".xlsx"):
+                continue
+                #cases = pd.read_excel(file)
+            elif file.endswith(".csv"):
+                confirmedcases = pd.read_csv(file)
+                if "risk" not in confirmedcases.columns:
+                    confirmedcases.columns = cols
+                if '�' in confirmedcases.loc[0]['risk']:
+                    # bad encoding
+                    with codecs.open(file, encoding="tis-620") as fp:
+                        confirmedcases = pd.read_csv(fp)
+                first, last, ldate = confirmedcases["No."].iloc[0], confirmedcases["No."].iloc[-1], confirmedcases["announce_date"].iloc[-1]
+                logger.info("Covid19daily: rows={} {}={} {} {}", len(confirmedcases), last - first, last - first, ldate, file)
+                cases = cases.combine_first(confirmedcases.set_index("No."))
+            else:
+                raise Exception(f"Unknown filetype for covid19daily {file}")
     cases = cases.reset_index("No.")
     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
@@ -456,10 +460,15 @@ def ihme_dataset():
     data = pd.DataFrame()
 
     # listing out urls not very elegant, but this only need yearly update
+    # TODO: get links directly from https://www.healthdata.org/covid/data-downloads so new year updates
     urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
-            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv']
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
+            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv']
     for url in urls:
-        file, _, _ = next(iter(web_files(url, dir="inputs/IHME")))
+        try:
+            file, _, _ = next(iter(web_files(url, dir="inputs/IHME", check=True, appending=False)))
+        except StopIteration:
+            continue
         data_in_file = pd.read_csv(file)
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)

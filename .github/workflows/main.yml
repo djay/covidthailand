@@ -7,8 +7,8 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
-    - cron: "50 23 * * *" # 07:30 Dashboard
-    - cron: "25 00 * * *" # 08:15 Dashboard
+    - cron: "45 23 * * *" # 07:15 Dashboard
+    - cron: "25 00 * * *" # 07:45 Dashboard
 #    - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
     - cron: "*/45 06-09 * * *" # Quick checks for briefing after 1pm
     # - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
@@ -43,8 +43,8 @@ jobs:
           echo "::set-output name=year::$(TZ=Asia/Bangkok date +'%Y')"
           echo "::set-output name=hour::$(TZ=Asia/Bangkok date +'%H')"
           echo "::set-output name=time::$(TZ=Asia/Bangkok date +'%H:%M')"
-          echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/$(TZ=Asia/Bangkok date +'%d%m')64.pdf"
-          echo "::set-output name=briefingfile::inputs/briefings/$(TZ=Asia/Bangkok date +'%d%m')64.pdf"
+          echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/$(TZ=Asia/Bangkok date +'%d%m')$(($(TZ=Asia/Bangkok date +'%Y')-1957)).pdf"
+          echo "::set-output name=briefingfile::inputs/briefings/$(TZ=Asia/Bangkok date +'%d%m')$(($(TZ=Asia/Bangkok date +'%Y')-1957)).pdf"
       - name: Check briefing doc available
         id: briefing
         continue-on-error: true

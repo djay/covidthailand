@@ -175,7 +175,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              table=trend_table(cases['Cases'], sensitivity=25, style="green_down", ma_days=7),
               footnote='Table of latest Cases and 7 day trend per 100k',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 

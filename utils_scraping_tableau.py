@@ -214,6 +214,8 @@ def workbook_iterate(url, **selects):
 
 
 def force_setParameter(wb, parameterName, value):
+    "Allow for setting a parameter even if it's not present in getParameters"
+    # TODO: remove if they fix https://github.com/bertrandmartel/tableau-scraping/issues/49
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
     payload = (
@@ -251,6 +253,7 @@ def force_setParameter(wb, parameterName, value):
 # filterRemoveIndices: [2]
 def force_setFilter(wb, ws_name, columnName, values):
     "setFilter but ignore the listed filter options. also gets around wrong ordinal value which makes index value incorrect"
+    # TODO: remove if they fix https://github.com/bertrandmartel/tableau-scraping/issues/50
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)

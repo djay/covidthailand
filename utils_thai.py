@@ -394,7 +394,9 @@ def prov_regions_wealth(provinces):
     def clean_column_name(col):
         return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()
 
-    df = pd.read_html("https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP")[0]
+    url = "https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP"
+    file, _, _ = next(web_files(url, dir="inputs/html", check=False))
+    df = pd.read_html(file)[0]
 
     df.columns = [clean_column_name(x) for x in df.columns]
 
@@ -531,13 +533,13 @@ def region_crosstab(df, col, suffix="", aggfunc="sum"):
     return given_by_area_2
 
 
-def trend_table(table_provinces, sensitivity=25, style="green_up"):
+def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     """Given Series indexed by date,province with a single value.
     Return latest values indexed by province with trend between (-1, +1)
     """
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
-    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(ma_days).mean())
 
     # Too sensitive to changes
     # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
@@ -549,12 +551,12 @@ def trend_table(table_provinces, sensitivity=25, style="green_up"):
     if "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
-        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(7)) / peak * sensitivity)
+        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(ma_days)) / peak * sensitivity)
     else:
         ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
         peak = ma.max().max() / ma_pop['Population'].max().max()
         trend = ma_pop.groupby("Province", group_keys=False).apply(
-            lambda df: ((df['Value'] - df['Value'].shift(7)) / df['Population'])
+            lambda df: ((df['Value'] - df['Value'].shift(ma_days)) / df['Population'])
         ) / peak * sensitivity
 
     trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?

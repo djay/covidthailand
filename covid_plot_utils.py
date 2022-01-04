@@ -544,7 +544,7 @@ def rewrite_legends(df, legends, cols, y_formatter):
         y_formatter = thaipop2
 
     # add the values to the legends
-    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    values = df.ffill().iloc[-1][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     for number, value in enumerate(values):
         if not np.isnan(value) and number < len(legends):
             new_legends.append(f'{y_formatter(value, 0)} {legends[number]}')
@@ -593,7 +593,7 @@ def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27)
         y_formatter = thaipop2
     new_axis = right_axis(axis, y_formatter)
 
-    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    values = df.ffill().iloc[-1][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     bottom, top = axis.get_ylim()
     ticks = Ticks(max_ticks, bottom, top)
     if stacked:

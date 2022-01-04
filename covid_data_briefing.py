@@ -171,7 +171,7 @@ def briefing_case_types(date, pages, url):
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
             cases, walkins, proactive, *quarantine = numbers
             domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
-            if domestic and date not in [d("2021-11-22"), d("2021-12-02")]:
+            if domestic and date not in [d("2021-11-22"), d("2021-12-02"), d("2021-12-29")]:
                 assert domestic <= cases
                 assert domestic == walkins + proactive
             quarantine = quarantine[0] if quarantine else 0
@@ -456,13 +456,6 @@ def briefing_deaths_summary(text, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    # deaths over 60
-    if date > d("2021-08-02"):
-        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
-        assert deaths_60 is not None
-    else:
-        deaths_60 = np.nan
-
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date != d("2021-08-09"):
         male, female, *_ = genders
@@ -488,16 +481,41 @@ def briefing_deaths_summary(text, date, file):
         "Kidney disease": ["โรคไต"],
         "Heart disease": ["โรคหัวใจ"],
         "Bedridden": ["ติดเตียง"],
+        "Cancer": ["มะเร็ง"],
         "Pregnant": ["ตั้งครรภ์"],
-        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั"],
+        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั", "ไม่มี"],
         # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
     comorbidity = {
-        disease: get_next_number(text, *thdiseases, default=0, return_rest=False, until=r"\)", require_until=True)
+        disease: get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
-    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10")]:
-        assert sum(comorbidity.values()) >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
+    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03")]:
+        cm_sum = sum([n for n in comorbidity.values() if n is not np.nan])
+        assert cm_sum >= deaths_title, f"Potentially Missing comorbidity {comorbidity}\n{text}"
+
+    # deaths over 60
+    if date > d("2021-08-02"):
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
+        assert deaths_60 is not None
+    else:
+        deaths_60 = np.nan
+    # deaths under 60
+    numbers, rest = get_next_numbers(text, "อายุน้อยกว่า 60", "อายุต่ ากว่า 60", "อยกว:า 60", return_rest=True)
+    if numbers:
+        no_comorbid = comorbidity['None']
+        comorbidity['None'] = np.nan
+        if len(numbers) == 2 and "รคเรื้อรัง" in rest:
+            # Just chronic disease under 60 2021-12-30
+            under_60_disease, *_ = numbers
+            under_60_none = 0
+        else:
+            under_60_disease, _, under_60_none, _, *_ = numbers  # also preganancy
+        # assert no_comorbid is np.nan or no_comorbid == under_60_none
+    else:
+        under_60_disease, under_60_none = np.nan, np.nan
+    if date >= d("2021-08-08"):
+        assert under_60_disease != np.nan
 
     risks = {
         "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
@@ -514,9 +532,10 @@ def briefing_deaths_summary(text, date, file):
         "Work": ["อาชีพเสี่ยง", "อาชีพเ"],  # Risky occupations
         "HCW": ["HCW", "บุคลากรทางการแพทย์"],
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
+        "Unvaccinated": ["ไม่เคยได้รับวัคซีน"],
     }
     risk = {
-        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False, dash_as_zero=True)
+        en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)
         for en_risk, th_risks in risks.items()
     }
     # TODO: Get all bullets and fuzzy match them to categories
@@ -535,10 +554,10 @@ def briefing_deaths_summary(text, date, file):
     cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
     row = pd.DataFrame(
         [[date, deaths_title, med_age, min_age, max_age, male, female] + list(risk.values())
-         + list(comorbidity.values()) + [deaths_60]],
+         + list(comorbidity.values()) + [under_60_disease, under_60_none, deaths_60]],
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
-        ] + risk_cols + cm_cols + ["Deaths 60 Plus"]).set_index("Date")
+        ] + risk_cols + cm_cols + ["Deaths Risk Under 60 Comorbidity ", "Deaths Risk Under 60 Comorbidity None", "Deaths Risk Over 60"]).set_index("Date")
     logger.info("{} Deaths: {}", date.date(), row.to_string(header=False, index=False), file)
     return row
 
@@ -789,6 +808,9 @@ def get_cases_by_prov_briefings():
         date_prov_types = date_prov_types.reset_index().pivot(index=["Date", "Province"], columns=['Case Type'])
         date_prov_types.columns = [f"Cases {c}" for c in date_prov_types.columns.get_level_values(1)]
         date_prov = date_prov.combine_first(date_prov_types)
+
+    # Since Deaths by province doesn't list all provinces, ensure missing are 0
+    date_prov['Deaths'] = date_prov['Deaths'].unstack(fill_value=0).fillna(0).stack(dropna=False)
 
     return date_prov, types
 
