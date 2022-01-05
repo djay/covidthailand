@@ -53,8 +53,8 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
         export(df, "moph_bed", csv_only=True, dir="inputs/json")
 
     # TODO: get bed types and ventilator tabs and iterate through prvinces
-    prov = sp.getWorksheet("map_total")
-    wb = force_select(prov, "Prov Name En-value", 'Nakhon Ratchasima', "Story 1", id)
+    # prov = sp.getWorksheet("map_total")
+    # wb = force_select(prov, "Prov Name En-value", 'Nakhon Ratchasima', "Story 1", id)
 
     return df, updated_time
 
