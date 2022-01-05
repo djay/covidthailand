@@ -81,10 +81,21 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # data is clean
     assert not row.isna().any().any(), 'some datapoints contain NA'
 
-    df = df.combine_first(row).combine_first(provs)
+    # Ventitalors
+    ts.loads(url)
+    workbook = ts.getWorkbook()
+    sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม'))
+    sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR"))
+    ws = sp.getWorksheet("province_respirator")
+    vent = ws.data[['Prov Name-value', 'SUM(Ventilator)-value']]
+    vent.columns = ["Province", "Bed Ventilator Total"]
+    vent = join_provinces(vent, 'Province')
+    vent['Date'] = updated_time.date()
+    vent = vent.set_index(["Date", "Province"])
+
+    df = df.combine_first(row).combine_first(provs).combine_first(vent)
     export(df, "moph_bed", csv_only=True, dir="inputs/json")
 
-    # sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR"))
     return df
 
 
