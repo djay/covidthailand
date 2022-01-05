@@ -64,6 +64,8 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     provs = join_provinces(provs, "Province")  # Ensure we get the right names
 
     # Get total beds per province
+    ts.loads(url)
+    workbook = ts.getWorkbook()
     sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม'))
 
     ws = sp.getWorksheet('province_total')
