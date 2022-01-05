@@ -87,11 +87,11 @@
       },
       {
         "name":"Vac Group Over 60 1 Cum",
-        "type":"number"
+        "type":"string"
       },
       {
         "name":"Vac Group Over 60 2 Cum",
-        "type":"number"
+        "type":"string"
       },
       {
         "name":"Vac Group Over 60 3 Cum",
@@ -99,11 +99,11 @@
       },
       {
         "name":"Vac Group Risk: Disease 1 Cum",
-        "type":"number"
+        "type":"string"
       },
       {
         "name":"Vac Group Risk: Disease 2 Cum",
-        "type":"number"
+        "type":"string"
       },
       {
         "name":"Vac Group Risk: Disease 3 Cum",
@@ -147,6 +147,14 @@
       },
       {
         "name":"Vac Population",
+        "type":"number"
+      },
+      {
+        "name":"Vac Population Over 60s",
+        "type":"number"
+      },
+      {
+        "name":"Vac Population Risk: Disease",
         "type":"number"
       }
     ],
@@ -194,7 +202,9 @@
       "Vac Group Student 1 Cum":24634.0,
       "Vac Group Student 2 Cum":23300.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":379995.0
+      "Vac Population":379995.0,
+      "Vac Population Over 60s":35372.0,
+      "Vac Population Risk: Disease":13355.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -233,7 +243,9 @@
       "Vac Group Student 1 Cum":14204.0,
       "Vac Group Student 2 Cum":13093.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":292159.0
+      "Vac Population":292159.0,
+      "Vac Population Over 60s":30458.0,
+      "Vac Population Risk: Disease":14864.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -272,7 +284,9 @@
       "Vac Group Student 1 Cum":138932.0,
       "Vac Group Student 2 Cum":130638.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":7699175.0
+      "Vac Population":7699175.0,
+      "Vac Population Over 60s":959918.0,
+      "Vac Population Risk: Disease":798826.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -311,7 +325,9 @@
       "Vac Group Student 1 Cum":19892.0,
       "Vac Group Student 2 Cum":12668.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":425427.0
+      "Vac Population":425427.0,
+      "Vac Population Over 60s":27941.0,
+      "Vac Population Risk: Disease":37053.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -350,7 +366,9 @@
       "Vac Group Student 1 Cum":110958.0,
       "Vac Group Student 2 Cum":96460.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1587359.0
+      "Vac Population":1587359.0,
+      "Vac Population Over 60s":164229.0,
+      "Vac Population Risk: Disease":75335.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -389,7 +407,9 @@
       "Vac Group Student 1 Cum":39815.0,
       "Vac Group Student 2 Cum":37296.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":750784.0
+      "Vac Population":750784.0,
+      "Vac Population Over 60s":80446.0,
+      "Vac Population Risk: Disease":44667.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -428,7 +448,9 @@
       "Vac Group Student 1 Cum":17751.0,
       "Vac Group Student 2 Cum":15179.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":335049.0
+      "Vac Population":335049.0,
+      "Vac Population Over 60s":38014.0,
+      "Vac Population Risk: Disease":20995.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -467,7 +489,9 @@
       "Vac Group Student 1 Cum":52858.0,
       "Vac Group Student 2 Cum":47829.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1134867.0
+      "Vac Population":1134867.0,
+      "Vac Population Over 60s":113291.0,
+      "Vac Population Risk: Disease":37621.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -506,7 +530,9 @@
       "Vac Group Student 1 Cum":24592.0,
       "Vac Group Student 2 Cum":22434.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":587421.0
+      "Vac Population":587421.0,
+      "Vac Population Over 60s":59470.0,
+      "Vac Population Risk: Disease":31233.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -545,7 +571,9 @@
       "Vac Group Student 1 Cum":87434.0,
       "Vac Group Student 2 Cum":70238.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1729353.0
+      "Vac Population":1729353.0,
+      "Vac Population Over 60s":219956.0,
+      "Vac Population Risk: Disease":117478.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -584,7 +612,9 @@
       "Vac Group Student 1 Cum":47353.0,
       "Vac Group Student 2 Cum":40754.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1172648.0
+      "Vac Population":1172648.0,
+      "Vac Population Over 60s":148030.0,
+      "Vac Population Risk: Disease":53938.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -623,7 +653,9 @@
       "Vac Group Student 1 Cum":58645.0,
       "Vac Group Student 2 Cum":59492.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":2047622.0
+      "Vac Population":2047622.0,
+      "Vac Population Over 60s":144783.0,
+      "Vac Population Risk: Disease":126323.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -662,7 +694,9 @@
       "Vac Group Student 1 Cum":20850.0,
       "Vac Group Student 2 Cum":18159.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":543683.0
+      "Vac Population":543683.0,
+      "Vac Population Over 60s":53621.0,
+      "Vac Population Risk: Disease":21429.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -701,7 +735,9 @@
       "Vac Group Student 1 Cum":57207.0,
       "Vac Group Student 2 Cum":54824.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":978299.0
+      "Vac Population":978299.0,
+      "Vac Population Over 60s":89755.0,
+      "Vac Population Risk: Disease":34005.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -740,7 +776,9 @@
       "Vac Group Student 1 Cum":38768.0,
       "Vac Group Student 2 Cum":35529.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":725873.0
+      "Vac Population":725873.0,
+      "Vac Population Over 60s":69421.0,
+      "Vac Population Risk: Disease":46462.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -779,7 +817,9 @@
       "Vac Group Student 1 Cum":36543.0,
       "Vac Group Student 2 Cum":31160.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":848454.0
+      "Vac Population":848454.0,
+      "Vac Population Over 60s":68863.0,
+      "Vac Population Risk: Disease":40662.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -818,7 +858,9 @@
       "Vac Group Student 1 Cum":98882.0,
       "Vac Group Student 2 Cum":85030.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1837005.0
+      "Vac Population":1837005.0,
+      "Vac Population Over 60s":166252.0,
+      "Vac Population Risk: Disease":74890.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -857,7 +899,9 @@
       "Vac Group Student 1 Cum":29961.0,
       "Vac Group Student 2 Cum":31591.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":503538.0
+      "Vac Population":503538.0,
+      "Vac Population Over 60s":41184.0,
+      "Vac Population Risk: Disease":26980.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -896,7 +940,9 @@
       "Vac Group Student 1 Cum":39870.0,
       "Vac Group Student 2 Cum":36731.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":731573.0
+      "Vac Population":731573.0,
+      "Vac Population Over 60s":96847.0,
+      "Vac Population Risk: Disease":78399.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -935,7 +981,9 @@
       "Vac Group Student 1 Cum":19079.0,
       "Vac Group Student 2 Cum":16344.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":417225.0
+      "Vac Population":417225.0,
+      "Vac Population Over 60s":51754.0,
+      "Vac Population Risk: Disease":25915.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -974,7 +1022,9 @@
       "Vac Group Student 1 Cum":33232.0,
       "Vac Group Student 2 Cum":26008.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":640283.0
+      "Vac Population":640283.0,
+      "Vac Population Over 60s":66954.0,
+      "Vac Population Risk: Disease":39765.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1013,7 +1063,9 @@
       "Vac Group Student 1 Cum":25557.0,
       "Vac Group Student 2 Cum":36529.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":760478.0
+      "Vac Population":760478.0,
+      "Vac Population Over 60s":72012.0,
+      "Vac Population Risk: Disease":36375.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1052,7 +1104,9 @@
       "Vac Group Student 1 Cum":12340.0,
       "Vac Group Student 2 Cum":10565.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":245764.0
+      "Vac Population":245764.0,
+      "Vac Population Over 60s":15183.0,
+      "Vac Population Risk: Disease":8320.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1091,7 +1145,9 @@
       "Vac Group Student 1 Cum":44164.0,
       "Vac Group Student 2 Cum":38636.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":957365.0
+      "Vac Population":957365.0,
+      "Vac Population Over 60s":92636.0,
+      "Vac Population Risk: Disease":54808.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1130,7 +1186,9 @@
       "Vac Group Student 1 Cum":18501.0,
       "Vac Group Student 2 Cum":13601.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":351257.0
+      "Vac Population":351257.0,
+      "Vac Population Over 60s":27574.0,
+      "Vac Population Risk: Disease":14820.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1169,7 +1227,9 @@
       "Vac Group Student 1 Cum":14048.0,
       "Vac Group Student 2 Cum":13173.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":271739.0
+      "Vac Population":271739.0,
+      "Vac Population Over 60s":27761.0,
+      "Vac Population Risk: Disease":14223.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1208,7 +1268,9 @@
       "Vac Group Student 1 Cum":25647.0,
       "Vac Group Student 2 Cum":19517.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1125350.0
+      "Vac Population":1125350.0,
+      "Vac Population Over 60s":94176.0,
+      "Vac Population Risk: Disease":64593.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1247,7 +1309,9 @@
       "Vac Group Student 1 Cum":41845.0,
       "Vac Group Student 2 Cum":36084.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":724861.0
+      "Vac Population":724861.0,
+      "Vac Population Over 60s":50175.0,
+      "Vac Population Risk: Disease":67315.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1286,7 +1350,9 @@
       "Vac Group Student 1 Cum":162266.0,
       "Vac Group Student 2 Cum":139396.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":2692890.0
+      "Vac Population":2692890.0,
+      "Vac Population Over 60s":240696.0,
+      "Vac Population Risk: Disease":186493.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1325,7 +1391,9 @@
       "Vac Group Student 1 Cum":53561.0,
       "Vac Group Student 2 Cum":46497.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1059708.0
+      "Vac Population":1059708.0,
+      "Vac Population Over 60s":115962.0,
+      "Vac Population Risk: Disease":51220.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1364,7 +1432,9 @@
       "Vac Group Student 1 Cum":69773.0,
       "Vac Group Student 2 Cum":63099.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1575117.0
+      "Vac Population":1575117.0,
+      "Vac Population Over 60s":170760.0,
+      "Vac Population Risk: Disease":76672.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1403,7 +1473,9 @@
       "Vac Group Student 1 Cum":25223.0,
       "Vac Group Student 2 Cum":21122.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":477862.0
+      "Vac Population":477862.0,
+      "Vac Population Over 60s":60554.0,
+      "Vac Population Risk: Disease":21961.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1442,7 +1514,9 @@
       "Vac Group Student 1 Cum":40827.0,
       "Vac Group Student 2 Cum":35517.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":805356.0
+      "Vac Population":805356.0,
+      "Vac Population Over 60s":40127.0,
+      "Vac Population Risk: Disease":29315.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1481,7 +1555,9 @@
       "Vac Group Student 1 Cum":14126.0,
       "Vac Group Student 2 Cum":10964.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":523861.0
+      "Vac Population":523861.0,
+      "Vac Population Over 60s":39465.0,
+      "Vac Population Risk: Disease":34270.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1520,7 +1596,9 @@
       "Vac Group Student 1 Cum":29200.0,
       "Vac Group Student 2 Cum":26449.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":519027.0
+      "Vac Population":519027.0,
+      "Vac Population Over 60s":48151.0,
+      "Vac Population Risk: Disease":29362.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1559,7 +1637,9 @@
       "Vac Group Student 1 Cum":61435.0,
       "Vac Group Student 2 Cum":57876.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1609192.0
+      "Vac Population":1609192.0,
+      "Vac Population Over 60s":118608.0,
+      "Vac Population Risk: Disease":86290.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1598,7 +1678,9 @@
       "Vac Group Student 1 Cum":40708.0,
       "Vac Group Student 2 Cum":37158.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1533781.0
+      "Vac Population":1533781.0,
+      "Vac Population Over 60s":116367.0,
+      "Vac Population Risk: Disease":105079.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1637,7 +1719,9 @@
       "Vac Group Student 1 Cum":42083.0,
       "Vac Group Student 2 Cum":34013.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":743054.0
+      "Vac Population":743054.0,
+      "Vac Population Over 60s":35137.0,
+      "Vac Population Risk: Disease":23592.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1676,7 +1760,9 @@
       "Vac Group Student 1 Cum":18209.0,
       "Vac Group Student 2 Cum":17001.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":286339.0
+      "Vac Population":286339.0,
+      "Vac Population Over 60s":33163.0,
+      "Vac Population Risk: Disease":16045.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1715,7 +1801,9 @@
       "Vac Group Student 1 Cum":27575.0,
       "Vac Group Student 2 Cum":28533.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":528207.0
+      "Vac Population":528207.0,
+      "Vac Population Over 60s":62989.0,
+      "Vac Population Risk: Disease":25275.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1754,7 +1842,9 @@
       "Vac Group Student 1 Cum":21457.0,
       "Vac Group Student 2 Cum":20548.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":468292.0
+      "Vac Population":468292.0,
+      "Vac Population Over 60s":66873.0,
+      "Vac Population Risk: Disease":22229.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1793,7 +1883,9 @@
       "Vac Group Student 1 Cum":58023.0,
       "Vac Group Student 2 Cum":55829.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":992791.0
+      "Vac Population":992791.0,
+      "Vac Population Over 60s":105587.0,
+      "Vac Population Risk: Disease":49450.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1832,7 +1924,9 @@
       "Vac Group Student 1 Cum":26615.0,
       "Vac Group Student 2 Cum":25184.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":502827.0
+      "Vac Population":502827.0,
+      "Vac Population Over 60s":50919.0,
+      "Vac Population Risk: Disease":29142.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1871,7 +1965,9 @@
       "Vac Group Student 1 Cum":33819.0,
       "Vac Group Student 2 Cum":29610.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":536012.0
+      "Vac Population":536012.0,
+      "Vac Population Over 60s":68035.0,
+      "Vac Population Risk: Disease":29487.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1910,7 +2006,9 @@
       "Vac Group Student 1 Cum":52803.0,
       "Vac Group Student 2 Cum":48140.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1050000.0
+      "Vac Population":1050000.0,
+      "Vac Population Over 60s":84106.0,
+      "Vac Population Risk: Disease":41242.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1949,7 +2047,9 @@
       "Vac Group Student 1 Cum":19397.0,
       "Vac Group Student 2 Cum":17202.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":921047.0
+      "Vac Population":921047.0,
+      "Vac Population Over 60s":83337.0,
+      "Vac Population Risk: Disease":51338.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -1988,7 +2088,9 @@
       "Vac Group Student 1 Cum":20962.0,
       "Vac Group Student 2 Cum":20492.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":441310.0
+      "Vac Population":441310.0,
+      "Vac Population Over 60s":48722.0,
+      "Vac Population Risk: Disease":26589.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2027,7 +2129,9 @@
       "Vac Group Student 1 Cum":16535.0,
       "Vac Group Student 2 Cum":21691.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":547584.0
+      "Vac Population":547584.0,
+      "Vac Population Over 60s":43178.0,
+      "Vac Population Risk: Disease":28536.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2066,7 +2170,9 @@
       "Vac Group Student 1 Cum":30532.0,
       "Vac Group Student 2 Cum":27762.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":579651.0
+      "Vac Population":579651.0,
+      "Vac Population Over 60s":45478.0,
+      "Vac Population Risk: Disease":23414.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2105,7 +2211,9 @@
       "Vac Group Student 1 Cum":32343.0,
       "Vac Group Student 2 Cum":27925.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":578094.0
+      "Vac Population":578094.0,
+      "Vac Population Over 60s":54131.0,
+      "Vac Population Risk: Disease":35071.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2144,7 +2252,9 @@
       "Vac Group Student 1 Cum":5079.0,
       "Vac Group Student 2 Cum":4438.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":228507.0
+      "Vac Population":228507.0,
+      "Vac Population Over 60s":19518.0,
+      "Vac Population Risk: Disease":11786.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2183,7 +2293,9 @@
       "Vac Group Student 1 Cum":48696.0,
       "Vac Group Student 2 Cum":40376.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":918674.0
+      "Vac Population":918674.0,
+      "Vac Population Over 60s":85696.0,
+      "Vac Population Risk: Disease":45149.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2222,7 +2334,9 @@
       "Vac Group Student 1 Cum":45221.0,
       "Vac Group Student 2 Cum":37878.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":966932.0
+      "Vac Population":966932.0,
+      "Vac Population Over 60s":63059.0,
+      "Vac Population Risk: Disease":49136.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2261,7 +2375,9 @@
       "Vac Group Student 1 Cum":64274.0,
       "Vac Group Student 2 Cum":61184.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1307158.0
+      "Vac Population":1307158.0,
+      "Vac Population Over 60s":127706.0,
+      "Vac Population Risk: Disease":52460.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2300,7 +2416,9 @@
       "Vac Group Student 1 Cum":33024.0,
       "Vac Group Student 2 Cum":25850.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":586286.0
+      "Vac Population":586286.0,
+      "Vac Population Over 60s":43032.0,
+      "Vac Population Risk: Disease":22802.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2339,7 +2457,9 @@
       "Vac Group Student 1 Cum":27326.0,
       "Vac Group Student 2 Cum":36829.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1145848.0
+      "Vac Population":1145848.0,
+      "Vac Population Over 60s":82737.0,
+      "Vac Population Risk: Disease":153204.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2378,7 +2498,9 @@
       "Vac Group Student 1 Cum":45360.0,
       "Vac Group Student 2 Cum":40544.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1931727.0
+      "Vac Population":1931727.0,
+      "Vac Population Over 60s":129311.0,
+      "Vac Population Risk: Disease":126452.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2417,7 +2539,9 @@
       "Vac Group Student 1 Cum":18888.0,
       "Vac Group Student 2 Cum":16570.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":953167.0
+      "Vac Population":953167.0,
+      "Vac Population Over 60s":58801.0,
+      "Vac Population Risk: Disease":56311.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2456,7 +2580,9 @@
       "Vac Group Student 1 Cum":9559.0,
       "Vac Group Student 2 Cum":8313.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":204018.0
+      "Vac Population":204018.0,
+      "Vac Population Over 60s":22215.0,
+      "Vac Population Risk: Disease":10669.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2495,7 +2621,9 @@
       "Vac Group Student 1 Cum":32431.0,
       "Vac Group Student 2 Cum":31088.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":720145.0
+      "Vac Population":720145.0,
+      "Vac Population Over 60s":61951.0,
+      "Vac Population Risk: Disease":41447.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2534,7 +2662,9 @@
       "Vac Group Student 1 Cum":23521.0,
       "Vac Group Student 2 Cum":19634.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":331057.0
+      "Vac Population":331057.0,
+      "Vac Population Over 60s":25273.0,
+      "Vac Population Risk: Disease":15068.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2573,7 +2703,9 @@
       "Vac Group Student 1 Cum":9877.0,
       "Vac Group Student 2 Cum":9803.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":214665.0
+      "Vac Population":214665.0,
+      "Vac Population Over 60s":28282.0,
+      "Vac Population Risk: Disease":12365.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2612,7 +2744,9 @@
       "Vac Group Student 1 Cum":62823.0,
       "Vac Group Student 2 Cum":68559.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1460182.0
+      "Vac Population":1460182.0,
+      "Vac Population Over 60s":132101.0,
+      "Vac Population Risk: Disease":45803.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2651,7 +2785,9 @@
       "Vac Group Student 1 Cum":82952.0,
       "Vac Group Student 2 Cum":78643.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1487320.0
+      "Vac Population":1487320.0,
+      "Vac Population Over 60s":162274.0,
+      "Vac Population Risk: Disease":84051.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2690,7 +2826,9 @@
       "Vac Group Student 1 Cum":28827.0,
       "Vac Group Student 2 Cum":23459.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":596902.0
+      "Vac Population":596902.0,
+      "Vac Population Over 60s":69380.0,
+      "Vac Population Risk: Disease":30367.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2729,7 +2867,9 @@
       "Vac Group Student 1 Cum":36696.0,
       "Vac Group Student 2 Cum":36142.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":850709.0
+      "Vac Population":850709.0,
+      "Vac Population Over 60s":86752.0,
+      "Vac Population Risk: Disease":40798.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2768,7 +2908,9 @@
       "Vac Group Student 1 Cum":77110.0,
       "Vac Group Student 2 Cum":58394.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1144090.0
+      "Vac Population":1144090.0,
+      "Vac Population Over 60s":115451.0,
+      "Vac Population Risk: Disease":85217.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2807,7 +2949,9 @@
       "Vac Group Student 1 Cum":81494.0,
       "Vac Group Student 2 Cum":78767.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1392583.0
+      "Vac Population":1392583.0,
+      "Vac Population Over 60s":128609.0,
+      "Vac Population Risk: Disease":51594.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2846,7 +2990,9 @@
       "Vac Group Student 1 Cum":31285.0,
       "Vac Group Student 2 Cum":27701.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":589901.0
+      "Vac Population":589901.0,
+      "Vac Population Over 60s":38143.0,
+      "Vac Population Risk: Disease":15572.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2885,7 +3031,9 @@
       "Vac Group Student 1 Cum":44270.0,
       "Vac Group Student 2 Cum":41168.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":659636.0
+      "Vac Population":659636.0,
+      "Vac Population Over 60s":72036.0,
+      "Vac Population Risk: Disease":37503.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2924,7 +3072,9 @@
       "Vac Group Student 1 Cum":12853.0,
       "Vac Group Student 2 Cum":11491.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":249458.0
+      "Vac Population":249458.0,
+      "Vac Population Over 60s":25744.0,
+      "Vac Population Risk: Disease":10896.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -2963,7 +3113,9 @@
       "Vac Group Student 1 Cum":86151.0,
       "Vac Group Student 2 Cum":76395.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1880468.0
+      "Vac Population":1880468.0,
+      "Vac Population Over 60s":155224.0,
+      "Vac Population Risk: Disease":81668.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -3002,7 +3154,9 @@
       "Vac Group Student 1 Cum":88976.0,
       "Vac Group Student 2 Cum":76022.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":1565740.0
+      "Vac Population":1565740.0,
+      "Vac Population Over 60s":146624.0,
+      "Vac Population Risk: Disease":111146.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -3041,7 +3195,9 @@
       "Vac Group Student 1 Cum":20404.0,
       "Vac Group Student 2 Cum":18267.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":334270.0
+      "Vac Population":334270.0,
+      "Vac Population Over 60s":32003.0,
+      "Vac Population Risk: Disease":19721.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -3080,7 +3236,9 @@
       "Vac Group Student 1 Cum":30350.0,
       "Vac Group Student 2 Cum":29056.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":455259.0
+      "Vac Population":455259.0,
+      "Vac Population Over 60s":57581.0,
+      "Vac Population Risk: Disease":18745.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -3119,7 +3277,9 @@
       "Vac Group Student 1 Cum":34300.0,
       "Vac Group Student 2 Cum":28850.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":547993.0
+      "Vac Population":547993.0,
+      "Vac Population Over 60s":33293.0,
+      "Vac Population Risk: Disease":21820.0
     },
     {
       "Date":"2021-12-05T00:00:00.000Z",
@@ -3158,7 +3318,9 @@
       "Vac Group Student 1 Cum":29424.0,
       "Vac Group Student 2 Cum":23134.0,
       "Vac Group Student 3 Cum":0.0,
-      "Vac Population":535512.0
+      "Vac Population":535512.0,
+      "Vac Population Over 60s":50472.0,
+      "Vac Population Risk: Disease":20904.0
     }
   ]
 }

@@ -75,18 +75,26 @@
       },
       {
         "name":"Vac Group Over 60 1 Cum",
-        "type":"number"
+        "type":"string"
       },
       {
         "name":"Vac Group Over 60 2 Cum",
+        "type":"string"
+      },
+      {
+        "name":"Vac Group Over 60 3 Cum",
         "type":"number"
       },
       {
         "name":"Vac Group Risk: Disease 1 Cum",
-        "type":"number"
+        "type":"string"
       },
       {
         "name":"Vac Group Risk: Disease 2 Cum",
+        "type":"string"
+      },
+      {
+        "name":"Vac Group Risk: Disease 3 Cum",
         "type":"number"
       },
       {
@@ -107,6 +115,14 @@
       },
       {
         "name":"Vac Population",
+        "type":"number"
+      },
+      {
+        "name":"Vac Population Over 60s",
+        "type":"number"
+      },
+      {
+        "name":"Vac Population Risk: Disease",
         "type":"number"
       }
     ],
@@ -138,13 +154,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4566.0,
       "Vac Group Over 60 1 Cum":27719.0,
       "Vac Group Over 60 2 Cum":7580.0,
+      "Vac Group Over 60 3 Cum":27719.0,
       "Vac Group Risk: Disease 1 Cum":9998.0,
       "Vac Group Risk: Disease 2 Cum":2975.0,
+      "Vac Group Risk: Disease 3 Cum":9998.0,
       "Vac Group Risk: Location 1 Cum":43261.0,
       "Vac Group Risk: Location 2 Cum":16021.0,
       "Vac Group Risk: Pregnant 1 Cum":94.0,
       "Vac Group Risk: Pregnant 2 Cum":7.0,
-      "Vac Population":379995.0
+      "Vac Population":379995.0,
+      "Vac Population Over 60s":7580.0,
+      "Vac Population Risk: Disease":2975.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -167,13 +187,17 @@
       "Vac Group Other Frontline Staff 2 Cum":1311.0,
       "Vac Group Over 60 1 Cum":25335.0,
       "Vac Group Over 60 2 Cum":10556.0,
+      "Vac Group Over 60 3 Cum":25335.0,
       "Vac Group Risk: Disease 1 Cum":10772.0,
       "Vac Group Risk: Disease 2 Cum":3956.0,
+      "Vac Group Risk: Disease 3 Cum":10772.0,
       "Vac Group Risk: Location 1 Cum":25299.0,
       "Vac Group Risk: Location 2 Cum":9325.0,
       "Vac Group Risk: Pregnant 1 Cum":90.0,
       "Vac Group Risk: Pregnant 2 Cum":7.0,
-      "Vac Population":292159.0
+      "Vac Population":292159.0,
+      "Vac Population Over 60s":10556.0,
+      "Vac Population Risk: Disease":3956.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -196,13 +220,17 @@
       "Vac Group Other Frontline Staff 2 Cum":106236.0,
       "Vac Group Over 60 1 Cum":1026005.0,
       "Vac Group Over 60 2 Cum":206751.0,
+      "Vac Group Over 60 3 Cum":1026005.0,
       "Vac Group Risk: Disease 1 Cum":802284.0,
       "Vac Group Risk: Disease 2 Cum":185354.0,
+      "Vac Group Risk: Disease 3 Cum":802284.0,
       "Vac Group Risk: Location 1 Cum":5023049.0,
       "Vac Group Risk: Location 2 Cum":1839941.0,
       "Vac Group Risk: Pregnant 1 Cum":8793.0,
       "Vac Group Risk: Pregnant 2 Cum":789.0,
-      "Vac Population":7699175.0
+      "Vac Population":7699175.0,
+      "Vac Population Over 60s":206751.0,
+      "Vac Population Risk: Disease":185354.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -225,13 +253,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2159.0,
       "Vac Group Over 60 1 Cum":14797.0,
       "Vac Group Over 60 2 Cum":6951.0,
+      "Vac Group Over 60 3 Cum":14797.0,
       "Vac Group Risk: Disease 1 Cum":8276.0,
       "Vac Group Risk: Disease 2 Cum":4518.0,
+      "Vac Group Risk: Disease 3 Cum":8276.0,
       "Vac Group Risk: Location 1 Cum":44079.0,
       "Vac Group Risk: Location 2 Cum":24173.0,
       "Vac Group Risk: Pregnant 1 Cum":75.0,
       "Vac Group Risk: Pregnant 2 Cum":22.0,
-      "Vac Population":425427.0
+      "Vac Population":425427.0,
+      "Vac Population Over 60s":6951.0,
+      "Vac Population Risk: Disease":4518.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -254,13 +286,17 @@
       "Vac Group Other Frontline Staff 2 Cum":45243.0,
       "Vac Group Over 60 1 Cum":138408.0,
       "Vac Group Over 60 2 Cum":61975.0,
+      "Vac Group Over 60 3 Cum":138408.0,
       "Vac Group Risk: Disease 1 Cum":52054.0,
       "Vac Group Risk: Disease 2 Cum":23864.0,
+      "Vac Group Risk: Disease 3 Cum":52054.0,
       "Vac Group Risk: Location 1 Cum":259780.0,
       "Vac Group Risk: Location 2 Cum":155084.0,
       "Vac Group Risk: Pregnant 1 Cum":970.0,
       "Vac Group Risk: Pregnant 2 Cum":281.0,
-      "Vac Population":1587359.0
+      "Vac Population":1587359.0,
+      "Vac Population Over 60s":61975.0,
+      "Vac Population Risk: Disease":23864.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -283,13 +319,17 @@
       "Vac Group Other Frontline Staff 2 Cum":18639.0,
       "Vac Group Over 60 1 Cum":76579.0,
       "Vac Group Over 60 2 Cum":15468.0,
+      "Vac Group Over 60 3 Cum":76579.0,
       "Vac Group Risk: Disease 1 Cum":46709.0,
       "Vac Group Risk: Disease 2 Cum":12344.0,
+      "Vac Group Risk: Disease 3 Cum":46709.0,
       "Vac Group Risk: Location 1 Cum":258716.0,
       "Vac Group Risk: Location 2 Cum":88538.0,
       "Vac Group Risk: Pregnant 1 Cum":1390.0,
       "Vac Group Risk: Pregnant 2 Cum":584.0,
-      "Vac Population":750784.0
+      "Vac Population":750784.0,
+      "Vac Population Over 60s":15468.0,
+      "Vac Population Risk: Disease":12344.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -312,13 +352,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4384.0,
       "Vac Group Over 60 1 Cum":30284.0,
       "Vac Group Over 60 2 Cum":12049.0,
+      "Vac Group Over 60 3 Cum":30284.0,
       "Vac Group Risk: Disease 1 Cum":17151.0,
       "Vac Group Risk: Disease 2 Cum":5759.0,
+      "Vac Group Risk: Disease 3 Cum":17151.0,
       "Vac Group Risk: Location 1 Cum":20807.0,
       "Vac Group Risk: Location 2 Cum":3977.0,
       "Vac Group Risk: Pregnant 1 Cum":62.0,
       "Vac Group Risk: Pregnant 2 Cum":26.0,
-      "Vac Population":335049.0
+      "Vac Population":335049.0,
+      "Vac Population Over 60s":12049.0,
+      "Vac Population Risk: Disease":5759.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -341,13 +385,17 @@
       "Vac Group Other Frontline Staff 2 Cum":10991.0,
       "Vac Group Over 60 1 Cum":63372.0,
       "Vac Group Over 60 2 Cum":25983.0,
+      "Vac Group Over 60 3 Cum":63372.0,
       "Vac Group Risk: Disease 1 Cum":19879.0,
       "Vac Group Risk: Disease 2 Cum":8348.0,
+      "Vac Group Risk: Disease 3 Cum":19879.0,
       "Vac Group Risk: Location 1 Cum":97424.0,
       "Vac Group Risk: Location 2 Cum":40609.0,
       "Vac Group Risk: Pregnant 1 Cum":701.0,
       "Vac Group Risk: Pregnant 2 Cum":250.0,
-      "Vac Population":1134867.0
+      "Vac Population":1134867.0,
+      "Vac Population Over 60s":25983.0,
+      "Vac Population Risk: Disease":8348.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -370,13 +418,17 @@
       "Vac Group Other Frontline Staff 2 Cum":10693.0,
       "Vac Group Over 60 1 Cum":45374.0,
       "Vac Group Over 60 2 Cum":21327.0,
+      "Vac Group Over 60 3 Cum":45374.0,
       "Vac Group Risk: Disease 1 Cum":19540.0,
       "Vac Group Risk: Disease 2 Cum":9267.0,
+      "Vac Group Risk: Disease 3 Cum":19540.0,
       "Vac Group Risk: Location 1 Cum":60097.0,
       "Vac Group Risk: Location 2 Cum":31822.0,
       "Vac Group Risk: Pregnant 1 Cum":541.0,
       "Vac Group Risk: Pregnant 2 Cum":234.0,
-      "Vac Population":587421.0
+      "Vac Population":587421.0,
+      "Vac Population Over 60s":21327.0,
+      "Vac Population Risk: Disease":9267.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -399,13 +451,17 @@
       "Vac Group Other Frontline Staff 2 Cum":23215.0,
       "Vac Group Over 60 1 Cum":145399.0,
       "Vac Group Over 60 2 Cum":73441.0,
+      "Vac Group Over 60 3 Cum":145399.0,
       "Vac Group Risk: Disease 1 Cum":58816.0,
       "Vac Group Risk: Disease 2 Cum":33637.0,
+      "Vac Group Risk: Disease 3 Cum":58816.0,
       "Vac Group Risk: Location 1 Cum":194394.0,
       "Vac Group Risk: Location 2 Cum":105921.0,
       "Vac Group Risk: Pregnant 1 Cum":520.0,
       "Vac Group Risk: Pregnant 2 Cum":181.0,
-      "Vac Population":1729353.0
+      "Vac Population":1729353.0,
+      "Vac Population Over 60s":73441.0,
+      "Vac Population Risk: Disease":33637.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -428,13 +484,17 @@
       "Vac Group Other Frontline Staff 2 Cum":7332.0,
       "Vac Group Over 60 1 Cum":99640.0,
       "Vac Group Over 60 2 Cum":39944.0,
+      "Vac Group Over 60 3 Cum":99640.0,
       "Vac Group Risk: Disease 1 Cum":27772.0,
       "Vac Group Risk: Disease 2 Cum":11834.0,
+      "Vac Group Risk: Disease 3 Cum":27772.0,
       "Vac Group Risk: Location 1 Cum":104323.0,
       "Vac Group Risk: Location 2 Cum":48569.0,
       "Vac Group Risk: Pregnant 1 Cum":335.0,
       "Vac Group Risk: Pregnant 2 Cum":79.0,
-      "Vac Population":1172648.0
+      "Vac Population":1172648.0,
+      "Vac Population Over 60s":39944.0,
+      "Vac Population Risk: Disease":11834.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -457,13 +517,17 @@
       "Vac Group Other Frontline Staff 2 Cum":29663.0,
       "Vac Group Over 60 1 Cum":130050.0,
       "Vac Group Over 60 2 Cum":52104.0,
+      "Vac Group Over 60 3 Cum":130050.0,
       "Vac Group Risk: Disease 1 Cum":95718.0,
       "Vac Group Risk: Disease 2 Cum":40601.0,
+      "Vac Group Risk: Disease 3 Cum":95718.0,
       "Vac Group Risk: Location 1 Cum":705556.0,
       "Vac Group Risk: Location 2 Cum":256607.0,
       "Vac Group Risk: Pregnant 1 Cum":3736.0,
       "Vac Group Risk: Pregnant 2 Cum":1739.0,
-      "Vac Population":2047622.0
+      "Vac Population":2047622.0,
+      "Vac Population Over 60s":52104.0,
+      "Vac Population Risk: Disease":40601.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -486,13 +550,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2817.0,
       "Vac Group Over 60 1 Cum":45634.0,
       "Vac Group Over 60 2 Cum":17105.0,
+      "Vac Group Over 60 3 Cum":45634.0,
       "Vac Group Risk: Disease 1 Cum":14609.0,
       "Vac Group Risk: Disease 2 Cum":6410.0,
+      "Vac Group Risk: Disease 3 Cum":14609.0,
       "Vac Group Risk: Location 1 Cum":43914.0,
       "Vac Group Risk: Location 2 Cum":25020.0,
       "Vac Group Risk: Pregnant 1 Cum":533.0,
       "Vac Group Risk: Pregnant 2 Cum":124.0,
-      "Vac Population":543683.0
+      "Vac Population":543683.0,
+      "Vac Population Over 60s":17105.0,
+      "Vac Population Risk: Disease":6410.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -515,13 +583,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5363.0,
       "Vac Group Over 60 1 Cum":70272.0,
       "Vac Group Over 60 2 Cum":19304.0,
+      "Vac Group Over 60 3 Cum":70272.0,
       "Vac Group Risk: Disease 1 Cum":21510.0,
       "Vac Group Risk: Disease 2 Cum":5856.0,
+      "Vac Group Risk: Disease 3 Cum":21510.0,
       "Vac Group Risk: Location 1 Cum":65070.0,
       "Vac Group Risk: Location 2 Cum":19225.0,
       "Vac Group Risk: Pregnant 1 Cum":116.0,
       "Vac Group Risk: Pregnant 2 Cum":28.0,
-      "Vac Population":978299.0
+      "Vac Population":978299.0,
+      "Vac Population Over 60s":19304.0,
+      "Vac Population Risk: Disease":5856.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -544,13 +616,17 @@
       "Vac Group Other Frontline Staff 2 Cum":6365.0,
       "Vac Group Over 60 1 Cum":49621.0,
       "Vac Group Over 60 2 Cum":12860.0,
+      "Vac Group Over 60 3 Cum":49621.0,
       "Vac Group Risk: Disease 1 Cum":26342.0,
       "Vac Group Risk: Disease 2 Cum":5906.0,
+      "Vac Group Risk: Disease 3 Cum":26342.0,
       "Vac Group Risk: Location 1 Cum":45910.0,
       "Vac Group Risk: Location 2 Cum":17672.0,
       "Vac Group Risk: Pregnant 1 Cum":181.0,
       "Vac Group Risk: Pregnant 2 Cum":21.0,
-      "Vac Population":725873.0
+      "Vac Population":725873.0,
+      "Vac Population Over 60s":12860.0,
+      "Vac Population Risk: Disease":5906.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -573,13 +649,17 @@
       "Vac Group Other Frontline Staff 2 Cum":3971.0,
       "Vac Group Over 60 1 Cum":42609.0,
       "Vac Group Over 60 2 Cum":12351.0,
+      "Vac Group Over 60 3 Cum":42609.0,
       "Vac Group Risk: Disease 1 Cum":21606.0,
       "Vac Group Risk: Disease 2 Cum":6252.0,
+      "Vac Group Risk: Disease 3 Cum":21606.0,
       "Vac Group Risk: Location 1 Cum":139428.0,
       "Vac Group Risk: Location 2 Cum":31812.0,
       "Vac Group Risk: Pregnant 1 Cum":190.0,
       "Vac Group Risk: Pregnant 2 Cum":14.0,
-      "Vac Population":848454.0
+      "Vac Population":848454.0,
+      "Vac Population Over 60s":12351.0,
+      "Vac Population Risk: Disease":6252.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -602,13 +682,17 @@
       "Vac Group Other Frontline Staff 2 Cum":17096.0,
       "Vac Group Over 60 1 Cum":113064.0,
       "Vac Group Over 60 2 Cum":32397.0,
+      "Vac Group Over 60 3 Cum":113064.0,
       "Vac Group Risk: Disease 1 Cum":43309.0,
       "Vac Group Risk: Disease 2 Cum":11171.0,
+      "Vac Group Risk: Disease 3 Cum":43309.0,
       "Vac Group Risk: Location 1 Cum":204408.0,
       "Vac Group Risk: Location 2 Cum":46376.0,
       "Vac Group Risk: Pregnant 1 Cum":625.0,
       "Vac Group Risk: Pregnant 2 Cum":67.0,
-      "Vac Population":1837005.0
+      "Vac Population":1837005.0,
+      "Vac Population Over 60s":32397.0,
+      "Vac Population Risk: Disease":11171.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -631,13 +715,17 @@
       "Vac Group Other Frontline Staff 2 Cum":3107.0,
       "Vac Group Over 60 1 Cum":29943.0,
       "Vac Group Over 60 2 Cum":16751.0,
+      "Vac Group Over 60 3 Cum":29943.0,
       "Vac Group Risk: Disease 1 Cum":16847.0,
       "Vac Group Risk: Disease 2 Cum":9225.0,
+      "Vac Group Risk: Disease 3 Cum":16847.0,
       "Vac Group Risk: Location 1 Cum":84325.0,
       "Vac Group Risk: Location 2 Cum":49329.0,
       "Vac Group Risk: Pregnant 1 Cum":173.0,
       "Vac Group Risk: Pregnant 2 Cum":82.0,
-      "Vac Population":503538.0
+      "Vac Population":503538.0,
+      "Vac Population Over 60s":16751.0,
+      "Vac Population Risk: Disease":9225.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -660,13 +748,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4097.0,
       "Vac Group Over 60 1 Cum":65070.0,
       "Vac Group Over 60 2 Cum":28570.0,
+      "Vac Group Over 60 3 Cum":65070.0,
       "Vac Group Risk: Disease 1 Cum":42493.0,
       "Vac Group Risk: Disease 2 Cum":12818.0,
+      "Vac Group Risk: Disease 3 Cum":42493.0,
       "Vac Group Risk: Location 1 Cum":65580.0,
       "Vac Group Risk: Location 2 Cum":17384.0,
       "Vac Group Risk: Pregnant 1 Cum":74.0,
       "Vac Group Risk: Pregnant 2 Cum":25.0,
-      "Vac Population":731573.0
+      "Vac Population":731573.0,
+      "Vac Population Over 60s":28570.0,
+      "Vac Population Risk: Disease":12818.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -689,13 +781,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5174.0,
       "Vac Group Over 60 1 Cum":36745.0,
       "Vac Group Over 60 2 Cum":18647.0,
+      "Vac Group Over 60 3 Cum":36745.0,
       "Vac Group Risk: Disease 1 Cum":12885.0,
       "Vac Group Risk: Disease 2 Cum":5897.0,
+      "Vac Group Risk: Disease 3 Cum":12885.0,
       "Vac Group Risk: Location 1 Cum":28758.0,
       "Vac Group Risk: Location 2 Cum":10947.0,
       "Vac Group Risk: Pregnant 1 Cum":228.0,
       "Vac Group Risk: Pregnant 2 Cum":79.0,
-      "Vac Population":417225.0
+      "Vac Population":417225.0,
+      "Vac Population Over 60s":18647.0,
+      "Vac Population Risk: Disease":5897.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -718,13 +814,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4893.0,
       "Vac Group Over 60 1 Cum":37258.0,
       "Vac Group Over 60 2 Cum":17913.0,
+      "Vac Group Over 60 3 Cum":37258.0,
       "Vac Group Risk: Disease 1 Cum":17660.0,
       "Vac Group Risk: Disease 2 Cum":9293.0,
+      "Vac Group Risk: Disease 3 Cum":17660.0,
       "Vac Group Risk: Location 1 Cum":63374.0,
       "Vac Group Risk: Location 2 Cum":34862.0,
       "Vac Group Risk: Pregnant 1 Cum":198.0,
       "Vac Group Risk: Pregnant 2 Cum":59.0,
-      "Vac Population":640283.0
+      "Vac Population":640283.0,
+      "Vac Population Over 60s":17913.0,
+      "Vac Population Risk: Disease":9293.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -747,13 +847,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4040.0,
       "Vac Group Over 60 1 Cum":53835.0,
       "Vac Group Over 60 2 Cum":17177.0,
+      "Vac Group Over 60 3 Cum":53835.0,
       "Vac Group Risk: Disease 1 Cum":21784.0,
       "Vac Group Risk: Disease 2 Cum":6961.0,
+      "Vac Group Risk: Disease 3 Cum":21784.0,
       "Vac Group Risk: Location 1 Cum":68572.0,
       "Vac Group Risk: Location 2 Cum":27513.0,
       "Vac Group Risk: Pregnant 1 Cum":218.0,
       "Vac Group Risk: Pregnant 2 Cum":25.0,
-      "Vac Population":760478.0
+      "Vac Population":760478.0,
+      "Vac Population Over 60s":17177.0,
+      "Vac Population Risk: Disease":6961.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -776,13 +880,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2984.0,
       "Vac Group Over 60 1 Cum":7194.0,
       "Vac Group Over 60 2 Cum":3256.0,
+      "Vac Group Over 60 3 Cum":7194.0,
       "Vac Group Risk: Disease 1 Cum":3414.0,
       "Vac Group Risk: Disease 2 Cum":1654.0,
+      "Vac Group Risk: Disease 3 Cum":3414.0,
       "Vac Group Risk: Location 1 Cum":19115.0,
       "Vac Group Risk: Location 2 Cum":8415.0,
       "Vac Group Risk: Pregnant 1 Cum":186.0,
       "Vac Group Risk: Pregnant 2 Cum":74.0,
-      "Vac Population":245764.0
+      "Vac Population":245764.0,
+      "Vac Population Over 60s":3256.0,
+      "Vac Population Risk: Disease":1654.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -805,13 +913,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4383.0,
       "Vac Group Over 60 1 Cum":62833.0,
       "Vac Group Over 60 2 Cum":18845.0,
+      "Vac Group Over 60 3 Cum":62833.0,
       "Vac Group Risk: Disease 1 Cum":29705.0,
       "Vac Group Risk: Disease 2 Cum":9164.0,
+      "Vac Group Risk: Disease 3 Cum":29705.0,
       "Vac Group Risk: Location 1 Cum":72392.0,
       "Vac Group Risk: Location 2 Cum":40220.0,
       "Vac Group Risk: Pregnant 1 Cum":158.0,
       "Vac Group Risk: Pregnant 2 Cum":38.0,
-      "Vac Population":957365.0
+      "Vac Population":957365.0,
+      "Vac Population Over 60s":18845.0,
+      "Vac Population Risk: Disease":9164.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -834,13 +946,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4395.0,
       "Vac Group Over 60 1 Cum":18391.0,
       "Vac Group Over 60 2 Cum":8609.0,
+      "Vac Group Over 60 3 Cum":18391.0,
       "Vac Group Risk: Disease 1 Cum":10562.0,
       "Vac Group Risk: Disease 2 Cum":4626.0,
+      "Vac Group Risk: Disease 3 Cum":10562.0,
       "Vac Group Risk: Location 1 Cum":52052.0,
       "Vac Group Risk: Location 2 Cum":22987.0,
       "Vac Group Risk: Pregnant 1 Cum":175.0,
       "Vac Group Risk: Pregnant 2 Cum":86.0,
-      "Vac Population":351257.0
+      "Vac Population":351257.0,
+      "Vac Population Over 60s":8609.0,
+      "Vac Population Risk: Disease":4626.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -863,13 +979,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5086.0,
       "Vac Group Over 60 1 Cum":23871.0,
       "Vac Group Over 60 2 Cum":12064.0,
+      "Vac Group Over 60 3 Cum":23871.0,
       "Vac Group Risk: Disease 1 Cum":8374.0,
       "Vac Group Risk: Disease 2 Cum":4058.0,
+      "Vac Group Risk: Disease 3 Cum":8374.0,
       "Vac Group Risk: Location 1 Cum":26635.0,
       "Vac Group Risk: Location 2 Cum":10260.0,
       "Vac Group Risk: Pregnant 1 Cum":182.0,
       "Vac Group Risk: Pregnant 2 Cum":46.0,
-      "Vac Population":271739.0
+      "Vac Population":271739.0,
+      "Vac Population Over 60s":12064.0,
+      "Vac Population Risk: Disease":4058.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -892,13 +1012,17 @@
       "Vac Group Other Frontline Staff 2 Cum":15599.0,
       "Vac Group Over 60 1 Cum":73847.0,
       "Vac Group Over 60 2 Cum":13658.0,
+      "Vac Group Over 60 3 Cum":73847.0,
       "Vac Group Risk: Disease 1 Cum":50695.0,
       "Vac Group Risk: Disease 2 Cum":15498.0,
+      "Vac Group Risk: Disease 3 Cum":50695.0,
       "Vac Group Risk: Location 1 Cum":223760.0,
       "Vac Group Risk: Location 2 Cum":76583.0,
       "Vac Group Risk: Pregnant 1 Cum":545.0,
       "Vac Group Risk: Pregnant 2 Cum":154.0,
-      "Vac Population":1125350.0
+      "Vac Population":1125350.0,
+      "Vac Population Over 60s":13658.0,
+      "Vac Population Risk: Disease":15498.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -921,13 +1045,17 @@
       "Vac Group Other Frontline Staff 2 Cum":11677.0,
       "Vac Group Over 60 1 Cum":28270.0,
       "Vac Group Over 60 2 Cum":14214.0,
+      "Vac Group Over 60 3 Cum":28270.0,
       "Vac Group Risk: Disease 1 Cum":14291.0,
       "Vac Group Risk: Disease 2 Cum":7553.0,
+      "Vac Group Risk: Disease 3 Cum":14291.0,
       "Vac Group Risk: Location 1 Cum":65832.0,
       "Vac Group Risk: Location 2 Cum":36413.0,
       "Vac Group Risk: Pregnant 1 Cum":133.0,
       "Vac Group Risk: Pregnant 2 Cum":33.0,
-      "Vac Population":724861.0
+      "Vac Population":724861.0,
+      "Vac Population Over 60s":14214.0,
+      "Vac Population Risk: Disease":7553.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -950,13 +1078,17 @@
       "Vac Group Other Frontline Staff 2 Cum":14101.0,
       "Vac Group Over 60 1 Cum":185924.0,
       "Vac Group Over 60 2 Cum":57092.0,
+      "Vac Group Over 60 3 Cum":185924.0,
       "Vac Group Risk: Disease 1 Cum":136567.0,
       "Vac Group Risk: Disease 2 Cum":58151.0,
+      "Vac Group Risk: Disease 3 Cum":136567.0,
       "Vac Group Risk: Location 1 Cum":363605.0,
       "Vac Group Risk: Location 2 Cum":173665.0,
       "Vac Group Risk: Pregnant 1 Cum":1001.0,
       "Vac Group Risk: Pregnant 2 Cum":396.0,
-      "Vac Population":2692890.0
+      "Vac Population":2692890.0,
+      "Vac Population Over 60s":57092.0,
+      "Vac Population Risk: Disease":58151.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -979,13 +1111,17 @@
       "Vac Group Other Frontline Staff 2 Cum":7322.0,
       "Vac Group Over 60 1 Cum":81862.0,
       "Vac Group Over 60 2 Cum":29116.0,
+      "Vac Group Over 60 3 Cum":81862.0,
       "Vac Group Risk: Disease 1 Cum":31227.0,
       "Vac Group Risk: Disease 2 Cum":11616.0,
+      "Vac Group Risk: Disease 3 Cum":31227.0,
       "Vac Group Risk: Location 1 Cum":92226.0,
       "Vac Group Risk: Location 2 Cum":39423.0,
       "Vac Group Risk: Pregnant 1 Cum":422.0,
       "Vac Group Risk: Pregnant 2 Cum":215.0,
-      "Vac Population":1059708.0
+      "Vac Population":1059708.0,
+      "Vac Population Over 60s":29116.0,
+      "Vac Population Risk: Disease":11616.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1008,13 +1144,17 @@
       "Vac Group Other Frontline Staff 2 Cum":9773.0,
       "Vac Group Over 60 1 Cum":126743.0,
       "Vac Group Over 60 2 Cum":56589.0,
+      "Vac Group Over 60 3 Cum":126743.0,
       "Vac Group Risk: Disease 1 Cum":44857.0,
       "Vac Group Risk: Disease 2 Cum":21785.0,
+      "Vac Group Risk: Disease 3 Cum":44857.0,
       "Vac Group Risk: Location 1 Cum":115121.0,
       "Vac Group Risk: Location 2 Cum":55041.0,
       "Vac Group Risk: Pregnant 1 Cum":1113.0,
       "Vac Group Risk: Pregnant 2 Cum":416.0,
-      "Vac Population":1575117.0
+      "Vac Population":1575117.0,
+      "Vac Population Over 60s":56589.0,
+      "Vac Population Risk: Disease":21785.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1037,13 +1177,17 @@
       "Vac Group Other Frontline Staff 2 Cum":1836.0,
       "Vac Group Over 60 1 Cum":42899.0,
       "Vac Group Over 60 2 Cum":15882.0,
+      "Vac Group Over 60 3 Cum":42899.0,
       "Vac Group Risk: Disease 1 Cum":12055.0,
       "Vac Group Risk: Disease 2 Cum":4692.0,
+      "Vac Group Risk: Disease 3 Cum":12055.0,
       "Vac Group Risk: Location 1 Cum":47920.0,
       "Vac Group Risk: Location 2 Cum":18263.0,
       "Vac Group Risk: Pregnant 1 Cum":215.0,
       "Vac Group Risk: Pregnant 2 Cum":65.0,
-      "Vac Population":477862.0
+      "Vac Population":477862.0,
+      "Vac Population Over 60s":15882.0,
+      "Vac Population Risk: Disease":4692.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1066,13 +1210,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5929.0,
       "Vac Group Over 60 1 Cum":41649.0,
       "Vac Group Over 60 2 Cum":11279.0,
+      "Vac Group Over 60 3 Cum":41649.0,
       "Vac Group Risk: Disease 1 Cum":25974.0,
       "Vac Group Risk: Disease 2 Cum":7388.0,
+      "Vac Group Risk: Disease 3 Cum":25974.0,
       "Vac Group Risk: Location 1 Cum":156998.0,
       "Vac Group Risk: Location 2 Cum":60843.0,
       "Vac Group Risk: Pregnant 1 Cum":1504.0,
       "Vac Group Risk: Pregnant 2 Cum":376.0,
-      "Vac Population":805356.0
+      "Vac Population":805356.0,
+      "Vac Population Over 60s":11279.0,
+      "Vac Population Risk: Disease":7388.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1095,13 +1243,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2990.0,
       "Vac Group Over 60 1 Cum":20847.0,
       "Vac Group Over 60 2 Cum":10136.0,
+      "Vac Group Over 60 3 Cum":20847.0,
       "Vac Group Risk: Disease 1 Cum":10101.0,
       "Vac Group Risk: Disease 2 Cum":5145.0,
+      "Vac Group Risk: Disease 3 Cum":10101.0,
       "Vac Group Risk: Location 1 Cum":54195.0,
       "Vac Group Risk: Location 2 Cum":27735.0,
       "Vac Group Risk: Pregnant 1 Cum":236.0,
       "Vac Group Risk: Pregnant 2 Cum":69.0,
-      "Vac Population":523861.0
+      "Vac Population":523861.0,
+      "Vac Population Over 60s":10136.0,
+      "Vac Population Risk: Disease":5145.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1124,13 +1276,17 @@
       "Vac Group Other Frontline Staff 2 Cum":12159.0,
       "Vac Group Over 60 1 Cum":26180.0,
       "Vac Group Over 60 2 Cum":13401.0,
+      "Vac Group Over 60 3 Cum":26180.0,
       "Vac Group Risk: Disease 1 Cum":13748.0,
       "Vac Group Risk: Disease 2 Cum":7011.0,
+      "Vac Group Risk: Disease 3 Cum":13748.0,
       "Vac Group Risk: Location 1 Cum":57753.0,
       "Vac Group Risk: Location 2 Cum":27029.0,
       "Vac Group Risk: Pregnant 1 Cum":208.0,
       "Vac Group Risk: Pregnant 2 Cum":83.0,
-      "Vac Population":519027.0
+      "Vac Population":519027.0,
+      "Vac Population Over 60s":13401.0,
+      "Vac Population Risk: Disease":7011.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1153,13 +1309,17 @@
       "Vac Group Other Frontline Staff 2 Cum":13347.0,
       "Vac Group Over 60 1 Cum":106737.0,
       "Vac Group Over 60 2 Cum":30454.0,
+      "Vac Group Over 60 3 Cum":106737.0,
       "Vac Group Risk: Disease 1 Cum":77706.0,
       "Vac Group Risk: Disease 2 Cum":27248.0,
+      "Vac Group Risk: Disease 3 Cum":77706.0,
       "Vac Group Risk: Location 1 Cum":522094.0,
       "Vac Group Risk: Location 2 Cum":231358.0,
       "Vac Group Risk: Pregnant 1 Cum":1710.0,
       "Vac Group Risk: Pregnant 2 Cum":36.0,
-      "Vac Population":1609192.0
+      "Vac Population":1609192.0,
+      "Vac Population Over 60s":30454.0,
+      "Vac Population Risk: Disease":27248.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1182,13 +1342,17 @@
       "Vac Group Other Frontline Staff 2 Cum":7575.0,
       "Vac Group Over 60 1 Cum":115228.0,
       "Vac Group Over 60 2 Cum":28390.0,
+      "Vac Group Over 60 3 Cum":115228.0,
       "Vac Group Risk: Disease 1 Cum":93009.0,
       "Vac Group Risk: Disease 2 Cum":29911.0,
+      "Vac Group Risk: Disease 3 Cum":93009.0,
       "Vac Group Risk: Location 1 Cum":626252.0,
       "Vac Group Risk: Location 2 Cum":194604.0,
       "Vac Group Risk: Pregnant 1 Cum":3100.0,
       "Vac Group Risk: Pregnant 2 Cum":898.0,
-      "Vac Population":1533781.0
+      "Vac Population":1533781.0,
+      "Vac Population Over 60s":28390.0,
+      "Vac Population Risk: Disease":29911.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1211,13 +1375,17 @@
       "Vac Group Other Frontline Staff 2 Cum":9837.0,
       "Vac Group Over 60 1 Cum":34145.0,
       "Vac Group Over 60 2 Cum":7461.0,
+      "Vac Group Over 60 3 Cum":34145.0,
       "Vac Group Risk: Disease 1 Cum":21924.0,
       "Vac Group Risk: Disease 2 Cum":5787.0,
+      "Vac Group Risk: Disease 3 Cum":21924.0,
       "Vac Group Risk: Location 1 Cum":135472.0,
       "Vac Group Risk: Location 2 Cum":52516.0,
       "Vac Group Risk: Pregnant 1 Cum":2838.0,
       "Vac Group Risk: Pregnant 2 Cum":628.0,
-      "Vac Population":743054.0
+      "Vac Population":743054.0,
+      "Vac Population Over 60s":7461.0,
+      "Vac Population Risk: Disease":5787.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1240,13 +1408,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5900.0,
       "Vac Group Over 60 1 Cum":29973.0,
       "Vac Group Over 60 2 Cum":14242.0,
+      "Vac Group Over 60 3 Cum":29973.0,
       "Vac Group Risk: Disease 1 Cum":13893.0,
       "Vac Group Risk: Disease 2 Cum":7234.0,
+      "Vac Group Risk: Disease 3 Cum":13893.0,
       "Vac Group Risk: Location 1 Cum":84189.0,
       "Vac Group Risk: Location 2 Cum":61203.0,
       "Vac Group Risk: Pregnant 1 Cum":340.0,
       "Vac Group Risk: Pregnant 2 Cum":61.0,
-      "Vac Population":286339.0
+      "Vac Population":286339.0,
+      "Vac Population Over 60s":14242.0,
+      "Vac Population Risk: Disease":7234.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1269,13 +1441,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2980.0,
       "Vac Group Over 60 1 Cum":49927.0,
       "Vac Group Over 60 2 Cum":29187.0,
+      "Vac Group Over 60 3 Cum":49927.0,
       "Vac Group Risk: Disease 1 Cum":16311.0,
       "Vac Group Risk: Disease 2 Cum":8218.0,
+      "Vac Group Risk: Disease 3 Cum":16311.0,
       "Vac Group Risk: Location 1 Cum":35335.0,
       "Vac Group Risk: Location 2 Cum":14157.0,
       "Vac Group Risk: Pregnant 1 Cum":538.0,
       "Vac Group Risk: Pregnant 2 Cum":103.0,
-      "Vac Population":528207.0
+      "Vac Population":528207.0,
+      "Vac Population Over 60s":29187.0,
+      "Vac Population Risk: Disease":8218.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1298,13 +1474,17 @@
       "Vac Group Other Frontline Staff 2 Cum":6517.0,
       "Vac Group Over 60 1 Cum":36774.0,
       "Vac Group Over 60 2 Cum":12072.0,
+      "Vac Group Over 60 3 Cum":36774.0,
       "Vac Group Risk: Disease 1 Cum":10412.0,
       "Vac Group Risk: Disease 2 Cum":4262.0,
+      "Vac Group Risk: Disease 3 Cum":10412.0,
       "Vac Group Risk: Location 1 Cum":47241.0,
       "Vac Group Risk: Location 2 Cum":12026.0,
       "Vac Group Risk: Pregnant 1 Cum":405.0,
       "Vac Group Risk: Pregnant 2 Cum":133.0,
-      "Vac Population":468292.0
+      "Vac Population":468292.0,
+      "Vac Population Over 60s":12072.0,
+      "Vac Population Risk: Disease":4262.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1327,13 +1507,17 @@
       "Vac Group Other Frontline Staff 2 Cum":12421.0,
       "Vac Group Over 60 1 Cum":84422.0,
       "Vac Group Over 60 2 Cum":47991.0,
+      "Vac Group Over 60 3 Cum":84422.0,
       "Vac Group Risk: Disease 1 Cum":31620.0,
       "Vac Group Risk: Disease 2 Cum":17145.0,
+      "Vac Group Risk: Disease 3 Cum":31620.0,
       "Vac Group Risk: Location 1 Cum":69020.0,
       "Vac Group Risk: Location 2 Cum":33788.0,
       "Vac Group Risk: Pregnant 1 Cum":146.0,
       "Vac Group Risk: Pregnant 2 Cum":46.0,
-      "Vac Population":992791.0
+      "Vac Population":992791.0,
+      "Vac Population Over 60s":47991.0,
+      "Vac Population Risk: Disease":17145.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1356,13 +1540,17 @@
       "Vac Group Other Frontline Staff 2 Cum":9534.0,
       "Vac Group Over 60 1 Cum":40543.0,
       "Vac Group Over 60 2 Cum":15059.0,
+      "Vac Group Over 60 3 Cum":40543.0,
       "Vac Group Risk: Disease 1 Cum":25145.0,
       "Vac Group Risk: Disease 2 Cum":9532.0,
+      "Vac Group Risk: Disease 3 Cum":25145.0,
       "Vac Group Risk: Location 1 Cum":113755.0,
       "Vac Group Risk: Location 2 Cum":39678.0,
       "Vac Group Risk: Pregnant 1 Cum":385.0,
       "Vac Group Risk: Pregnant 2 Cum":120.0,
-      "Vac Population":502827.0
+      "Vac Population":502827.0,
+      "Vac Population Over 60s":15059.0,
+      "Vac Population Risk: Disease":9532.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1385,13 +1573,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5146.0,
       "Vac Group Over 60 1 Cum":49258.0,
       "Vac Group Over 60 2 Cum":21599.0,
+      "Vac Group Over 60 3 Cum":49258.0,
       "Vac Group Risk: Disease 1 Cum":17305.0,
       "Vac Group Risk: Disease 2 Cum":7824.0,
+      "Vac Group Risk: Disease 3 Cum":17305.0,
       "Vac Group Risk: Location 1 Cum":22373.0,
       "Vac Group Risk: Location 2 Cum":6668.0,
       "Vac Group Risk: Pregnant 1 Cum":142.0,
       "Vac Group Risk: Pregnant 2 Cum":81.0,
-      "Vac Population":536012.0
+      "Vac Population":536012.0,
+      "Vac Population Over 60s":21599.0,
+      "Vac Population Risk: Disease":7824.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1414,13 +1606,17 @@
       "Vac Group Other Frontline Staff 2 Cum":8115.0,
       "Vac Group Over 60 1 Cum":57074.0,
       "Vac Group Over 60 2 Cum":29876.0,
+      "Vac Group Over 60 3 Cum":57074.0,
       "Vac Group Risk: Disease 1 Cum":26413.0,
       "Vac Group Risk: Disease 2 Cum":15221.0,
+      "Vac Group Risk: Disease 3 Cum":26413.0,
       "Vac Group Risk: Location 1 Cum":86898.0,
       "Vac Group Risk: Location 2 Cum":38467.0,
       "Vac Group Risk: Pregnant 1 Cum":683.0,
       "Vac Group Risk: Pregnant 2 Cum":396.0,
-      "Vac Population":1050000.0
+      "Vac Population":1050000.0,
+      "Vac Population Over 60s":29876.0,
+      "Vac Population Risk: Disease":15221.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1443,13 +1639,17 @@
       "Vac Group Other Frontline Staff 2 Cum":1263.0,
       "Vac Group Over 60 1 Cum":74678.0,
       "Vac Group Over 60 2 Cum":14934.0,
+      "Vac Group Over 60 3 Cum":74678.0,
       "Vac Group Risk: Disease 1 Cum":41361.0,
       "Vac Group Risk: Disease 2 Cum":10754.0,
+      "Vac Group Risk: Disease 3 Cum":41361.0,
       "Vac Group Risk: Location 1 Cum":271759.0,
       "Vac Group Risk: Location 2 Cum":75600.0,
       "Vac Group Risk: Pregnant 1 Cum":475.0,
       "Vac Group Risk: Pregnant 2 Cum":7.0,
-      "Vac Population":921047.0
+      "Vac Population":921047.0,
+      "Vac Population Over 60s":14934.0,
+      "Vac Population Risk: Disease":10754.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1472,13 +1672,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4391.0,
       "Vac Group Over 60 1 Cum":28579.0,
       "Vac Group Over 60 2 Cum":11614.0,
+      "Vac Group Over 60 3 Cum":28579.0,
       "Vac Group Risk: Disease 1 Cum":20073.0,
       "Vac Group Risk: Disease 2 Cum":7635.0,
+      "Vac Group Risk: Disease 3 Cum":20073.0,
       "Vac Group Risk: Location 1 Cum":29054.0,
       "Vac Group Risk: Location 2 Cum":8185.0,
       "Vac Group Risk: Pregnant 1 Cum":128.0,
       "Vac Group Risk: Pregnant 2 Cum":29.0,
-      "Vac Population":441310.0
+      "Vac Population":441310.0,
+      "Vac Population Over 60s":11614.0,
+      "Vac Population Risk: Disease":7635.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1501,13 +1705,17 @@
       "Vac Group Other Frontline Staff 2 Cum":15573.0,
       "Vac Group Over 60 1 Cum":42192.0,
       "Vac Group Over 60 2 Cum":37462.0,
+      "Vac Group Over 60 3 Cum":42192.0,
       "Vac Group Risk: Disease 1 Cum":27092.0,
       "Vac Group Risk: Disease 2 Cum":25282.0,
+      "Vac Group Risk: Disease 3 Cum":27092.0,
       "Vac Group Risk: Location 1 Cum":330957.0,
       "Vac Group Risk: Location 2 Cum":298950.0,
       "Vac Group Risk: Pregnant 1 Cum":15.0,
       "Vac Group Risk: Pregnant 2 Cum":8.0,
-      "Vac Population":547584.0
+      "Vac Population":547584.0,
+      "Vac Population Over 60s":37462.0,
+      "Vac Population Risk: Disease":25282.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1530,13 +1738,17 @@
       "Vac Group Other Frontline Staff 2 Cum":3472.0,
       "Vac Group Over 60 1 Cum":35277.0,
       "Vac Group Over 60 2 Cum":19755.0,
+      "Vac Group Over 60 3 Cum":35277.0,
       "Vac Group Risk: Disease 1 Cum":14306.0,
       "Vac Group Risk: Disease 2 Cum":8657.0,
+      "Vac Group Risk: Disease 3 Cum":14306.0,
       "Vac Group Risk: Location 1 Cum":77877.0,
       "Vac Group Risk: Location 2 Cum":49019.0,
       "Vac Group Risk: Pregnant 1 Cum":136.0,
       "Vac Group Risk: Pregnant 2 Cum":28.0,
-      "Vac Population":579651.0
+      "Vac Population":579651.0,
+      "Vac Population Over 60s":19755.0,
+      "Vac Population Risk: Disease":8657.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1559,13 +1771,17 @@
       "Vac Group Other Frontline Staff 2 Cum":12565.0,
       "Vac Group Over 60 1 Cum":45835.0,
       "Vac Group Over 60 2 Cum":16498.0,
+      "Vac Group Over 60 3 Cum":45835.0,
       "Vac Group Risk: Disease 1 Cum":26178.0,
       "Vac Group Risk: Disease 2 Cum":11826.0,
+      "Vac Group Risk: Disease 3 Cum":26178.0,
       "Vac Group Risk: Location 1 Cum":105250.0,
       "Vac Group Risk: Location 2 Cum":45907.0,
       "Vac Group Risk: Pregnant 1 Cum":266.0,
       "Vac Group Risk: Pregnant 2 Cum":138.0,
-      "Vac Population":578094.0
+      "Vac Population":578094.0,
+      "Vac Population Over 60s":16498.0,
+      "Vac Population Risk: Disease":11826.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1588,13 +1804,17 @@
       "Vac Group Other Frontline Staff 2 Cum":7025.0,
       "Vac Group Over 60 1 Cum":18419.0,
       "Vac Group Over 60 2 Cum":13001.0,
+      "Vac Group Over 60 3 Cum":18419.0,
       "Vac Group Risk: Disease 1 Cum":11129.0,
       "Vac Group Risk: Disease 2 Cum":7473.0,
+      "Vac Group Risk: Disease 3 Cum":11129.0,
       "Vac Group Risk: Location 1 Cum":66129.0,
       "Vac Group Risk: Location 2 Cum":39858.0,
       "Vac Group Risk: Pregnant 1 Cum":20.0,
       "Vac Group Risk: Pregnant 2 Cum":8.0,
-      "Vac Population":228507.0
+      "Vac Population":228507.0,
+      "Vac Population Over 60s":13001.0,
+      "Vac Population Risk: Disease":7473.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1617,13 +1837,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4100.0,
       "Vac Group Over 60 1 Cum":61095.0,
       "Vac Group Over 60 2 Cum":21533.0,
+      "Vac Group Over 60 3 Cum":61095.0,
       "Vac Group Risk: Disease 1 Cum":27817.0,
       "Vac Group Risk: Disease 2 Cum":10317.0,
+      "Vac Group Risk: Disease 3 Cum":27817.0,
       "Vac Group Risk: Location 1 Cum":121519.0,
       "Vac Group Risk: Location 2 Cum":29588.0,
       "Vac Group Risk: Pregnant 1 Cum":603.0,
       "Vac Group Risk: Pregnant 2 Cum":125.0,
-      "Vac Population":918674.0
+      "Vac Population":918674.0,
+      "Vac Population Over 60s":21533.0,
+      "Vac Population Risk: Disease":10317.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1646,13 +1870,17 @@
       "Vac Group Other Frontline Staff 2 Cum":10864.0,
       "Vac Group Over 60 1 Cum":50864.0,
       "Vac Group Over 60 2 Cum":14900.0,
+      "Vac Group Over 60 3 Cum":50864.0,
       "Vac Group Risk: Disease 1 Cum":32212.0,
       "Vac Group Risk: Disease 2 Cum":11995.0,
+      "Vac Group Risk: Disease 3 Cum":32212.0,
       "Vac Group Risk: Location 1 Cum":224728.0,
       "Vac Group Risk: Location 2 Cum":124607.0,
       "Vac Group Risk: Pregnant 1 Cum":1074.0,
       "Vac Group Risk: Pregnant 2 Cum":79.0,
-      "Vac Population":966932.0
+      "Vac Population":966932.0,
+      "Vac Population Over 60s":14900.0,
+      "Vac Population Risk: Disease":11995.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1675,13 +1903,17 @@
       "Vac Group Other Frontline Staff 2 Cum":10050.0,
       "Vac Group Over 60 1 Cum":78811.0,
       "Vac Group Over 60 2 Cum":22378.0,
+      "Vac Group Over 60 3 Cum":78811.0,
       "Vac Group Risk: Disease 1 Cum":27508.0,
       "Vac Group Risk: Disease 2 Cum":8341.0,
+      "Vac Group Risk: Disease 3 Cum":27508.0,
       "Vac Group Risk: Location 1 Cum":107957.0,
       "Vac Group Risk: Location 2 Cum":44146.0,
       "Vac Group Risk: Pregnant 1 Cum":295.0,
       "Vac Group Risk: Pregnant 2 Cum":54.0,
-      "Vac Population":1307158.0
+      "Vac Population":1307158.0,
+      "Vac Population Over 60s":22378.0,
+      "Vac Population Risk: Disease":8341.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1704,13 +1936,17 @@
       "Vac Group Other Frontline Staff 2 Cum":6307.0,
       "Vac Group Over 60 1 Cum":34660.0,
       "Vac Group Over 60 2 Cum":12716.0,
+      "Vac Group Over 60 3 Cum":34660.0,
       "Vac Group Risk: Disease 1 Cum":17137.0,
       "Vac Group Risk: Disease 2 Cum":7083.0,
+      "Vac Group Risk: Disease 3 Cum":17137.0,
       "Vac Group Risk: Location 1 Cum":76900.0,
       "Vac Group Risk: Location 2 Cum":36103.0,
       "Vac Group Risk: Pregnant 1 Cum":205.0,
       "Vac Group Risk: Pregnant 2 Cum":89.0,
-      "Vac Population":586286.0
+      "Vac Population":586286.0,
+      "Vac Population Over 60s":12716.0,
+      "Vac Population Risk: Disease":7083.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1733,13 +1969,17 @@
       "Vac Group Other Frontline Staff 2 Cum":12705.0,
       "Vac Group Over 60 1 Cum":37590.0,
       "Vac Group Over 60 2 Cum":20037.0,
+      "Vac Group Over 60 3 Cum":37590.0,
       "Vac Group Risk: Disease 1 Cum":32446.0,
       "Vac Group Risk: Disease 2 Cum":14147.0,
+      "Vac Group Risk: Disease 3 Cum":32446.0,
       "Vac Group Risk: Location 1 Cum":89995.0,
       "Vac Group Risk: Location 2 Cum":54091.0,
       "Vac Group Risk: Pregnant 1 Cum":190.0,
       "Vac Group Risk: Pregnant 2 Cum":60.0,
-      "Vac Population":1145848.0
+      "Vac Population":1145848.0,
+      "Vac Population Over 60s":20037.0,
+      "Vac Population Risk: Disease":14147.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1762,13 +2002,17 @@
       "Vac Group Other Frontline Staff 2 Cum":20324.0,
       "Vac Group Over 60 1 Cum":122029.0,
       "Vac Group Over 60 2 Cum":34433.0,
+      "Vac Group Over 60 3 Cum":122029.0,
       "Vac Group Risk: Disease 1 Cum":123731.0,
       "Vac Group Risk: Disease 2 Cum":35302.0,
+      "Vac Group Risk: Disease 3 Cum":123731.0,
       "Vac Group Risk: Location 1 Cum":773992.0,
       "Vac Group Risk: Location 2 Cum":252469.0,
       "Vac Group Risk: Pregnant 1 Cum":3372.0,
       "Vac Group Risk: Pregnant 2 Cum":1053.0,
-      "Vac Population":1931727.0
+      "Vac Population":1931727.0,
+      "Vac Population Over 60s":34433.0,
+      "Vac Population Risk: Disease":35302.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1791,13 +2035,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5327.0,
       "Vac Group Over 60 1 Cum":55299.0,
       "Vac Group Over 60 2 Cum":25607.0,
+      "Vac Group Over 60 3 Cum":55299.0,
       "Vac Group Risk: Disease 1 Cum":46337.0,
       "Vac Group Risk: Disease 2 Cum":22334.0,
+      "Vac Group Risk: Disease 3 Cum":46337.0,
       "Vac Group Risk: Location 1 Cum":359195.0,
       "Vac Group Risk: Location 2 Cum":168373.0,
       "Vac Group Risk: Pregnant 1 Cum":649.0,
       "Vac Group Risk: Pregnant 2 Cum":33.0,
-      "Vac Population":953167.0
+      "Vac Population":953167.0,
+      "Vac Population Over 60s":25607.0,
+      "Vac Population Risk: Disease":22334.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1820,13 +2068,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4078.0,
       "Vac Group Over 60 1 Cum":18178.0,
       "Vac Group Over 60 2 Cum":9360.0,
+      "Vac Group Over 60 3 Cum":18178.0,
       "Vac Group Risk: Disease 1 Cum":7793.0,
       "Vac Group Risk: Disease 2 Cum":5214.0,
+      "Vac Group Risk: Disease 3 Cum":7793.0,
       "Vac Group Risk: Location 1 Cum":13995.0,
       "Vac Group Risk: Location 2 Cum":6519.0,
       "Vac Group Risk: Pregnant 1 Cum":109.0,
       "Vac Group Risk: Pregnant 2 Cum":45.0,
-      "Vac Population":204018.0
+      "Vac Population":204018.0,
+      "Vac Population Over 60s":9360.0,
+      "Vac Population Risk: Disease":5214.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1849,13 +2101,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4990.0,
       "Vac Group Over 60 1 Cum":42734.0,
       "Vac Group Over 60 2 Cum":25473.0,
+      "Vac Group Over 60 3 Cum":42734.0,
       "Vac Group Risk: Disease 1 Cum":23303.0,
       "Vac Group Risk: Disease 2 Cum":13139.0,
+      "Vac Group Risk: Disease 3 Cum":23303.0,
       "Vac Group Risk: Location 1 Cum":109740.0,
       "Vac Group Risk: Location 2 Cum":54479.0,
       "Vac Group Risk: Pregnant 1 Cum":252.0,
       "Vac Group Risk: Pregnant 2 Cum":88.0,
-      "Vac Population":720145.0
+      "Vac Population":720145.0,
+      "Vac Population Over 60s":25473.0,
+      "Vac Population Risk: Disease":13139.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1878,13 +2134,17 @@
       "Vac Group Other Frontline Staff 2 Cum":5011.0,
       "Vac Group Over 60 1 Cum":18654.0,
       "Vac Group Over 60 2 Cum":7699.0,
+      "Vac Group Over 60 3 Cum":18654.0,
       "Vac Group Risk: Disease 1 Cum":9042.0,
       "Vac Group Risk: Disease 2 Cum":4054.0,
+      "Vac Group Risk: Disease 3 Cum":9042.0,
       "Vac Group Risk: Location 1 Cum":33545.0,
       "Vac Group Risk: Location 2 Cum":18474.0,
       "Vac Group Risk: Pregnant 1 Cum":209.0,
       "Vac Group Risk: Pregnant 2 Cum":68.0,
-      "Vac Population":331057.0
+      "Vac Population":331057.0,
+      "Vac Population Over 60s":7699.0,
+      "Vac Population Risk: Disease":4054.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1907,13 +2167,17 @@
       "Vac Group Other Frontline Staff 2 Cum":1115.0,
       "Vac Group Over 60 1 Cum":25750.0,
       "Vac Group Over 60 2 Cum":12449.0,
+      "Vac Group Over 60 3 Cum":25750.0,
       "Vac Group Risk: Disease 1 Cum":9575.0,
       "Vac Group Risk: Disease 2 Cum":5304.0,
+      "Vac Group Risk: Disease 3 Cum":9575.0,
       "Vac Group Risk: Location 1 Cum":29938.0,
       "Vac Group Risk: Location 2 Cum":12623.0,
       "Vac Group Risk: Pregnant 1 Cum":121.0,
       "Vac Group Risk: Pregnant 2 Cum":66.0,
-      "Vac Population":214665.0
+      "Vac Population":214665.0,
+      "Vac Population Over 60s":12449.0,
+      "Vac Population Risk: Disease":5304.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1936,13 +2200,17 @@
       "Vac Group Other Frontline Staff 2 Cum":14534.0,
       "Vac Group Over 60 1 Cum":95834.0,
       "Vac Group Over 60 2 Cum":32680.0,
+      "Vac Group Over 60 3 Cum":95834.0,
       "Vac Group Risk: Disease 1 Cum":31841.0,
       "Vac Group Risk: Disease 2 Cum":14115.0,
+      "Vac Group Risk: Disease 3 Cum":31841.0,
       "Vac Group Risk: Location 1 Cum":102860.0,
       "Vac Group Risk: Location 2 Cum":59454.0,
       "Vac Group Risk: Pregnant 1 Cum":424.0,
       "Vac Group Risk: Pregnant 2 Cum":149.0,
-      "Vac Population":1460182.0
+      "Vac Population":1460182.0,
+      "Vac Population Over 60s":32680.0,
+      "Vac Population Risk: Disease":14115.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1965,13 +2233,17 @@
       "Vac Group Other Frontline Staff 2 Cum":15870.0,
       "Vac Group Over 60 1 Cum":126412.0,
       "Vac Group Over 60 2 Cum":35596.0,
+      "Vac Group Over 60 3 Cum":126412.0,
       "Vac Group Risk: Disease 1 Cum":58264.0,
       "Vac Group Risk: Disease 2 Cum":23974.0,
+      "Vac Group Risk: Disease 3 Cum":58264.0,
       "Vac Group Risk: Location 1 Cum":244991.0,
       "Vac Group Risk: Location 2 Cum":115987.0,
       "Vac Group Risk: Pregnant 1 Cum":1677.0,
       "Vac Group Risk: Pregnant 2 Cum":313.0,
-      "Vac Population":1487320.0
+      "Vac Population":1487320.0,
+      "Vac Population Over 60s":35596.0,
+      "Vac Population Risk: Disease":23974.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -1994,13 +2266,17 @@
       "Vac Group Other Frontline Staff 2 Cum":3718.0,
       "Vac Group Over 60 1 Cum":54935.0,
       "Vac Group Over 60 2 Cum":23804.0,
+      "Vac Group Over 60 3 Cum":54935.0,
       "Vac Group Risk: Disease 1 Cum":18147.0,
       "Vac Group Risk: Disease 2 Cum":7667.0,
+      "Vac Group Risk: Disease 3 Cum":18147.0,
       "Vac Group Risk: Location 1 Cum":42504.0,
       "Vac Group Risk: Location 2 Cum":14736.0,
       "Vac Group Risk: Pregnant 1 Cum":346.0,
       "Vac Group Risk: Pregnant 2 Cum":108.0,
-      "Vac Population":596902.0
+      "Vac Population":596902.0,
+      "Vac Population Over 60s":23804.0,
+      "Vac Population Risk: Disease":7667.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2023,13 +2299,17 @@
       "Vac Group Other Frontline Staff 2 Cum":13962.0,
       "Vac Group Over 60 1 Cum":61285.0,
       "Vac Group Over 60 2 Cum":27879.0,
+      "Vac Group Over 60 3 Cum":61285.0,
       "Vac Group Risk: Disease 1 Cum":27254.0,
       "Vac Group Risk: Disease 2 Cum":12417.0,
+      "Vac Group Risk: Disease 3 Cum":27254.0,
       "Vac Group Risk: Location 1 Cum":82680.0,
       "Vac Group Risk: Location 2 Cum":31790.0,
       "Vac Group Risk: Pregnant 1 Cum":506.0,
       "Vac Group Risk: Pregnant 2 Cum":91.0,
-      "Vac Population":850709.0
+      "Vac Population":850709.0,
+      "Vac Population Over 60s":27879.0,
+      "Vac Population Risk: Disease":12417.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2052,13 +2332,17 @@
       "Vac Group Other Frontline Staff 2 Cum":14502.0,
       "Vac Group Over 60 1 Cum":93264.0,
       "Vac Group Over 60 2 Cum":46780.0,
+      "Vac Group Over 60 3 Cum":93264.0,
       "Vac Group Risk: Disease 1 Cum":53228.0,
       "Vac Group Risk: Disease 2 Cum":27195.0,
+      "Vac Group Risk: Disease 3 Cum":53228.0,
       "Vac Group Risk: Location 1 Cum":177970.0,
       "Vac Group Risk: Location 2 Cum":91209.0,
       "Vac Group Risk: Pregnant 1 Cum":751.0,
       "Vac Group Risk: Pregnant 2 Cum":194.0,
-      "Vac Population":1144090.0
+      "Vac Population":1144090.0,
+      "Vac Population Over 60s":46780.0,
+      "Vac Population Risk: Disease":27195.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2081,13 +2365,17 @@
       "Vac Group Other Frontline Staff 2 Cum":7623.0,
       "Vac Group Over 60 1 Cum":87535.0,
       "Vac Group Over 60 2 Cum":37719.0,
+      "Vac Group Over 60 3 Cum":87535.0,
       "Vac Group Risk: Disease 1 Cum":28644.0,
       "Vac Group Risk: Disease 2 Cum":12193.0,
+      "Vac Group Risk: Disease 3 Cum":28644.0,
       "Vac Group Risk: Location 1 Cum":103501.0,
       "Vac Group Risk: Location 2 Cum":45367.0,
       "Vac Group Risk: Pregnant 1 Cum":418.0,
       "Vac Group Risk: Pregnant 2 Cum":89.0,
-      "Vac Population":1392583.0
+      "Vac Population":1392583.0,
+      "Vac Population Over 60s":37719.0,
+      "Vac Population Risk: Disease":12193.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2110,13 +2398,17 @@
       "Vac Group Other Frontline Staff 2 Cum":6767.0,
       "Vac Group Over 60 1 Cum":31744.0,
       "Vac Group Over 60 2 Cum":16032.0,
+      "Vac Group Over 60 3 Cum":31744.0,
       "Vac Group Risk: Disease 1 Cum":12572.0,
       "Vac Group Risk: Disease 2 Cum":7487.0,
+      "Vac Group Risk: Disease 3 Cum":12572.0,
       "Vac Group Risk: Location 1 Cum":92336.0,
       "Vac Group Risk: Location 2 Cum":57635.0,
       "Vac Group Risk: Pregnant 1 Cum":123.0,
       "Vac Group Risk: Pregnant 2 Cum":21.0,
-      "Vac Population":589901.0
+      "Vac Population":589901.0,
+      "Vac Population Over 60s":16032.0,
+      "Vac Population Risk: Disease":7487.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2139,13 +2431,17 @@
       "Vac Group Other Frontline Staff 2 Cum":3725.0,
       "Vac Group Over 60 1 Cum":60124.0,
       "Vac Group Over 60 2 Cum":23760.0,
+      "Vac Group Over 60 3 Cum":60124.0,
       "Vac Group Risk: Disease 1 Cum":27504.0,
       "Vac Group Risk: Disease 2 Cum":11513.0,
+      "Vac Group Risk: Disease 3 Cum":27504.0,
       "Vac Group Risk: Location 1 Cum":107075.0,
       "Vac Group Risk: Location 2 Cum":51478.0,
       "Vac Group Risk: Pregnant 1 Cum":325.0,
       "Vac Group Risk: Pregnant 2 Cum":61.0,
-      "Vac Population":659636.0
+      "Vac Population":659636.0,
+      "Vac Population Over 60s":23760.0,
+      "Vac Population Risk: Disease":11513.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2168,13 +2464,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2833.0,
       "Vac Group Over 60 1 Cum":19994.0,
       "Vac Group Over 60 2 Cum":10479.0,
+      "Vac Group Over 60 3 Cum":19994.0,
       "Vac Group Risk: Disease 1 Cum":7808.0,
       "Vac Group Risk: Disease 2 Cum":3537.0,
+      "Vac Group Risk: Disease 3 Cum":7808.0,
       "Vac Group Risk: Location 1 Cum":32704.0,
       "Vac Group Risk: Location 2 Cum":13180.0,
       "Vac Group Risk: Pregnant 1 Cum":170.0,
       "Vac Group Risk: Pregnant 2 Cum":22.0,
-      "Vac Population":249458.0
+      "Vac Population":249458.0,
+      "Vac Population Over 60s":10479.0,
+      "Vac Population Risk: Disease":3537.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2197,13 +2497,17 @@
       "Vac Group Other Frontline Staff 2 Cum":15920.0,
       "Vac Group Over 60 1 Cum":114561.0,
       "Vac Group Over 60 2 Cum":42005.0,
+      "Vac Group Over 60 3 Cum":114561.0,
       "Vac Group Risk: Disease 1 Cum":53374.0,
       "Vac Group Risk: Disease 2 Cum":21597.0,
+      "Vac Group Risk: Disease 3 Cum":53374.0,
       "Vac Group Risk: Location 1 Cum":145419.0,
       "Vac Group Risk: Location 2 Cum":70370.0,
       "Vac Group Risk: Pregnant 1 Cum":685.0,
       "Vac Group Risk: Pregnant 2 Cum":70.0,
-      "Vac Population":1880468.0
+      "Vac Population":1880468.0,
+      "Vac Population Over 60s":42005.0,
+      "Vac Population Risk: Disease":21597.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2226,13 +2530,17 @@
       "Vac Group Other Frontline Staff 2 Cum":32669.0,
       "Vac Group Over 60 1 Cum":69761.0,
       "Vac Group Over 60 2 Cum":30947.0,
+      "Vac Group Over 60 3 Cum":69761.0,
       "Vac Group Risk: Disease 1 Cum":60122.0,
       "Vac Group Risk: Disease 2 Cum":34367.0,
+      "Vac Group Risk: Disease 3 Cum":60122.0,
       "Vac Group Risk: Location 1 Cum":92487.0,
       "Vac Group Risk: Location 2 Cum":58957.0,
       "Vac Group Risk: Pregnant 1 Cum":620.0,
       "Vac Group Risk: Pregnant 2 Cum":72.0,
-      "Vac Population":1565740.0
+      "Vac Population":1565740.0,
+      "Vac Population Over 60s":30947.0,
+      "Vac Population Risk: Disease":34367.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2255,13 +2563,17 @@
       "Vac Group Other Frontline Staff 2 Cum":3742.0,
       "Vac Group Over 60 1 Cum":22410.0,
       "Vac Group Over 60 2 Cum":9139.0,
+      "Vac Group Over 60 3 Cum":22410.0,
       "Vac Group Risk: Disease 1 Cum":13490.0,
       "Vac Group Risk: Disease 2 Cum":5441.0,
+      "Vac Group Risk: Disease 3 Cum":13490.0,
       "Vac Group Risk: Location 1 Cum":37853.0,
       "Vac Group Risk: Location 2 Cum":14890.0,
       "Vac Group Risk: Pregnant 1 Cum":122.0,
       "Vac Group Risk: Pregnant 2 Cum":23.0,
-      "Vac Population":334270.0
+      "Vac Population":334270.0,
+      "Vac Population Over 60s":9139.0,
+      "Vac Population Risk: Disease":5441.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2284,13 +2596,17 @@
       "Vac Group Other Frontline Staff 2 Cum":4898.0,
       "Vac Group Over 60 1 Cum":43308.0,
       "Vac Group Over 60 2 Cum":9267.0,
+      "Vac Group Over 60 3 Cum":43308.0,
       "Vac Group Risk: Disease 1 Cum":13107.0,
       "Vac Group Risk: Disease 2 Cum":3455.0,
+      "Vac Group Risk: Disease 3 Cum":13107.0,
       "Vac Group Risk: Location 1 Cum":57986.0,
       "Vac Group Risk: Location 2 Cum":15566.0,
       "Vac Group Risk: Pregnant 1 Cum":540.0,
       "Vac Group Risk: Pregnant 2 Cum":87.0,
-      "Vac Population":455259.0
+      "Vac Population":455259.0,
+      "Vac Population Over 60s":9267.0,
+      "Vac Population Risk: Disease":3455.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2313,13 +2629,17 @@
       "Vac Group Other Frontline Staff 2 Cum":9155.0,
       "Vac Group Over 60 1 Cum":30567.0,
       "Vac Group Over 60 2 Cum":9746.0,
+      "Vac Group Over 60 3 Cum":30567.0,
       "Vac Group Risk: Disease 1 Cum":18346.0,
       "Vac Group Risk: Disease 2 Cum":6047.0,
+      "Vac Group Risk: Disease 3 Cum":18346.0,
       "Vac Group Risk: Location 1 Cum":144324.0,
       "Vac Group Risk: Location 2 Cum":52354.0,
       "Vac Group Risk: Pregnant 1 Cum":934.0,
       "Vac Group Risk: Pregnant 2 Cum":123.0,
-      "Vac Population":547993.0
+      "Vac Population":547993.0,
+      "Vac Population Over 60s":9746.0,
+      "Vac Population Risk: Disease":6047.0
     },
     {
       "Date":"2021-09-08T00:00:00.000Z",
@@ -2342,13 +2662,17 @@
       "Vac Group Other Frontline Staff 2 Cum":2603.0,
       "Vac Group Over 60 1 Cum":36888.0,
       "Vac Group Over 60 2 Cum":10406.0,
+      "Vac Group Over 60 3 Cum":36888.0,
       "Vac Group Risk: Disease 1 Cum":13622.0,
       "Vac Group Risk: Disease 2 Cum":4381.0,
+      "Vac Group Risk: Disease 3 Cum":13622.0,
       "Vac Group Risk: Location 1 Cum":46273.0,
       "Vac Group Risk: Location 2 Cum":23642.0,
       "Vac Group Risk: Pregnant 1 Cum":127.0,
       "Vac Group Risk: Pregnant 2 Cum":15.0,
-      "Vac Population":535512.0
+      "Vac Population":535512.0,
+      "Vac Population Over 60s":10406.0,
+      "Vac Population Risk: Disease":4381.0
     }
   ]
 }
