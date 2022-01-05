@@ -242,12 +242,13 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Student {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
-        if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
-            if num_len >= 8:
+        if (num_len := len(numbers)) in (6, 7, 8, 9) and is_risks.search(rest):
+            if num_len >= 7:
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
                 medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)",
                                           return_rest=False, thainorm=True, asserted=True)
+                # 2021-01-03 dropped frontline
                 frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)",
                                             return_rest=False, thainorm=True, asserted=False)
                 volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)",
@@ -258,7 +259,7 @@ def vaccination_daily(daily, date, file, page):
                                                    return_rest=False, thainorm=True, asserted=True)
                 assert d7 == 7
                 pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)",
-                                           return_rest=False, thainorm=True, asserted=True)
+                                           return_rest=False, thainorm=True, asserted=len(numbers) > 7)
                 area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)",
                                        return_rest=False, thainorm=True, asserted=True)
                 student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)",
@@ -290,14 +291,14 @@ def vaccination_daily(daily, date, file, page):
                 numbers = [np.nan] * 10
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
-            assert date < d("2021-07-12")  # Should be getting all the numbers every day now
+            assert date < d("2021-07-12"), f"{date} {file} can't find vac groups for dose {dose} in {gtext}"
             total, *_ = numbers
             df = pd.DataFrame([[date, total]], columns=[
                 "Date",
                 f"Vac Given {dose} Cum",
             ]).set_index("Date")
         else:
-            assert date < d("2021-07-12")  # Should be getting all the numbers every day now
+            assert date < d("2021-07-12"), f"{date} {file} can't find vac groups for dose {dose} in {gtext}"
             continue
         daily = daily.combine_first(df)
     daily = daily.fillna(value=np.nan)
@@ -329,6 +330,9 @@ def vaccination_tables(df, date, page, file):
     vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
+
+    vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
+    vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
 
     alloc2_doses = [
         "Date",
@@ -397,8 +401,8 @@ def vaccination_tables(df, date, page, file):
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
-            if area == "ผู้ท่ีมีอายุต้ังแต่" and len(cols) < 6:
-                # 2021-12-21 - header down the bottom
+            if area in ["ผู้ท่ีมีอายุต้ังแต่", 'เข็มที'] and len(cols) < 6:
+                # 2021-12-21, 2021-01-03 - header down the bottom
                 continue
             if added is None:
                 added = 0
@@ -494,8 +498,23 @@ def vaccination_tables(df, date, page, file):
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
             elif table == "percent" and len(numbers) in [18, 22]:
                 # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
-                pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
-                add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
+                pop, d1, d1p, d2, d2p, d3, d3p, total, *numbers2 = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
+                # Over 60s
+                if len(numbers) == 22:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
+                else:
+                    pop, d1, d1p, d2, d2p, *numbers3 = numbers2
+                    d3, d3p = [np.nan] * 2
+                add(prov, [d1, d2, d3, pop], vaccols_60s + ["Vac Population Over 60s"])
+                # Disease
+                if len(numbers) == 22:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = numbers3
+                else:
+                    pop, d1, d1p, d2, d2p, *numbers4 = numbers3
+                    d3, d3p = [np.nan] * 2
+                add(prov, [d1, d2, d3, pop], vaccols_disease + ["Vac Population Risk: Disease"])
+                assert not numbers4
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
         assert added is None or added > 7
