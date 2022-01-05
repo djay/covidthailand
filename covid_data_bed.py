@@ -28,11 +28,8 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
 
     workbook = ts.getWorkbook()
 
-    # assumption
-    storypoints = workbook.getStoryPoints()
-
-    def getSPID(name):
-        return next(sp['storyPointId'] for sp in storypoints['storyPoints'][0] if name in sp['storyPointCaption'])
+    def getSPID(name, workbook):
+        return next(sp['storyPointId'] for sp in workbook.getStoryPoints()['storyPoints'][0] if name in sp['storyPointCaption'])
 
     df = import_csv("moph_bed", ["Date", "Province"], False, dir="inputs/json")
     if not df.empty and df.reset_index()['Date'].max() >= updated_time.date():
@@ -40,7 +37,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
 
     # get bed types and ventilator tabs and iterate through prvinces
     # Break down of beds types
-    id = getSPID("เตียง")
+    id = getSPID("เตียง", workbook)
     sp = workbook.goToStoryPoint(storyPointId=id)
     map_total = sp.getWorksheet("map_total")
     data = []
@@ -66,7 +63,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # Get total beds per province
     ts.loads(url)
     workbook = ts.getWorkbook()
-    sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม'))
+    sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
 
     ws = sp.getWorksheet('province_total')
     row = ws.data[['Prov Name-value', 'Measure Names-alias', 'Measure Values-value']]
@@ -84,8 +81,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # Ventitalors
     ts.loads(url)
     workbook = ts.getWorkbook()
-    sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม'))
-    sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR"))
+    sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR", workbook))
     ws = sp.getWorksheet("province_respirator")
     vent = ws.data[['Prov Name-value', 'SUM(Ventilator)-value']]
     vent.columns = ["Province", "Bed Ventilator Total"]
