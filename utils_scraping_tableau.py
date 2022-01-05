@@ -354,21 +354,21 @@ def force_select(self, column, value, storyboard=None, storyPointId=None):
 # zoneSelectionType: replace
 
 
-def select(scraper, worksheetName, storyboard, storyPointId, selection):
+def select(scraper, worksheetName, dashboard, storyPointId, selection):
     tableauscraper.api.delayExecution(scraper)
     payload = (
         (
             "visualIdPresModel", (None, json.dumps({
                 "worksheet": worksheetName,
-                "dashboard": scraper.dashboard,
-                "storyboard": storyboard,
+                "dashboard": dashboard,  # TODO: where to get this value from?
+                "storyboard": scraper.dashboard,
                 "storyPointId": storyPointId,
             }))
         ),
         ("selection", (None, json.dumps(
             {"objectIds": selection, "selectionType": "tuples"}))),
         ("selectOptions", (None, "select-options-simple")),
-        ("zoneId", (None, "3")),
+        #        ("zoneId", (None, 3)),
         ("zoneSelectionType", (None, "replace")),
     )
     r = scraper.session.post(
