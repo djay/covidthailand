@@ -331,8 +331,8 @@ def vaccination_tables(df, date, page, file):
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
 
-    vaccols_60s = [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
-    vaccols_disease = [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
+    vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
+    vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
 
     alloc2_doses = [
         "Date",
