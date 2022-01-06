@@ -60,25 +60,6 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     provs = provs.set_index(["Date", "Province"])
     provs = join_provinces(provs, "Province")  # Ensure we get the right names
 
-    # Get total beds per province
-    # ts = TS()
-    # ts.loads(url)
-    # workbook = ts.getWorkbook()
-    # sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
-
-    # ws = sp.getWorksheet('province_total')
-    # row = ws.data[['Prov Name-value', 'Measure Names-alias', 'Measure Values-value']]
-    # row.columns = ['Province', 'ValueType', 'Value']
-    # row = row.pivot('Province', 'ValueType', 'Value')
-    # row.columns = ['Bed All Total', 'Bed All Occupied']
-    # row['update_time'] = updated_time
-    # row['Date'] = updated_time.date()
-    # row = join_provinces(row, "Province")
-    # row = row.reset_index().set_index(['Date', 'Province'])
-
-    # # data is clean
-    # assert not row.isna().any().any(), 'some datapoints contain NA'
-
     # Ventitalors
     ts = TS()
     ts.loads(url)
@@ -91,7 +72,26 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     vent['Date'] = updated_time.date()
     vent = vent.set_index(["Date", "Province"])
 
-    df = df.combine_first(provs).combine_first(vent)
+    # Get total beds per province
+    ts = TS()
+    ts.loads(url)
+    workbook = ts.getWorkbook()
+    sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
+
+    ws = sp.getWorksheet('province_total')
+    total = ws.data[['Prov Name-value', 'Measure Names-alias', 'Measure Values-value']]
+    total.columns = ['Province', 'ValueType', 'Value']
+    total = total.pivot('Province', 'ValueType', 'Value')
+    total.columns = ['Bed All Total', 'Bed All Occupied']
+    # total['update_time'] = updated_time
+    total['Date'] = updated_time.date()
+    total = join_provinces(total, "Province")
+    total = total.reset_index().set_index(['Date', 'Province'])
+
+    # data is clean
+    assert not total.isna().any().any(), 'some datapoints contain NA'
+
+    df = df.combine_first(provs).combine_first(vent).combine_first(total)
     export(df, "moph_bed", csv_only=True, dir="inputs/json")
 
     return df
