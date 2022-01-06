@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import pandas as pd
 
 import covid_data_api
+import covid_data_bed
 import covid_data_briefing
 import covid_data_dash
 import covid_data_situation
@@ -243,6 +244,7 @@ def scrape_and_combine():
         # dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac_slides = pool.apply_async(covid_data_vac.vac_slides)
         vac_reports_and_prov = pool.apply_async(covid_data_vac.vaccination_reports)
+        beds = pool.apply_async(covid_data_bed.get_df)
 
         # TODO: split vac slides as that's the slowest
 
@@ -291,6 +293,8 @@ def scrape_and_combine():
 
         xcess_deaths.get()
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
+
+        beds = beds.get()
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)

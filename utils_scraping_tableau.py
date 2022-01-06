@@ -2,7 +2,9 @@ import datetime
 import itertools
 import json
 import time
+from json.decoder import JSONDecodeError
 
+import dateutil.parser
 import numpy as np
 import pandas as pd
 import requests
@@ -307,3 +309,75 @@ def force_setFilter(wb, ws_name, columnName, values):
         return tableauscraper.TableauWorkbook(
             scraper=scraper, originalData={}, originalInfo={}, data=[]
         )
+
+
+def get_woorkbook_updated_time(tableau_scapper: 'tableauscraper.TableauScraper') -> datetime.datetime:
+    time_str = tableau_scapper.tableauData.get('workbookLastPublishedAt')
+    if time_str is None:
+        tableau_scapper.logger.warn("please call `.loads()` first")
+        return None
+
+    return dateutil.parser.isoparse(time_str)
+
+
+def force_select(self, column, value, storyboard=None, storyPointId=None):
+    values = self.getSelectableValues(column)
+    if not values:
+        values = list(self.data[column])
+    tupleItems = self.getTupleIds()
+    try:
+
+        indexedByTuple = False
+        for tupleItem in tupleItems:
+            if len(tupleItem) >= len(values):
+                index = values.index(value)
+                index = tupleItem[index]
+                indexedByTuple = True
+                break
+        if not indexedByTuple:
+            index = values.index(value)
+            index = index + 1
+        if storyboard is not None and storyPointId is not None:
+            r = select(self._scraper, self.name, storyboard, storyPointId, [index])
+        else:
+            r = tableauscraper.api.select(self._scraper, self.name, [index])
+        self.updateFullData(r)
+        return tableauscraper.dashboard.getWorksheetsCmdResponse(self._scraper, r)
+    except ValueError as e:
+        self._scraper.logger.error(str(e))
+        return tableauscraper.TableauWorkbook(
+            scraper=self._scraper, originalData={}, originalInfo={}, data=[]
+        )
+
+# visualIdPresModel: {"worksheet":"map_total","dashboard":"Dashboard_Province_index_new_v3","storyboard":"Story 1","storyPointId":12}
+# zoneId: 3
+# zoneSelectionType: replace
+
+
+def select(scraper, worksheetName, dashboard, storyPointId, selection):
+    tableauscraper.api.delayExecution(scraper)
+    payload = (
+        (
+            "visualIdPresModel", (None, json.dumps({
+                "worksheet": worksheetName,
+                "dashboard": dashboard,  # TODO: where to get this value from?
+                "storyboard": scraper.dashboard,
+                "storyPointId": storyPointId,
+            }))
+        ),
+        ("selection", (None, json.dumps(
+            {"objectIds": selection, "selectionType": "tuples"}))),
+        ("selectOptions", (None, "select-options-simple")),
+        #        ("zoneId", (None, 3)),
+        ("zoneSelectionType", (None, "replace")),
+    )
+    r = scraper.session.post(
+        f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/select',
+        files=payload,
+        verify=scraper.verify
+    )
+    scraper.lastActionTime = time.time()
+    try:
+        return r.json()
+    except (ValueError, JSONDecodeError):
+        raise tableauscraper.api.APIResponseException(message=r.text)
