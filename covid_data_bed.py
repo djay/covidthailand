@@ -61,26 +61,24 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     provs = join_provinces(provs, "Province")  # Ensure we get the right names
 
     # Get total beds per province
-    ts.loads(url)
-    workbook = ts.getWorkbook()
-    sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
+    # workbook = TS().loads(url).getWorkbook()
+    # sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
 
-    ws = sp.getWorksheet('province_total')
-    row = ws.data[['Prov Name-value', 'Measure Names-alias', 'Measure Values-value']]
-    row.columns = ['Province', 'ValueType', 'Value']
-    row = row.pivot('Province', 'ValueType', 'Value')
-    row.columns = ['Bed All Total', 'Bed All Occupied']
-    row['update_time'] = updated_time
-    row['Date'] = updated_time.date()
-    row = join_provinces(row, "Province")
-    row = row.reset_index().set_index(['Date', 'Province'])
+    # ws = sp.getWorksheet('province_total')
+    # row = ws.data[['Prov Name-value', 'Measure Names-alias', 'Measure Values-value']]
+    # row.columns = ['Province', 'ValueType', 'Value']
+    # row = row.pivot('Province', 'ValueType', 'Value')
+    # row.columns = ['Bed All Total', 'Bed All Occupied']
+    # row['update_time'] = updated_time
+    # row['Date'] = updated_time.date()
+    # row = join_provinces(row, "Province")
+    # row = row.reset_index().set_index(['Date', 'Province'])
 
-    # data is clean
-    assert not row.isna().any().any(), 'some datapoints contain NA'
+    # # data is clean
+    # assert not row.isna().any().any(), 'some datapoints contain NA'
 
     # Ventitalors
-    ts.loads(url)
-    workbook = ts.getWorkbook()
+    workbook = TS().loads(url).getWorkbook()
     sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR", workbook))
     ws = sp.getWorksheet("province_respirator")
     vent = ws.data[['Prov Name-value', 'SUM(Ventilator)-value']]
@@ -89,7 +87,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     vent['Date'] = updated_time.date()
     vent = vent.set_index(["Date", "Province"])
 
-    df = df.combine_first(row).combine_first(provs).combine_first(vent)
+    df = df.combine_first(provs).combine_first(vent)
     export(df, "moph_bed", csv_only=True, dir="inputs/json")
 
     return df
