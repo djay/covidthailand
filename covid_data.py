@@ -299,6 +299,7 @@ def scrape_and_combine():
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
+    shutil.copy(os.path.join("inputs", "json", "moph_bed.csv"), "api")
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
