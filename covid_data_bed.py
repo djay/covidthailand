@@ -61,7 +61,9 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     provs = join_provinces(provs, "Province")  # Ensure we get the right names
 
     # Get total beds per province
-    # workbook = TS().loads(url).getWorkbook()
+    # ts = TS()
+    # ts.loads(url)
+    # workbook = ts.getWorkbook()
     # sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
 
     # ws = sp.getWorksheet('province_total')
@@ -78,7 +80,9 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # assert not row.isna().any().any(), 'some datapoints contain NA'
 
     # Ventitalors
-    workbook = TS().loads(url).getWorkbook()
+    ts = TS()
+    ts.loads(url)
+    workbook = ts.getWorkbook()
     sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR", workbook))
     ws = sp.getWorksheet("province_respirator")
     vent = ws.data[['Prov Name-value', 'SUM(Ventilator)-value']]
