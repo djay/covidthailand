@@ -6,6 +6,7 @@ from tableauscraper import TableauScraper as TS
 
 from utils_pandas import export
 from utils_pandas import import_csv
+from utils_scraping import fix_timeouts
 from utils_scraping import logger
 from utils_scraping_tableau import force_select
 from utils_scraping_tableau import get_woorkbook_updated_time
@@ -21,6 +22,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     url = "https://public.tableau.com/views/moph_covid_v3/Story1"
     ts = TS()
     ts.loads(url)
+    fix_timeouts(ts.session, timeout=30)
     updated_time = get_woorkbook_updated_time(ts)
 
     if not should_be_newer_than < updated_time:
@@ -66,6 +68,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # Ventitalors
     ts = TS()
     ts.loads(url)
+    fix_timeouts(ts.session, timeout=30)
     workbook = ts.getWorkbook()
     sp = workbook.goToStoryPoint(storyPointId=getSPID("VENTILATOR", workbook))
     ws = sp.getWorksheet("province_respirator")
@@ -78,6 +81,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # Get total beds per province
     ts = TS()
     ts.loads(url)
+    fix_timeouts(ts.session, timeout=30)
     workbook = ts.getWorkbook()
     sp = workbook.goToStoryPoint(storyPointId=getSPID('ทรัพยากรภาพรวม', workbook))
 
