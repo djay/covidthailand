@@ -40,10 +40,11 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # get bed types and ventilator tabs and iterate through prvinces
     # Break down of beds types
     id = getSPID("เตียง", workbook)
-    sp = workbook.goToStoryPoint(storyPointId=id)
-    map_total = sp.getWorksheet("map_total")
+    wb = workbook.goToStoryPoint(storyPointId=id)
+    
     data = []
     for prov in map_total.data["Prov Name En-value"]:
+        map_total = wb.getWorksheet("map_total")
         try:
             wb = force_select(map_total, "Prov Name En-value", prov, "Dashboard_Province_layout", id)
         except:
