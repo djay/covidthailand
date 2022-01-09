@@ -56,7 +56,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
             for vtype, value in zip(["Total", "Occupied"], sheetdf['Measure Values-alias']):
                 row[f"Bed {name} {vtype}"] = int(value.replace(",", ""))
         data.append(row)
-        logger.info("{} Bed {}", updated_time.date(), prov, " ".join(str(s) for s in row.values()))
+        logger.info("{} Beds {}: {}", updated_time.date(), prov, " ".join(str(s) for s in row.values()))
     provs = pd.DataFrame(data)
     provs['Date'] = updated_time.date()
     # provs['Date'] = provs['Date'].dt.normalize()
