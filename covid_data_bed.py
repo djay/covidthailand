@@ -41,13 +41,12 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # Break down of beds types
     id = getSPID("เตียง", workbook)
     wb = workbook.goToStoryPoint(storyPointId=id)
-    
     data = []
-    for prov in map_total.data["Prov Name En-value"]:
-        map_total = wb.getWorksheet("map_total")
+    for prov in (map_total := wb.getWorksheet("map_total")).data["Prov Name En-value"]:
         try:
             wb = force_select(map_total, "Prov Name En-value", prov, "Dashboard_Province_layout", id)
-        except:
+        except Exception:
+            logger.warning(f"{updated_time.date()} Beds {prov}: Failed")
             continue
         row = {"Province": prov}
         for name, sheet in zip(
