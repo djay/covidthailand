@@ -42,9 +42,9 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     id = getSPID("เตียง", workbook)
     wb = workbook.goToStoryPoint(storyPointId=id)
     data = []
-    for prov in (map_total := wb.getWorksheet("map_total")).data["Prov Name En-value"]:
+    for prov in (map_total := wb.getWorksheet("province_total")).data["Prov Name-value"]:
         try:
-            wb = force_select(map_total, "Prov Name En-value", prov, "Dashboard_Province_layout", id)
+            wb = force_select(map_total, "Prov Name-value", prov, "Dashboard_Province_layout", id)
         except Exception:
             logger.warning(f"{updated_time.date()} Beds {prov}: Failed")
             continue
@@ -64,6 +64,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     # provs['Date'] = provs['Date'].dt.normalize()
     provs = provs.set_index(["Date", "Province"])
     provs = join_provinces(provs, "Province")  # Ensure we get the right names
+    provs = provs.drop_duplicates()
 
     # Ventitalors
     ts = TS()
