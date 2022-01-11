@@ -195,7 +195,7 @@ def find_thai_date(content, remove=False, all=False):
     2021-05-10 00:00:00
 
     you can get all dates
-    >>> print(find_thai_date("สะสมตั้งแต่วันที่ 28 กุมภำพันธ์ 2564 – 10 มกรำคม 2565", all=True))[1]
+    >>> print(find_thai_date("สะสมตั้งแต่วันที่ 28 กุมภำพันธ์ 2564 – 10 มกรำคม 2565", all=True)[1])
     2022-01-10 00:00:00
     """
     # TODO: prevent it finding numbers for the month name? finds too many
