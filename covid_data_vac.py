@@ -306,8 +306,14 @@ def vaccination_daily(daily, date, file, page):
     return daily
 
 
-def vaccination_tables(df, date, page, file):
-    date = find_thai_date(page)
+def vaccination_tables(df, _, page, file):
+    lines = [line.strip() for line in page.split('\n') if line.strip()]
+    first_line = page.split("\n\n")[0]
+    date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
+    if not date:
+        return df
+    else:
+        date = date[-1]
     givencols = [
         "Date",
         "Province",
@@ -376,7 +382,6 @@ def vaccination_tables(df, date, page, file):
 
     def in_heading(pat):
         return max(len(pat.findall(h)) for h in headings)
-    lines = [line.strip() for line in page.split('\n') if line.strip()]
     _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = in_heading(shots)
@@ -482,8 +487,8 @@ def vaccination_tables(df, date, page, file):
                 if date >= d("2021-12-05"):
                     # seems like they stopped having columns for moderna so total always more
                     pass
-                else:
-                    assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
+                elif not pd.isna(total_alloc):
+                    assert sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc, f"Error{date} {file}"
                 if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
@@ -642,7 +647,7 @@ def vaccination_reports():
             vac_daily = vac_problem(vac_daily, date, file, page)
         logger.info("{} Vac Tables {} {} {}", date, len(table), "Provinces parsed", file)
         # TODO: move this into vaccination_tables so can be tested
-        if date in [d("2021-12-11")] and table.empty:
+        if date in [d("2021-12-11"), d("2022-01-06")] and table.empty:
             logger.info("{} doc has slides instead of report", date)
             continue
         elif d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
@@ -889,3 +894,8 @@ def vac_slides():
             df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
     return df
+
+
+if __name__ == '__main__':
+    reports, provs = vaccination_reports()
+    slides = vac_slides()

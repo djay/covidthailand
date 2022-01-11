@@ -177,7 +177,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               cmap=utils_thai.REG_COLOURS,
               table=trend_table(cases['Cases'], sensitivity=25, style="green_down", ma_days=7),
               footnote='Table of latest Cases and 7 day trend per 100k',
-              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     cases_region['Cases'] = df['Cases']
     plot_area(df=cases_region,
@@ -187,7 +187,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True, mini_map=True,
               unknown_name="Imported/Prisons", unknown_total="Cases",
               cmap=utils_thai.REG_COLOURS,
-              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
     # plot_area(df=df,

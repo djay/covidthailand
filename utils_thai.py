@@ -163,7 +163,7 @@ def previous_date(end, day):
     return start
 
 
-def find_thai_date(content, remove=False):
+def find_thai_date(content, remove=False, all=False):
     """
     find thai date in a string
 
@@ -194,8 +194,12 @@ def find_thai_date(content, remove=False):
     >>> print(find_thai_date("10 พฤษ 2564"))
     2021-05-10 00:00:00
 
+    you can get all dates
+    >>> print(find_thai_date("สะสมตั้งแต่วันที่ 28 กุมภำพันธ์ 2564 – 10 มกรำคม 2565", all=True))[1]
+    2022-01-10 00:00:00
     """
     # TODO: prevent it finding numbers for the month name? finds too many
+    results = []
     for m3 in re.finditer(r"([0-9]+)(?=\s*([^ ]+)\s*((?:25)?[0-9][0-9]))", content):
         d2, month, year = m3.groups()
         if len(year) == 2:
@@ -213,8 +217,14 @@ def find_thai_date(content, remove=False):
         if month is None:
             continue
         date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
-        return (date, content[:m3.start()] + " " + content[m3.end(m3.lastindex):]) if remove else date
-    return (None, content) if remove else None
+        content = content[:m3.start()] + " " + content[m3.end(m3.lastindex):]
+        results.append(date)
+        if not all:
+            return (date, content) if remove else date
+    if all:
+        return (results, content) if remove else results
+    else:
+        return (None, content) if remove else None
 
 
 def find_date_range(content):
