@@ -42,7 +42,7 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
     id = getSPID("เตียง", workbook)
     wb = workbook.goToStoryPoint(storyPointId=id)
     data = []
-    for prov in (map_total := wb.getWorksheet("province_total")).data["Prov Name-value"]:
+    for prov in (map_total := wb.getWorksheet("province_total")).data["Prov Name-value"].unique():
         try:
             wb = force_select(map_total, "Prov Name-value", prov, "Dashboard_Province_layout", id)
         except Exception:
