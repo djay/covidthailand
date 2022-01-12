@@ -16,12 +16,14 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 
 - Annoucements on free testing, free hospitalisation, free vaccines and rules changes
-   - English - [Thailand PRD - Twitter](https://twitter.com/prdthailand) | [Thailand PRD - FB](https://www.facebook.com/thailandprd)
-   - Thai - [ThaiGov Covid-19](https://www.facebook.com/informationcovid19) | [MOPH Twitter](https://www.facebook.com/thailandprd)
-- If you have Covid
-   - With only a positive ATK with mild symtoms you can register for [free support during home isolation call 1422](https://twitter.com/prdthailand/status/1479301770388000768).
-   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test. Call 1422.
-   - For [severe symptoms call 1668](https://twitter.com/prdthailand/status/1479301770388000768).
+   - English: [Thailand PRD - Twitter](https://twitter.com/prdthailand) - [Thailand PRD - FB](https://www.facebook.com/thailandprd)
+   - Thai: [ThaiGov Covid-19](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
+   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend)
+- Call [1422](tel:1422) if you have Covid with mild symptoms
+   - With only a positive ATK you can register for [free support during home isolation call 1422](https://twitter.com/prdthailand/status/1479301770388000768).
+   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
+   - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
+- Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
 
 ## Disclaimer
 
@@ -429,7 +431,7 @@ Why do this? Originally to answer the question ["Was Thailand doing enough testi
 - [Institute for Health Metrics and Evaluation](http://www.healthdata.org/covid/data-downloads) - COVID estimates including mobility estimates from mobile phone data
 
 ## Change log
-
+- No longer updated. see [commits](https://github.com/djay/covidthailand/commits/main) instead
 - 2021-08-16 - Move ATK to tests plot and remove from types plot
 - 2021-08-16 - Plots of more age ranges for deaths, excess deaths and cases
 - 2021-08-15 - Dashboard parsing for provinces and ages with downloads
