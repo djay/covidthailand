@@ -10,6 +10,19 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 **NEW** [Excess Deaths](#excess-deaths)
 
+<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=small" width="300px" style="float: right">
+
+## Testing, isolation and Vaccine assistance
+
+
+- Annoucements on free testing, free hospitalisation, free vaccines and rules changes
+   - English - [Thailand PRD - Twitter](https://twitter.com/prdthailand) | [Thailand PRD - FB](https://www.facebook.com/thailandprd)
+   - Thai - [ThaiGov Covid-19](https://www.facebook.com/informationcovid19) | [MOPH Twitter](https://www.facebook.com/thailandprd)
+- If you have Covid
+   - With only a positive ATK with mild symtoms you can register for [free support during home isolation call 1422](https://twitter.com/prdthailand/status/1479301770388000768).
+   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test. Call 1422.
+   - For [severe symptoms call 1668](https://twitter.com/prdthailand/status/1479301770388000768).
+
 ## Disclaimer
 
 *Data offered here is offered as is with no guarantees. As much as possible government reports
@@ -18,6 +31,7 @@ This sites only intention is to give an accurate representation of all the avail
 
 Links to all data sources are including in [Downloads](downloads)
 
+<br style="clear:both"/>
 
 # Trends
 
@@ -387,10 +401,11 @@ $ bundle exec jekyll serve
 
 # About
 
+<img src="https://imgs.xkcd.com/comics/duty_calls.png" style="float: right"/>
 Made with python/pandas/matplotlib. Dylan Jay gave a talk on how easy it is to extract data from PDFs
 and powerpoints and plot data at [Bangkok's Monthly ThaiPy Event](https://www.meetup.com/en-AU/ThaiPy-Bangkok-Python-Meetup) [Video: "How I scraped Thailand's covid data" (1h mark)](https://www.facebook.com/watch/live/?v=2890282134582879)
 
-Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and because ![Someone was wrong on the internet](https://imgs.xkcd.com/comics/duty_calls.png).
+Why do this? Originally to answer the question ["Was Thailand doing enough testing?"](https://github.com/djay/covidthailand/wiki) for myself and because too many people were wrong on the internets.
 
 ## License
 
