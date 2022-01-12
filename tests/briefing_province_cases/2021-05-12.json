@@ -1523,6 +1523,31 @@
     },
     {
       "Date":"2021-05-12T00:00:00.000Z",
+      "Province":"Phayao",
+      "Cases":0.0
+    },
+    {
+      "Date":"2021-05-11T00:00:00.000Z",
+      "Province":"Phayao",
+      "Cases":2.0
+    },
+    {
+      "Date":"2021-05-10T00:00:00.000Z",
+      "Province":"Phayao",
+      "Cases":1.0
+    },
+    {
+      "Date":"2021-05-09T00:00:00.000Z",
+      "Province":"Phayao",
+      "Cases":0.0
+    },
+    {
+      "Date":"2021-05-08T00:00:00.000Z",
+      "Province":"Phayao",
+      "Cases":0.0
+    },
+    {
+      "Date":"2021-05-12T00:00:00.000Z",
       "Province":"Samut Songkhram",
       "Cases":4.0
     },

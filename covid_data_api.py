@@ -480,3 +480,8 @@ def ihme_dataset():
     data = data.set_index("Date")
 
     return(data)
+
+
+if __name__ == '__main__':
+    ihme_dataset()
+    get_cases_by_demographics_api()

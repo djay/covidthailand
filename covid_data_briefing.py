@@ -288,7 +288,8 @@ def briefing_province_cases(file, date, pages):
         if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายให)", text):
             continue
         parts = [p.get_text() for p in soup.find_all("p")]
-        parts = [line for line in parts if line]
+        # parts = [line for line in parts if line]
+        parts = [p for line in parts for p in line.split("\n") if p]
         preamble, *tables = split(parts, re.compile(r"รวม\s*\((?:ราย|รำย)\)").search)
         if len(tables) <= 1:
             continue  # Additional top 10 report. #TODO: better detection of right report

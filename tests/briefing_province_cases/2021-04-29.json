@@ -1523,6 +1523,31 @@
     },
     {
       "Date":"2021-04-29T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Cases":2.0
+    },
+    {
+      "Date":"2021-04-28T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Cases":0.0
+    },
+    {
+      "Date":"2021-04-27T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Cases":0.0
+    },
+    {
+      "Date":"2021-04-26T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Cases":0.0
+    },
+    {
+      "Date":"2021-04-25T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Cases":1.0
+    },
+    {
+      "Date":"2021-04-29T00:00:00.000Z",
       "Province":"Yasothon",
       "Cases":9.0
     },

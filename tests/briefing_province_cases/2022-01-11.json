@@ -398,6 +398,31 @@
     },
     {
       "Date":"2022-01-11T00:00:00.000Z",
+      "Province":"Samut Sakhon",
+      "Cases":111.0
+    },
+    {
+      "Date":"2022-01-10T00:00:00.000Z",
+      "Province":"Samut Sakhon",
+      "Cases":118.0
+    },
+    {
+      "Date":"2022-01-09T00:00:00.000Z",
+      "Province":"Samut Sakhon",
+      "Cases":154.0
+    },
+    {
+      "Date":"2022-01-08T00:00:00.000Z",
+      "Province":"Samut Sakhon",
+      "Cases":92.0
+    },
+    {
+      "Date":"2022-01-07T00:00:00.000Z",
+      "Province":"Samut Sakhon",
+      "Cases":78.0
+    },
+    {
+      "Date":"2022-01-11T00:00:00.000Z",
       "Province":"Phang Nga",
       "Cases":59.0
     },
@@ -745,6 +770,31 @@
       "Date":"2022-01-07T00:00:00.000Z",
       "Province":"Yasothon",
       "Cases":44.0
+    },
+    {
+      "Date":"2022-01-11T00:00:00.000Z",
+      "Province":"Lampang",
+      "Cases":36.0
+    },
+    {
+      "Date":"2022-01-10T00:00:00.000Z",
+      "Province":"Lampang",
+      "Cases":48.0
+    },
+    {
+      "Date":"2022-01-09T00:00:00.000Z",
+      "Province":"Lampang",
+      "Cases":57.0
+    },
+    {
+      "Date":"2022-01-08T00:00:00.000Z",
+      "Province":"Lampang",
+      "Cases":37.0
+    },
+    {
+      "Date":"2022-01-07T00:00:00.000Z",
+      "Province":"Lampang",
+      "Cases":64.0
     },
     {
       "Date":"2022-01-11T00:00:00.000Z",
@@ -1123,6 +1173,31 @@
     },
     {
       "Date":"2022-01-11T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Cases":20.0
+    },
+    {
+      "Date":"2022-01-10T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Cases":42.0
+    },
+    {
+      "Date":"2022-01-09T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Cases":37.0
+    },
+    {
+      "Date":"2022-01-08T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Cases":59.0
+    },
+    {
+      "Date":"2022-01-07T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Cases":61.0
+    },
+    {
+      "Date":"2022-01-11T00:00:00.000Z",
       "Province":"Maha Sarakham",
       "Cases":48.0
     },
@@ -1495,6 +1570,31 @@
       "Date":"2022-01-07T00:00:00.000Z",
       "Province":"Mae Hong Son",
       "Cases":24.0
+    },
+    {
+      "Date":"2022-01-11T00:00:00.000Z",
+      "Province":"Pattani",
+      "Cases":17.0
+    },
+    {
+      "Date":"2022-01-10T00:00:00.000Z",
+      "Province":"Pattani",
+      "Cases":13.0
+    },
+    {
+      "Date":"2022-01-09T00:00:00.000Z",
+      "Province":"Pattani",
+      "Cases":11.0
+    },
+    {
+      "Date":"2022-01-08T00:00:00.000Z",
+      "Province":"Pattani",
+      "Cases":24.0
+    },
+    {
+      "Date":"2022-01-07T00:00:00.000Z",
+      "Province":"Pattani",
+      "Cases":37.0
     },
     {
       "Date":"2022-01-11T00:00:00.000Z",
