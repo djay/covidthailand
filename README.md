@@ -10,7 +10,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 **NEW** [Excess Deaths](#excess-deaths)
 
-<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=small" width="300px" style="float: right">
+<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=medium" width="400px" align="right" style="float: right">
 
 ## Testing, isolation and Vaccine assistance
 
@@ -401,7 +401,7 @@ $ bundle exec jekyll serve
 
 # About
 
-<img src="https://imgs.xkcd.com/comics/duty_calls.png" style="float: right"/>
+<img src="https://imgs.xkcd.com/comics/duty_calls.png" style="float: right" align="right" />
 Made with python/pandas/matplotlib. Dylan Jay gave a talk on how easy it is to extract data from PDFs
 and powerpoints and plot data at [Bangkok's Monthly ThaiPy Event](https://www.meetup.com/en-AU/ThaiPy-Bangkok-Python-Meetup) [Video: "How I scraped Thailand's covid data" (1h mark)](https://www.facebook.com/watch/live/?v=2890282134582879)
 
