@@ -16,11 +16,11 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 
 - Annoucements on free testing, free hospitalisation, free vaccines and rules changes
-   - English: [Thailand PRD - Twitter](https://twitter.com/prdthailand) - [Thailand PRD - FB](https://www.facebook.com/thailandprd)
-   - Thai: [ThaiGov Covid-19](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
-   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend)
+   - English: [Thailand PRD Twitter](https://twitter.com/prdthailand) - [Thailand PRD FB](https://www.facebook.com/thailandprd)
+   - Thai: [ThaiGov Covid-19 FB](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
+   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/)
 - Call [1422](tel:1422) if you have Covid with mild symptoms
-   - With only a positive ATK you can register for [free support during home isolation call 1422](https://twitter.com/prdthailand/status/1479301770388000768).
+   - With only a positive ATK you can register for [free support during home isolation](https://twitter.com/prdthailand/status/1479301770388000768).
    - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
    - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
 - Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
