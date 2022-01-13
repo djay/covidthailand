@@ -340,9 +340,8 @@ def briefing_province_cases(file, date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
-    if date > d("2021-05-12") and date not in [d("2021-07-18"), d("2022-01-11")]:
+    if date > d("2021-05-12") and date not in [d("2021-07-18")]:
         # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
-        # TODO: 2021-01-11 only has 74 rows. hopefully missing comes from the dashboard
         assert len(df.groupby("Province").count()) in [77, 78], f"Not enough provinces briefing {date}"
     return df
 
