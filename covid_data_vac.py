@@ -160,7 +160,15 @@ def vac_problem(daily, date, file, page):
 def vaccination_daily(daily, date, file, page):
     if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
-    date = find_thai_date(page)
+    first_line = page.split("\n\n")[0]
+    date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
+    if date:
+        date = date[-1]
+    else:
+        # prior to 2022 we could just get the first date of the page
+        date = find_thai_date(page)
+    assert date, f"No date found in {file}: {page}"
+
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
     if date == d("2021-05-06"):
@@ -258,7 +266,7 @@ def vaccination_daily(daily, date, file, page):
                 d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)",
                                                    return_rest=False, thainorm=True, asserted=True)
                 assert d7 == 7
-                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)",
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", until="(?:ราย|รำย)",
                                            return_rest=False, thainorm=True, asserted=len(numbers) > 7)
                 area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)",
                                        return_rest=False, thainorm=True, asserted=True)
