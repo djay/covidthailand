@@ -417,7 +417,7 @@ def briefing_deaths_provinces(dtext, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    if date in [d("2021-07-20"), d("2021-12-15")]:
+    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14")]:
         # 2021-12-15 - missing one from eastern
         pass
     else:
@@ -463,7 +463,7 @@ def briefing_deaths_summary(text, date, file):
         if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
             # They sometimes reorder them
             male, female = female, male
-        assert male + female == deaths_title or date in [d("2021-09-11")]
+        assert male + female == deaths_title or date in [d("2021-09-11"), d("2022-01-14")]
     else:
         male, female = None, None
 
@@ -774,8 +774,8 @@ def get_cases_by_prov_briefings():
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d(
-                "2021-08-27"), d("2021-09-10")], f"Death details {ddeaths} didn't match total {ideaths}"
+            if date not in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
+                assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
