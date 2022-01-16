@@ -90,38 +90,11 @@ def get_case_details():
 
     # Fix typos in Nationality columns
     # This won't include every possible misspellings and need some further improvement
-    mapping = pd.DataFrame([['Thai', 'Thailand'],
-                            ['Thai', 'Thai'],
-                            ['Thai', 'India-Thailand'],
-                            ['Thai', 'ไทยใหญ่'],
-                            ['Lao', 'laotian / Lao'],
-                            ['Lao', 'Lao'],
-                            ['Lao', 'Laotian/Lao'],
-                            ['Lao', 'Laotian / Lao'],
-                            ['Lao', 'laos'],
-                            ['Lao', 'Laotian'],
-                            ['Lao', 'Laos'],
-                            ['Lao', 'ลาว'],
-                            ['Indian', 'Indian'],
-                            ['Indian', 'India'],
-                            ['Indian', 'indian'],
-                            ['Cambodian', 'Cambodian'],
-                            ['Cambodian', 'cambodian'],
-                            ['Cambodian', 'Cambodia'],
-                            ['South Korean', 'South Korean'],
-                            ['South Korean', 'Korea, South'],
-                            ['South Korean', 'Korean'],
-                            ['Burmese', 'Burmese'],
-                            ['Burmese', 'พม่า'],
-                            ['Burmese', 'burmese'],
-                            ['Burmese', 'Burma'],
-                            ['Chinese', 'Chinese'],
-                            ['Chinese', 'จีน'],
-                            ['Chinese', 'China'],
-                            ],
-                           columns=['Nat Main', 'Nat Alt']).set_index('Nat Alt')
-    cases = fuzzy_join(cases, mapping, 'nationality')
+    cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
     cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
+
+    # cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
+
     return cases
 
 
@@ -181,10 +154,10 @@ def get_case_details_api():
     cases = cases.iloc[:pagenum * chunk]
     page = []
     last_page = -1
-    retries = 6
+    retries = 3
     while not data or len(page) == chunk:
-        # if len(data) >= 250000:
-        #     break
+        if len(data) >= 500000:
+            break
         try:
             r = s.get(f"{url}?page={pagenum}")
         except:
