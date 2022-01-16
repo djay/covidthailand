@@ -5,7 +5,7 @@ import pandas as pd
 import utils_thai
 from covid_data import get_ifr
 from covid_data import scrape_and_combine
-from covid_data_api import get_case_details_csv
+from covid_data_api import get_case_details
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cum2daily
@@ -123,7 +123,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     """ Thailand Covid Cases by Nationality """
 
-    cases = get_case_details_csv()
+    cases = get_case_details()
     # List out all nationalities by number of occurrences, select only 5 largest nationalities excluding Thai and others(non-labled)
     nat_index = cases['nationality'].value_counts().index
     top5_list = nat_index[~nat_index.isin(['Thai', 'Others'])][:5]

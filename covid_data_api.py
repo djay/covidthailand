@@ -2,21 +2,27 @@ import codecs
 import datetime
 import functools
 import json
+import math
 import os
 import re
 import shutil
 
 import pandas as pd
+from datatable import fread
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
+import utils_excel
 from utils_pandas import add_data
 from utils_pandas import cut_ages
 from utils_pandas import export
 from utils_pandas import fuzzy_join
 from utils_pandas import import_csv
+from utils_scraping import any_in
 from utils_scraping import logger
+from utils_scraping import read_excel
 from utils_scraping import s
+from utils_scraping import url2filename
 from utils_scraping import web_files
 from utils_thai import DISTRICT_RANGE
 from utils_thai import join_provinces
@@ -78,45 +84,10 @@ def get_cases():
     return cases
 
 
-@functools.lru_cache(maxsize=100, typed=False)
-def get_case_details_csv():
-    if False:
-        return get_case_details_api()
-    cols = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
-        ",")
-    url = "https://data.go.th/dataset/covid-19-daily"
-    file, text, _ = next(web_files(url, dir="inputs/json", check=True))
-    data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
-    apis = json.loads(data)
-    links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
-    # get earlier one first
-    links = sorted([link for link in links if '.php' not in link and '.xlsx' not in link], reverse=True)
-    # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
-    cases = pd.DataFrame()
-    for link, check in zip(links, ([False] * len(links))[:-1] + [True]):
-        for file, _, _ in web_files(link, dir="inputs/json", check=check, strip_version=True, appending=True):
-            if file.endswith(".xlsx"):
-                continue
-                #cases = pd.read_excel(file)
-            elif file.endswith(".csv"):
-                confirmedcases = pd.read_csv(file)
-                if "risk" not in confirmedcases.columns:
-                    confirmedcases.columns = cols
-                if '�' in confirmedcases.loc[0]['risk']:
-                    # bad encoding
-                    with codecs.open(file, encoding="tis-620") as fp:
-                        confirmedcases = pd.read_csv(fp)
-                first, last, ldate = confirmedcases["No."].iloc[0], confirmedcases["No."].iloc[-1], confirmedcases["announce_date"].iloc[-1]
-                logger.info("Covid19daily: rows={} {}={} {} {}", len(confirmedcases), last - first, last - first, ldate, file)
-                cases = cases.combine_first(confirmedcases.set_index("No."))
-            else:
-                raise Exception(f"Unknown filetype for covid19daily {file}")
-    cases = cases.reset_index("No.")
-    cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
-    cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
-    cases = cases.rename(columns=dict(announce_date="Date"))
-    cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
-    #assert cases.index.max() <
+@functools.lru_cache(maxsize=1, typed=False)
+def get_case_details():
+    cases = get_case_details_api()
+
     # Fix typos in Nationality columns
     # This won't include every possible misspellings and need some further improvement
     mapping = pd.DataFrame([['Thai', 'Thailand'],
@@ -154,28 +125,100 @@ def get_case_details_csv():
     return cases
 
 
-def get_case_details_api():
-    rid = "67d43695-8626-45ad-9094-dabc374925ab"
-    chunk = 10000
-    url = f"https://data.go.th/api/3/action/datastore_search?resource_id={rid}&limit={chunk}&q=&offset="
-    records = []
+# def get_case_details_csv():
+#     cols = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
+#         ",")
+#     url = "https://data.go.th/dataset/covid-19-daily"
+#     file, text, _ = next(web_files(url, dir="inputs/json", check=True))
+#     data = re.search(r"packageApp\.value\('meta',([^;]+)\);", text.decode("utf8")).group(1)
+#     apis = json.loads(data)
+#     links = [api['url'] for api in apis if "รายงานจำนวนผู้ติดเชื้อ COVID-19 ประจำวัน" in api['name']]
+#     # get earlier one first
+#     links = sorted([link for link in links if any_in(link, "csv", "271064")], reverse=True)
+#     # 'https://data.go.th/dataset/8a956917-436d-4afd-a2d4-59e4dd8e906e/resource/be19a8ad-ab48-4081-b04a-8035b5b2b8d6/download/confirmed-cases.csv'
+#     cases = pd.DataFrame()
+#     done = []
+#     for link, check in zip(links, ([False] * len(links))[:-1] + [True]):
+#         file = url2filename(link)
+#         if file in done:
+#             continue
+#         done.append(file)
+#         for file, _, _ in web_files(link, dir="inputs/json", check=check, strip_version=True, appending=True):
+#             if file.endswith(".xlsx"):
+#                 confirmedcases = utils_excel.read(file)  # takes a long time
+#                 confirmedcases.columns = cols
+#                 # confirmedcases = fread(file).to_pandas()
+#             elif file.endswith(".csv"):
+#                 confirmedcases = pd.read_csv(file)
+#                 if "risk" not in confirmedcases.columns:
+#                     confirmedcases.columns = cols
+#                 if '�' in confirmedcases.loc[0]['risk']:
+#                     # bad encoding
+#                     with codecs.open(file, encoding="tis-620") as fp:
+#                         confirmedcases = pd.read_csv(fp)
+#             else:
+#                 raise Exception(f"Unknown filetype for covid19daily {file}")
+#             first, last, ldate = confirmedcases["No."].iloc[0], confirmedcases["No."].iloc[-1], confirmedcases["announce_date"].iloc[-1]
+#             logger.info("Covid19daily: rows={} {}={} {} {}", len(confirmedcases), last - first, last - first, ldate, file)
+#             cases = cases.combine_first(confirmedcases.set_index("No."))
+#     cases = cases.reset_index("No.")
+#     cases['announce_date'] = pd.to_datetime(cases['announce_date'], dayfirst=True)
+#     cases['Notified date'] = pd.to_datetime(cases['Notified date'], dayfirst=True, errors="coerce")
+#     cases = cases.rename(columns=dict(announce_date="Date"))
+#     cases['age'] = pd.to_numeric(cases['age'], downcast="integer", errors="coerce")
+#     #assert cases.index.max() <
+#     return cases
 
-    cases = import_csv("covid-19", ["_id"], dir="inputs/json")
-    lastid = cases.last_valid_index() if cases.last_valid_index() else 0
-    data = None
-    while data is None or len(data) == chunk:
-        r = s.get(f"{url}{lastid}")
-        data = json.loads(r.content)['result']['records']
-        df = pd.DataFrame(data)
-        df['announce_date'] = pd.to_datetime(df['announce_date'], dayfirst=True)
-        df['Notified date'] = pd.to_datetime(df['Notified date'], dayfirst=True, errors="coerce")
-        df = df.rename(columns=dict(announce_date="Date"))
-        # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
-        cases = cases.combine_first(df.set_index("_id"))
-        lastid += chunk - 1
+
+def get_case_details_api():
+    url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
+    chunk = 5000
+
+    cases = import_csv("covid-19", dir="inputs/json")
+    # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
+    data = []
+    pagenum = math.floor(len(cases) / chunk)
+    cases = cases.iloc[:pagenum * chunk]
+    page = []
+    last_page = -1
+    retries = 6
+    while not data or len(page) == chunk:
+        # if len(data) >= 250000:
+        #     break
+        try:
+            r = s.get(f"{url}?page={pagenum}")
+        except:
+            if retries == 0:
+                break
+            else:
+                retries -= 1
+                continue
+        pagedata = json.loads(r.content)
+        page = pagedata['data']
+        last_page = pagedata['meta']['last_page']
+        data.extend(page)
+        print(".", end="")
+        pagenum += 1
+    df = pd.DataFrame(data)
+    df['Date'] = pd.to_datetime(df['txn_date'])
+    df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
+    df['age'] = pd.to_numeric(df['age_number'])
+    df = df.rename(columns=dict(province="province_of_onset"))
+    cases = pd.concat([cases, df], ignore_index=True)
+    # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
-    cases = cases.set_index("Date")
-    logger.info("Covid19daily: covid-19 {}", cases.last_valid_index())
+
+    url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
+    init_cases = pd.read_csv(file).reset_index()
+    init_cases.columns = ['Date', "No.", "gender", "age", "age_range", "nationality", "job",
+                          "risk", "patient_type", "province_of_onset", "update_date", "update_date2", "patient_type2"]
+    init_cases['Date'] = pd.to_datetime(init_cases['Date'])
+    init_cases['update_date'] = pd.to_datetime(init_cases['update_date'], errors="coerce")
+    cases = pd.concat([init_cases, cases], ignore_index=True)
+
+    # cases = cases.set_index("Date")
+    logger.info("Covid19daily: covid-19 {}", len(cases))
 
     # # they screwed up the date conversion. d and m switched sometimes
     # # TODO: bit slow. is there way to do this in pandas?
@@ -190,7 +233,8 @@ def get_case_details_api():
 def get_cases_by_demographics_api():
     logger.info("========Covid19Daily Demographics==========")
 
-    cases = get_case_details_csv()
+    cases = get_case_details()
+
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
     case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
@@ -350,6 +394,10 @@ def get_cases_by_demographics_api():
         20211113.05: "สถานศึกษา:Work",  # educational institutions
         20211113.06: "สัมผัสผู้ป่วยยืนยัน ภายในครอบครัว/ชุมชน/เพื่อน:Contact",
         20211113.07: "10.อื่นๆ:Unknown",
+        20220114.01: "BKK Sandbox:Imported",
+        20220114.02: "กระบี่:Community",  # Krabi
+        20220114.03: "กรุงเทพมหานคร:Community",  # Bangkok
+        20220114.04: "ขอนแก่น:Community",  # Khonkaen
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -446,7 +494,7 @@ def excess_deaths():
 
 def get_cases_by_area_api():
     logger.info("========Covid-19 case details - get_cases_by_area_api==========")
-    cases = get_case_details_csv().reset_index()
+    cases = get_case_details().reset_index(drop=True)
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = join_provinces(cases, "province_of_onset")
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
@@ -483,5 +531,6 @@ def ihme_dataset():
 
 
 if __name__ == '__main__':
-    ihme_dataset()
     get_cases_by_demographics_api()
+    ihme_dataset()
+    excess_deaths()

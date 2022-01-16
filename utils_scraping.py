@@ -25,6 +25,7 @@ from requests.exceptions import Timeout
 from tika import config
 from tika import parser
 from webdav3.client import Client
+from xlsx2csv import Xlsx2csv
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -656,3 +657,11 @@ def camelot_cache(file, page_num, process_background=False, table=0):
         tables = camelot.read_pdf(file, pages=str(page_num), process_background=process_background)
         tables[table].df.to_json(cache_file)
         return tables[table].df
+
+
+def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
+    buffer = StringIO()
+    Xlsx2csv(path, outputencoding="utf-8", sheet_name=sheet_name).convert(buffer)
+    buffer.seek(0)
+    df = pd.read_csv(buffer)
+    return df

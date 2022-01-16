@@ -20,3 +20,5 @@ pytest
 mpld3
 loguru
 pre-commit
+xlsx2csv
+datatable

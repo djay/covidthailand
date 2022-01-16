@@ -206,7 +206,7 @@ def fuzzy_join(a,
     unmatched_counts = pd.DataFrame()
     if return_unmatched and not unmatched.empty:
         to_keep = [test, replace_on_with] if replace_on_with is not None else [test]
-        counts = unmatched.reset_index()[on].value_counts().to_frame('count')
+        counts = unmatched.reset_index(drop=True)[on].value_counts().to_frame('count')
         guessed = second[[on] + to_keep].set_index(on)
         unmatched_counts = counts.join(guessed).reset_index().rename(columns=dict(index=on))
 
@@ -223,7 +223,10 @@ def fuzzy_join(a,
 
 def export(df, name, csv_only=False, dir="api"):
     logger.info("Exporting: {}", name)
-    df = df.reset_index()
+    try:
+        df = df.reset_index()
+    except:
+        pass
     for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
         df[c] = df[c].dt.strftime('%Y-%m-%d')
     os.makedirs(dir, exist_ok=True)
@@ -245,7 +248,10 @@ def export(df, name, csv_only=False, dir="api"):
 def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="api"):
     path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
-        return pd.DataFrame(columns=index).set_index(index)
+        if index:
+            return pd.DataFrame(columns=index).set_index(index)
+        else:
+            return pd.DataFrame()
     logger.info("Importing CSV: {}", path)
     old = pd.read_csv(path)
     for c in date_cols:
