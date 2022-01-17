@@ -1,0 +1,20 @@
+Patient Type,alt
+Patient PUI,1.ผู้ป่วย PUI
+Patient PUI,1.คัดกรองจากด่าน
+Contact,2.สัมผัสผู้ติดเชื้อ
+Imported (Forigner),3.ต่างชาติมาจากต่างประเทศ
+Imported (Thai),4.คนไทยมาจากต่างประเทศ
+Imported (Thai),Thai
+Imported (Forigner),3.จากต่างประเทศ อยู่ใน Quarantine
+Imported (Illegal),5.ลักลอบเข้าประเทศ
+Monitor ARI/pneumonia,7.เฝ้าระวัง ARI/pneumonia
+Medical personnel,6.บุคลากรทางการแพทย์
+Medical personnel,Health Care Worker
+Proactive,8.สำรวจกลุ่มเสี่ยง (survey)
+Proactive,7.สำรวจกลุ่มเสี่ยง (survey)
+Proactive,11.เฝ้าระวังกลุ่มเสี่ยง (sentinel)
+Private PCR,9.ขอตรวจหาเชื้อเอง
+Private PCR,8.ขอตรวจหาเชื้อเอง
+Private PCR,9.Labบวกไม่แสดงอาการ
+Other,10.อื่นๆ
+Other,-

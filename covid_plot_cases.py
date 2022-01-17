@@ -147,6 +147,26 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               footnote='\n*Thai cases are excluded',
               footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
 
+    patient_type = pd.crosstab(cases['Date'], cases["Patient Type"])
+    # patient_type.columns = [f"Risk: {x}" for x in patient_type.columns]
+    plot_area(df=patient_type,
+              title='Covid Cases - by Patient Type - Thailand',
+              png_prefix='cases_patient_type', cols_subset=patient_type.columns,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
+
+    jobs = pd.crosstab(cases['Date'], cases["Job Type"])
+    # patient_type.columns = [f"Risk: {x}" for x in patient_type.columns]
+    plot_area(df=jobs,
+              title='Covid Cases - by Job Type - Thailand',
+              png_prefix='cases_jobs', cols_subset=jobs.columns,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
+
     #######################
     # Cases by provinces
     #######################
