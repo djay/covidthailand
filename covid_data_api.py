@@ -94,6 +94,7 @@ def get_case_details():
     cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
 
     cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
+    # TODO: reduce down to smaller list or just show top 5?
     cases = fuzzy_join(cases, import_csv("mapping_jobs", 'alt', date_cols=[], dir="."), 'job')
 
     return cases
