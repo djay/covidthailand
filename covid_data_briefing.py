@@ -491,7 +491,7 @@ def briefing_deaths_summary(text, date, file):
         disease: get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
-    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03")]:
+    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17")]:
         cm_sum = sum([n for n in comorbidity.values() if n is not np.nan])
         assert cm_sum >= deaths_title, f"Potentially Missing comorbidity {comorbidity}\n{text}"
 
