@@ -251,7 +251,10 @@ def vaccination_daily(daily, date, file, page):
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if (num_len := len(numbers)) in (6, 7, 8, 9) and is_risks.search(rest):
-            if num_len >= 7:
+            if num_len < 7 and date < d("2022-01-18"):
+                total, med_all, frontline, over60, chronic, area = numbers
+                pregnant = volunteer = medical = student = None
+            else:
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
                 medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)",
@@ -283,14 +286,12 @@ def vaccination_daily(daily, date, file, page):
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
-            else:
-                total, med_all, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = medical = student = None
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
             if date not in [d("2021-08-11")]:
                 assert not any_in([None, np.nan], medical or med_all, over60, chronic, area)
                 total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
-                assert 0.945 <= (sum(i for i in total_row if i and not pd.isna(i)) / total) <= 1.01
+                total_row = sum(i for i in total_row if i and not pd.isna(i))
+                assert 0.94 <= (total_row / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
