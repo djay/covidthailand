@@ -56,6 +56,7 @@ jobs:
           follow-redirect: yes
       - name: Check api available
         id: api
+        continue-on-error: true
         run: |
            (curl -sL https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces | grep ${{ steps.date.outputs.date }})
       - name: skip rest if schedule > 1pm and briefing not ready
@@ -99,6 +100,7 @@ jobs:
           du -ha * | sort -h
       - name: dash_done
         if: ${{ steps.api.outcome == 'success' }}
+        continue-on-error: true
         run: |
           (grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
       - name: skip rest if schedule > 1pm and briefing not ready or already done
