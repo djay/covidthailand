@@ -388,8 +388,8 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               actuals=list(pred_2.columns),
-              table=trend_table(vac['Vac Group Over 60 2 Cum'].sum() /
-                                vac["Vac Population Over 60s"].sum() * 100, sensitivity=30, style="rank_up"),
+              table=trend_table(vac['Vac Group Over 60 2 Cum'] / vac["Vac Population Over 60s"]
+                                * 100, sensitivity=30, style="rank_up"),
               y_formatter=perc_format,
               footnote='Table of % vaccinated and 7 day trend in change in rank',
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
