@@ -100,7 +100,7 @@ jobs:
       - name: dash_done
         if: ${{ steps.api.outcome == 'success' }}
         run: |
-          (grep inputs/json/moph_dash_prov.csv | ${{ steps.date.outputs.date }} )
+          (grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
       - name: skip rest if schedule > 1pm and briefing not ready or already done
         id: go
         if: ${{ github.event_name	!= 'schedule' || (steps.date.outputs.hour < 13 && steps.dash_done.outcome != 'success') ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
