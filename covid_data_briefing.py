@@ -417,7 +417,7 @@ def briefing_deaths_provinces(dtext, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14")]:
+    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14"), d("2022-01-21")]:
         # 2021-12-15 - missing one from eastern
         pass
     else:
