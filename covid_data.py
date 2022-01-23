@@ -236,6 +236,7 @@ def scrape_and_combine():
         return old
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
+        api_provs = pool.apply_async(covid_data_api.timeline_by_province)
 
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
         # These 3 are slowest so should go first
@@ -296,6 +297,8 @@ def scrape_and_combine():
 
         beds = beds.get()
 
+        api_provs = api_provs.get()
+
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
     export(dash_by_province, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
@@ -313,6 +316,7 @@ def scrape_and_combine():
     # Export per province
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
+        api_provs).combine_first(
         briefings_prov).combine_first(
         dash_by_province).combine_first(
         tweets_prov).combine_first(
