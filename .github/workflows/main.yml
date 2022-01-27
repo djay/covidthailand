@@ -147,7 +147,7 @@ jobs:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: Scrape Covid Data API
-        id: update
+        id: updateapi
         if: ${{ steps.go.outcome != 'success' && steps.go1.outcome == 'success' }}
         run: |
             python covid_data_api.py
