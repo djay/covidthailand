@@ -504,6 +504,22 @@ def ihme_dataset():
 
 
 if __name__ == '__main__':
-    get_cases_by_demographics_api()
+
+    timeline_prov = timeline_by_province()
+    cases_demo, risks_prov = get_cases_by_demographics_api()
+    case_api_by_area = get_cases_by_area_api()
+
+    dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
+    dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
+
+    dfprov = join_provinces(dfprov, on="Province")
+    export(dfprov, "cases_by_province")
+
+    old = import_csv("combined", index=["Date"])
+    df = cases_demo.combine_first(old)
+
     ihme_dataset()
     excess_deaths()
+
+    import covid_plot
+    covid_plot.save_plots(df)
