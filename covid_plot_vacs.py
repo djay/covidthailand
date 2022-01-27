@@ -371,6 +371,55 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
 
+    # for over 60s
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region["Vac Population Over 60s"], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
+                              values=by_region['Vac Group Over 60 2 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
+                              values=by_region['Vac Group Over 60 1 Cum'], aggfunc="sum") / pop_region * 100
+    pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
+    pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+
+    plot_area(df=by_region_2.combine_first(pred_2),
+              title='Vacccinated Over 60s - 2nd Dose - by Region - Thailand',
+              png_prefix='vac_region_60s_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
+              cmap=utils_thai.REG_COLOURS,
+              actuals=list(pred_2.columns),
+              table=trend_table(vac['Vac Group Over 60 2 Cum'] / vac["Vac Population Over 60s"]
+                                * 100, sensitivity=30, style="rank_up"),
+              y_formatter=perc_format,
+              footnote='Table of % vaccinated and 7 day trend in change in rank',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
+              )
+
+    # for risk disease
+    pop_region = pd.crosstab(by_region['Date'], by_region['region'],
+                             values=by_region["Vac Population Risk: Disease"], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
+                              values=by_region['Vac Group Risk: Disease 2 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
+                              values=by_region['Vac Group Risk: Disease 1 Cum'], aggfunc="sum") / pop_region * 100
+    pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
+    pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+
+    plot_area(df=by_region_2.combine_first(pred_2),
+              title='Vacccinated Risk of 7 Diseases - 2nd Dose - by Region - Thailand',
+              png_prefix='vac_region_disease_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
+              cmap=utils_thai.REG_COLOURS,
+              actuals=list(pred_2.columns),
+              table=trend_table(vac['Vac Group Risk: Disease 2 Cum'] / vac["Vac Population Risk: Disease"]
+                                * 100, sensitivity=30, style="rank_up"),
+              y_formatter=perc_format,
+              footnote='Table of % vaccinated and 7 day trend in change in rank',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
+              )
+
     vac_prov_daily = vac.groupby("Province", group_keys=True).apply(cum2daily)
     vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
     vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")

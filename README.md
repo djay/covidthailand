@@ -180,6 +180,12 @@ Links to all data sources are including in [Downloads](downloads)
 
 ![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
 
+![Vacccinated Over 60s - 2nd Dose - by Region](https://github.com/djay/covidthailand/wiki/vac_region_60s_2_3.png)
+
+![Vacccinated Risk of 7 Diseases - 2nd Dose - by Region](https://github.com/djay/covidthailand/wiki/vac_region_disease_2_3.png)
+
+
+
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
 
 - see also [Lowest Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_1_3.png) |

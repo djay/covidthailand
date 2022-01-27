@@ -400,6 +400,18 @@ def get_cases_by_demographics_api():
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
 
+def timeline_by_province():
+    url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True)))
+    df = pd.read_json(file)
+    df = df.rename(columns={"txn_date": "Date", "province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
+                   "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
+    df = join_provinces(df, "Province")
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.drop(columns=['update_date'])
+    return df.set_index(["Date", "Province"])
+
+
 ########################
 # Excess Deaths
 ########################
@@ -504,7 +516,6 @@ def ihme_dataset():
 
 
 if __name__ == '__main__':
-
     timeline_prov = timeline_by_province()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     case_api_by_area = get_cases_by_area_api()

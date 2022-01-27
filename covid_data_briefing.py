@@ -391,6 +391,9 @@ def briefing_deaths_provinces(dtext, date, file):
 
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
         provs = [p for p in provs if p and p != "Unknown"]
+        if date >= d("2022-01-22") and len(provs) == num:
+            num = 1
+
         for p in provs:
             province_count[p] = province_count.get(p, 0) + num
 
@@ -417,7 +420,7 @@ def briefing_deaths_provinces(dtext, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14")]:
+    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14"), d("2022-01-21"), d("2022-01-23")]:
         # 2021-12-15 - missing one from eastern
         pass
     else:
