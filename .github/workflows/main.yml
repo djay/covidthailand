@@ -208,7 +208,7 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
       - name: Deploy to Netlify
-        if: ${{ (steps.update.outcome == 'success' || steps.updateapi.outcome == 'success') && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+        if: ${{ (steps.update.outcome == 'success' || steps.updateapi.outcome == 'success') && steps.can-deploy.outputs.key == 'true' }}
         id: netlify
         uses: nwtgck/actions-netlify@v1.2.2
         with:
