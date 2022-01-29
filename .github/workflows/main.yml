@@ -144,7 +144,7 @@ jobs:
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: Scrape Covid Data
         id: update
-        if: ${{ steps.gofull.outcome == 'success' && steps.goapi.outcome != 'success' }}
+        if: ${{ steps.gofull.outcome == 'success' && steps.goapi.outcome != 'success' || github.ref != 'refs/heads/main' }}
         run: |
             python covid_plot.py
         env:
