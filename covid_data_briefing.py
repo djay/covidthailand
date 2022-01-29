@@ -466,6 +466,7 @@ def briefing_deaths_summary(text, date, file):
         if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
             # They sometimes reorder them
             male, female = female, male
+        female = 8 if date == d("2022-01-29") else female
         assert male + female == deaths_title or date in [d("2021-09-11"), d("2022-01-14")]
     else:
         male, female = None, None
