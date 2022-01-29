@@ -68,7 +68,7 @@ jobs:
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "'${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
       - name: Cache multiple paths
-        if: ${{ steps.goapi.outcome == 'success' }}
+        if: ${{ steps.goready.outcome == 'success' }}
         uses: pat-s/always-upload-cache@v2.1.5
         with:
           path: |
@@ -101,7 +101,7 @@ jobs:
           du -ha * | sort -h
       - name: Api not done yet
         id: goapi
-        if: ${{ steps.apiready.outcome == 'success' }}
+        if: ${{ steps.api.outcome == 'success' }}
         continue-on-error: true
         run: |
           (! grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
