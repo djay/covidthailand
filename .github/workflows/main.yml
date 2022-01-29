@@ -60,7 +60,7 @@ jobs:
         continue-on-error: true
         run: |
            (curl -sL https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces | grep ${{ steps.date.outputs.date }})
-      - name: go api scrape
+      - name: api available or it's a push
         id: goready
         if: ${{ github.event_name	!= 'schedule' || (steps.date.outputs.hour < 13 && steps.api.outcome == 'success') }}
         run: |
@@ -104,7 +104,7 @@ jobs:
         if: ${{ steps.apiready.outcome == 'success' }}
         continue-on-error: true
         run: |
-          (grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
+          (! grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
       - name: go if briefing ready
         id: gofull
         if: ${{ github.event_name	!= 'schedule' ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
