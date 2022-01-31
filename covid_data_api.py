@@ -527,7 +527,8 @@ if __name__ == '__main__':
     export(dfprov, "cases_by_province")
 
     old = import_csv("combined", index=["Date"])
-    df = cases_demo.combine_first(old)
+    df = old.combine_first(cases_demo)
+    export(df, "combined", csv_only=True)
 
     ihme_dataset()
     excess_deaths()

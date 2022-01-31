@@ -67,6 +67,22 @@ jobs:
           echo  "'${{ github.event_name }}'(github.event_name)'	!= 'schedule' OR"
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "'${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
+      - name: Get release datasets
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "datasets.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract datasets
+        run: |
+          tar -xzvf datasets.tar.gz
+          rm datasets.tar.gz
+      - name: Api not done yet
+        id: goapi
+        if: ${{ steps.api.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          (! grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
+
       - name: Cache multiple paths
         if: ${{ steps.goready.outcome == 'success' }}
         uses: pat-s/always-upload-cache@v2.1.5
@@ -99,12 +115,6 @@ jobs:
       - name: du
         run: |
           du -ha * | sort -h
-      - name: Api not done yet
-        id: goapi
-        if: ${{ steps.api.outcome == 'success' }}
-        continue-on-error: true
-        run: |
-          (! grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
       - name: go if briefing ready
         id: gofull
         if: ${{ github.event_name	!= 'schedule' ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
