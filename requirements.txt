@@ -22,3 +22,4 @@ loguru
 pre-commit
 xlsx2csv
 datatable
+python-crfsuite
