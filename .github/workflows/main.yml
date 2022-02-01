@@ -80,9 +80,7 @@ jobs:
         id: goapi
         if: ${{ steps.api.outcome == 'success' }}
         continue-on-error: true
-        run: |
-          (! grep ${{ steps.date.outputs.date }} inputs/json/moph_dash_prov.csv )
-
+        run: (! grep ${{ steps.date.outputs.date }} api/cases_by_province.csv )
       - name: Cache multiple paths
         if: ${{ steps.goready.outcome == 'success' }}
         uses: pat-s/always-upload-cache@v2.1.5
