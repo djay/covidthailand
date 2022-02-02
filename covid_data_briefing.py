@@ -340,8 +340,9 @@ def briefing_province_cases(file, date, pages):
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
     assert date >= d(
         "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
-    if date > d("2021-05-12") and date not in [d("2021-07-18")]:
+    if date > d("2021-05-12") and date not in [d("2021-07-18"), d("2022-02-02")]:
         # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
+        # 2022-02-02: page 2 is repeat of page 1 so missing data
         assert len(df.groupby("Province").count()) in [77, 78], f"Not enough provinces briefing {date}"
     return df
 
