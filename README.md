@@ -80,26 +80,25 @@ Links to all data sources are including in [Downloads](downloads)
 - Sources: [CCSA Daily Briefing](downloads#dl-briefings),
   [MOPH daily situation report](downloads#dl-situation-reports)
 
-## Cases by Risk Group
+## Cases by Risk Classification
 
 ![Cases by Risk](https://github.com/djay/covidthailand/wiki/cases_causes_3.png)
 
-![Trending Up Community Cases](https://github.com/djay/covidthailand/wiki/cases_community_increasing_3.png) |
+![Trending Up Unknown Cases](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png) |
 ![Trending Up Contact Cases](https://github.com/djay/covidthailand/wiki/cases_contact_increasing_3.png)
 
 - Provinces Trending Up Cases from
-   [Unknown](https://github.com/djay/covidthailand/wiki/cases_unknown_increasing_3.png) |
+   [Community](https://github.com/djay/covidthailand/wiki/cases_community_increasing_3.png) |
    [Work](https://github.com/djay/covidthailand/wiki/cases_work_increasing_3.png) |
    [Proactive](https://github.com/djay/covidthailand/wiki/cases_proactive_increasing_3.png)
 - Provinces Trending Down Cases from
    [Unknown](https://github.com/djay/covidthailand/wiki/cases_unknown_decreasing_3.png) |
+   [Contact](https://github.com/djay/covidthailand/wiki/cases_contact_decreasing_3.png) |
+   [Comunity](https://github.com/djay/covidthailand/wiki/cases_community_decreasing_3.png) |
    [Work](https://github.com/djay/covidthailand/wiki/cases_work_decreasing_3.png) |
    [Proactive](https://github.com/djay/covidthailand/wiki/cases_proactive_decreasing_3.png)
-- Grouped from original data which has over 70 risk categories. Clusters have
-  been [grouped into either Work (Factories), Entertainment (bars/gambling etc) or Community (markets) related](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
-- Note: SS Cluster is classified as "Work", but some other market clusters are classified as "Community". This is because there isn't enough data to separate out SS cluster cases
-  between those from factories and those from the market. This could change later.
-- Risk is most likely determined as part of the PUI criteria process?
+- Grouped from original data using this
+  [mapping from risk description to 10 classifcation](https://github.com/djay/covidthailand/wiki/risk_groups.csv).
 - [Cases by Risk: Full Year](https://github.com/djay/covidthailand/wiki/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 

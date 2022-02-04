@@ -234,7 +234,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
-                      num=5)
+                      num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Up Provinces - Thailand',
@@ -250,7 +250,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
-                      num=5)
+                      num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Down Provinces - Thailand',
@@ -265,7 +265,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                       cases_per_capita("Cases"),
                       name="Province Cases",
                       other_name="Other Provinces",
-                      num=5)
+                      num=7)
     cols = top5.columns.to_list()
 
     plot_area(df=top5,
@@ -281,7 +281,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                       cases_per_capita('Cases Walkin'),
                       name="Province Cases Walkin (7d MA)",
                       other_name="Other Provinces",
-                      num=5)
+                      num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
               title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
@@ -300,7 +300,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                           cases_per_capita(f"Cases Risk: {risk}"),
                           name=f"Province Cases {risk} (7d MA)",
                           other_name="Other Provinces",
-                          num=5)
+                          num=7)
         cols = top5.columns.to_list()
         plot_area(df=top5,
                   title=f'{risk} Related Covid Cases/100k - Trending Up Provinces - Thailand',
