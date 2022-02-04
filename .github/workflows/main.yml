@@ -142,7 +142,9 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y ghostscript python3-tk
-          pip install -r requirements.txt
+          python3 -m pip install --upgrade pip
+          pip install wheel
+          pip install -r requirements.txt --use-deprecated=html5lib --use-deprecated=legacy-resolver
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest
