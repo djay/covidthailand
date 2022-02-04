@@ -127,19 +127,21 @@ jobs:
           echo  "('${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
           echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles(${{ steps.date.outputs.briefingfile }}) == '')"
       - name: Set up Python
+        id: goscrape
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' }}
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+          cache: 'pip'
       - uses: actions/setup-java@v1
-        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' }}
+        if: ${{ steps.goscrape.outcome == 'success' }}
         with:
           java-version: 15
       - name: Install dependencies
-        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' }}
+        if: ${{ steps.goscrape.outcome == 'success' }}
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y ghostscript python3-tk python-wheel
+          sudo apt-get install -y ghostscript python3-tk
           pip install -r requirements.txt
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
