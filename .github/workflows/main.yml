@@ -176,32 +176,6 @@ jobs:
             MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         if: "${{ env.MY_KEY != '' }}"
         run: echo "::set-output name=key::true"
-      - name: Make cached docs bundle
-        id: makerelease
-        if: ${{ (steps.update.outcome == 'success' || steps.updateapi.outcome == 'success') && github.ref == 'refs/heads/main' }}
-        run: |
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
-           tar -czvf datasets.tar.gz api inputs/json/*.csv
-      - name: Upload inputs.tar.gz to existing release
-        if: ${{ steps.makerelease.outcome == 'success' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./inputs.tar.gz
-          asset_name: inputs.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated docs"
-      - name: Upload datasets.tar.gz to existing release
-        if: ${{ steps.makerelease.outcome == 'success' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./datasets.tar.gz
-          asset_name: datasets.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated docs"
       # - name: Push cached docs to repo
       #   run: |
       #     cd inputs
@@ -215,7 +189,7 @@ jobs:
         id: gonetlify
         if: ${{ (steps.update.outcome == 'success' || steps.updateapi.outcome == 'success') && steps.can-deploy.outputs.key == 'true' }}
         with:
-          ruby-version: 2.6 # Not needed with a .ruby-version file
+          ruby-version: 2.7.2 # Not needed with a .ruby-version file
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       - name: Jekyll Build
         if: ${{ steps.gonetlify.outcome == 'success' }}
@@ -244,7 +218,7 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 3
       - name: Upload png to wiki
-        if: ${{ steps.netlify.outcome == 'success' }}
+        if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "outputs"
@@ -252,10 +226,37 @@ jobs:
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Upload json to wiki
-        if: ${{ steps.netlify.outcome == 'success' }}
+        if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
         uses: kai-tub/external-repo-sync-action@v1
         with:
             source-directory: "api"
             include-patterns: "*"
         env:
             GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Make cached docs bundle
+        id: makerelease
+        if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        run: |
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
+           tar -czvf datasets.tar.gz api inputs/json/*.csv
+      - name: Upload inputs.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./inputs.tar.gz
+          asset_name: inputs.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+      - name: Upload datasets.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./datasets.tar.gz
+          asset_name: datasets.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+
