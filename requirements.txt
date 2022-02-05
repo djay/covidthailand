@@ -15,7 +15,8 @@ numpy
 matplotlib == 3.3.4
 pythainlp
 TableauScraper
-pytest
+pytest; python_version != '3.9'
+pytest !=7.0.0; python_version == '3.9'  # https://github.com/pytest-dev/pytest/issues/9608
 #pytest-xdist
 #pytest-parallel
 mpld3

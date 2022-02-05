@@ -82,6 +82,11 @@ jobs:
         if: ${{ steps.api.outcome == 'success' }}
         continue-on-error: true
         run: (! grep ${{ steps.date.outputs.date }} api/cases_by_province.csv )
+      - name: Dash not done yet
+        id: godash
+        if: ${{ steps.goapi.outcome == 'success' }}
+        continue-on-error: true
+        run: (! grep ${{ steps.date.outputs.date }} api/moph_dashboard_prov.csv )
       - name: Cache multiple paths
         if: ${{ steps.goready.outcome == 'success' }}
         uses: pat-s/always-upload-cache@v2.1.5
@@ -128,10 +133,10 @@ jobs:
           echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles(${{ steps.date.outputs.briefingfile }}) == '')"
       - name: Set up Python
         id: goscrape
-        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' }}
+        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.godash.outcome == 'success' }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10
+          python-version: 3.10.2
           cache: 'pip'
       - uses: actions/setup-java@v1
         if: ${{ steps.goscrape.outcome == 'success' }}
@@ -161,7 +166,7 @@ jobs:
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: Scrape Covid Data
         id: update
-        if: ${{ steps.gofull.outcome == 'success' || github.event_name	!= 'schedule' }}
+        if: ${{ steps.gofull.outcome == 'success' || steps.godash.outcome == 'success' || github.event_name	!= 'schedule' }}
         run: |
             python covid_plot.py
         env:
