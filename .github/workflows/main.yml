@@ -84,7 +84,7 @@ jobs:
         run: (! grep ${{ steps.date.outputs.date }} api/cases_by_province.csv )
       - name: Dash not done yet
         id: godash
-        if: ${{ steps.goapi.outcome == 'success' }}
+        if: ${{ steps.api.outcome == 'success' && steps.goapi.outcome != 'success' }}
         continue-on-error: true
         run: (! grep ${{ steps.date.outputs.date }} api/moph_dashboard_prov.csv )
       - name: Cache multiple paths
