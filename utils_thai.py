@@ -243,10 +243,10 @@ def find_date_range(content):
     (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
     """
     m1 = re.search(
-        r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content
+        r"([0-9]+)/([0-9]+)/([0-9]+) *[-–] *([0-9]+)/([0-9]+)/([0-9]+)", content
     )
-    m2 = re.search(r"([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
-    m3 = re.search(r"([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    m2 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
+    m3 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
     if m1:
         d1, m1, y1, d2, m2, y2 = m1.groups()
         start = datetime.datetime(day=int(d1), month=int(m1), year=int(y1) - 543)
