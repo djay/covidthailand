@@ -47,8 +47,14 @@ def get_test_files(ext="pdf", dir="inputs/testing_moph"):
         logger.warning(f"Error accessing drive files. Using local cache: {res}")
         yield from local_files(ext, dir)
         return
+    files = res["files"]
+    while "nextPageToken" in res:
+        token = res['nextPageToken']
+        url = f"https://www.googleapis.com/drive/v3/files?q=%27{folder_id}%27+in+parents&key={key}&pageToken={token}"
+        res = requests.get(url).json()
+        files.extend(res["files"])
 
-    for data in res['files']:
+    for data in files:
         id = data['id']
         name = data['name']
         # TODO: how to get modification date?
@@ -233,3 +239,8 @@ def get_test_reports():
     data = data.combine_first(pubpriv)
 
     return data
+
+
+if __name__ == '__main__':
+    df = get_test_reports()
+    df_daily = get_tests_by_day()
