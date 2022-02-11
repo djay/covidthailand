@@ -1,4 +1,5 @@
 import pathlib
+from multiprocessing import Pool
 
 import matplotlib.cm
 import matplotlib.pyplot as plt
@@ -23,20 +24,17 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    # Cases Plots
-    save_cases_plots(df)
-
-    # Tests Plots
-    save_tests_plots(df)
-
-    # Vaccinations Plots
-    save_vacs_plots(df)
-
-    # Deaths Plots
-    save_deaths_plots(df)
-
-    # active/hosp Plots
-    save_active_plots(df)
+    awaits = []
+    with Pool() as pool:
+        awaits = [pool.apply_async(f, [df]) for f in [
+            save_cases_plots,
+            save_cases_plots,
+            save_tests_plots,
+            save_vacs_plots,
+            save_deaths_plots,
+            save_active_plots
+        ]]
+        [a.get() for a in awaits]
 
 
 if __name__ == "__main__":
