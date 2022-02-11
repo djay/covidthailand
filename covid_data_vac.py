@@ -604,9 +604,10 @@ def vaccination_reports_files2(check=True,
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
-    folders = web_links(base1,
-                        ext=None, match=re.compile("(2564|2565)"), check=check)
-    links1 = (link for f in folders for link in web_links(f, ext=".pdf", check=check) if (
+    hasyear = re.compile("(2564|2565)")
+    years = web_links(base1, ext=None, match=hasyear, check=check)
+    months = (link for y in years for link in web_links(y, ext=None, match=hasyear, check=check))
+    links1 = (link for f in months for link in web_links(f, ext=".pdf", check=check) if (
         date := file2date(link)) is not None and date >= d("2021-12-01"))
 
     # this set was more reliable for awhile. Need to match tests
