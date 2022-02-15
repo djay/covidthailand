@@ -69,9 +69,9 @@ jobs:
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "'${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
       - name: Get release datasets
-        uses: dsaltares/fetch-gh-release-asset@master
+        uses: robinraju/release-downloader@v1.3
         with:
-          file: "datasets.tar.gz"
+          fileName: "datasets.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract datasets
         run: |
@@ -110,9 +110,10 @@ jobs:
       - name: Get release with cached docs
         id: docsrelease
         if: ${{ steps.api.outcome == 'success' }}
-        uses: dsaltares/fetch-gh-release-asset@master
+        uses: robinraju/release-downloader@v1.3
         with:
-          file: "inputs.tar.gz"
+          latest: true
+          fileName: "inputs.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
         if: ${{ steps.docsrelease.outcome == 'success' }}
