@@ -275,7 +275,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
     # Do a % of peak chart for death vs cases
     cols = ['Cases', 'Deaths', 'ATK', ]
-    peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
+    peaks = df[cols] / df[cols].rolling(7, 3, center=True).mean().max(axis=0) * 100
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
     cols = [
         'ATK',
