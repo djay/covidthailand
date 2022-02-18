@@ -608,7 +608,7 @@ def vaccination_reports_files2(check=True,
     years = web_links(base1, ext=None, match=hasyear, check=check)
     months = (link for y in years for link in web_links(y, ext=None, match=hasyear, check=check))
     links1 = (link for f in months for link in web_links(f, ext=".pdf", check=check) if (
-        date := file2date(link)) is not None and date >= d("2021-12-01"))
+        date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link, *['Wk', "Week"])))
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(3, 12)]
