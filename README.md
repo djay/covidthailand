@@ -18,7 +18,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 - Annoucements on free testing, free hospitalisation, free vaccines and rules changes
    - English: [Thailand PRD Twitter](https://twitter.com/prdthailand) - [Thailand PRD FB](https://www.facebook.com/thailandprd)
    - Thai: [ThaiGov Covid-19 FB](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
-   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/)
+   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/) - [SAR-Cov2 Variants in Thailand](https://drive.google.com/drive/folders/13k14Hs61pgrK8raSMS9LFQn83PKswS-b)
 - Call [1422](tel:1422) if you have Covid with mild symptoms
    - With only a positive ATK you can register for [free support during home isolation](https://twitter.com/prdthailand/status/1479301770388000768).
    - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
@@ -37,7 +37,10 @@ Links to all data sources are including in [Downloads](downloads)
 
 # Trends
 
-![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png) ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
+![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png)
+ATK was introduced post delta peak so see actual [ATK registration numbers to compare with cases](#atk_pos)
+
+![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
 
 - For forecasts of total infections/deaths/hospitalisations see
   [IHME Thailand](https://covid19.healthdata.org/thailand) |
@@ -226,6 +229,7 @@ Assumes easy access to tests for everyone.
 
 ![Private and Public Tests](https://github.com/djay/covidthailand/wiki/tests_3.png)
 
+<a name="atk_pos">
 ![Private and Public Positive Results](https://github.com/djay/covidthailand/wiki/cases_3.png)
 
 - Confirmed cases excludes ATK Positives (unless they also had a positive PCR test). This is similar to most countries however some like Malaysia, India and [UK count antigen tests in both tests and confirmed cases](https://coronavirus.data.gov.uk/details/about-data#testing-capacity)
