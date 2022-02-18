@@ -202,7 +202,7 @@ def vaccination_daily(daily, date, file, page):
 
     def clean_num(numbers):
         if len(numbers) > 8:
-            return [n for n in numbers if n not in (60, 17, 12, 7, 3)]
+            return [n for n in numbers if n not in (60, 17, 12, 7, 3, 5, 11)]
         else:
             return [n for n in numbers if n not in (60, 7)]
 
@@ -218,8 +218,8 @@ def vaccination_daily(daily, date, file, page):
                                      r"นเข็มที่ 1 จ", r"ซนีเขม็ที่ 1 จ",
                                      until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
-                                     r"ได้รับวัคซีน 2 เข็ม",
-                                     r"ไดรับวัคซีน 2 เข็ม",
+                                     r"ได้รับวัคซีน\s+2\s+เข็ม",
+                                     r"ไดรับวัคซีน\s+2\s+เข็ม",
                                      until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
@@ -248,12 +248,13 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
             f"Vac Group Student {dose} Cum",
+            f"Vac Group Kids {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
         if (num_len := len(numbers)) in (6, 7, 8, 9) and is_risks.search(rest):
             if num_len < 7 and date < d("2022-01-18"):
                 total, med_all, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = medical = student = None
+                pregnant = volunteer = medical = student = kids = None
             else:
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
@@ -270,11 +271,14 @@ def vaccination_daily(daily, date, file, page):
                                                    return_rest=False, thainorm=True, asserted=True)
                 assert d7 == 7
                 pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", until="(?:ราย|รำย)",
-                                           return_rest=False, thainorm=True, asserted=len(numbers) > 7)
+                                           return_rest=False, thainorm=True, asserted=False)
                 area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)",
                                        return_rest=False, thainorm=True, asserted=True)
-                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)",
+                student = get_next_numbers(rest, r"ราย อายุ", r"นักเรียน", until="(?:ราย|รำย)",
                                            return_rest=False, thainorm=True, asserted=False)
+                kids = get_next_number(rest, r"อายุ 5 - 11 ปี", until="(?:ราย|รำย)",
+                                       return_rest=False, thainorm=True, asserted=False)
+
                 if len(student) == 3:
                     d12, d17, student = student
                     assert (d12, d17) == (12, 17)
@@ -286,18 +290,18 @@ def vaccination_daily(daily, date, file, page):
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
-            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
+            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student, kids]
             if date not in [d("2021-08-11")]:
                 assert not any_in([None, np.nan], medical or med_all, over60, chronic, area)
-                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student, kids]
                 total_row = sum(i for i in total_row if i and not pd.isna(i))
                 assert 0.94 <= (total_row / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [np.nan] * 8
+                numbers = numbers + [np.nan] * 9
             elif len(numbers) == 0:
-                numbers = [np.nan] * 10
+                numbers = [np.nan] * 11
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
             assert date < d("2021-07-12"), f"{date} {file} can't find vac groups for dose {dose} in {gtext}"
@@ -529,6 +533,9 @@ def vaccination_tables(df, _, page, file):
                     d3, d3p = [np.nan] * 2
                 add(prov, [d1, d2, d3, pop], vaccols_disease + ["Vac Population Risk: Disease"])
                 assert not numbers4
+            elif table == "percent" and len(numbers) in [8]:  # 2022-02 changed to simpler table
+                pop, d1, d1p, d2, d2p, d3, d3p, total = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
         assert added is None or added > 7
