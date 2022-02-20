@@ -531,7 +531,7 @@ if __name__ == '__main__':
     export(df, "combined", csv_only=True)
 
     ihme_dataset()
-    # excess_deaths()
+    excess_deaths()
 
     import covid_plot
     covid_plot.save_plots(df)

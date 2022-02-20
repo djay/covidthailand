@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.cm
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -251,14 +253,14 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
         death5_min = months[years5].min(axis=1)
         death5_max = months[years5].max(axis=1)
         result = pd.DataFrame()
-        for year in [2020, 2021]:
+        for year in [2020, 2021, 2022]:
             res = pd.DataFrame()
             res['Excess Deaths'] = (months[year] - death5_avg)
             res['P-Score'] = res['Excess Deaths'] / death5_avg * 100
             res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
             res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
-            for y in range(2012, 2022):
+            for y in range(2012, 2023):
                 res[f'Deaths {y}'] = months[y]
             res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
                                          format='%Y-%m') + MonthEnd(0)
@@ -298,8 +300,10 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     years2020 = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
     cols2021 = ['Deaths 2021', 'Deaths 2021 (ex. Known Covid)']
     years2021 = by_month["2021-01-01":"2022-01-01"][cols2021 + ['Month']].reset_index().set_index("Month")
-    by_month = years2020.combine_first(years2021).sort_values("Date")
-    cols = cols + cols2021
+    cols2022 = ['Deaths 2022']
+    years2022 = by_month["2022-01-01":"2023-01-01"][cols2022 + ['Month']].reset_index().set_index("Month")
+    by_month = years2020.combine_first(years2021).combine_first(years2022).sort_values("Date")
+    cols = cols + cols2021 + cols2022
 
     plot_area(df=by_month,
               title='Excess Deaths - Thailand',
@@ -519,3 +523,11 @@ see https://djay.github.io/covidthailand/#excess-deaths
               cmap='tab10',
               footnote='P-Test: A statistical method used to test one or more hypotheses within\n a population or a proportion within a population.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
+
+
+if __name__ == "__main__":
+
+    df = import_csv("combined", index=["Date"])
+    os.environ["MAX_DAYS"] = '0'
+    os.environ['USE_CACHE_DATA'] = 'True'
+    save_deaths_plots(df)
