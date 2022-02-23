@@ -386,13 +386,14 @@ def briefing_deaths_provinces(dtext, date, file):
     province_count = {}
     last_provs = None
 
-    def add_deaths(provinces, num):
+    def add_deaths(provinces, num, bracket=False):
         provs_thai = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
         provs = [pr for p in provs_thai for pr in get_province(p, ignore_error=True, cutoff=0.76, split=True)]
 
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
         provs = [p for p in provs if p and p != "Unknown"]
-        if date >= d("2022-01-22") and len(provs) == num:
+        if date >= d("2022-01-22") and len(provs) == num and num > 1 and not bracket:
+            # special case where (1) is missing and total number is used
             num = 1
 
         for p in provs:
@@ -400,6 +401,7 @@ def briefing_deaths_provinces(dtext, date, file):
 
     for provinces, num_text in pcells:
         # len() < 2 because some stray modifier?
+        bracket = "(" in num_text
         text_num, rest = get_next_number(provinces, remove=True)
         num, _ = get_next_number(num_text)
         if num is None and text_num is not None:
@@ -413,7 +415,7 @@ def briefing_deaths_provinces(dtext, date, file):
             if not last_provs:
                 raise Exception(f"subset of province can't be adjusted for {rest}")
             add_deaths(last_provs, -num)  # TODO: should only be prison. check this
-        add_deaths(rest, num)
+        add_deaths(rest, num, bracket)
         last_provs = rest
     dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                           columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
