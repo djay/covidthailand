@@ -35,6 +35,10 @@ Links to all data sources are including in [Downloads](downloads)
 
 <br style="clear:both"/>
 
+# Questions?
+
+Got a question about covid in Thailand? Try asking it in [Q&A discussion](https://github.com/djay/covidthailand/discussions/categories/q-a)
+
 # Trends
 
 ![Daily Averages as % of Peak](https://github.com/djay/covidthailand/wiki/cases_peak_3.png) ![Hospitalisation as % of Peak](https://github.com/djay/covidthailand/wiki/active_peak_3.png)
