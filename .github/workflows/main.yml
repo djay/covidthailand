@@ -7,7 +7,7 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
-#    - cron: "*/20 23 * * *" # Quick checks for briefing after 7am
+    - cron: "*/19 23 * * *" # Quick checks for briefing after 7am
     - cron: "*/19 00-03 * * *" # Quick checks for briefing after 7am
     # - cron: "45 23 * * *" # 07:15 Dashboard
     # - cron: "02 00 * * *" # 08:02 Dashboard
@@ -83,8 +83,8 @@ jobs:
         continue-on-error: true
         run: (! grep ${{ steps.date.outputs.date }} api/cases_by_province.csv )
       - name: Dash not done yet
-        id: godash
-        if: ${{ steps.api.outcome == 'success' && steps.goapi.outcome != 'success' }}
+        id: dash
+        # if: ${{ steps.api.outcome == 'success' && steps.goapi.outcome != 'success' }}
         continue-on-error: true
         run: (! grep ${{ steps.date.outputs.date }} api/moph_dashboard_prov.csv )
       - name: Cache multiple paths
@@ -133,7 +133,7 @@ jobs:
           echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles(${{ steps.date.outputs.briefingfile }}) == '')"
       - name: Set up Python
         id: goscrape
-        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.godash.outcome == 'success' }}
+        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
         uses: actions/setup-python@v2
         with:
           python-version: 3.9.10
@@ -144,12 +144,18 @@ jobs:
           java-version: 15
       - name: Install dependencies
         if: ${{ steps.goscrape.outcome == 'success' }}
+        id: dep
         run: |
           sudo apt-get update -y
           sudo apt-get install -y ghostscript python3-tk
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install -r requirements.txt --use-deprecated=html5lib --use-deprecated=legacy-resolver
+      - name: is dash ready
+        id: godash
+        if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success'}}
+        continue-on-error: true
+        run: python covid_data_dash.py
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest

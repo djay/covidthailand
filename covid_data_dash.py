@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 
 import numpy as np
 import pandas as pd
@@ -27,6 +28,23 @@ from utils_thai import today
 
 # # 5 kinds cases stats for last 30 days but we already have I think
 # url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
+
+
+def todays_data():
+    url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
+    # new day starts with new info comes in
+    for get_wb, date in workbook_iterate(url, param_date=[today(), today()]):
+        date = next(iter(date))
+        if (wb := get_wb()) is None:
+            continue
+        last_update = wb.getWorksheet("D_UpdateTime").data
+        if not last_update.empty:
+            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            return last_update.normalize() < today()
+            # We got todays data too early
+        else:
+            return False
+
 
 def dash_daily():
     df = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
@@ -406,3 +424,9 @@ def skip_valid(df, idx_value, allow_na={}):
     else:
         logger.info("{} MOPH Dashboard Retry Missing data at {} for {}. Retry", date, idx_value, nulls)
         return False
+
+
+if __name__ == '__main__':
+    gottoday = todays_data()
+    print(gottoday)
+    sys.exit(0 if gottoday else 1)
