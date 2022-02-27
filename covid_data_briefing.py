@@ -423,8 +423,9 @@ def briefing_deaths_provinces(dtext, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14"), d("2022-01-21"), d("2022-01-23"), d("2022-01-31")]:
+    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14"), d("2022-01-21"), d("2022-01-23"), d("2022-01-31"), d("2022-02-26")]:
         # 2021-12-15 - missing one from eastern
+        # 2022-02-26 - Uttaradit(2) Chiang Mai, Chiang Rai, Uthai Thani(1) 6
         pass
     else:
         msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
@@ -498,7 +499,10 @@ def briefing_deaths_summary(text, date, file):
         disease: get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
         for disease, thdiseases in diseases.items()
     }
-    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17")]:
+    if date in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17"), d("2022-02-27")]:
+        # comorbidities don't add to more than deaths
+        pass
+    else:
         cm_sum = sum([n for n in comorbidity.values() if n is not np.nan])
         assert cm_sum >= deaths_title, f"Potentially Missing comorbidity {comorbidity}\n{text}"
 
