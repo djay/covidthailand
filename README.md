@@ -176,6 +176,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Vaccinated given by Region](https://github.com/djay/covidthailand/wiki/vac_region_2_3.png)
 
+![Vaccinated given by Region](https://github.com/djay/covidthailand/wiki/vac_region_3_3.png)
+
 ![Vaccine Doses given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_2_3.png)
 
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
