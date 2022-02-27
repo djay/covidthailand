@@ -316,8 +316,8 @@ def scrape_and_combine():
     # Export per province
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
-        api_provs).combine_first(
         briefings_prov).combine_first(
+        api_provs).combine_first(
         dash_by_province).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
