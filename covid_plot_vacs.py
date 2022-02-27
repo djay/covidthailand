@@ -213,15 +213,18 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
     dose1 = vac_cum[[f'Vac Group {group} 1 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
     dose2 = vac_cum[[f'Vac Group {group} 2 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
+    dose3 = vac_cum[[f'Vac Group {group} 3 Cum % ({goal/1000000:.1f}M)' for group, goal in goals]]
     pred1, pred2 = pred_vac(dose1, dose2, lag=40)
+    _, pred3 = pred_vac(dose2, dose3, lag=150)
     pred1 = pred1.clip(upper=pred1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred2 = pred2.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
-    vac_cum = vac_cum.combine_first(pred1).combine_first(pred2)
+    pred3 = pred3.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    vac_cum = vac_cum.combine_first(pred1).combine_first(pred2).combine_first(pred3)
 
     cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(df=vac_cum.combine_first(pred2),
-              title='Full Covid Vaccination Progress - Thailand',
+              title='Vaccination by group - 2nd Dose - Thailand',
               legends=legends,
               png_prefix='vac_groups_goals_full', cols_subset=cols2,
               kind='line',
@@ -234,10 +237,10 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               footnote='Assumes avg 40day gap between doses')
 
     cols2 = [c for c in vac_cum.columns if " 1 Cum %" in c and "Vac Group " in c and "Pred" not in c]
-    actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
+    # actuals = [c for c in vac_cum.columns if " 1 Pred" in c]
     legends = [clean_vac_leg(c) for c in cols2]
     plot_area(df=vac_cum.combine_first(pred1),
-              title='Half Covid Vaccination Progress - Thailand',
+              title='Vaccination by group - 1st Dose - Thailand',
               legends=legends,
               png_prefix='vac_groups_goals_half', cols_subset=cols2,
               actuals=list(pred1.columns),
@@ -246,6 +249,21 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),  # TODO: seems to be getting wrong colors
               footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
+
+    cols2 = [c for c in vac_cum.columns if " 3 Cum %" in c and "Vac Group " in c and "Pred" not in c]
+    legends = [clean_vac_leg(c) for c in cols2]
+    plot_area(df=vac_cum.combine_first(pred3),
+              title='Vaccination by group - 3rd Dose - Thailand',
+              legends=legends,
+              png_prefix='vac_groups_goals_3', cols_subset=cols2,
+              kind='line',
+              actuals=list(pred3.columns),
+              ma_days=None,
+              stacked=False, percent_fig=False,
+              y_formatter=perc_format,
+              cmap=get_cycle('tab20', len(cols2) * 2, unpair=True, start=len(cols2)),
+              footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports',
+              footnote='Assumes avg 150d to booster')
 
     cols = rearrange([f'Vac Given Area {area} Cum' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     df_vac_areas_s1 = df['2021-02-28':][cols].interpolate(limit_area="inside")
@@ -508,6 +526,27 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5.combine_first(pred),
               title='Covid Vaccinations 2nd Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_2', cols_subset=cols,
+              actuals=list(pred.columns),
+              ma_days=None,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
+              footnote="Percentage include ages 0-18")
+
+    top5 = vac.pipe(topprov, lambda df: df['Vac Given 3 Cum'] / df['Vac Population2'] * 100)
+    # since top5 might be different need to recalculate
+    top5_dose2 = vac.pipe(
+        topprov,
+        lambda df: df['Vac Given 3 Cum'] / df['Vac Population2'] * 100,
+        lambda df: df['Vac Given 2 Cum'] / df['Vac Population2'] * 100,
+    )
+    _, pred = pred_vac(top5_dose2, top5)
+    pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
+    cols = top5.columns.to_list()
+    plot_area(df=top5.combine_first(pred),
+              title='Covid Vaccinations 3nd Dose - Top Provinces - Thailand',
+              png_prefix='vac_top5_doses_3', cols_subset=cols,
               actuals=list(pred.columns),
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
