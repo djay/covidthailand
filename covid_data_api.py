@@ -81,6 +81,7 @@ def get_cases():
     cases["Source Cases"] = url
     # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
     cases = cases[~cases.index.duplicated(keep='first')]
+    assert cases[cases.index.max()]['Cases']
     return cases
 
 
