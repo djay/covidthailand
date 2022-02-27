@@ -34,8 +34,8 @@ def get_df(should_be_newer_than=datetime.datetime(2000, 1, 1, tzinfo=tzutc())):
         return next(sp['storyPointId'] for sp in workbook.getStoryPoints()['storyPoints'][0] if name in sp['storyPointCaption'])
 
     df = import_csv("moph_bed", ["Date", "Province"], False, dir="inputs/json")
-    #if not df.empty and df.reset_index()['Date'].max() >= updated_time.date():
-    #    return df
+    if not df.empty and df.reset_index()['Date'].max() >= updated_time.date():
+        return df
 
     # get bed types and ventilator tabs and iterate through prvinces
     # Break down of beds types

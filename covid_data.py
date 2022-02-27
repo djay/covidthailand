@@ -316,8 +316,8 @@ def scrape_and_combine():
     # Export per province
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
-        api_provs).combine_first(
         briefings_prov).combine_first(
+        api_provs).combine_first(
         dash_by_province).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
@@ -345,7 +345,7 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, timelineapi, cases_briefings, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [tests_reports, tests, cases_briefings, timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 
