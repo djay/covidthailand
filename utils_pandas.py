@@ -359,7 +359,7 @@ def pred_vac(dose1, dose2=None, ahead=90, lag=40, suffix=" Pred"):
     from_past.columns = [col + suffix for col in dose2.columns]
     from_future = future1.iloc[1:ahead - lag + 1]
     from_future.columns = from_past.columns
-    v2 = pd.concat([from_past, from_future], axis=0)
+    v2 = pd.concat([from_past, from_future], axis=0)[:ahead + 1]
     # adjust to start where dose2 finished
     future2 = (v2 - v2.loc[v2.index.min()]).add(list(dose2.loc[cur]))
     future2.index = future_dates
