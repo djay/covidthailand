@@ -81,7 +81,9 @@ def get_cases():
     cases["Source Cases"] = url
     # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
     cases = cases[~cases.index.duplicated(keep='first')]
-    assert cases[cases.index.max()]['Cases']
+    if cases.iloc[-1]['Cases']:
+        # 2022-02-27 dud data
+        return pd.DataFrame()
     return cases
 
 
@@ -517,6 +519,7 @@ def ihme_dataset():
 
 
 if __name__ == '__main__':
+    timeline = get_cases()
     timeline_prov = timeline_by_province()
     cases_demo, risks_prov = get_cases_by_demographics_api()
     case_api_by_area = get_cases_by_area_api()
@@ -528,7 +531,7 @@ if __name__ == '__main__':
     export(dfprov, "cases_by_province")
 
     old = import_csv("combined", index=["Date"])
-    df = old.combine_first(cases_demo)
+    df = timeline.combine_first(cases_demo).combine_first(old)
     export(df, "combined", csv_only=True)
 
     ihme_dataset()
