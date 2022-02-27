@@ -372,7 +372,7 @@ def plot_area(df: pd.DataFrame,
                          )
 
         # If actuals are after cols then they are future predictions. put in a line to show today
-        if actuals and df[cols].last_valid_index() < df[actuals].last_valid_index():
+        if actuals and df[actuals].last_valid_index() and df[cols].last_valid_index() < df[actuals].last_valid_index():
             a0.axvline(df[cols].last_valid_index(), color='grey', linestyle='--', lw=1)
 
         if box_cols and type(box_cols[0]) != list:

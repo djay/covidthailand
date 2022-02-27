@@ -198,15 +198,15 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
         ('Medical All', 1000000 + 712000),
         # ('Health Volunteer', 1000000),
         # ('Medical Staff', 712000),
-        ('Other Frontline Staff', 1900000),
+        # ('Other Frontline Staff', 1900000),
         ['Over 60', 10906142],
         ('Risk: Disease', 6347125),
         ('Risk: Location', 46169508),
-        ('Risk: Pregnant', 500000),
+        # ('Risk: Pregnant', 500000),
         ('Student', 4500000),
-
+        #        ('Kids', 4500000),
     ]
-    for d in [2, 1]:
+    for d in [3, 2, 1]:
         for group, goal in goals:
             vac_cum[f'Vac Group {group} {d} Cum % ({goal/1000000:.1f}M)'] = vac_cum[
                 f'Vac Group {group} {d} Cum'] / goal * 100
@@ -219,7 +219,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     pred1 = pred1.clip(upper=pred1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred2 = pred2.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred3 = pred3.clip(upper=pred2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
-    vac_cum = vac_cum.combine_first(pred1).combine_first(pred2).combine_first(pred3)
+    # vac_cum = vac_cum.combine_first(pred1).combine_first(pred2).combine_first(pred3)
 
     cols2 = [c for c in vac_cum.columns if " 2 Cum %" in c and "Vac Group " in c and "Pred" not in c]
     legends = [clean_vac_leg(c) for c in cols2]
