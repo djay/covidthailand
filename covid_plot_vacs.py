@@ -57,6 +57,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
         c = re.sub(r"(?:Vac )?(?:Group )?(.*) 3(?: Cum)?", fr"3rd Booster/Other \1", c)
         c = re.sub(r"(.*) (?:Only|Given)", fr"\1", c)
         c = c.replace(
+            'General Population', 'General Population (0-59)').replace(
             'Risk: Location', 'General Population (0-59)').replace(
             'Student', 'Students 12-17').replace(
             'Medical All', 'Medical Staff & Volunteers').replace(
@@ -90,6 +91,14 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     df_vac_groups['Vac Given 1 Cum'] = df['Vac Given 1 Cum']
     df_vac_groups['Vac Given 2 Cum'] = df['Vac Given 2 Cum']
     df_vac_groups['Vac Given 3 Cum'] = df['Vac Given 3 Cum']
+    # risk location is really general population and that now includes frontline and pregnant
+    gen_groups = ['Risk: Pregnant', 'Other Frontline Staff', 'Risk: Location']
+    for d in range(1, 4):
+        df_vac_groups[f'Vac Group General Population {d} Cum'] = df_vac_groups[[
+            f'Vac Group {g} {d} Cum' for g in gen_groups]].sum(axis=1, skipna=False)
+        df_vac_groups = df_vac_groups.drop(columns=[f'Vac Group {g} {d} Cum' for g in gen_groups])
+    groups = [c for c in df_vac_groups.columns if str(c).startswith('Vac Group')]
+
     df_vac_groups['Vac Imported Cum'] = df_vac_groups[[
         c for c in df_vac_groups.columns if "Vac Imported" in c]].sum(axis=1, skipna=False)
 
@@ -201,7 +210,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
         # ('Other Frontline Staff', 1900000),
         ['Over 60', 10906142],
         ('Risk: Disease', 6347125),
-        ('Risk: Location', 46169508),
+        ('General Population', 48569508),
         # ('Risk: Pregnant', 500000),
         ('Student', 4500000),
         #        ('Kids', 4500000),
@@ -545,7 +554,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     cols = top5.columns.to_list()
     plot_area(df=top5.combine_first(pred),
-              title='Covid Vaccinations 3nd Dose - Top Provinces - Thailand',
+              title='Covid Vaccinations 3rd Dose - Top Provinces - Thailand',
               png_prefix='vac_top5_doses_3', cols_subset=cols,
               actuals=list(pred.columns),
               ma_days=None,

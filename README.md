@@ -183,8 +183,6 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
 ![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_3.png)
 
-![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
-
 ![Top Provinces by Vaccination 3rd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_3_3.png)
 
 
