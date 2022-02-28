@@ -168,7 +168,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Progress towards Full Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_full_3.png)
 
-![Progress towards Half Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_half_3.png)
+![Progress towards booster Vaccination](https://github.com/djay/covidthailand/wiki/vac_groups_goals_3_3.png)
 
 - Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
 
@@ -176,12 +176,15 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Vaccinated given by Region](https://github.com/djay/covidthailand/wiki/vac_region_2_3.png)
 
+![Vaccinated given by Region](https://github.com/djay/covidthailand/wiki/vac_region_3_3.png)
+
 ![Vaccine Doses given by Region](https://github.com/djay/covidthailand/wiki/vac_region_daily_2_3.png)
 
 ![Top Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_2_3.png)
 ![Lowest Provinces by Vaccination 2nd Jab](https://github.com/djay/covidthailand/wiki/vac_low_doses_2_3.png)
 
-![Top Provinces by Vaccination 1st Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_1_3.png)
+![Top Provinces by Vaccination 3rd Jab](https://github.com/djay/covidthailand/wiki/vac_top5_doses_3_3.png)
+
 
 ![Vacccinated Over 60s - 2nd Dose - by Region](https://github.com/djay/covidthailand/wiki/vac_region_60s_2_3.png)
 
