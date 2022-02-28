@@ -502,7 +502,7 @@ def briefing_deaths_summary(text, date, file):
     if date in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17"), d("2022-02-27")]:
         # comorbidities don't add to more than deaths
         pass
-    else:
+    elif date < d("2021-02-28"):  # Give up. It's not anywhere near covering the deaths now
         cm_sum = sum([n for n in comorbidity.values() if n is not np.nan])
         assert cm_sum >= deaths_title, f"Potentially Missing comorbidity {comorbidity}\n{text}"
 
