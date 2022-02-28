@@ -40,7 +40,7 @@ def todays_data():
         last_update = wb.getWorksheet("D_UpdateTime").data
         if not last_update.empty:
             last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
-            return last_update.normalize() < today()
+            return last_update >= today().date()
             # We got todays data too early
         else:
             return False
