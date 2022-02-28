@@ -95,7 +95,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     gen_groups = ['Risk: Pregnant', 'Other Frontline Staff', 'Risk: Location']
     for d in range(1, 4):
         df_vac_groups[f'Vac Group General Population {d} Cum'] = df_vac_groups[[
-            f'Vac Group {g} {d} Cum' for g in gen_groups]].sum(axis=1, skipna=True)
+            f'Vac Group {g} {d} Cum' for g in gen_groups]].sum(axis=1, skipna=True, min_count=1)
         df_vac_groups = df_vac_groups.drop(columns=[f'Vac Group {g} {d} Cum' for g in gen_groups])
     groups = [c for c in df_vac_groups.columns if str(c).startswith('Vac Group')]
 
