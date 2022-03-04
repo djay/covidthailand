@@ -544,7 +544,7 @@ def briefing_deaths_summary(text, date, file):
         "Work": ["อาชีพเสี่ยง", "อาชีพเ"],  # Risky occupations
         "HCW": ["HCW", "บุคลากรทางการแพทย์"],
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
-        "Unvaccinated": ["ไม่เคยได้รับวัคซีน"],
+        "Unvaccinated": ["ไม่เคยได้รับวัคซีน", "ไม่ครบตามเกณฑ์"],
     }
     risk = {
         en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)

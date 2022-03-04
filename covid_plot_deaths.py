@@ -89,6 +89,24 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    cols = [
+        'Deaths',
+        'Deaths Risk Unvaccinated',
+    ]
+    legends = [
+        'Deaths',
+        'Deaths with no history of vaccination',
+    ]
+    plot_area(df=df,
+              title='Covid Deaths Unvaccinated - Thailand',
+              legends=legends,
+              png_prefix='deaths_unvaccinated', cols_subset=cols,
+              actuals=['Deaths'],
+              ma_days=7,
+              kind='area', stacked=False, percent_fig=True,
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
     cols = [
         'Deaths Age Median (MA)',
