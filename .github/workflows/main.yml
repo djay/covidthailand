@@ -7,8 +7,8 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
-    - cron: "*/20 23-03 * * *" # Quick checks for briefing after 7am
-#    - cron: "*/19 00-03 * * *" # Quick checks for briefing after 7am
+    - cron: "*/19 23 * * *" # Quick checks for briefing after 7am
+    - cron: "*/19 00-03 * * *" # Quick checks for briefing after 7am
     # - cron: "45 23 * * *" # 07:15 Dashboard
     # - cron: "02 00 * * *" # 08:02 Dashboard
     # - cron: "25 00 * * *" # 08:45 Dashboard
