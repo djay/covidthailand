@@ -88,6 +88,10 @@ def dash_daily():
         row = workbook_flatten(
             wb,
             date,
+            defaults={
+                "Positive Rate Dash": np.nan,
+                "": 0.0
+            },
             # D_UpdateTime="Last_Update",
             D_New="Cases",
             D_Walkin="Cases Walkin",
