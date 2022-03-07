@@ -533,8 +533,8 @@ def vaccination_tables(df, _, page, file):
                     d3, d3p = [np.nan] * 2
                 add(prov, [d1, d2, d3, pop], vaccols_disease + ["Vac Population Risk: Disease"])
                 assert not numbers4
-            elif table == "percent" and len(numbers) in [8]:  # 2022-02 changed to simpler table
-                pop, d1, d1p, d2, d2p, d3, d3p, total = numbers
+            elif table == "percent" and len(numbers) in [7, 8]:  # 2022-02 changed to simpler table
+                pop, d1, d1p, d2, d2p, d3, d3p, *total = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
