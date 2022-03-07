@@ -36,7 +36,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
     # TODO: work out why we are getting 0 values since positive rate should not be 0... unless they have no positives at all?
-    dash_prov["Positive Rate Dash"] = dash_prov["Positive Rate Dash"].replace({0.0: np.nan})
+    # dash_prov["Positive Rate Dash"] = dash_prov["Positive Rate Dash"].replace({0.0: np.nan})
 
     # Computed data
     # TODO: has a problem if we have local transmission but no proactive
