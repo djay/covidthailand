@@ -202,7 +202,10 @@ def briefing_case_types(date, pages, url):
             field, _ = get_next_number(text, "รพ.สนาม")
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
             hospitalised = num[0]
-            assert hospital + field == hospitalised or date in [d("2021-09-04")]
+            if date in [d("2021-09-04"), d("2022-03-07")]:
+                pass
+            else:
+                assert hospital + field == hospitalised
         elif "ผู้ป่วยรักษาอยู่" in text:
             hospitalised, *_ = get_next_numbers(text, "ผู้ป่วยรักษาอยู่", return_rest=False, before=True)
             if date > d("2021-03-31"):  # don't seem to add up before this
