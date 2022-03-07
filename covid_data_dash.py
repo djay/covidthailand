@@ -312,6 +312,10 @@ def dash_by_province():
         row = workbook_flatten(
             wb,
             date,
+            defaults={
+                "Positive Rate Dash": np.nan,
+                "": 0.0
+            },
             D2_Vac_Stack={
                 "DAY(txn_date)-value": "Date",
                 "vaccine_plan_group-alias": {
@@ -426,7 +430,19 @@ def skip_valid(df, idx_value, allow_na={}):
         return False
 
 
-if __name__ == '__main__':
+def check_dash_ready():
     gottoday = todays_data()
     print(gottoday)
     sys.exit(0 if gottoday else 1)
+
+
+if __name__ == '__main__':
+
+    dash_by_province_df = dash_by_province()
+    dash_daily_df = dash_daily()
+    dash_ages_df = dash_ages()
+
+    # This doesn't add any more info since severe cases was a mistake
+    dash_trends_prov_df = dash_trends_prov()
+
+    check_dash_ready()

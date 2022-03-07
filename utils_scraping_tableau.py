@@ -36,7 +36,7 @@ def workbook_explore(workbook):
             print("  {} : {} {}", f['column'], f['values'][:10], '...' if len(f['values']) > 10 else '')
 
 
-def workbook_flatten(wb, date=None, **mappings):
+def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     """return a single DataFrame from a workbook flattened according to mappings
     mappings is worksheetname=columns
     if columns is type str puts a single value into column
@@ -95,15 +95,17 @@ def workbook_flatten(wb, date=None, **mappings):
             end = df.index.max()
             assert date is None or end <= date, f"getting {date} found {end}"
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
+            default = [defaults.get(c, defaults.get("")) if defaults else 0.0 for c in df.columns]
             try:
-                df = df.reindex(all_days, fill_value=0.0)
+                df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
             except ValueError:
                 return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
 
             res = res.combine_first(df)
         elif df.empty:
             # TODO: Seems to mean that this is 0? Should be confirgurable?
-            data[col] = [0.0]
+            default = defaults.get(col, defaults.get("")) if defaults else 0.0
+            data[col] = [default]
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
