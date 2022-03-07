@@ -62,7 +62,7 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
 
         if type(col) != str:
             if df.empty:
-                logger.info("Error getting tableau {}/{} {}", name, col, date)
+                # logger.info("Error getting tableau {}/{} {}", name, col, date)
                 continue
             # if it's not a single value can pass in mapping of cols
             df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
