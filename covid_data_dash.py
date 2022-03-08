@@ -88,6 +88,10 @@ def dash_daily():
         row = workbook_flatten(
             wb,
             date,
+            defaults={
+                "Positive Rate Dash": np.nan,
+                "": 0.0
+            },
             # D_UpdateTime="Last_Update",
             D_New="Cases",
             D_Walkin="Cases Walkin",
@@ -261,7 +265,8 @@ def dash_by_province():
 
     last_pos_rate = max(df["Positive Rate Dash"].last_valid_index()[0], today() - relativedelta(days=31))
     valid = {
-        "Positive Rate Dash": (d("2021-05-20"), last_pos_rate, 0.001, 2),  # Might have to remove it completely.
+        # shouldn't be 0 pos rate. Maybe set to min 0.001 again later?
+        "Positive Rate Dash": (d("2021-05-20"), last_pos_rate, 0.0, 2),  # Might have to remove it completely.
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=2), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
@@ -312,6 +317,10 @@ def dash_by_province():
         row = workbook_flatten(
             wb,
             date,
+            defaults={
+                "Positive Rate Dash": np.nan,
+                "": 0.0
+            },
             D2_Vac_Stack={
                 "DAY(txn_date)-value": "Date",
                 "vaccine_plan_group-alias": {
@@ -426,7 +435,19 @@ def skip_valid(df, idx_value, allow_na={}):
         return False
 
 
-if __name__ == '__main__':
+def check_dash_ready():
     gottoday = todays_data()
     print(gottoday)
     sys.exit(0 if gottoday else 1)
+
+
+if __name__ == '__main__':
+
+    dash_by_province_df = dash_by_province()
+    dash_daily_df = dash_daily()
+    dash_ages_df = dash_ages()
+
+    # This doesn't add any more info since severe cases was a mistake
+    dash_trends_prov_df = dash_trends_prov()
+
+    check_dash_ready()
