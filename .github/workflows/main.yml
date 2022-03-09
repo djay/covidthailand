@@ -155,7 +155,7 @@ jobs:
         id: godash
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success'}}
         continue-on-error: true
-        run: python covid_data_dash.py
+        run: python -c "import covid_data_dash; covid_data_dash.check_dash_ready()"
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest

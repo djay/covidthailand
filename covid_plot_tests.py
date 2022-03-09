@@ -35,7 +35,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
     dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
-    # TODO: work out why we are getting 0 values since positive rate should not be 0... unless they have no positives at all?
+    # TODO: 0 maybe because no test data on that day? Does median make sense?
     dash_prov["Positive Rate Dash"] = dash_prov["Positive Rate Dash"].replace({0.0: np.nan})
 
     # Computed data
@@ -479,9 +479,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
     pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'],
-                            values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
+                            values=pos_areas["Positive Rate Dash"], aggfunc="mean") * 100
     plot_area(df=pos_areas,
-              title='PCR Positive Rate - Median per Region - Thailand',
+              title='PCR Positive Rate - Mean per Region - Thailand',
               png_prefix='positivity_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
