@@ -242,7 +242,7 @@ def find_date_range(content):
     >>> find_date_range('04/04/2563 - 12/06/2563')
     (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
 
-    >>> find_date_range('27/02/2565 - 05-03/2565')
+    >>> find_date_range('27/02/2565 - 05-03/2565'))
     (datetime.datetime(2022, 2, 27, 0, 0), datetime.datetime(2022, 3, 5, 0, 0))
     """
     m1 = re.search(

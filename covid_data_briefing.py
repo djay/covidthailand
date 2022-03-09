@@ -404,7 +404,7 @@ def briefing_deaths_provinces(dtext, date, file):
 
     for provinces, num_text in pcells:
         # len() < 2 because some stray modifier?
-        bracket = "(" in num_text
+        bracket = any_in(num_text, "(", ")")
         text_num, rest = get_next_number(provinces, remove=True)
         num, _ = get_next_number(num_text)
         if num is None and text_num is not None:
