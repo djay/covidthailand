@@ -235,15 +235,17 @@ def find_thai_date(content, remove=False, all=False):
 
 def find_date_range(content):
     """
+    >>> p = lambda x: tuple(str(d.date()) for d in x)
+
     Parse thai date ranges like
-    >>> find_date_range('11-17 เม.ย. 2563')
-    (datetime.datetime(2020, 4, 11, 0, 0), datetime.datetime(2020, 4, 17, 0, 0))
+    >>> p(find_date_range('11-17 เม.ย. 2563'))
+    ('2020-04-11', '2020-04-17')
 
-    >>> find_date_range('04/04/2563 - 12/06/2563')
-    (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
+    >>> p(find_date_range('04/04/2563 - 12/06/2563'))
+    ('2020-04-04', '2020-06-12')
 
-    >>> find_date_range('27/02/2565 - 05-03/2565'))
-    (datetime.datetime(2022, 2, 27, 0, 0), datetime.datetime(2022, 3, 5, 0, 0))
+    >>> p(find_date_range('27/02/2565 - 05-03/2565'))
+    ('2022-02-27', '2022-03-05')
     """
     m1 = re.search(
         r"([0-9]+)[/-]([0-9]+)[/-]([0-9]+) *[-–] *([0-9]+)[/-]([0-9]+)[/-]([0-9]+)", content
