@@ -241,9 +241,12 @@ def find_date_range(content):
 
     >>> find_date_range('04/04/2563 - 12/06/2563')
     (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
+
+    >>> find_date_range('27/02/2565 - 05-03/2565')
+    (datetime.datetime(2022, 2, 27, 0, 0), datetime.datetime(2022, 3, 5, 0, 0))
     """
     m1 = re.search(
-        r"([0-9]+)/([0-9]+)/([0-9]+) *[-–] *([0-9]+)/([0-9]+)/([0-9]+)", content
+        r"([0-9]+)[/-]([0-9]+)[/-]([0-9]+) *[-–] *([0-9]+)[/-]([0-9]+)[/-]([0-9]+)", content
     )
     m2 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
     m3 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
@@ -266,6 +269,8 @@ def find_date_range(content):
             if month in THAI_FULL_MONTHS
             else None
         )
+        if not month:
+            return None, None
         end = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
         start = previous_date(end, d1)
         return start, end
