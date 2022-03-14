@@ -218,7 +218,7 @@ def vaccination_daily(daily, date, file, page):
                                      r"นเข็มที่ 1 จ", r"ซนีเขม็ที่ 1 จ",
                                      until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
-                                     r"ได้รับวัคซีน\s+2\s+เข็ม",
+                                     r"ได้รับ\s*วัคซีน\s+2\s+เข็ม",
                                      r"ไดรับวัคซีน\s+2\s+เข็ม",
                                      until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
