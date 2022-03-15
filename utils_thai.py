@@ -92,9 +92,19 @@ def today() -> datetime.datetime:
     return datetime.datetime.today()
 
 
-def to_gregyear(thai, short=False):
+def to_gregyear(thai, short=False, guess=False):
+    """
+    >>> to_gregyear("2565")
+    2022
+    >>> to_gregyear("2565", guess=True)
+    2022
+    >>> to_gregyear("2022", guess=True)
+    2022
+
+    """
     thai = thai if type(thai) != str else int(thai)
-    thai += (2500 if thai < 100 else 0) - 543
+    if not guess or thai > 2500 or (60 < thai < 100):
+        thai += (2500 if thai < 100 else 0) - 543
     return thai if not short else thai - 2000
 
 
@@ -246,6 +256,13 @@ def find_date_range(content):
 
     >>> p(find_date_range('27/02/2565 - 05-03/2565'))
     ('2022-02-27', '2022-03-05')
+
+    Will handle gregorian too
+    >>> p(find_date_range('01/04/2021 – 04/03/2022'))
+    ('2021-04-01', '2022-03-04')
+
+    #>>> p(find_date_range('26 FEB – 04 \nMAR 22'))
+    #('2021-04-01', '2022-03-04')
     """
     m1 = re.search(
         r"([0-9]+)[/-]([0-9]+)[/-]([0-9]+) *[-–] *([0-9]+)[/-]([0-9]+)[/-]([0-9]+)", content
@@ -254,12 +271,12 @@ def find_date_range(content):
     m3 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
     if m1:
         d1, m1, y1, d2, m2, y2 = m1.groups()
-        start = datetime.datetime(day=int(d1), month=int(m1), year=int(y1) - 543)
-        end = datetime.datetime(day=int(d2), month=int(m2), year=int(y2) - 543)
+        start = datetime.datetime(day=int(d1), month=int(m1), year=to_gregyear(y1, guess=True))
+        end = datetime.datetime(day=int(d2), month=int(m2), year=to_gregyear(y2, guess=True))
         return start, end
     elif m2:
         d1, d2, month, year = m2.groups()
-        end = datetime.datetime(year=int(year) - 543, month=int(month), day=int(d2))
+        end = datetime.datetime(year=to_gregyear(year, guess=True), month=int(month), day=int(d2))
         start = previous_date(end, d1)
         return start, end
     elif m3:
@@ -273,7 +290,7 @@ def find_date_range(content):
         )
         if not month:
             return None, None
-        end = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
+        end = datetime.datetime(year=to_gregyear(year), month=month, day=int(d2))
         start = previous_date(end, d1)
         return start, end
     else:

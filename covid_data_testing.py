@@ -10,6 +10,7 @@ from utils_pandas import import_csv
 from utils_pandas import spread_date_range
 from utils_scraping import all_in
 from utils_scraping import any_in
+from utils_scraping import camelot_cache
 from utils_scraping import get_next_numbers
 from utils_scraping import local_files
 from utils_scraping import logger
@@ -34,13 +35,12 @@ from utils_thai import TEST_COLS
 #     return dav_files(url, username, password, ext, dir)
 
 
-def get_test_files(ext="pdf", dir="inputs/testing_moph"):
+def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph"):
     key = os.environ.get('DRIVE_API_KEY', None)
     if key is None:
         logger.warning("env DRIVE_API_KEY missing: Using local cached testing data only")
         yield from local_files(ext, dir)
         return
-    folder_id = "1yUVwstf5CmdvBVtKBs0uReV0BTbjQYlT"
     url = f"https://www.googleapis.com/drive/v3/files?q=%27{folder_id}%27+in+parents&key={key}"
     res = requests.get(url).json()
     if "files" not in res:
@@ -65,10 +65,21 @@ def get_test_files(ext="pdf", dir="inputs/testing_moph"):
 
         def get_file(id=id, name=name):
             url = f"https://www.googleapis.com/drive/v2/files/{id}?alt=media&key={key}"
-            file, _, _ = next(iter(web_files(url, dir="inputs/testing_moph", filenamer=lambda url, _: name)))
+            file, _, _ = next(iter(web_files(url, dir=dir, filenamer=lambda url, _: name)))
             return file
 
         yield target, get_file
+
+
+def get_test_files(ext="pdf", dir="inputs/testing_moph"):
+    folder_id = "1yUVwstf5CmdvBVtKBs0uReV0BTbjQYlT"
+    yield from get_drive_files(folder_id, ext, dir)
+
+
+def get_variant_files(ext=".pdf", dir="inputs/variants"):
+    # https://drive.google.com/drive/folders/13k14Hs61pgrK8raSMS9LFQn83PKswS-b
+    folder_id = "13k14Hs61pgrK8raSMS9LFQn83PKswS-b"
+    yield from get_drive_files(folder_id, ext=ext, dir=dir)
 
 
 def get_tests_by_day():
@@ -241,6 +252,50 @@ def get_test_reports():
     return data
 
 
+def get_variant_reports():
+    data = pd.DataFrame()
+    raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
+    area = import_csv("variants_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
+
+    for file, dl in get_variant_files(ext=".pdf"):
+        dl()
+        pages = parse_file(file, html=False, paged=True)
+        # page 1 title
+        # page 2 people + sample sizes
+        # page 3 table year + week per variant (4) per district
+        # page 4 pie charts national + bangkok + regional
+        # page 5 area chart: weekly national, bangkok, regional
+        # page 6 samples submitted GSAID: weekly
+        for page_num, page in enumerate(pages):
+            by_area = get_variants_by_area_pdf(file, page, page_num)
+            if by_area:
+                area = area.combine_first(by_area)
+
+
+def get_variants_by_area_pdf(file, page, page_num):
+    if "frequency distribution" not in page:
+        return
+    df = camelot_cache(file, page_num + 1, process_background=False)
+    assert len(df.columns) == 13
+    assert len(df) == 17
+    week = df[[0, 2, 5, 8, 11]]  # only want this week not whole year
+    # variant names
+    week.columns = ["Health Area", df.iloc[1][1], df.iloc[1][4], df.iloc[1][7], df.iloc[1][10]]
+    week = week.iloc[3:16]
+    week["Health Area"] = range(1, 14)
+
+    # start, end = find_date_range(page) whole year
+    # start, end = find_date_range(df.iloc[2][2])  # e.g. '26 FEB – 04 \nMAR 22'
+    start, end = df.iloc[2][2].split("–")
+    end = pd.to_datetime(end)
+    start = pd.to_datetime(start + " " + str(end.year))
+
+    week["Start"] = start
+    week["End"] = end
+    return week.set_index("Start")
+
+
 if __name__ == '__main__':
+    variants = get_variant_reports()
     df = get_test_reports()
     df_daily = get_tests_by_day()
