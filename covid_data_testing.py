@@ -252,29 +252,9 @@ def get_test_reports():
     return data
 
 
-def get_variant_reports():
-    data = pd.DataFrame()
-    raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
-    area = import_csv("variants_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
-
-    for file, dl in get_variant_files(ext=".pdf"):
-        dl()
-        pages = parse_file(file, html=False, paged=True)
-        # page 1 title
-        # page 2 people + sample sizes
-        # page 3 table year + week per variant (4) per district
-        # page 4 pie charts national + bangkok + regional
-        # page 5 area chart: weekly national, bangkok, regional
-        # page 6 samples submitted GSAID: weekly
-        for page_num, page in enumerate(pages):
-            by_area = get_variants_by_area_pdf(file, page, page_num)
-            if by_area:
-                area = area.combine_first(by_area)
-
-
 def get_variants_by_area_pdf(file, page, page_num):
     if "frequency distribution" not in page:
-        return
+        return pd.DataFrame()
     df = camelot_cache(file, page_num + 1, process_background=False)
     assert len(df.columns) == 13
     assert len(df) == 17
@@ -293,6 +273,66 @@ def get_variants_by_area_pdf(file, page, page_num):
     week["Start"] = start
     week["End"] = end
     return week.set_index("Start")
+
+
+def get_variants_plot_pdf(file, page, page_num):
+    if "National prevalence" not in page:
+        return pd.DataFrame()
+    # national = camelot_cache(file, page_num + 1, process_background=False, table=2)
+    # none of the other tables work with camelot
+
+    def splitline(line):
+        v, line = line.split(")")
+        return [v + ")"] + get_next_numbers(line, return_rest=False)
+
+    rows = [splitline(line) for line in page.split("\n") if line.startswith("B.1.")]
+    bangkok = pd.DataFrame(rows[4:8]).transpose()
+    bangkok.columns = bangkok.iloc[0]
+    bangkok = bangkok.iloc[1:]
+    return bangkok
+
+
+def get_variant_reports():
+    data = pd.DataFrame()
+    raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
+    area = import_csv("variants_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
+
+    # Get national numbers. Also gives us date ranges
+    for file, dl in get_variant_files(ext=".xlsx"):
+        file = dl()
+        nat = pd.read_excel(file)
+        nat.iloc[0, 0] = "End"
+        nat.columns = nat.iloc[0]
+        nat = nat.iloc[1:-1]
+        nat = nat.dropna(axis=1)
+        dates = nat["End"].str.split("-", expand=True)
+        a = pd.to_datetime(dates[1], errors="coerce", format="%d %b") + pd.offsets.DateOffset(years=121)
+        b = pd.to_datetime(dates[1], errors="coerce", format="%d%b") + pd.offsets.DateOffset(years=121)
+        c = pd.to_datetime(dates[1], errors="coerce")
+        ends = a.combine_first(b).combine_first(c)
+        nat["End"] = ends
+        nat = nat.set_index("End")
+        break
+
+    for file, dl in get_variant_files(ext=".pdf"):
+        dl()
+        pages = parse_file(file, html=False, paged=True)
+        # page 1 title
+        # page 2 people + sample sizes
+        # page 3 table year + week per variant (4) per district
+        # page 4 pie charts national + bangkok + regional
+        # page 5 area chart: weekly national, bangkok, regional
+        # page 6 samples submitted GSAID: weekly
+        for page_num, page in enumerate(pages):
+            bangkok = get_variants_plot_pdf(file, page, page_num)
+            if not bangkok.empty:
+                # dates from pdf too hard to parse so assume as as xslx
+                # TODO: date ranges don't line up so can't do this
+                bangkok.index = nat.index[:len(bangkok.index)]
+            by_area = get_variants_by_area_pdf(file, page, page_num)
+            area = area.combine_first(by_area)
+
+    return nat
 
 
 if __name__ == '__main__':
