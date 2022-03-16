@@ -268,7 +268,9 @@ def get_variants_by_area_pdf(file, page, page_num):
     # start, end = find_date_range(df.iloc[2][2])  # e.g. '26 FEB – 04 \nMAR 22'
     start, end = df.iloc[2][2].split("–")
     end = pd.to_datetime(end)
-    start = pd.to_datetime(start + " " + str(end.year))
+    start = pd.to_datetime(f"{start} {end.month} {end.year}", dayfirst=True, errors="coerce")
+    if pd.isnull(start):
+        start = pd.to_datetime(f"{start} {end.year}", dayfirst=True, errors="coerce")
 
     week["Start"] = start
     week["End"] = end
