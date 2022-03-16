@@ -251,7 +251,7 @@ Assumes easy access to tests for everyone.
 
 ## Covid Variant Suriellance
 
-![Variants](https://github.com/djay/covidthailand/wiki/variants_3.png)
+![Covid Variant Suriellance](https://github.com/djay/covidthailand/wiki/variants_3.png)
 
 
 # Excess Deaths <a name="excess-deaths">
