@@ -249,6 +249,9 @@ Assumes easy access to tests for everyone.
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
 - Source: [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
 
+## Covid Variant Suriellance
+
+![Covid Variant Suriellance](https://github.com/djay/covidthailand/wiki/variants_3.png)
 
 
 # Excess Deaths <a name="excess-deaths">

@@ -264,6 +264,7 @@ def scrape_and_combine():
 
         tests = pool.apply_async(covid_data_testing.get_tests_by_day)
         tests_reports = pool.apply_async(covid_data_testing.get_test_reports)
+        variant_reports = pool.apply_async(covid_data_testing.get_variant_reports)
 
         xcess_deaths = pool.apply_async(covid_data_api.excess_deaths)
         case_api_by_area = pool.apply_async(covid_data_api.get_cases_by_area_api)  # can be very wrong for the last days
@@ -291,6 +292,7 @@ def scrape_and_combine():
 
         tests = tests.get()
         tests_reports = tests_reports.get()
+        variant_reports = variant_reports.get()
 
         xcess_deaths.get()
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
