@@ -332,6 +332,9 @@ def get_variant_reports():
             by_area = get_variants_by_area_pdf(file, page, page_num)
             area = area.combine_first(by_area)
 
+    export(nat, "variants")
+    export(area, "variants_by_area")
+
     return nat
 
 
