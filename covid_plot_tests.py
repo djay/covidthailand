@@ -556,17 +556,21 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     # Vartiants
-    variants = import_csv("variants", index=["End"], date_cols=["End"])
-    variants = variants.fillna(0)
-    variants = variants.apply(lambda x: x / x.sum(), axis=1) * 100
+    raw = import_csv("variants", index=["End"], date_cols=["End"])
+    variants = raw.fillna(0)
+    variants = variants.apply(lambda x: x / x.sum(), axis=1)
     variants = variants.reindex(pd.date_range(variants.index.min(), variants.index.max(), freq='D')).interpolate()
+    variants['Cases'] = df['Cases']
+    variants = (variants[raw.columns].multiply(variants['Cases'], axis=0))
+    cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
     plot_area(df=variants,
-              title='Covid Variant Surveillance - Percentage - Thailand',
-              png_prefix='variants', cols_subset=list(variants.columns),
-              ma_days=None,
-              kind='area', stacked=True, percent_fig=False,
+              title='Covid Cases by Variant - Estimated - Thailand',
+              png_prefix='cases_by_variants', cols_subset=cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
-              y_formatter=perc_format,
+              # y_formatter=perc_format,
+              footnote="% of variant estimated from random sample, not all cases",
               footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report')
 
 

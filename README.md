@@ -113,6 +113,10 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Cases by Variant (from Surviellance)
+
+![Covid Variant Surviellance](https://github.com/djay/covidthailand/wiki/cases_by_variants_3.png)
+
 ## Cases and Social Distancing
 
 ![Number of confirmed cases and reduced movement of people](https://github.com/djay/covidthailand/wiki/mobility_all.png)
@@ -248,10 +252,6 @@ Assumes easy access to tests for everyone.
 - [Tests by health area: Full Year](https://github.com/djay/covidthailand/wiki/tests_area_daily_all.png)
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
 - Source: [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
-
-## Covid Variant Suriellance
-
-![Covid Variant Suriellance](https://github.com/djay/covidthailand/wiki/variants_3.png)
 
 
 # Excess Deaths <a name="excess-deaths">
