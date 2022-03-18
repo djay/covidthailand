@@ -113,7 +113,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - see [Ages of confirmed cases 2020-2021]((https://github.com/djay/covidthailand/wiki/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Cases by Variant (from Surviellance)
+## Cases by Variant (Estimated mentifrom Surviellance)
 
 ![Covid Variant Surviellance](https://github.com/djay/covidthailand/wiki/cases_by_variants_3.png)
 
