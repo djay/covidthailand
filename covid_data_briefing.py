@@ -399,6 +399,10 @@ def briefing_deaths_provinces(dtext, date, file):
             # special case where (1) is missing and total number is used
             num = 1
 
+        if date >= d("2021-07-17") and provs != ['Bangkok'] and not bracket:
+            # 2022-03-20: last prov in section missing (1)
+            num = 1
+
         for p in provs:
             province_count[p] = province_count.get(p, 0) + num
 
