@@ -234,7 +234,7 @@ def vaccination_daily(daily, date, file, page):
     # assert len(d3_num) == 0 or len(d3_num) == len(d2_num)
 
     is_risks = re.compile(r"(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน|ได้รับวัคซีน 2|7 กลุ)")
-
+    row = [None] * 9
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2), (3, d3_num, rest3)]:
         cols = [
             "Date",
@@ -287,6 +287,9 @@ def vaccination_daily(daily, date, file, page):
                 else:
                     # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
                     raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
+                if row and row[0] and row[0] < medical:
+                    # Dose 3 seems to be already adding volunteer to the medical number since 2022ish
+                    medical = medical - volunteer
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
@@ -914,5 +917,5 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    slides = vac_slides()
     reports, provs = vaccination_reports()
+    slides = vac_slides()
