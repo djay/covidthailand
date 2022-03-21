@@ -203,17 +203,18 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     # pregnant 500,000
     # Students 12-17 4,500,000
     # Target total 50,000,000
+    # Total was 73,833,176?
     goals = [
         ('Medical All', 1000000 + 712000),
         # ('Health Volunteer', 1000000),
         # ('Medical Staff', 712000),
         # ('Other Frontline Staff', 1900000),
-        ['Over 60', 10906142],
+        ['Over 60', 12704543],  # Was 10906142
         ('Risk: Disease', 6347125),
-        ('General Population', 48569508),
+        ('General Population', 41621025),  # was 48569508
         # ('Risk: Pregnant', 500000),
         ('Student', 4500000),
-        #        ('Kids', 4500000),
+        ('Kids', 5150082),
     ]
     for d in [3, 2, 1]:
         for group, goal in goals:
@@ -297,9 +298,22 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
         axis=1, skipna=False).to_frame("Vac Given Cum"))
     vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
+
+    # Reset populations to the latest since they changed definitions over time
+    # vac_r = vac.reset_index()
+    # for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
+    #     all_pop = pd.crosstab(vac_r['Date'], vac_r['Province'], values=vac_r[pop_col], aggfunc="sum")
+    #     last_pop = all_pop.iloc[-1]
+    #     for col in all_pop.columns:
+    #         all_pop[col].values[:] = last_pop[col]
+    #     vac[pop_col] = all_pop.unstack()
+
     # Bring in vac populations
-    pops = vac["Vac Population"].groupby("Province").max().to_frame("Vac Population")  # It's not on all data
-    vac = vac.join(pops, rsuffix="2")
+    pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
+    # vac = vac.join(pops, rsuffix="2")
+    for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
+        vac = vac.join(vac[pop_col].groupby("Province").last().to_frame(pop_col), lsuffix="1")
+    vac["Vac Population2"] = vac["Vac Population"]
 
     # Do a % of peak chart for death vs cases
     cols = ['Cases', 'Deaths', 'ATK', ]

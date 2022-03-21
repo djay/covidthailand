@@ -914,5 +914,5 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    reports, provs = vaccination_reports()
     slides = vac_slides()
+    reports, provs = vaccination_reports()
