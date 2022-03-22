@@ -184,6 +184,9 @@ def briefing_case_types(date, pages, url):
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
+            if date == d("2022-03-22"):
+                # order got changed around
+                prison = 44
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
             if cases2 is not None and cases2 != cases:
                 # Total cases moved to the bottom
@@ -286,7 +289,7 @@ def briefing_province_cases(file, date, pages):
         text = str(soup)
         if "รวมท ัง้ประเทศ" in text:
             continue
-        if not re.search(r"(?:ที่|ที)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
+        if not re.search(r"(?:ที่|ที|ท่ี)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
             continue
         if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายให)", text):
             continue
