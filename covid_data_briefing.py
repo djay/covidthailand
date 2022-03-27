@@ -572,7 +572,7 @@ def briefing_deaths_summary(text, date, file):
         "Risk Area": ["จาก.นที่เสี่ยง", "จากพื้นที่เสี่ยง", "จังหวัดสีแดงเข้ม"],
         "Bangkok": ["จากกทม./?ปริมณฑล"],
         "Outside Hospital": ["เสียชีวิตนอกรพ", "เสียชีวิตที่บ้าน"],
-        "ระบุไม่ได้": ["Unspecified"],
+        "Unspecified": ["ระบุไม่ได้"],
     }
     risk = {
         en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)

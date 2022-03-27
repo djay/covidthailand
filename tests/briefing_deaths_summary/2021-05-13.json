@@ -82,8 +82,8 @@
         "type":"number"
       },
       {
-        "name":"Deaths Risk \u0e23\u0e30\u0e1a\u0e38\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49",
-        "type":"number"
+        "name":"Deaths Risk Unspecified",
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Hypertension",
@@ -173,7 +173,7 @@
       "Deaths Risk Risk Area":null,
       "Deaths Risk Bangkok":null,
       "Deaths Risk Outside Hospital":null,
-      "Deaths Risk \u0e23\u0e30\u0e1a\u0e38\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49":null,
+      "Deaths Risk Unspecified":1,
       "Deaths Comorbidity Hypertension":18,
       "Deaths Comorbidity Diabetes":14,
       "Deaths Comorbidity Hyperlipidemia":10,

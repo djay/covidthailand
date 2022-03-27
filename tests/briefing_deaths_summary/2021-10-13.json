@@ -75,11 +75,15 @@
       },
       {
         "name":"Deaths Risk Bangkok",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Outside Hospital",
         "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Unspecified",
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity Hypertension",
@@ -167,8 +171,9 @@
       "Deaths Risk Unvaccinated":null,
       "Deaths Risk Close People":null,
       "Deaths Risk Risk Area":1,
-      "Deaths Risk Bangkok":1,
+      "Deaths Risk Bangkok":null,
       "Deaths Risk Outside Hospital":1,
+      "Deaths Risk Unspecified":null,
       "Deaths Comorbidity Hypertension":59,
       "Deaths Comorbidity Diabetes":32,
       "Deaths Comorbidity Hyperlipidemia":21,

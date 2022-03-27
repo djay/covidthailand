@@ -66,6 +66,26 @@
         "type":"number"
       },
       {
+        "name":"Deaths Risk Close People",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Risk Area",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Bangkok",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Outside Hospital",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Unspecified",
+        "type":"number"
+      },
+      {
         "name":"Deaths Comorbidity Hypertension",
         "type":"integer"
       },
@@ -149,6 +169,11 @@
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":3,
       "Deaths Risk Unvaccinated":null,
+      "Deaths Risk Close People":null,
+      "Deaths Risk Risk Area":null,
+      "Deaths Risk Bangkok":null,
+      "Deaths Risk Outside Hospital":1,
+      "Deaths Risk Unspecified":null,
       "Deaths Comorbidity Hypertension":79,
       "Deaths Comorbidity Diabetes":43,
       "Deaths Comorbidity Hyperlipidemia":41,
