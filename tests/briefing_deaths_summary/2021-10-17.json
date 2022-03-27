@@ -66,6 +66,18 @@
         "type":"number"
       },
       {
+        "name":"Deaths Risk Close People",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Risk Area",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Outside Hospital",
+        "type":"integer"
+      },
+      {
         "name":"Deaths Comorbidity Hypertension",
         "type":"integer"
       },
@@ -149,6 +161,9 @@
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
+      "Deaths Risk Close People":null,
+      "Deaths Risk Risk Area":null,
+      "Deaths Risk Outside Hospital":0,
       "Deaths Comorbidity Hypertension":38,
       "Deaths Comorbidity Diabetes":29,
       "Deaths Comorbidity Hyperlipidemia":23,

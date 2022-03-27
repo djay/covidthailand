@@ -43,7 +43,7 @@
       },
       {
         "name":"Deaths Risk Location",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Crowds",
@@ -63,6 +63,14 @@
       },
       {
         "name":"Deaths Risk Unvaccinated",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Close People",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Risk Area",
         "type":"integer"
       },
       {
@@ -143,12 +151,14 @@
       "Deaths Risk Family":3,
       "Deaths Risk Others":23,
       "Deaths Risk Residence":22,
-      "Deaths Risk Location":null,
+      "Deaths Risk Location":48,
       "Deaths Risk Crowds":null,
       "Deaths Risk Work":null,
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":23,
+      "Deaths Risk Close People":null,
+      "Deaths Risk Risk Area":1,
       "Deaths Comorbidity Hypertension":18,
       "Deaths Comorbidity Diabetes":12,
       "Deaths Comorbidity Hyperlipidemia":6,

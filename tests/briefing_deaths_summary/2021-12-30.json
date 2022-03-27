@@ -31,7 +31,7 @@
       },
       {
         "name":"Deaths Risk Family",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Others",
@@ -43,7 +43,7 @@
       },
       {
         "name":"Deaths Risk Location",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Crowds",
@@ -63,6 +63,14 @@
       },
       {
         "name":"Deaths Risk Unvaccinated",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Close People",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Risk Area",
         "type":"number"
       },
       {
@@ -140,15 +148,17 @@
       "Deaths Age Max":93.0,
       "Deaths Male":15,
       "Deaths Female":10,
-      "Deaths Risk Family":null,
+      "Deaths Risk Family":2,
       "Deaths Risk Others":9,
       "Deaths Risk Residence":14,
-      "Deaths Risk Location":null,
+      "Deaths Risk Location":14,
       "Deaths Risk Crowds":null,
       "Deaths Risk Work":0,
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
+      "Deaths Risk Close People":11,
+      "Deaths Risk Risk Area":null,
       "Deaths Comorbidity Hypertension":11,
       "Deaths Comorbidity Diabetes":8,
       "Deaths Comorbidity Hyperlipidemia":3,
