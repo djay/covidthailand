@@ -89,6 +89,25 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
+    df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
+    df['Deaths Comorbidity Under 60 with Comorbidity'] = df['Deaths'] - \
+        df['Deaths Comorbidity Aged 60+'] - df['Deaths Risk Under 60 Comorbidity None']
+    cols = [c for c in df.columns if "Deaths Comorbidity" in c]
+    # Just get ones that are still used. and sort by top
+    cols = list(df.iloc[-20:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    legends = [col.replace("Deaths Comorbidity ", "") for col in cols]
+    plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
+              title='% of Covid Deaths - Comorbidities - Thailand',
+              legends=legends,
+              png_prefix='deaths_comorbidities', cols_subset=cols,
+              # actuals=['Deaths'],
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     cols = [
         'Deaths',
         'Deaths Risk Unvaccinated',

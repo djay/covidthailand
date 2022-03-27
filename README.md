@@ -152,6 +152,9 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Thailand Covid Death Age Range](https://github.com/djay/covidthailand/wiki/deaths_age_dash_3.png)
 
+![Thailand Covid Deaths Comorbidies](https://github.com/djay/covidthailand/wiki/deaths_comorbidities_3.png)
+
+
 - Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
 
 ## Case Fatality Rate

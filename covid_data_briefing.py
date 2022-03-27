@@ -511,8 +511,14 @@ def briefing_deaths_summary(text, date, file):
         "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั", "ไม่มี"],
         # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
+    text = text.replace("(BMI>30 kg/m2)", "")
+
+    def find_com(thdiseases):
+        num = get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
+        return num if num <= deaths_title else np.nan
+
     comorbidity = {
-        disease: get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
+        disease: find_com(thdiseases)
         for disease, thdiseases in diseases.items()
     }
     if date in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17"), d("2022-02-27")]:
