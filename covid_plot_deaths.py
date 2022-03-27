@@ -92,7 +92,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
     df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
     df['Deaths Comorbidity Under 60 with Comorbidity'] = df['Deaths'] - \
-        df['Deaths Comorbidity Aged 60+'] - df['Deaths Risk Under 60 Comorbidity None']
+        df['Deaths Comorbidity Aged 60+'] - \
+        df['Deaths Risk Under 60 Comorbidity None'].fillna(0) - df["Deaths Comorbidity None"].fillna(0)
     cols = [c for c in df.columns if "Deaths Comorbidity" in c]
     # Just get ones that are still used. and sort by top
     cols = list(df.iloc[-20:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
@@ -110,7 +111,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
 
     cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c]
     # Just get ones that are still used. and sort by top
-    cols = list(df.iloc[-60:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    cols = list(df.iloc[-80:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
     legends = [col.replace("Deaths Risk ", "").replace("Others", "Other People") for col in cols]
     plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
               title='% of Covid Deaths - Risks - Thailand',
