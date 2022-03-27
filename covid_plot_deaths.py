@@ -108,6 +108,21 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
+    cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c]
+    # Just get ones that are still used. and sort by top
+    cols = list(df.iloc[-60:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    legends = [col.replace("Deaths Risk ", "").replace("Others", "Other People") for col in cols]
+    plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
+              title='% of Covid Deaths - Risks - Thailand',
+              legends=legends,
+              png_prefix='deaths_risk', cols_subset=cols,
+              # actuals=['Deaths'],
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     cols = [
         'Deaths',
         'Deaths Risk Unvaccinated',
