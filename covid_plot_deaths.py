@@ -93,7 +93,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     df['Deaths Comorbidity Under 60 with Comorbidity'] = df['Deaths'] - \
         df['Deaths Comorbidity Aged 60+'] - \
         df['Deaths Risk Under 60 Comorbidity None'].fillna(0) - df["Deaths Comorbidity None"].fillna(0)
-    cols = [c for c in df.columns if "Deaths Comorbidity" in c]
+    cols = [c for c in df.columns if "Deaths Comorbidity" in c and "None" not in c]
     # Just get ones that are still used. and sort by top
     cols = list(df.iloc[-50:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
     legends = [col.replace("Deaths Comorbidity ", "").replace(
