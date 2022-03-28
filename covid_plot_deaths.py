@@ -96,7 +96,10 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     cols = [c for c in df.columns if "Deaths Comorbidity" in c]
     # Just get ones that are still used. and sort by top
     cols = list(df.iloc[-50:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
-    legends = [col.replace("Deaths Comorbidity ", "") for col in cols]
+    legends = [col.replace("Deaths Comorbidity ", "").replace(
+        "Hypertension", "High Blood Pressure (Hypertension)").replace(
+        "Hyperlipidemia", "High Cholesterol (Hyperlipidemia)").replace(
+        "Cerebrovascular", "Stroke (Cerebrovascular)") for col in cols]
     plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
               title='% of Covid Deaths - Comorbidities - Thailand',
               legends=legends,
