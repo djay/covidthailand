@@ -518,6 +518,46 @@ def ihme_dataset():
     return(data)
 
 
+def get_ifr():
+    # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
+    url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
+    pop = pd.read_excel(file, header=3, index_col=1)
+
+    def year_cols(start, end):
+        return [f"{i} year" for i in range(start, end)]
+
+    pop['At 0'] = pop[year_cols(1, 10) + ["under 1"]].sum(axis=1)
+    pop["At 10"] = pop[year_cols(10, 25)].sum(axis=1)
+    pop["At 25"] = pop[year_cols(25, 46) + ["47 year"] + year_cols(47, 54)].sum(axis=1)
+    pop["At 55"] = pop[year_cols(55, 65)].sum(axis=1)
+    pop["At 65"] = pop[year_cols(65, 73) + ["74 year", "74 year"]].sum(axis=1)
+    pop["At 75"] = pop[year_cols(75, 85)].sum(axis=1)
+    pop["At 85"] = pop[year_cols(85, 101) + ["101 and over"]].sum(axis=1)
+    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
+    ifr = pd.DataFrame([[.002, .002, .01, .04, 1.4, 4.6, 15]],
+                       columns=["At 0", "At 10", "At 25",
+                                "At 55", "At 65", "At 75", "At 85"],
+                       ).transpose().rename(columns={0: "risk"})
+    pop = pop[ifr.index]
+    pop = pop.reset_index().dropna().set_index("Province").transpose()
+    unpop = pop.reset_index().melt(
+        id_vars=['index'],
+        var_name='Province',
+        value_name='Population'
+    ).rename(columns=dict(index="Age"))
+    total_pop = unpop.groupby("Province").sum().rename(
+        columns=dict(Population="total_pop"))
+    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
+    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
+    provifr = unpop.groupby("Province").sum()
+    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
+
+    # now normalise the province names
+    provifr = join_provinces(provifr, "Province")
+    return provifr
+
+
 if __name__ == '__main__':
     timeline = get_cases()
     timeline_prov = timeline_by_province()

@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 import utils_thai
-from covid_data import get_ifr
 from covid_data_api import get_case_details
+from covid_data_api import get_ifr
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cut_ages_labels

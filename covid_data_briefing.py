@@ -7,8 +7,11 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from dateutil.parser import parse as d
 
+import covid_plot_cases
+import covid_plot_deaths
 from utils_pandas import daterange
 from utils_pandas import export
+from utils_pandas import import_csv
 from utils_scraping import any_in
 from utils_scraping import camelot_cache
 from utils_scraping import get_next_number
@@ -504,7 +507,7 @@ def briefing_deaths_summary(text, date, file):
         "Obesity": ["โรคอ้วน", "อ้วน", "อ1วน"],
         "Cerebrovascular": ["หลอดเลือดสมอง"],
         "Kidney disease": ["โรคไต"],
-        "Heart disease": ["โรคหัวใจ"],
+        "Heart disease": ["โรคหัวใจ", "หัวใจ"],
         "Bedridden": ["ติดเตียง"],
         "Cancer": ["มะเร็ง"],
         "Pregnant": ["ตั้งครรภ์"],
@@ -928,3 +931,13 @@ def vac_briefing_provs(df, date, file, page, text):
 
 if __name__ == '__main__':
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
+    briefings = import_csv("cases_briefings", ["Date"], False)
+    briefings = briefings.combine_first(cases_briefings).combine_first(cases_briefings)
+    export(briefings, "cases_briefings")
+
+    old = import_csv("combined", index=["Date"])
+    df = briefings.combine_first(old)
+    export(df, "combined", csv_only=True)
+
+    covid_plot_deaths.save_death_plots(df)
+    covid_plot_cases.save_cases_plots(df)

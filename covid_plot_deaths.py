@@ -5,8 +5,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 import utils_thai
-from covid_data import get_ifr
-from covid_data import scrape_and_combine
+from covid_data_api import get_ifr
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cum2daily
@@ -96,7 +95,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
         df['Deaths Risk Under 60 Comorbidity None'].fillna(0) - df["Deaths Comorbidity None"].fillna(0)
     cols = [c for c in df.columns if "Deaths Comorbidity" in c]
     # Just get ones that are still used. and sort by top
-    cols = list(df.iloc[-20:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    cols = list(df.iloc[-50:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
     legends = [col.replace("Deaths Comorbidity ", "") for col in cols]
     plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
               title='% of Covid Deaths - Comorbidities - Thailand',
