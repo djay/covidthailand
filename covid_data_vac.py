@@ -517,12 +517,14 @@ def vaccination_tables(df, _, page, file):
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
-            elif table == "percent" and len(numbers) in [18, 22]:
+            elif table == "percent" and len(numbers) in [18, 22, 15]:
                 # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
                 pop, d1, d1p, d2, d2p, d3, d3p, total, *numbers2 = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
                 # Over 60s
                 if len(numbers) == 22:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
+                elif len(numbers) == 15:  # 2022-03-27
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
                 else:
                     pop, d1, d1p, d2, d2p, *numbers3 = numbers2
@@ -531,6 +533,8 @@ def vaccination_tables(df, _, page, file):
                 # Disease
                 if len(numbers) == 22:
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = numbers3
+                elif len(numbers) == 15:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = [np.nan] * 7
                 else:
                     pop, d1, d1p, d2, d2p, *numbers4 = numbers3
                     d3, d3p = [np.nan] * 2
@@ -680,7 +684,8 @@ def vaccination_reports():
             logger.warning("{} Dropping table: alloc doesn't match prov", date)
             continue
         else:
-            assert len(table) == 77 or date < d("2021-08-01")
+            # TODO: 2022-03-27: work out why only 76 prov
+            assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27")]
         vac_prov_reports = vac_prov_reports.combine_first(table)
 
     # Do cross check we got the same number of allocations to vaccination
