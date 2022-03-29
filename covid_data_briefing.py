@@ -556,7 +556,7 @@ def briefing_deaths_summary(text, date, file):
 
     risks = {
         "Family": ["สัมผัสญาติติดเชื้อมาเยี่ยม", "ครอบคร"],
-        "Others": ["คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก", "คนอื่น"],
+        "Others": ["คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก", "คนอื่น", "คนรู้จัก"],
         "Residence": ["อาศัย "],  # 2021-09-23 seperated  ติดเชื้อในพื้นที่ (location)
         "Location": [
             "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด",
@@ -570,7 +570,7 @@ def briefing_deaths_summary(text, date, file):
         "Work": ["อาชีพเ", "อาชีพเสี", "HCW", "บุคลากรทางการแพทย์"],  # Risky occupations inc health work
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน", "ระบุไม่ได้"],
         "Unvaccinated": ["ไม่เคยได้รับวัคซีน", "ไม่ครบตามเกณฑ์"],
-        "Close People": ["ติดเชื้อจากคนใกล"],
+        "Close People": ["อจากคนใก"],
         "Risk Area": ["จาก.นที่เสี่ยง", "จากพื้นที่เสี่ยง", "จังหวัดสีแดงเข้ม"],
         "Bangkok": ["จากกทม./?ปริมณฑล"],
         "Outside Hospital": ["เสียชีวิตนอกรพ", "เสียชีวิตที่บ้าน"],
@@ -931,12 +931,12 @@ def vac_briefing_provs(df, date, file, page, text):
 if __name__ == '__main__':
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
     briefings = import_csv("cases_briefings", ["Date"], False)
-    briefings = briefings.combine_first(cases_briefings).combine_first(cases_briefings)
+    briefings = cases_briefings.combine_first(briefings)
     export(briefings, "cases_briefings")
 
     old = import_csv("combined", index=["Date"])
-    df = briefings.combine_first(old)
+    df = briefings.combine(old, lambda s1, s2: s1)
     export(df, "combined", csv_only=True)
 
-    covid_plot_deaths.save_death_plots(df)
+    covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_cases_plots(df)
