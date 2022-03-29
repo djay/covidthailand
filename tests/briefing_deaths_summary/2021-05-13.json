@@ -54,12 +54,8 @@
         "type":"integer"
       },
       {
-        "name":"Deaths Risk HCW",
-        "type":"number"
-      },
-      {
         "name":"Deaths Risk Unknown",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Unvaccinated",
@@ -80,10 +76,6 @@
       {
         "name":"Deaths Risk Outside Hospital",
         "type":"number"
-      },
-      {
-        "name":"Deaths Risk Unspecified",
-        "type":"integer"
       },
       {
         "name":"Deaths Risk Prison",
@@ -170,14 +162,12 @@
       "Deaths Risk Location":5,
       "Deaths Risk Crowds":6,
       "Deaths Risk Work":2,
-      "Deaths Risk HCW":null,
-      "Deaths Risk Unknown":null,
+      "Deaths Risk Unknown":1,
       "Deaths Risk Unvaccinated":null,
       "Deaths Risk Close People":null,
       "Deaths Risk Risk Area":null,
       "Deaths Risk Bangkok":null,
       "Deaths Risk Outside Hospital":null,
-      "Deaths Risk Unspecified":1,
       "Deaths Risk Prison":null,
       "Deaths Comorbidity Hypertension":18,
       "Deaths Comorbidity Diabetes":14,
