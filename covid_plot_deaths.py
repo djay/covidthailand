@@ -111,7 +111,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
-    cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c]
+    cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c and "MA" not in c]
     # Just get ones that are still used. and sort by top
     cols = list(df.iloc[-80:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
     legends = [col.replace("Deaths Risk ", "").replace(
