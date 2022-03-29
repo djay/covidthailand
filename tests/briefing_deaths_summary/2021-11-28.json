@@ -43,7 +43,7 @@
       },
       {
         "name":"Deaths Risk Location",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Crowds",
@@ -63,6 +63,26 @@
       },
       {
         "name":"Deaths Risk Unvaccinated",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Close People",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Risk Area",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Bangkok",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Outside Hospital",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Unspecified",
         "type":"number"
       },
       {
@@ -143,12 +163,17 @@
       "Deaths Risk Family":2,
       "Deaths Risk Others":20,
       "Deaths Risk Residence":8,
-      "Deaths Risk Location":null,
+      "Deaths Risk Location":8,
       "Deaths Risk Crowds":null,
       "Deaths Risk Work":0,
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
+      "Deaths Risk Close People":22,
+      "Deaths Risk Risk Area":0,
+      "Deaths Risk Bangkok":null,
+      "Deaths Risk Outside Hospital":null,
+      "Deaths Risk Unspecified":null,
       "Deaths Comorbidity Hypertension":11,
       "Deaths Comorbidity Diabetes":10,
       "Deaths Comorbidity Hyperlipidemia":5,

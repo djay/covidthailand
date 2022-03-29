@@ -39,7 +39,7 @@
       },
       {
         "name":"Deaths Risk Residence",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Location",
@@ -47,7 +47,7 @@
       },
       {
         "name":"Deaths Risk Crowds",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Work",
@@ -79,11 +79,11 @@
       },
       {
         "name":"Deaths Risk Outside Hospital",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Unspecified",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Hypertension",
@@ -99,7 +99,7 @@
       },
       {
         "name":"Deaths Comorbidity Lung disease",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Obesity",
@@ -111,11 +111,11 @@
       },
       {
         "name":"Deaths Comorbidity Kidney disease",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity Heart disease",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Bedridden",
@@ -123,7 +123,7 @@
       },
       {
         "name":"Deaths Comorbidity Cancer",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Pregnant",
@@ -131,19 +131,19 @@
       },
       {
         "name":"Deaths Comorbidity None",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Under 60 Comorbidity ",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Under 60 Comorbidity None",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Over 60",
-        "type":"integer"
+        "type":"number"
       }
     ],
     "primaryKey":[
@@ -153,42 +153,42 @@
   },
   "data":[
     {
-      "Date":"2021-10-17T00:00:00.000Z",
-      "Deaths":68,
-      "Deaths Age Median":74.0,
-      "Deaths Age Min":8.0,
-      "Deaths Age Max":98.0,
-      "Deaths Male":39,
-      "Deaths Female":29,
-      "Deaths Risk Family":6,
-      "Deaths Risk Others":31,
-      "Deaths Risk Residence":30,
-      "Deaths Risk Location":79,
-      "Deaths Risk Crowds":null,
-      "Deaths Risk Work":1,
+      "Date":"2021-05-13T00:00:00.000Z",
+      "Deaths":32,
+      "Deaths Age Median":67.0,
+      "Deaths Age Min":38.0,
+      "Deaths Age Max":93.0,
+      "Deaths Male":26,
+      "Deaths Female":6,
+      "Deaths Risk Family":15,
+      "Deaths Risk Others":3,
+      "Deaths Risk Residence":null,
+      "Deaths Risk Location":5,
+      "Deaths Risk Crowds":6,
+      "Deaths Risk Work":2,
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
       "Deaths Risk Close People":null,
       "Deaths Risk Risk Area":null,
       "Deaths Risk Bangkok":null,
-      "Deaths Risk Outside Hospital":0,
-      "Deaths Risk Unspecified":null,
-      "Deaths Comorbidity Hypertension":38,
-      "Deaths Comorbidity Diabetes":29,
-      "Deaths Comorbidity Hyperlipidemia":23,
-      "Deaths Comorbidity Lung disease":null,
-      "Deaths Comorbidity Obesity":13,
+      "Deaths Risk Outside Hospital":null,
+      "Deaths Risk Unspecified":1,
+      "Deaths Comorbidity Hypertension":18,
+      "Deaths Comorbidity Diabetes":14,
+      "Deaths Comorbidity Hyperlipidemia":10,
+      "Deaths Comorbidity Lung disease":2,
+      "Deaths Comorbidity Obesity":1,
       "Deaths Comorbidity Cerebrovascular":null,
-      "Deaths Comorbidity Kidney disease":11,
-      "Deaths Comorbidity Heart disease":null,
-      "Deaths Comorbidity Bedridden":2,
-      "Deaths Comorbidity Cancer":null,
+      "Deaths Comorbidity Kidney disease":null,
+      "Deaths Comorbidity Heart disease":4,
+      "Deaths Comorbidity Bedridden":1,
+      "Deaths Comorbidity Cancer":2,
       "Deaths Comorbidity Pregnant":null,
-      "Deaths Comorbidity None":null,
-      "Deaths Risk Under 60 Comorbidity ":13,
-      "Deaths Risk Under 60 Comorbidity None":1,
-      "Deaths Risk Over 60":53
+      "Deaths Comorbidity None":6,
+      "Deaths Risk Under 60 Comorbidity ":null,
+      "Deaths Risk Under 60 Comorbidity None":null,
+      "Deaths Risk Over 60":null
     }
   ]
 }

@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 import utils_thai
-from covid_data import get_ifr
 from covid_data import scrape_and_combine
 from covid_plot_utils import plot_area
 from covid_plot_utils import source

@@ -7,8 +7,11 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from dateutil.parser import parse as d
 
+import covid_plot_cases
+import covid_plot_deaths
 from utils_pandas import daterange
 from utils_pandas import export
+from utils_pandas import import_csv
 from utils_scraping import any_in
 from utils_scraping import camelot_cache
 from utils_scraping import get_next_number
@@ -504,15 +507,21 @@ def briefing_deaths_summary(text, date, file):
         "Obesity": ["โรคอ้วน", "อ้วน", "อ1วน"],
         "Cerebrovascular": ["หลอดเลือดสมอง"],
         "Kidney disease": ["โรคไต"],
-        "Heart disease": ["โรคหัวใจ"],
+        "Heart disease": ["โรคหัวใจ", "หัวใจ"],
         "Bedridden": ["ติดเตียง"],
         "Cancer": ["มะเร็ง"],
         "Pregnant": ["ตั้งครรภ์"],
         "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั", "ไม่มี"],
         # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
+    text = text.replace("(BMI>30 kg/m2)", "")
+
+    def find_com(thdiseases):
+        num = get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
+        return num if num <= deaths_title else np.nan
+
     comorbidity = {
-        disease: get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
+        disease: find_com(thdiseases)
         for disease, thdiseases in diseases.items()
     }
     if date in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17"), d("2022-02-27")]:
@@ -546,21 +555,27 @@ def briefing_deaths_summary(text, date, file):
         assert under_60_disease != np.nan
 
     risks = {
-        "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
-        "Others": ["คนอื่นๆ", "คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก"],
+        "Family": ["สัมผัสญาติติดเชื้อมาเยี่ยม", "ครอบคร"],
+        "Others": ["คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก", "คนอื่น"],
         "Residence": ["อาศัย"],
         "Location": [
-            "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพ้ืนที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด", "อาศัย/เข้าพ้ืนที่ระบาด",
-            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด", "ในพื้นท่ี",
+            "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด",
+            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด", "ในพื้นท่ี", "มาจากจังหวัดเสี่ยง", "อาศัยพื้นที่ระบาด",
+            "พ้ืนที่ระบาด", "ติดเชื้อในพื้นที่"
         ],  # Live/go to an epidemic area
         "Crowds": [
             "ไปที่แออัด", "ไปท่ีแออัด", "ไปสถานที่แออัดพลุกพลา่น", "เข้าไปในสถานที่แออัดพลุกพลา่น",
-            "ไปสถานที่แออัดพลุกพล่าน"
+            "ไปสถานที่แออัดพลุกพล่าน", "ไปสถานที่คนแออัด",
         ],  # Go to crowded places
-        "Work": ["อาชีพเสี่ยง", "อาชีพเ"],  # Risky occupations
+        "Work": ["อาชีพเ", "อาชีพเสี"],  # Risky occupations
         "HCW": ["HCW", "บุคลากรทางการแพทย์"],
         "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
         "Unvaccinated": ["ไม่เคยได้รับวัคซีน", "ไม่ครบตามเกณฑ์"],
+        "Close People": ["ติดเชื้อจากคนใกล"],
+        "Risk Area": ["จาก.นที่เสี่ยง", "จากพื้นที่เสี่ยง", "จังหวัดสีแดงเข้ม"],
+        "Bangkok": ["จากกทม./?ปริมณฑล"],
+        "Outside Hospital": ["เสียชีวิตนอกรพ", "เสียชีวิตที่บ้าน"],
+        "Unspecified": ["ระบุไม่ได้"],
     }
     risk = {
         en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)
@@ -916,3 +931,13 @@ def vac_briefing_provs(df, date, file, page, text):
 
 if __name__ == '__main__':
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
+    briefings = import_csv("cases_briefings", ["Date"], False)
+    briefings = briefings.combine_first(cases_briefings).combine_first(cases_briefings)
+    export(briefings, "cases_briefings")
+
+    old = import_csv("combined", index=["Date"])
+    df = briefings.combine_first(old)
+    export(df, "combined", csv_only=True)
+
+    covid_plot_deaths.save_death_plots(df)
+    covid_plot_cases.save_cases_plots(df)

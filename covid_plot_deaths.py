@@ -5,8 +5,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 import utils_thai
-from covid_data import get_ifr
-from covid_data import scrape_and_combine
+from covid_data_api import get_ifr
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cum2daily
@@ -87,6 +86,44 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
+    df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
+    df['Deaths Comorbidity Under 60 with Comorbidity'] = df['Deaths'] - \
+        df['Deaths Comorbidity Aged 60+'] - \
+        df['Deaths Risk Under 60 Comorbidity None'].fillna(0) - df["Deaths Comorbidity None"].fillna(0)
+    cols = [c for c in df.columns if "Deaths Comorbidity" in c and "None" not in c]
+    # Just get ones that are still used. and sort by top
+    cols = list(df.iloc[-50:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    legends = [col.replace("Deaths Comorbidity ", "").replace(
+        "Hypertension", "High Blood Pressure (Hypertension)").replace(
+        "Hyperlipidemia", "High Cholesterol (Hyperlipidemia)").replace(
+        "Cerebrovascular", "Stroke (Cerebrovascular)") for col in cols]
+    plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
+              title='% of Covid Deaths - Comorbidities - Thailand',
+              legends=legends,
+              png_prefix='deaths_comorbidities', cols_subset=cols,
+              # actuals=['Deaths'],
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c]
+    # Just get ones that are still used. and sort by top
+    cols = list(df.iloc[-80:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    legends = [col.replace("Deaths Risk ", "").replace("Others", "Other People") for col in cols]
+    plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
+              title='% of Covid Deaths - Risks - Thailand',
+              legends=legends,
+              png_prefix='deaths_risk', cols_subset=cols,
+              # actuals=['Deaths'],
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     cols = [
