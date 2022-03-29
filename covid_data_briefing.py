@@ -557,11 +557,11 @@ def briefing_deaths_summary(text, date, file):
     risks = {
         "Family": ["สัมผัสญาติติดเชื้อมาเยี่ยม", "ครอบคร"],
         "Others": ["คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก", "คนอื่น"],
-        "Residence": ["อาศัย"],
+        "Residence": ["อาศัย "],  # 2021-09-23 seperated  ติดเชื้อในพื้นที่ (location)
         "Location": [
             "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด",
             "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด", "ในพื้นท่ี", "มาจากจังหวัดเสี่ยง", "อาศัยพื้นที่ระบาด",
-            "พ้ืนที่ระบาด", "ติดเชื้อในพื้นที่"
+            "พ้ืนที่ระบาด", "ติดเชื้อในพื้นที่", "พื้นที่ระบาด"
         ],  # Live/go to an epidemic area
         "Crowds": [
             "ไปที่แออัด", "ไปท่ีแออัด", "ไปสถานที่แออัดพลุกพลา่น", "เข้าไปในสถานที่แออัดพลุกพลา่น",
@@ -576,6 +576,7 @@ def briefing_deaths_summary(text, date, file):
         "Bangkok": ["จากกทม./?ปริมณฑล"],
         "Outside Hospital": ["เสียชีวิตนอกรพ", "เสียชีวิตที่บ้าน"],
         "Unspecified": ["ระบุไม่ได้"],
+        "Prison": ["เรือนจ า"],
     }
     risk = {
         en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)

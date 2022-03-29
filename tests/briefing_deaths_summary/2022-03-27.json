@@ -43,7 +43,7 @@
       },
       {
         "name":"Deaths Risk Location",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Crowds",
@@ -84,6 +84,10 @@
       {
         "name":"Deaths Risk Unspecified",
         "type":"number"
+      },
+      {
+        "name":"Deaths Risk Prison",
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Hypertension",
@@ -163,7 +167,7 @@
       "Deaths Risk Family":20,
       "Deaths Risk Others":26,
       "Deaths Risk Residence":null,
-      "Deaths Risk Location":null,
+      "Deaths Risk Location":4,
       "Deaths Risk Crowds":null,
       "Deaths Risk Work":null,
       "Deaths Risk HCW":null,
@@ -174,6 +178,7 @@
       "Deaths Risk Bangkok":null,
       "Deaths Risk Outside Hospital":null,
       "Deaths Risk Unspecified":null,
+      "Deaths Risk Prison":0,
       "Deaths Comorbidity Hypertension":null,
       "Deaths Comorbidity Diabetes":null,
       "Deaths Comorbidity Hyperlipidemia":null,
