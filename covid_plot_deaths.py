@@ -90,9 +90,11 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
 
     df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
     df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
+    df['Deaths Comorbidity Under 60 without Comorbidity'] = df['Deaths Risk Under 60 Comorbidity None'].combine_first(
+        df["Deaths Comorbidity None"])
     df['Deaths Comorbidity Under 60 with Comorbidity'] = df['Deaths'] - \
-        df['Deaths Comorbidity Aged 60+'] - \
-        df['Deaths Risk Under 60 Comorbidity None'].fillna(0) - df["Deaths Comorbidity None"].fillna(0)
+        df['Deaths Comorbidity Aged 60+'] - df['Deaths Comorbidity Under 60 without Comorbidity']
+    # df['Deaths Comorbidity Under 60 with Comorbidity'] = df["Deaths Risk Under 60 Comorbidity "]
     cols = [c for c in df.columns if "Deaths Comorbidity" in c and "None" not in c]
     # Just get ones that are still used. and sort by top
     cols = list(df.iloc[-50:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
