@@ -292,6 +292,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
+    logger.info('======== Generating Excess Deaths Plots ==========')
+
     # Excess Deaths
 
     # TODO: look at causes of death
@@ -582,6 +584,8 @@ see https://djay.github.io/covidthailand/#excess-deaths
               cmap='tab10',
               footnote='P-Test: A statistical method used to test one or more hypotheses within\n a population or a proportion within a population.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
+
+    logger.info('======== Finish Deaths Plots ==========')
 
 
 if __name__ == "__main__":

@@ -175,10 +175,12 @@ def plot_area(df: pd.DataFrame,
     else:
         actuals = []
 
+    # Make a copy
+
     if ma_days:
         ma_suffix = ' (MA)'
         for c in cols:
-            df[f'{c}{ma_suffix}'] = df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()
+            df = df.assign(**{f'{c}{ma_suffix}': df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()})
         cols = [f'{c}{ma_suffix}' for c in cols]
     else:
         ma_suffix = ''
@@ -190,9 +192,9 @@ def plot_area(df: pd.DataFrame,
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total}{ma_suffix}'] = df[unknown_total].rolling(ma_days,
-                                                                          min_periods=int(ma_days / 2),
-                                                                          center=True).mean()
+            df = df.assign(**{f'{unknown_total}{ma_suffix}': df[unknown_total].rolling(ma_days,
+                                                                                       min_periods=int(ma_days / 2),
+                                                                                       center=True).mean()})
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
@@ -207,9 +209,9 @@ def plot_area(df: pd.DataFrame,
             if (not unknown_total or unknown_percent or c != unknown_col) and c not in (between + actuals)
         ]
         for c in perccols:
-            df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
+            df = df.assign(**{f'{c} (%)': df[f'{c}'] / df[perccols].sum(axis=1) * 100})
         if unknown_total and not unknown_percent:
-            df[f'{unknown_name}{ma_suffix} (%)'] = 0
+            df = df.assign(**{f'{unknown_name}{ma_suffix} (%)': 0})
         perccols = [f'{c} (%)' for c in perccols]
 
     if mini_map:
@@ -532,7 +534,7 @@ def add_regions_to_axis(axis, table_regions):
 def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
-    regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
+    regions_to_add['Trend'].replace(np.nan, 0.00042, inplace=True)
     regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
     add_regions_to_axis(axis, regions_to_add)
 

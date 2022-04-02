@@ -429,6 +429,8 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
 
+    logger.info('======== Finish Cases Plots ==========')
+
 
 if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])

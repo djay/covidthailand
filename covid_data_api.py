@@ -87,7 +87,7 @@ def get_cases():
     return cases
 
 
-@functools.lru_cache(maxsize=1, typed=False)
+@functools.lru_cache(maxsize=3, typed=False)
 def get_case_details():
     cases = get_case_details_api()
 
@@ -150,7 +150,7 @@ def get_case_details_api():
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
     chunk = 5000
 
-    cases = import_csv("covid-19", dir="inputs/json")
+    cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
     # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
     data = []
     pagenum = math.floor(len(cases) / chunk)
@@ -181,7 +181,7 @@ def get_case_details_api():
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
     cases = pd.concat([cases, df], ignore_index=True)
-    # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
+    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"

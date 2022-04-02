@@ -573,6 +573,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote="% of variant estimated from random sample, not all cases",
               footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report')
 
+    logger.info('======== Finish Tests Plots ==========')
+
 
 if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
