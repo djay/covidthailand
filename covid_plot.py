@@ -28,11 +28,10 @@ def save_plots(df: pd.DataFrame) -> None:
     with Pool() as pool:
         awaits = [pool.apply_async(f, [df]) for f in [
             save_cases_plots,
-            save_cases_plots,
             save_tests_plots,
             save_vacs_plots,
+            save_active_plots,
             save_deaths_plots,
-            save_active_plots
         ]]
         [a.get() for a in awaits]
 
