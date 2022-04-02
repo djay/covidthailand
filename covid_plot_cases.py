@@ -125,10 +125,9 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     counts_by_nation = pd.crosstab(cases['Date'], cases['nationality'])
 
     # Create another DataFrame containing top 5 and others (Others = Sum of every other nationality)
-    by_nationality_top5 = counts_by_nation[top5_list]
-    by_nationality_top5['Others'] = counts_by_nation[others_list].sum(axis=1)
-    cols = [c for c in by_nationality_top5.columns]
-    plot_area(df=by_nationality_top5,
+    counts_by_nation['Others'] = counts_by_nation[others_list].sum(axis=1)
+    cols = top5_list + ["Others"]
+    plot_area(df=counts_by_nation,
               title='Non-Thai Covid Cases - by Nationality - Thailand',
               png_prefix='cases_nation', cols_subset=cols,
               ma_days=7,
@@ -136,6 +135,40 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote='\n*Thai cases are excluded',
               footnote_left=f'\n{source}Data Sources: API: Daily Reports of COVID-19 Infections')
+
+    # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
+    cols = ['Cases']
+    peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
+
+    ihme = import_csv("ihme", ['Date'])
+    col_list = ['Mobility Index', 'mobility_obs']
+    mobility = ihme[col_list]
+    # keep only observed mobility, removing forcasted part
+    mobility = mobility.loc[mobility['mobility_obs'] == 1]
+    # Calculate Reduced Mobility Index
+    mobility_min = mobility['Mobility Index'].min()
+    mobility_max = mobility['Mobility Index'].max()
+    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
+                                                                  mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
+
+    peaks = peaks.combine_first(mobility)
+    cols += ['Reduced Mobility Index - IHME (% of peak)']
+    legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
+    plot_area(df=peaks,
+              title='Social Distancing - Reduced Mobility and Number of New Cases',
+              png_prefix='mobility', cols_subset=cols, legends=legend,
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              periods_to_plot=["all", "3"],
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
+
+    logger.info('======== Finish Cases Plots ==========')
+
+
+def save_caseprov_plots(df=None):
+    logger.info('======== Generating Case Prov Plots ==========')
 
     #######################
     # Cases by provinces
@@ -400,36 +433,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               footnote="CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected\n"
               "Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)",
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
-
-    # Do a % of peak chart for cases vs. social distancingn (reduced mobility)
-    cols = ['Cases']
-    peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
-
-    ihme = import_csv("ihme", ['Date'])
-    col_list = ['Mobility Index', 'mobility_obs']
-    mobility = ihme[col_list]
-    # keep only observed mobility, removing forcasted part
-    mobility = mobility.loc[mobility['mobility_obs'] == 1]
-    # Calculate Reduced Mobility Index
-    mobility_min = mobility['Mobility Index'].min()
-    mobility_max = mobility['Mobility Index'].max()
-    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
-                                                                  mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
-
-    peaks = peaks.combine_first(mobility)
-    cols += ['Reduced Mobility Index - IHME (% of peak)']
-    legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
-    plot_area(df=peaks,
-              title='Social Distancing - Reduced Mobility and Number of New Cases',
-              png_prefix='mobility', cols_subset=cols, legends=legend,
-              ma_days=7,
-              kind='line', stacked=False, percent_fig=False, clean_end=True,
-              periods_to_plot=["all", "3"],
-              cmap='tab10',
-              y_formatter=perc_format,
-              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
-
-    logger.info('======== Finish Cases Plots ==========')
+    logger.info('======== Finish Cases Prov Plots ==========')
 
 
 if __name__ == "__main__":
@@ -437,3 +441,4 @@ if __name__ == "__main__":
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
     save_cases_plots(df)
+    save_caseprov_plots(df)

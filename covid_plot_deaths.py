@@ -11,10 +11,8 @@ from covid_plot_utils import source
 from utils_pandas import cum2daily
 from utils_pandas import cut_ages
 from utils_pandas import cut_ages_labels
-from utils_pandas import decreasing
 from utils_pandas import get_cycle
 from utils_pandas import import_csv
-from utils_pandas import increasing
 from utils_pandas import normalise_to_total
 from utils_pandas import perc_format
 from utils_pandas import rearrange

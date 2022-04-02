@@ -7,6 +7,7 @@ import pandas as pd
 
 from covid_data import scrape_and_combine
 from covid_plot_active import save_active_plots
+from covid_plot_cases import save_caseprov_plots
 from covid_plot_cases import save_cases_plots
 from covid_plot_deaths import save_deaths_plots
 from covid_plot_tests import save_tests_plots
@@ -27,6 +28,7 @@ def save_plots(df: pd.DataFrame) -> None:
     awaits = []
     with Pool() as pool:
         awaits = [pool.apply_async(f, [df]) for f in [
+            save_caseprov_plots,
             save_cases_plots,
             save_tests_plots,
             save_vacs_plots,

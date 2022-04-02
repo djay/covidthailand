@@ -1,7 +1,10 @@
+import os
+
 import pandas as pd
 
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
+from utils_pandas import import_csv
 from utils_pandas import perc_format
 from utils_scraping import logger
 
@@ -157,3 +160,11 @@ def save_active_plots(df: pd.DataFrame) -> None:
               footnote_left='Data Source: MOPH Covid-19 Dashboard')
 
     logger.info('======== Finish Active Plots ==========')
+
+
+if __name__ == "__main__":
+
+    df = import_csv("combined", index=["Date"])
+    os.environ["MAX_DAYS"] = '0'
+    os.environ['USE_CACHE_DATA'] = 'True'
+    save_active_plots(df)
