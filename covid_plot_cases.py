@@ -126,7 +126,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     # Create another DataFrame containing top 5 and others (Others = Sum of every other nationality)
     counts_by_nation['Others'] = counts_by_nation[others_list].sum(axis=1)
-    cols = top5_list + ["Others"]
+    cols = list(top5_list) + ["Others"]
     plot_area(df=counts_by_nation,
               title='Non-Thai Covid Cases - by Nationality - Thailand',
               png_prefix='cases_nation', cols_subset=cols,
