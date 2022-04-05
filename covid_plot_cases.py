@@ -433,6 +433,24 @@ def save_caseprov_plots(df=None):
               footnote="CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected\n"
               "Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)",
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    case_ages = df[cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Cases Age")]
+    death_ages = df[cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Deaths Age")]
+    death_ages.columns = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Age")
+    case_ages.columns = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Age")
+    cfr_age = death_ages.combine(case_ages, lambda d, c: d.rolling(90).mean() / c.shift(11).rolling(90).mean() * 100)
+    plot_area(df=cfr_age,
+              title='Case Fatality Rate (CFR) - Last 90 days - by Age - Thailand',
+              png_prefix='cfr_age', cols_subset=list(reversed(cfr_age.columns)),
+              ma_days=0,
+              kind='line', stacked=False, percent_fig=False,
+              # cmap=utils_thai.REG_COLOURS,
+              y_formatter=perc_format,
+              # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              footnote="CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected\n"
+              "Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)",
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     logger.info('======== Finish Cases Prov Plots ==========')
 
 
