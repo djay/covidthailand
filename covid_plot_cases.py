@@ -21,6 +21,9 @@ from utils_thai import join_provinces
 from utils_thai import trend_table
 
 
+AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
+
+
 def save_cases_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Cases Plots ==========')
 
@@ -81,7 +84,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     # Thailand Covid Cases by Age
     # cols = ["Age 0-9", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
-    cols = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Cases Age")
+    cols = cut_ages_labels(AGE_BINS, "Cases Age")
     plot_area(df=df,
               title='Covid Cases by Age - Thailand',
               png_prefix='cases_ages', cols_subset=cols,
@@ -417,6 +420,8 @@ def save_caseprov_plots(df=None):
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
 
     # Do CFR for all regions. show vaccine effectiveness
+    cfr_warning = "CFR is a poor estimate of IFR (risk of death if infected) due to low detection rates\n"
+    "Deaths shifted by 11days, median time till to death in Thailand"
     # TODO: use actual med time to death from briefing. It changes slightly over time.
     def cfr_est(df): return df['Deaths'].rolling(90).mean() / df['Cases'].shift(11).rolling(90).mean() * 100
     by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
@@ -430,14 +435,13 @@ def save_caseprov_plots(df=None):
               cmap=utils_thai.REG_COLOURS,
               y_formatter=perc_format,
               # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
-              footnote="CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected\n"
-              "Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)",
+              footnote=cfr_warning,
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
-    case_ages = df[cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Cases Age")]
-    death_ages = df[cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Deaths Age")]
-    death_ages.columns = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Age")
-    case_ages.columns = cut_ages_labels([10, 20, 30, 40, 50, 60, 70], "Age")
+    case_ages = df[cut_ages_labels(AGE_BINS, "Cases Age")]
+    death_ages = df[cut_ages_labels(AGE_BINS, "Deaths Age")]
+    death_ages.columns = cut_ages_labels(AGE_BINS, "Age")
+    case_ages.columns = cut_ages_labels(AGE_BINS, "Age")
     cfr_age = death_ages.combine(case_ages, lambda d, c: d.rolling(90).mean() / c.shift(11).rolling(90).mean() * 100)
     plot_area(df=cfr_age,
               title='Case Fatality Rate (CFR) - Last 90 days - by Age - Thailand',
@@ -447,9 +451,8 @@ def save_caseprov_plots(df=None):
               # cmap=utils_thai.REG_COLOURS,
               y_formatter=perc_format,
               # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
-              footnote="CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected\n"
-              "Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)",
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+              footnote=cfr_warning,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     logger.info('======== Finish Cases Prov Plots ==========')
 
