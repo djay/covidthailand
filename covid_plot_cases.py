@@ -441,7 +441,7 @@ def save_caseprov_plots(df=None):
     cfr_age = death_ages.combine(case_ages, lambda d, c: d.rolling(90).mean() / c.shift(11).rolling(90).mean() * 100)
     plot_area(df=cfr_age,
               title='Case Fatality Rate (CFR) - Last 90 days - by Age - Thailand',
-              png_prefix='cfr_age', cols_subset=list(cfr_age.columns),
+              png_prefix='cfr_age', cols_subset=list(reversed(cfr_age.columns)),
               ma_days=0,
               kind='line', stacked=False, percent_fig=False,
               # cmap=utils_thai.REG_COLOURS,
