@@ -492,7 +492,10 @@ def briefing_deaths_summary(text, date, file):
             # They sometimes reorder them
             male, female = female, male
         female = 8 if date == d("2022-01-29") else female
-        assert male + female == deaths_title or date in [d("2021-09-11"), d("2022-01-14")]
+        if date in [d("2021-09-11"), d("2022-01-14"), d("2022-04-08")]:
+            pass
+        else:
+            assert male + female == deaths_title
     else:
         male, female = None, None
 
