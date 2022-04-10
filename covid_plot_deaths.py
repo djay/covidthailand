@@ -341,8 +341,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
     legends = [
-        'Non-Covid Deaths Deviation from Normal Deaths',
-        'All Deaths Deviation from Average 2015-19',
+        'Non-Covid Deaths deviation from Normal Deaths',
+        'All Deaths deviation from mean 2015-19',
     ]
     plot_area(df=all, png_prefix='deaths_pscore',
               title='Mortaliy (all causes) compared to Previous Years - Thailand',
@@ -542,6 +542,19 @@ see https://djay.github.io/covidthailand/#excess-deaths
               cmap='tab10',
               footnote='Note: Average 2015-19 plus known Covid deaths.\n' + footnote5,
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
+
+    by_region = excess.groupby(["region"]).apply(calc_pscore).reset_index()
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['P-Score'], aggfunc="sum")
+    plot_area(df=by_region,
+              title='Mortaliy (all causes) compared to Previous Years - By Region - Thailand',
+              png_prefix='deaths_pscore_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              # ma_days=21,
+              kind='line', stacked=False, percent_fig=False, mini_map=True, limit_to_zero=False,
+              cmap=utils_thai.REG_COLOURS,
+              y_formatter=perc_format,
+              table=trend_table(by_province['P-Score'], sensitivity=0.04, style="abs", ma_days=1),
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
     cols = top5.columns.to_list()
