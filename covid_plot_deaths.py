@@ -342,7 +342,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
     legends = [
         'Non-Covid Deaths deviation from Normal Deaths',
-        'All Deaths deviation from mean 2015-19',
+        'All Deaths deviation from mean Normal Deaths',
     ]
     plot_area(df=all, png_prefix='deaths_pscore',
               title='Mortaliy (all causes) compared to Previous Years - Thailand',
