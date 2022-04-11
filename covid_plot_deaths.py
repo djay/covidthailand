@@ -593,7 +593,6 @@ see https://djay.github.io/covidthailand/#excess-deaths
               title='Mortaliy (all causes) compared to Previous Years - By Age - Thailand',
               png_prefix='deaths_pscore_age',
               cols_subset=list(by_age.columns),
-              periods_to_plot=['all'],
               kind='line', stacked=False, limit_to_zero=False,
               y_formatter=perc_format,
               periods_to_plot=['all'],
