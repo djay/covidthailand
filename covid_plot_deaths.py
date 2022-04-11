@@ -551,6 +551,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               # ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True, limit_to_zero=False,
               cmap=utils_thai.REG_COLOURS,
+              periods_to_plot=['all'],
               y_formatter=perc_format,
               table=trend_table(by_province['P-Score'], sensitivity=0.04, style="abs", ma_days=1),
               footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
@@ -595,6 +596,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               periods_to_plot=['all'],
               kind='line', stacked=False, limit_to_zero=False,
               y_formatter=perc_format,
+              periods_to_plot=['all'],
               cmap='tab10',
               footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
