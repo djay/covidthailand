@@ -27,6 +27,8 @@ from utils_thai import FIRST_AREAS
 from utils_thai import join_provinces
 from utils_thai import trend_table
 
+AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
+
 
 def save_deaths_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Deaths Plots ==========')
@@ -339,18 +341,18 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
     legends = [
-        'Deviation from Normal Deaths excl. Covid Deaths',
-        'Deviation from Normal Deaths Average 2015-19',
+        'Non-Covid Deaths deviation from Normal Deaths',
+        'All Deaths deviation from mean Normal Deaths',
     ]
     plot_area(df=all, png_prefix='deaths_pscore',
-              title='Monthly Deaths above Normal - Thailand',
+              title='Mortaliy (all causes) compared to Previous Years - Thailand',
               legends=legends,
               cols_subset=['Deviation from expected Deaths', 'P-Score'],
               ma_days=None,
               kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote="Note: There is some variability in comparison years 2015-19 so normal is a not a certain value.",
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     cols = [f'Deaths {y}' for y in range(2012, 2021, 1)]
@@ -541,6 +543,20 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote='Note: Average 2015-19 plus known Covid deaths.\n' + footnote5,
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
+    by_region = excess.groupby(["region"]).apply(calc_pscore).reset_index()
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['P-Score'], aggfunc="sum")
+    plot_area(df=by_region,
+              title='Mortaliy (all causes) compared to Previous Years - By Region - Thailand',
+              png_prefix='deaths_pscore_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              # ma_days=21,
+              kind='line', stacked=False, percent_fig=False, mini_map=True, limit_to_zero=False,
+              cmap=utils_thai.REG_COLOURS,
+              periods_to_plot=['all'],
+              y_formatter=perc_format,
+              table=trend_table(by_province['P-Score'], sensitivity=0.04, style="abs", ma_days=1),
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
@@ -569,18 +585,19 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote='Note: Average 2015-2019 plus known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
-    by_age = excess.pipe(cut_ages, [15, 65, 75, 85]).groupby(["Age Group"]).apply(calc_pscore)
+    by_age = excess.pipe(cut_ages, AGE_BINS).groupby(["Age Group"]).apply(calc_pscore)
     by_age = by_age.reset_index().pivot(values=["P-Score"], index="Date", columns="Age Group")
     by_age.columns = [' '.join(c) for c in by_age.columns]
 
     plot_area(df=by_age,
-              title='Excess Deaths (P-Score) by Age - Thailand',
+              title='Mortaliy (all causes) compared to Previous Years - By Age - Thailand',
               png_prefix='deaths_pscore_age',
               cols_subset=list(by_age.columns),
-              periods_to_plot=['all'],
               kind='line', stacked=False, limit_to_zero=False,
+              y_formatter=perc_format,
+              periods_to_plot=['all'],
               cmap='tab10',
-              footnote='P-Test: A statistical method used to test one or more hypotheses within\n a population or a proportion within a population.',
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     logger.info('======== Finish Deaths Plots ==========')

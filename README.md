@@ -267,9 +267,17 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 
 ![Thailand Excess deaths with Covid Deaths](https://github.com/djay/covidthailand/wiki/deaths_excess_covid_5y_all.png)
 
+![All Deaths compared to Previous Years](https://github.com/djay/covidthailand/wiki/deaths_pscore_all.png)
+
+
 ![Thailand Excess Deaths by Age](https://github.com/djay/covidthailand/wiki/deaths_excess_age_bar_5y_all.png)
 
+![All Deaths compared to Previous Years](https://github.com/djay/covidthailand/wiki/deaths_pscore_age_all.png)
+
 ![Thailand Excess Deaths by Region](https://github.com/djay/covidthailand/wiki/deaths_excess_region_5y_all.png)
+
+![All Deaths compared to Previous Years](https://github.com/djay/covidthailand/wiki/deaths_pscore_region_all.png)
+
 
 ![Thailand Deaths Years Compared](https://github.com/djay/covidthailand/wiki/deaths_excess_years_all.png)
 
