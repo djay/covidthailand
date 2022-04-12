@@ -177,13 +177,14 @@ def get_case_details_api():
         data.extend(page)
         print(".", end="")
         pagenum += 1
-    # assert last_page == pagenum
     df = pd.DataFrame(data)
     df['Date'] = pd.to_datetime(df['txn_date'])
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
     assert df.iloc[0]['Date'] <= cases.iloc[-1]["Date"]
+    # assert last_page == pagenum
+    # TODO: should probably store the page num with the data so match it up via that
     cases = pd.concat([cases, df], ignore_index=True)
     # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
