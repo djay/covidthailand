@@ -588,7 +588,9 @@ def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     # trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
 
     # Use the per population number
-    if "rank" in style:
+    if "abs" in style:
+        trend = ma * sensitivity
+    elif "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
         trend = rank.groupby("Province").apply(lambda df: (df - df.shift(ma_days)) / peak * sensitivity)

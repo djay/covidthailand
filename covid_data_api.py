@@ -162,9 +162,11 @@ def get_case_details_api():
         if len(data) >= 500000:
             break
         try:
-            r = s.get(f"{url}?page={pagenum}")
-        except:
+            r = s.get(f"{url}?page={pagenum}", timeout=40)
+        except Exception as e:
+            logger.warning("Covid19daily: Error {}", e)
             if retries == 0:
+                logger.error("Covid19daily: Error: Giving up on pagenum: {}", pagenum)
                 break
             else:
                 retries -= 1
@@ -180,6 +182,9 @@ def get_case_details_api():
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
+    assert df.iloc[0]['Date'] <= cases.iloc[-1]["Date"]
+    # assert last_page == pagenum
+    # TODO: should probably store the page num with the data so match it up via that
     cases = pd.concat([cases, df], ignore_index=True)
     # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
@@ -374,6 +379,9 @@ def get_cases_by_demographics_api():
         20220114.02: "กระบี่:Community",  # Krabi
         20220114.03: "กรุงเทพมหานคร:Community",  # Bangkok
         20220114.04: "ขอนแก่น:Community",  # Khonkaen
+        20220412.01: "Cluster Memory 90's กทม.:Entertainment",
+        20220412.02: "Cluster New Jazz กทม.:Entertainment",
+        20220412.03: "ไม่ระบุ:Unknown",
     }
     for v in r.values():
         key, cat = v.split(":")
