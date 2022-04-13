@@ -207,8 +207,8 @@ jobs:
         run: |
           bundle config set --local path vendor/bundle
           bundler install --jobs 4 --retry 3
-          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/outputs/g' README.md
-          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/api/g' downloads.md
+          sed -i 's/https:\/\/practical-ritchie-cca141.netlify.app//g' README.md
+          sed -i 's/https:\/\/practical-ritchie-cca141.netlify.app//g' downloads.md
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
@@ -228,22 +228,22 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 3
-      - name: Upload png to wiki
-        if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: kai-tub/external-repo-sync-action@v1
-        with:
-            source-directory: "outputs"
-            include-patterns: "*.png"
-        env:
-            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-      - name: Upload json to wiki
-        if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: kai-tub/external-repo-sync-action@v1
-        with:
-            source-directory: "api"
-            include-patterns: "*"
-        env:
-            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+      # - name: Upload png to wiki
+      #   if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
+      #   uses: kai-tub/external-repo-sync-action@v1
+      #   with:
+      #       source-directory: "outputs"
+      #       include-patterns: "*.png"
+      #   env:
+      #       GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+      # - name: Upload json to wiki
+      #   if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
+      #   uses: kai-tub/external-repo-sync-action@v1
+      #   with:
+      #       source-directory: "api"
+      #       include-patterns: "*"
+      #   env:
+      #       GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
       - name: Make cached docs bundle
         id: makerelease
         if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
