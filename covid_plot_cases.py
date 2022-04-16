@@ -274,7 +274,7 @@ def save_caseprov_plots(df=None):
     top5 = cases.pipe(topprov,
                       decreasing(cases_per_capita("Cases")),
                       cases_per_capita("Cases"),
-                      name="Province Cases (3d MA)",
+                      name="Province Cases",
                       other_name="Other Provinces",
                       num=7)
     cols = top5.columns.to_list()
@@ -297,7 +297,7 @@ def save_caseprov_plots(df=None):
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Top Provinces - Thailand',
               png_prefix='cases_prov_top', cols_subset=cols,
-              ma_days=14,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
@@ -310,28 +310,28 @@ def save_caseprov_plots(df=None):
     plot_area(df=top5,
               title='Confirmed Covid Cases - Top Provinces - Thailand',
               png_prefix='cases_prov_abstop', cols_subset=top5.columns.to_list(),
-              ma_days=3,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
-    top5 = cases.pipe(topprov,
-                      increasing(cases_per_capita('Cases Walkin'), 14),
-                      cases_per_capita('Cases Walkin'),
-                      name="Province Cases Walkin (7d MA)",
-                      other_name="Other Provinces",
-                      num=7)
-    cols = top5.columns.to_list()
-    plot_area(df=top5,
-              title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
-              png_prefix='cases_walkins_increasing', cols_subset=cols,
-              ma_days=14,
-              kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
-              footnote='\nNote: Per 100,000 people.\n'
-                       + 'PCR: Polymerase Chain Reaction\n'
-                       + 'Walk-in: Testing done at hospital or test lab (PCR test).',
-              footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+    # top5 = cases.pipe(topprov,
+    #                   increasing(cases_per_capita('Cases Walkin'), 14),
+    #                   cases_per_capita('Cases Walkin'),
+    #                   name="Province Cases Walkin (7d MA)",
+    #                   other_name="Other Provinces",
+    #                   num=7)
+    # cols = top5.columns.to_list()
+    # plot_area(df=top5,
+    #           title='"Walk-in" Covid Cases/100k - Top Provinces - Thailand',
+    #           png_prefix='cases_walkins_increasing', cols_subset=cols,
+    #           ma_days=14,
+    #           kind='line', stacked=False, percent_fig=False,
+    #           cmap='tab10',
+    #           footnote='\nNote: Per 100,000 people.\n'
+    #                    + 'PCR: Polymerase Chain Reaction\n'
+    #                    + 'Walk-in: Testing done at hospital or test lab (PCR test).',
+    #           footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     for risk in ['Contact', 'Proactive Search', 'Community', 'Work', 'Unknown']:
         top5 = cases.pipe(topprov,
