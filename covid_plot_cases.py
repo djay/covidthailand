@@ -310,7 +310,7 @@ def save_caseprov_plots(df=None):
     plot_area(df=top5,
               title='Confirmed Covid Cases - Top Provinces - Thailand',
               png_prefix='cases_prov_abstop', cols_subset=top5.columns.to_list(),
-              ma_days=14,
+              ma_days=3,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
