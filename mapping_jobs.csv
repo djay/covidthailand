@@ -1,26 +1,62 @@
-Job Type,alt
-Company/factory employee,พนักงานบริษัท/โรงงาน
-Company employee,พนักงานบริษัท
-Not specified,ไม่ระบุ
-General Contractor,รับจ้างทั่วไป / ฟรีแลนซ์
-Trading,ค้าขาย/ธุรกิจส่วนตัว
-Student,นักเรียน/นักศึกษา
-Unemployed,ว่างงาน
-Other,อื่นๆ
-Gov,ข้าราชการ/พนักงานของรัฐ / รัฐวิสาหกิจ
-Housekeeper,พ่อบ้าน/แม่บ้าน/ดูแลบ้าน
-Entertainment workers,พนักงานในสถานบันเทิง
-Medical Personal,HCW (บุคลากรทางการแพทย์)
-Medical Personal,พยาบาล
-Medical Personal,HCW
-Children/Parents,เด็กเล็ก/ในปกครอง
-Farmer,เกษตรกร (ปลูกพืช)
-Farmer,เกษตรกร
-Restaurant staff,พนักงานร้านอาหาร
-Hire,รับจ้าง
-Massage therapist,พนักงานนวด/สปา
-Student,นักเรียน
-Driver,พนักงานขับรถโดยสาร/รถตู้/แท๊กซี่
-Hotel Staff,พนักงานโรงแรม
-Tourist,นักท่องเที่ยว
-Student,นักศึกษา
+Job Type,translation,alt
+Company/factory employee,,พนักงานบริษัท/โรงงาน
+Company/factory employee,Company employee,พนักงานบริษัท
+Company/factory employee,Factory employee,พนักงานโรงงาน
+Company/factory employee,gardening,ทำสวน
+Company/factory employee,Hired/employee/factory employee/cleaning housekeeper,รับจ้าง/ลูกจ้าง/พนักงานโรงงาน/แม่บ้านทำความสะอาด
+Company/factory employee,Employee,ลูกจ้าง
+Company/factory employee,Hire,รับจ้าง
+Company/factory employee,Housekeeper,พ่อบ้าน/แม่บ้าน/ดูแลบ้าน
+Company/factory employee,Airport staff,เจ้าหน้าที่สนามบิน
+Farmer,,เกษตรกร (ปลูกพืช)
+Farmer,,เกษตรกร
+Farmer,agriculture,เกษตรกรรม
+Farmer,Farmer (raising animals),เกษตรกร (เลี้ยงสัตว์)
+General Contractor,Laborer,กรรมกร
+General Contractor,,รับจ้างทั่วไป / ฟรีแลนซ์
+General Contractor,,รับจ้างทั่วไป
+Trading,,ค้าขาย/ธุรกิจส่วนตัว
+Trading,Private business,ธุรกิจส่วนตัว
+Trading,Online trading/selling/personal business/restaurant,ค้าขาย/ขายของออนไลน์/ธุรกิจส่วนตัว/ร้านอาหาร
+Unemployed,,ว่างงาน
+Unemployed,Not working,ไม่ได้ประกอบอาชีพ
+Gov,,ข้าราชการ/พนักงานของรัฐ / รัฐวิสาหกิจ
+Gov,government service,รับราชการ
+Gov,Military service,รับราชการทหาร
+Gov,civil servant,ข้าราชการ
+Gov,Government employee,พนักงานราชการ
+Gov,State enterprise employees,พนักงานรัฐวิสาหกิจ
+Service,Entertainment workers,พนักงานในสถานบันเทิง
+Service,Restaurant staff,พนักงานร้านอาหาร
+Service,Massage therapist,พนักงานนวด/สปา
+Service,Hotel Staff,พนักงานโรงแรม
+Service,Flight attendants,เจ้าหน้าที่บนเครื่องบิน
+Service,Service staff,พนักงานบริการ
+Service,Bus/van/taxi driver,พนักงานขับรถโดยสาร/รถตู้/แท๊กซี่
+Service,Driver,พนักงานขับรถ
+Service,Guide/tour guide,มัคคุเทศก์/ไกด์ทัวร์
+Medical Personal,,HCW (บุคลากรทางการแพทย์)
+Medical Personal,,พยาบาล
+Medical Personal,,HCW
+Medical Personal,,HCW (ผู้ช่วยทันตแพทย์)
+Medical Personal,,HCW (พนักงานช่วยเหลือผู้ป่วย)
+Medical Personal,แพทย์,Doctor
+Medical Personal,HCW(Nurse),HCW(พยาบาล)
+Medical Personal,Medical Personal,บุคลากรทางการแพทย์
+Medical Personal,HCW(unspecified),HCW(ไม่ระบุ)
+Medical Personal,HCW(Nursing Assistant),HCW(ผู้ช่วยพยาบาล)
+Children/Parents,,เด็กเล็ก/ในปกครอง
+Children/Parents,Housewife,แม่บ้าน
+Student,,นักเรียน/นักศึกษา
+Student,,นักเรียน
+Student,,นักศึกษา
+Tourist,,นักท่องเที่ยว
+Sales,,ค้าขาย
+Sales,Salesperson,พนักงานขายสินค้า
+Sales,Department store employee,พนักงานห้างสรรพสินค้า
+Unknown,Not specified,ไม่ระบุ
+Unknown,Unknown,ไม่ทราบ
+Unknown,Unknown occupation,ไม่ทราบอาชีพ
+Unknown,monks/novices,พระสงฆ์/สามเณร
+Unknown,Other,,อื่นๆ
+Unknown,0,0
