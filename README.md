@@ -132,12 +132,12 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ## Cases by Patient Type
 
-![Cases by Patient Type](https://github.com/djay/covidthailand/wiki/cases_patient_type_3.png)
+![Cases by Patient Type](https://practical-ritchie-cca141.netlify.app/outputs/cases_patient_type_3.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 ## Cases by Job Type
 
-![Cases by Job Type](https://github.com/djay/covidthailand/wiki/cases_jobs_3.png)
+![Cases by Job Type](https://practical-ritchie-cca141.netlify.app/outputs/cases_jobs_3.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 # Deaths <a name="deaths">
