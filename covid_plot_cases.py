@@ -193,7 +193,6 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 def save_caseprov_plots(df=None):
     logger.info('======== Generating Case Prov Plots ==========')
 
-
     #######################
     # Cases by provinces
     #######################
