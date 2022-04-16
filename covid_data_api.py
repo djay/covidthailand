@@ -78,13 +78,16 @@ def get_cases():
     data = data.set_index("Date")
     data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
     cases = data[["Cases", "Deaths", "Recovered"]]
-    cases["Source Cases"] = url
     # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
     cases = cases[~cases.index.duplicated(keep='first')]
+    cases["Source Cases"] = url
+    if cases.iloc[-1]['Cases']:
+        # 2022-02-27 dud data
+        return pd.DataFrame()
     return cases
 
 
-@functools.lru_cache(maxsize=1, typed=False)
+@functools.lru_cache(maxsize=3, typed=False)
 def get_case_details():
     cases = get_case_details_api()
 
@@ -148,7 +151,7 @@ def get_case_details_api():
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
     chunk = 5000
 
-    cases = import_csv("covid-19", dir="inputs/json")
+    cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
     # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
     data = []
     pagenum = math.floor(len(cases) / chunk)
@@ -160,9 +163,11 @@ def get_case_details_api():
         if len(data) >= 500000:
             break
         try:
-            r = s.get(f"{url}?page={pagenum}")
-        except:
+            r = s.get(f"{url}?page={pagenum}", timeout=40)
+        except Exception as e:
+            logger.warning("Covid19daily: Error {}", e)
             if retries == 0:
+                logger.error("Covid19daily: Error: Giving up on pagenum: {}", pagenum)
                 break
             else:
                 retries -= 1
@@ -178,8 +183,11 @@ def get_case_details_api():
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
+    assert df.iloc[0]['Date'] <= cases.iloc[-1]["Date"]
+    # assert last_page == pagenum
+    # TODO: should probably store the page num with the data so match it up via that
     cases = pd.concat([cases, df], ignore_index=True)
-    # df['age'] = pd.to_numeric(df['age'], downcast="integer", errors="coerce")
+    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
@@ -372,6 +380,9 @@ def get_cases_by_demographics_api():
         20220114.02: "กระบี่:Community",  # Krabi
         20220114.03: "กรุงเทพมหานคร:Community",  # Bangkok
         20220114.04: "ขอนแก่น:Community",  # Khonkaen
+        20220412.01: "Cluster Memory 90's กทม.:Entertainment",
+        20220412.02: "Cluster New Jazz กทม.:Entertainment",
+        20220412.03: "ไม่ระบุ:Unknown",
     }
     for v in r.values():
         key, cat = v.split(":")
@@ -399,6 +410,18 @@ def get_cases_by_demographics_api():
     risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
 
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
+
+
+def timeline_by_province():
+    url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True)))
+    df = pd.read_json(file)
+    df = df.rename(columns={"txn_date": "Date", "province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
+                   "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
+    df = join_provinces(df, "Province")
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.drop(columns=['update_date'])
+    return df.set_index(["Date", "Province"])
 
 
 ########################
@@ -504,7 +527,64 @@ def ihme_dataset():
     return(data)
 
 
+def get_ifr():
+    # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
+    url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
+    pop = pd.read_excel(file, header=3, index_col=1)
+
+    def year_cols(start, end):
+        return [f"{i} year" for i in range(start, end)]
+
+    pop['At 0'] = pop[year_cols(1, 10) + ["under 1"]].sum(axis=1)
+    pop["At 10"] = pop[year_cols(10, 25)].sum(axis=1)
+    pop["At 25"] = pop[year_cols(25, 46) + ["47 year"] + year_cols(47, 54)].sum(axis=1)
+    pop["At 55"] = pop[year_cols(55, 65)].sum(axis=1)
+    pop["At 65"] = pop[year_cols(65, 73) + ["74 year", "74 year"]].sum(axis=1)
+    pop["At 75"] = pop[year_cols(75, 85)].sum(axis=1)
+    pop["At 85"] = pop[year_cols(85, 101) + ["101 and over"]].sum(axis=1)
+    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
+    ifr = pd.DataFrame([[.002, .002, .01, .04, 1.4, 4.6, 15]],
+                       columns=["At 0", "At 10", "At 25",
+                                "At 55", "At 65", "At 75", "At 85"],
+                       ).transpose().rename(columns={0: "risk"})
+    pop = pop[ifr.index]
+    pop = pop.reset_index().dropna().set_index("Province").transpose()
+    unpop = pop.reset_index().melt(
+        id_vars=['index'],
+        var_name='Province',
+        value_name='Population'
+    ).rename(columns=dict(index="Age"))
+    total_pop = unpop.groupby("Province").sum().rename(
+        columns=dict(Population="total_pop"))
+    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
+    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
+    provifr = unpop.groupby("Province").sum()
+    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
+
+    # now normalise the province names
+    provifr = join_provinces(provifr, "Province")
+    return provifr
+
+
 if __name__ == '__main__':
-    get_cases_by_demographics_api()
+    timeline = get_cases()
+    timeline_prov = timeline_by_province()
+    cases_demo, risks_prov = get_cases_by_demographics_api()
+    case_api_by_area = get_cases_by_area_api()
+
+    dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
+    dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
+
+    dfprov = join_provinces(dfprov, on="Province")
+    export(dfprov, "cases_by_province")
+
+    old = import_csv("combined", index=["Date"])
+    df = timeline.combine_first(cases_demo).combine_first(old)
+    export(df, "combined", csv_only=True)
+
     ihme_dataset()
     excess_deaths()
+
+    import covid_plot
+    covid_plot.save_plots(df)

@@ -1,50 +1,16 @@
-import re
+import os
 
-import matplotlib.cm
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
-import utils_thai
-from covid_data import get_ifr
-from covid_data import scrape_and_combine
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
-from utils_pandas import cum2daily
-from utils_pandas import cut_ages
-from utils_pandas import cut_ages_labels
-from utils_pandas import decreasing
-from utils_pandas import fix_gaps
-from utils_pandas import get_cycle
-from utils_pandas import human_format
 from utils_pandas import import_csv
-from utils_pandas import increasing
-from utils_pandas import normalise_to_total
 from utils_pandas import perc_format
-from utils_pandas import pred_vac
-from utils_pandas import rearrange
-from utils_pandas import set_time_series_labels_2
-from utils_pandas import topprov
-from utils_scraping import any_in
 from utils_scraping import logger
-from utils_scraping import remove_prefix
-from utils_scraping import remove_suffix
-from utils_thai import area_crosstab
-from utils_thai import AREA_LEGEND
-from utils_thai import AREA_LEGEND_ORDERED
-from utils_thai import AREA_LEGEND_SIMPLE
-from utils_thai import DISTRICT_RANGE
-from utils_thai import DISTRICT_RANGE_SIMPLE
-from utils_thai import FIRST_AREAS
-from utils_thai import get_provinces
-from utils_thai import join_provinces
-from utils_thai import thaipop
-from utils_thai import thaipop2
-from utils_thai import trend_table
 
 
 def save_active_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Tests Plots ==========')
+    logger.info('======== Generating Active Plots ==========')
 
     #######################
     # Hospital plots
@@ -192,3 +158,13 @@ def save_active_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left='Data Source: MOPH Covid-19 Dashboard')
+
+    logger.info('======== Finish Active Plots ==========')
+
+
+if __name__ == "__main__":
+
+    df = import_csv("combined", index=["Date"])
+    os.environ["MAX_DAYS"] = '0'
+    os.environ['USE_CACHE_DATA'] = 'True'
+    save_active_plots(df)

@@ -39,7 +39,7 @@
       },
       {
         "name":"Deaths Risk Residence",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Location",
@@ -51,7 +51,7 @@
       },
       {
         "name":"Deaths Risk Work",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk HCW",
@@ -79,7 +79,7 @@
       },
       {
         "name":"Deaths Risk Outside Hospital",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Unspecified",
@@ -87,19 +87,19 @@
       },
       {
         "name":"Deaths Risk Prison",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Hypertension",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity Diabetes",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity Hyperlipidemia",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Comorbidity Lung disease",
@@ -111,7 +111,7 @@
       },
       {
         "name":"Deaths Comorbidity Cerebrovascular",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Kidney disease",
@@ -119,7 +119,7 @@
       },
       {
         "name":"Deaths Comorbidity Heart disease",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Bedridden",
@@ -127,7 +127,7 @@
       },
       {
         "name":"Deaths Comorbidity Cancer",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Comorbidity Pregnant",
@@ -157,43 +157,43 @@
   },
   "data":[
     {
-      "Date":"2021-10-17T00:00:00.000Z",
-      "Deaths":68,
-      "Deaths Age Median":74.0,
-      "Deaths Age Min":8.0,
-      "Deaths Age Max":98.0,
-      "Deaths Male":39,
-      "Deaths Female":29,
-      "Deaths Risk Family":6,
-      "Deaths Risk Others":31,
-      "Deaths Risk Residence":30,
-      "Deaths Risk Location":79,
+      "Date":"2022-03-27T00:00:00.000Z",
+      "Deaths":84,
+      "Deaths Age Median":76.0,
+      "Deaths Age Min":6.0,
+      "Deaths Age Max":104.0,
+      "Deaths Male":48,
+      "Deaths Female":36,
+      "Deaths Risk Family":20,
+      "Deaths Risk Others":26,
+      "Deaths Risk Residence":null,
+      "Deaths Risk Location":4,
       "Deaths Risk Crowds":null,
-      "Deaths Risk Work":1,
+      "Deaths Risk Work":null,
       "Deaths Risk HCW":null,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
       "Deaths Risk Close People":null,
       "Deaths Risk Risk Area":null,
       "Deaths Risk Bangkok":null,
-      "Deaths Risk Outside Hospital":0,
+      "Deaths Risk Outside Hospital":null,
       "Deaths Risk Unspecified":null,
-      "Deaths Risk Prison":null,
-      "Deaths Comorbidity Hypertension":38,
-      "Deaths Comorbidity Diabetes":29,
-      "Deaths Comorbidity Hyperlipidemia":23,
+      "Deaths Risk Prison":0,
+      "Deaths Comorbidity Hypertension":null,
+      "Deaths Comorbidity Diabetes":null,
+      "Deaths Comorbidity Hyperlipidemia":null,
       "Deaths Comorbidity Lung disease":null,
-      "Deaths Comorbidity Obesity":13,
-      "Deaths Comorbidity Cerebrovascular":null,
-      "Deaths Comorbidity Kidney disease":11,
-      "Deaths Comorbidity Heart disease":null,
-      "Deaths Comorbidity Bedridden":2,
-      "Deaths Comorbidity Cancer":null,
+      "Deaths Comorbidity Obesity":4,
+      "Deaths Comorbidity Cerebrovascular":11,
+      "Deaths Comorbidity Kidney disease":25,
+      "Deaths Comorbidity Heart disease":17,
+      "Deaths Comorbidity Bedridden":9,
+      "Deaths Comorbidity Cancer":7,
       "Deaths Comorbidity Pregnant":null,
       "Deaths Comorbidity None":null,
-      "Deaths Risk Under 60 Comorbidity ":13,
+      "Deaths Risk Under 60 Comorbidity ":10,
       "Deaths Risk Under 60 Comorbidity None":1,
-      "Deaths Risk Over 60":53
+      "Deaths Risk Over 60":73
     }
   ]
 }

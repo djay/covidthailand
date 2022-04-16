@@ -7,9 +7,11 @@ on:
     branches-ignore:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
-    - cron: "45 23 * * *" # 07:15 Dashboard
-    - cron: "02 00 * * *" # 08:02 Dashboard
-    - cron: "25 00 * * *" # 08:45 Dashboard
+    # - cron: "*/19 23 * * *" # Quick checks for briefing after 7am
+    - cron: "*/15 00-03 * * *" # Quick checks for briefing after 7am
+    # - cron: "45 23 * * *" # 07:15 Dashboard
+    # - cron: "02 00 * * *" # 08:02 Dashboard
+    # - cron: "25 00 * * *" # 08:45 Dashboard
     - cron: "05 01 * * *" # 09:05 Dashboard
 #    - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
     - cron: "*/45 06-09 * * *" # Quick checks for briefing after 1pm
@@ -54,15 +56,39 @@ jobs:
         with:
           url: ${{ steps.date.outputs.briefingurl }}
           follow-redirect: yes
-      - name: skip rest if schedule > 1pm and briefing not ready
-        id: go1
-        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 || (steps.briefing.outcome == 'success') }}
+      - name: Check api available
+        id: api
+        continue-on-error: true
+        run: |
+           (curl -sL https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces | grep ${{ steps.date.outputs.date }})
+      - name: api available or it's a push
+        id: goready
+        if: ${{ (github.event_name != 'schedule' || steps.api.outcome == 'success') }}
         run: |
           echo  "'${{ github.event_name }}'(github.event_name)'	!= 'schedule' OR"
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "'${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
+      - name: Get release datasets
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "datasets.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract datasets
+        run: |
+          tar -xzvf datasets.tar.gz
+          rm datasets.tar.gz
+      - name: Api not done yet
+        id: goapi
+        if: ${{ steps.api.outcome == 'success' }}
+        continue-on-error: true
+        run: (! grep ${{ steps.date.outputs.date }} api/cases_by_province.csv )
+      - name: Dash not done yet
+        id: dash
+        # if: ${{ steps.api.outcome == 'success' && steps.goapi.outcome != 'success' }}
+        continue-on-error: true
+        run: (! grep ${{ steps.date.outputs.date }} api/moph_dashboard_prov.csv )
       - name: Cache multiple paths
-        if: ${{ steps.go1.outcome == 'success' }}
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' }}
         uses: pat-s/always-upload-cache@v2.1.5
         with:
           path: |
@@ -82,56 +108,71 @@ jobs:
             ${{ runner.os }}-${{ steps.date.outputs.year }}
             ${{ runner.os }}
       - name: Get release with cached docs
+        id: docsrelease
+        if: ${{ steps.api.outcome == 'success' || steps.dash.outcome == 'success' }}
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           file: "inputs.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
+        if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
           tar -xzvf inputs.tar.gz
           rm inputs.tar.gz
       - name: du
+        if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
           du -ha * | sort -h
-          rm -rf json/confirmed-cases.csv.2*
-      - name: skip rest if schedule > 1pm and briefing not ready or already done
-        id: go
-        if: ${{ github.event_name	!= 'schedule' || steps.date.outputs.hour < 13 ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
+      - name: go if briefing ready
+        id: gofull
+        if: ${{ github.event_name	!= 'schedule' ||  (steps.briefing.outcome == 'success' && hashFiles(steps.date.outputs.briefingfile) == '') }}
         run: |
           echo  "'${{ github.event_name }}'(github.event_name)'	!= 'schedule' OR"
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "('${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
           echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles(${{ steps.date.outputs.briefingfile }}) == '')"
       - name: Set up Python
-        if: ${{ steps.go.outcome == 'success' }}
+        id: goscrape
+        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.9.10
+          cache: 'pip'
       - uses: actions/setup-java@v1
-        if: ${{ steps.go.outcome == 'success' }}
+        if: ${{ steps.goscrape.outcome == 'success' }}
         with:
           java-version: 15
       - name: Install dependencies
-        if: ${{ steps.go.outcome == 'success' }}
+        if: ${{ steps.goscrape.outcome == 'success' }}
+        id: dep
         run: |
-          sudo apt-get update
-          sudo apt-get install ghostscript python3-tk
-          pip install -r requirements.txt
-      # - name: Check for updated data
-      #   if: ${{ github.event_name	== 'schedule' }}
-      #   run: |
-      #       python covid_plot.py
-      #   env:
-      #       CHECK_NEWER: True
+          sudo apt-get update -y
+          sudo apt-get install -y ghostscript python3-tk
+          python3 -m pip install --upgrade pip
+          pip install wheel
+          pip install -r requirements.txt --use-deprecated=html5lib --use-deprecated=legacy-resolver
+      - name: is dash ready
+        id: godash
+        if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success'}}
+        continue-on-error: true
+        run: python -c "import covid_data_dash; covid_data_dash.check_dash_ready()"
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: pytest
         env:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
+      - name: Scrape Covid Data API
+        id: updateapi
+        if: ${{ steps.gofull.outcome != 'success' && steps.godash.outcome != 'success' && steps.goapi.outcome == 'success' }}
+        run: |
+            python covid_data_api.py
+        env:
+           TIKA_VERSION: 1.24 # Prevent delays in upgrades
+           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: Scrape Covid Data
         id: update
-        if: ${{ steps.go.outcome == 'success' }}
+        if: ${{ steps.gofull.outcome == 'success' || steps.godash.outcome == 'success' || github.event_name	!= 'schedule' }}
         run: |
             python covid_plot.py
         env:
@@ -146,31 +187,6 @@ jobs:
             MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         if: "${{ env.MY_KEY != '' }}"
         run: echo "::set-output name=key::true"
-      - name: Make cached docs bundle
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        run: |
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
-           tar -czvf datasets.tar.gz api inputs/json/*.csv
-      - name: Upload inputs.tar.gz to existing release
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./inputs.tar.gz
-          asset_name: inputs.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated docs"
-      - name: Upload datasets.tar.gz to existing release
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./datasets.tar.gz
-          asset_name: datasets.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated docs"
       # - name: Push cached docs to repo
       #   run: |
       #     cd inputs
@@ -181,20 +197,24 @@ jobs:
       #     git push
 
       - uses: ruby/setup-ruby@v1
+        id: gonetlify
+        if: ${{ (steps.update.outcome == 'success' || steps.updateapi.outcome == 'success') && steps.can-deploy.outputs.key == 'true' }}
         with:
-          ruby-version: 2.6 # Not needed with a .ruby-version file
+          ruby-version: 2.7.2 # Not needed with a .ruby-version file
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       - name: Jekyll Build
+        if: ${{ steps.gonetlify.outcome == 'success' }}
         run: |
           bundle config set --local path vendor/bundle
           bundler install --jobs 4 --retry 3
-          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/outputs/g' README.md
-          sed -i 's/https:\/\/github.com\/djay\/covidthailand\/wiki/api/g' downloads.md
+          sed -i 's/https:\/\/practical-ritchie-cca141.netlify.app//g' README.md
+          sed -i 's/https:\/\/practical-ritchie-cca141.netlify.app//g' downloads.md
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
       - name: Deploy to Netlify
-        if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
+        if: ${{ steps.gonetlify.outcome == 'success' }}
+        id: netlify
         uses: nwtgck/actions-netlify@v1.2.2
         with:
           publish-dir: './_site'
@@ -207,55 +227,47 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        timeout-minutes: 1
-      # - name: Netlify preview build
-      #   if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
-      #   uses: jsmrcaga/action-netlify-deploy@v1.7.1
+        timeout-minutes: 3
+      # - name: Upload png to wiki
+      #   if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
+      #   uses: kai-tub/external-repo-sync-action@v1
       #   with:
-      #      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      #      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      #      build_directory: ./_site
-      #      deploy_alias:  ${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}
-      #      NETLIFY_DEPLOY_TO_PROD: false
-      # - name: Netlify preview status update
-      #   if: ${{ steps.update.outcome == 'success' && github.ref != 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
-      #   uses: Sibz/github-status-action@v1.1.1
+      #       source-directory: "outputs"
+      #       include-patterns: "*.png"
+      #   env:
+      #       GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+      # - name: Upload json to wiki
+      #   if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
+      #   uses: kai-tub/external-repo-sync-action@v1
       #   with:
-      #     authToken: ${{ secrets.GITHUB_TOKEN }}
-      #     context: 'Netlify preview deployed'
-      #     description: Preview has been deployed to https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
-      #     state: 'success'
-      #     sha: ${{github.event.pull_request.head.sha || github.sha}}
-      #     target_url: https://${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}--practical-ritchie-cca141.netlify.app
-      # - name: Netlify prod build
-      #   if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
-      #   uses: jsmrcaga/action-netlify-deploy@v1.7.1
-      #   with:
-      #      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      #      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      #      build_directory: ./_site
-      #      NETLIFY_DEPLOY_TO_PROD: true
-      # - name: Netlify prod deployed
-      #   if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
-      #   uses: Sibz/github-status-action@v1.1.1
-      #   with:
-      #     authToken: ${{ secrets.GITHUB_TOKEN }}
-      #     context: Netlify preview
-      #     state: success
-      #     target_url: https://practical-ritchie-cca141.netlify.app
-      - name: Upload png to wiki
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
-        uses: kai-tub/external-repo-sync-action@v1
+      #       source-directory: "api"
+      #       include-patterns: "*"
+      #   env:
+      #       GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Make cached docs bundle
+        id: makerelease
+        if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        run: |
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
+           tar -czvf datasets.tar.gz api inputs/json/*.csv
+      - name: Upload inputs.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
         with:
-            source-directory: "outputs"
-            include-patterns: "*.png"
-        env:
-            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-      - name: Upload json to wiki
-        if: ${{ steps.update.outcome == 'success' && github.ref == 'refs/heads/main' && steps.can-deploy.outputs.key == 'true' }}
-        uses: kai-tub/external-repo-sync-action@v1
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./inputs.tar.gz
+          asset_name: inputs.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+      - name: Upload datasets.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
         with:
-            source-directory: "api"
-            include-patterns: "*"
-        env:
-            GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./datasets.tar.gz
+          asset_name: datasets.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated docs"
+

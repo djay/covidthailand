@@ -39,7 +39,7 @@
       },
       {
         "name":"Deaths Risk Residence",
-        "type":"integer"
+        "type":"number"
       },
       {
         "name":"Deaths Risk Location",
@@ -54,10 +54,6 @@
         "type":"integer"
       },
       {
-        "name":"Deaths Risk HCW",
-        "type":"number"
-      },
-      {
         "name":"Deaths Risk Unknown",
         "type":"number"
       },
@@ -67,11 +63,11 @@
       },
       {
         "name":"Deaths Risk Close People",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Risk Area",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Deaths Risk Bangkok",
@@ -79,10 +75,6 @@
       },
       {
         "name":"Deaths Risk Outside Hospital",
-        "type":"integer"
-      },
-      {
-        "name":"Deaths Risk Unspecified",
         "type":"number"
       },
       {
@@ -157,43 +149,41 @@
   },
   "data":[
     {
-      "Date":"2021-10-17T00:00:00.000Z",
-      "Deaths":68,
-      "Deaths Age Median":74.0,
-      "Deaths Age Min":8.0,
-      "Deaths Age Max":98.0,
-      "Deaths Male":39,
-      "Deaths Female":29,
-      "Deaths Risk Family":6,
-      "Deaths Risk Others":31,
-      "Deaths Risk Residence":30,
-      "Deaths Risk Location":79,
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Deaths":29,
+      "Deaths Age Median":80.0,
+      "Deaths Age Min":23.0,
+      "Deaths Age Max":93.0,
+      "Deaths Male":6,
+      "Deaths Female":23,
+      "Deaths Risk Family":2,
+      "Deaths Risk Others":16,
+      "Deaths Risk Residence":null,
+      "Deaths Risk Location":11,
       "Deaths Risk Crowds":null,
-      "Deaths Risk Work":1,
-      "Deaths Risk HCW":null,
+      "Deaths Risk Work":0,
       "Deaths Risk Unknown":null,
       "Deaths Risk Unvaccinated":null,
-      "Deaths Risk Close People":null,
-      "Deaths Risk Risk Area":null,
+      "Deaths Risk Close People":18,
+      "Deaths Risk Risk Area":0,
       "Deaths Risk Bangkok":null,
-      "Deaths Risk Outside Hospital":0,
-      "Deaths Risk Unspecified":null,
+      "Deaths Risk Outside Hospital":null,
       "Deaths Risk Prison":null,
-      "Deaths Comorbidity Hypertension":38,
-      "Deaths Comorbidity Diabetes":29,
-      "Deaths Comorbidity Hyperlipidemia":23,
+      "Deaths Comorbidity Hypertension":14,
+      "Deaths Comorbidity Diabetes":10,
+      "Deaths Comorbidity Hyperlipidemia":14,
       "Deaths Comorbidity Lung disease":null,
-      "Deaths Comorbidity Obesity":13,
+      "Deaths Comorbidity Obesity":4,
       "Deaths Comorbidity Cerebrovascular":null,
-      "Deaths Comorbidity Kidney disease":11,
+      "Deaths Comorbidity Kidney disease":7,
       "Deaths Comorbidity Heart disease":null,
-      "Deaths Comorbidity Bedridden":2,
+      "Deaths Comorbidity Bedridden":5,
       "Deaths Comorbidity Cancer":null,
       "Deaths Comorbidity Pregnant":null,
       "Deaths Comorbidity None":null,
-      "Deaths Risk Under 60 Comorbidity ":13,
+      "Deaths Risk Under 60 Comorbidity ":5,
       "Deaths Risk Under 60 Comorbidity None":1,
-      "Deaths Risk Over 60":53
+      "Deaths Risk Over 60":23
     }
   ]
 }

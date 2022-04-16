@@ -1,34 +1,18 @@
+import os
 import re
 
-import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 import utils_thai
-from covid_data import get_ifr
-from covid_data import scrape_and_combine
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
-from utils_pandas import cum2daily
-from utils_pandas import cut_ages
-from utils_pandas import cut_ages_labels
-from utils_pandas import decreasing
-from utils_pandas import fix_gaps
-from utils_pandas import get_cycle
-from utils_pandas import human_format
 from utils_pandas import import_csv
-from utils_pandas import increasing
-from utils_pandas import normalise_to_total
 from utils_pandas import perc_format
-from utils_pandas import pred_vac
 from utils_pandas import rearrange
-from utils_pandas import set_time_series_labels_2
 from utils_pandas import topprov
-from utils_scraping import any_in
 from utils_scraping import logger
-from utils_scraping import remove_prefix
-from utils_scraping import remove_suffix
 from utils_thai import area_crosstab
 from utils_thai import AREA_LEGEND
 from utils_thai import AREA_LEGEND_ORDERED
@@ -36,10 +20,7 @@ from utils_thai import AREA_LEGEND_SIMPLE
 from utils_thai import DISTRICT_RANGE
 from utils_thai import DISTRICT_RANGE_SIMPLE
 from utils_thai import FIRST_AREAS
-from utils_thai import get_provinces
 from utils_thai import join_provinces
-from utils_thai import thaipop
-from utils_thai import thaipop2
 from utils_thai import trend_table
 
 
@@ -54,6 +35,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
     dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
+    # TODO: 0 maybe because no test data on that day? Does median make sense?
+    dash_prov["Positive Rate Dash"] = dash_prov["Positive Rate Dash"].replace({0.0: np.nan})
 
     # Computed data
     # TODO: has a problem if we have local transmission but no proactive
@@ -425,7 +408,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='tests_area_daily', cols_subset=cols,
               ma_days=7,
-              kind='area', stacked=True, percent_fig=False,
+              kind='line', stacked=True, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
               + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'
@@ -496,9 +479,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
     pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'],
-                            values=pos_areas["Positive Rate Dash"], aggfunc="median") * 100
+                            values=pos_areas["Positive Rate Dash"], aggfunc="mean") * 100
     plot_area(df=pos_areas,
-              title='PCR Positive Rate - Median per Region - Thailand',
+              title='PCR Positive Rate - Mean per Region - Thailand',
               png_prefix='positivity_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
@@ -571,3 +554,30 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    # Vartiants
+    raw = import_csv("variants", index=["End"], date_cols=["End"])
+    variants = raw.fillna(0)
+    variants = variants.apply(lambda x: x / x.sum(), axis=1)
+    variants = variants.reindex(pd.date_range(variants.index.min(), variants.index.max(), freq='D')).interpolate()
+    variants['Cases'] = df['Cases']
+    variants = (variants[raw.columns].multiply(variants['Cases'], axis=0))
+    cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
+    plot_area(df=variants,
+              title='Covid Cases by Variant - Estimated - Thailand',
+              png_prefix='cases_by_variants', cols_subset=cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              # y_formatter=perc_format,
+              footnote="% of variant estimated from random sample, not all cases",
+              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report')
+
+    logger.info('======== Finish Tests Plots ==========')
+
+
+if __name__ == "__main__":
+    df = import_csv("combined", index=["Date"])
+    os.environ["MAX_DAYS"] = '0'
+    os.environ['USE_CACHE_DATA'] = 'True'
+    save_tests_plots(df)
