@@ -102,7 +102,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
    [Work](https://practical-ritchie-cca141.netlify.app/outputs/cases_work_decreasing_3.png) |
    [Proactive](https://practical-ritchie-cca141.netlify.app/outputs/cases_proactive_decreasing_3.png)
 - Grouped from original data using this
-  [mapping from risk description to 10 classifcation](https://practical-ritchie-cca141.netlify.app/outputs/risk_groups.csv).
+  [mapping from risk description to 10 classifcation](https://practical-ritchie-cca141.netlify.app/api/risk_groups.csv).
 - [Cases by Risk: Full Year](https://practical-ritchie-cca141.netlify.app/outputs/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
