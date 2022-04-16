@@ -168,7 +168,7 @@ Case Types and PUI counts
 - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php) (Updated a few days later)
 - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Today's PUI count
 
-<img alt="PUI from situation reports" src="https://practical-ritchie-cca141.netlify.app/api/tested_pui_all.png" width=200>
+<img alt="PUI from situation reports" src="https://practical-ritchie-cca141.netlify.app/outputs/tested_pui_all.png" width=200>
 <img alt="Case Types" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_types_all.png" width=200>
 
 Schema
