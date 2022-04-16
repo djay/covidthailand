@@ -55,46 +55,6 @@ def prov_to_districts(dfprov):
 ################################
 
 
-def get_ifr():
-    # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
-    url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
-    pop = pd.read_excel(file, header=3, index_col=1)
-
-    def year_cols(start, end):
-        return [f"{i} year" for i in range(start, end)]
-
-    pop['At 0'] = pop[year_cols(1, 10) + ["under 1"]].sum(axis=1)
-    pop["At 10"] = pop[year_cols(10, 25)].sum(axis=1)
-    pop["At 25"] = pop[year_cols(25, 46) + ["47 year"] + year_cols(47, 54)].sum(axis=1)
-    pop["At 55"] = pop[year_cols(55, 65)].sum(axis=1)
-    pop["At 65"] = pop[year_cols(65, 73) + ["74 year", "74 year"]].sum(axis=1)
-    pop["At 75"] = pop[year_cols(75, 85)].sum(axis=1)
-    pop["At 85"] = pop[year_cols(85, 101) + ["101 and over"]].sum(axis=1)
-    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
-    ifr = pd.DataFrame([[.002, .002, .01, .04, 1.4, 4.6, 15]],
-                       columns=["At 0", "At 10", "At 25",
-                                "At 55", "At 65", "At 75", "At 85"],
-                       ).transpose().rename(columns={0: "risk"})
-    pop = pop[ifr.index]
-    pop = pop.reset_index().dropna().set_index("Province").transpose()
-    unpop = pop.reset_index().melt(
-        id_vars=['index'],
-        var_name='Province',
-        value_name='Population'
-    ).rename(columns=dict(index="Age"))
-    total_pop = unpop.groupby("Province").sum().rename(
-        columns=dict(Population="total_pop"))
-    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
-    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
-    provifr = unpop.groupby("Province").sum()
-    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
-
-    # now normalise the province names
-    provifr = join_provinces(provifr, "Province")
-    return provifr
-
-
 def get_hospital_resources():
     logger.info("========ArcGIS==========")
 
@@ -236,6 +196,7 @@ def scrape_and_combine():
         return old
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
+        api_provs = pool.apply_async(covid_data_api.timeline_by_province)
 
         dash_daily = pool.apply_async(covid_data_dash.dash_daily)
         # These 3 are slowest so should go first
@@ -263,6 +224,7 @@ def scrape_and_combine():
 
         tests = pool.apply_async(covid_data_testing.get_tests_by_day)
         tests_reports = pool.apply_async(covid_data_testing.get_test_reports)
+        variant_reports = pool.apply_async(covid_data_testing.get_variant_reports)
 
         xcess_deaths = pool.apply_async(covid_data_api.excess_deaths)
         case_api_by_area = pool.apply_async(covid_data_api.get_cases_by_area_api)  # can be very wrong for the last days
@@ -290,11 +252,14 @@ def scrape_and_combine():
 
         tests = tests.get()
         tests_reports = tests_reports.get()
+        variant_reports = variant_reports.get()
 
         xcess_deaths.get()
         case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
 
         beds = beds.get()
+
+        api_provs = api_provs.get()
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
@@ -314,6 +279,7 @@ def scrape_and_combine():
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
+        api_provs).combine_first(
         dash_by_province).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
@@ -341,7 +307,7 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, timelineapi, cases_briefings, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [tests_reports, tests, cases_briefings, timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 

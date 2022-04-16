@@ -1,19 +1,18 @@
+import os
+
 import matplotlib.cm
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
 import utils_thai
-from covid_data import get_ifr
-from covid_data import scrape_and_combine
+from covid_data_api import get_ifr
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cum2daily
 from utils_pandas import cut_ages
 from utils_pandas import cut_ages_labels
-from utils_pandas import decreasing
 from utils_pandas import get_cycle
 from utils_pandas import import_csv
-from utils_pandas import increasing
 from utils_pandas import normalise_to_total
 from utils_pandas import perc_format
 from utils_pandas import rearrange
@@ -27,6 +26,8 @@ from utils_thai import DISTRICT_RANGE_SIMPLE
 from utils_thai import FIRST_AREAS
 from utils_thai import join_provinces
 from utils_thai import trend_table
+
+AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
 
 
 def save_deaths_plots(df: pd.DataFrame) -> None:
@@ -84,6 +85,66 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               actuals=['Deaths'],
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
+    df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
+    df['Deaths Comorbidity Under 60 without Comorbidity'] = df['Deaths Risk Under 60 Comorbidity None'].combine_first(
+        df["Deaths Comorbidity None"])
+    df['Deaths Comorbidity Under 60 with Comorbidity'] = df['Deaths'] - \
+        df['Deaths Comorbidity Aged 60+'] - df['Deaths Comorbidity Under 60 without Comorbidity']
+    # df['Deaths Comorbidity Under 60 with Comorbidity'] = df["Deaths Risk Under 60 Comorbidity "]
+    cols = [c for c in df.columns if "Deaths Comorbidity" in c and "None" not in c]
+    # Just get ones that are still used. and sort by top
+    cols = list(df.iloc[-50:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    legends = [col.replace("Deaths Comorbidity ", "").replace(
+        "Hypertension", "High Blood Pressure (Hypertension)").replace(
+        "Hyperlipidemia", "High Cholesterol (Hyperlipidemia)").replace(
+        "Cerebrovascular", "Stroke (Cerebrovascular)") for col in cols]
+    plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
+              title='% of Covid Deaths - Comorbidities - Thailand',
+              legends=legends,
+              png_prefix='deaths_comorbidities', cols_subset=cols,
+              # actuals=['Deaths'],
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c and "MA" not in c]
+    # Just get ones that are still used. and sort by top
+    cols = list(df.iloc[-80:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
+    legends = [col.replace("Deaths Risk ", "").replace(
+        "Others", "Other People").replace(
+        "Location", "Live/go to an epidemic area") for col in cols]
+    plot_area(df=df[cols].div(df["Deaths"], axis=0) * 100,
+              title='% of Covid Deaths - Risks - Thailand',
+              legends=legends,
+              png_prefix='deaths_risk', cols_subset=cols,
+              # actuals=['Deaths'],
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              y_formatter=perc_format,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    cols = [
+        'Deaths',
+        'Deaths Risk Unvaccinated',
+    ]
+    legends = [
+        'Deaths',
+        'Deaths with no history of vaccination',
+    ]
+    plot_area(df=df,
+              title='Covid Deaths Unvaccinated - Thailand',
+              legends=legends,
+              png_prefix='deaths_unvaccinated', cols_subset=cols,
+              actuals=['Deaths'],
+              ma_days=7,
+              kind='area', stacked=False, percent_fig=True,
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -231,6 +292,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
+    logger.info('======== Generating Excess Deaths Plots ==========')
+
     # Excess Deaths
 
     # TODO: look at causes of death
@@ -251,14 +314,14 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
         death5_min = months[years5].min(axis=1)
         death5_max = months[years5].max(axis=1)
         result = pd.DataFrame()
-        for year in [2020, 2021]:
+        for year in [2020, 2021, 2022]:
             res = pd.DataFrame()
             res['Excess Deaths'] = (months[year] - death5_avg)
             res['P-Score'] = res['Excess Deaths'] / death5_avg * 100
             res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
             res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
-            for y in range(2012, 2022):
+            for y in range(2012, 2023):
                 res[f'Deaths {y}'] = months[y]
             res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
                                          format='%Y-%m') + MonthEnd(0)
@@ -278,18 +341,18 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
     all['Deviation from expected Deaths'] = (all['Excess Deaths'] - all['Deaths Covid']) / all['Pre Avg'] * 100
     legends = [
-        'Deviation from Normal Deaths excl. Covid Deaths',
-        'Deviation from Normal Deaths Average 2015-19',
+        'Non-Covid Deaths deviation from Normal Deaths',
+        'All Deaths deviation from mean Normal Deaths',
     ]
     plot_area(df=all, png_prefix='deaths_pscore',
-              title='Monthly Deaths above Normal - Thailand',
+              title='Mortaliy (all causes) compared to Previous Years - Thailand',
               legends=legends,
               cols_subset=['Deviation from expected Deaths', 'P-Score'],
               ma_days=None,
               kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote="Note: There is some variability in comparison years 2015-19 so normal is a not a certain value.",
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     cols = [f'Deaths {y}' for y in range(2012, 2021, 1)]
@@ -298,8 +361,10 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     years2020 = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
     cols2021 = ['Deaths 2021', 'Deaths 2021 (ex. Known Covid)']
     years2021 = by_month["2021-01-01":"2022-01-01"][cols2021 + ['Month']].reset_index().set_index("Month")
-    by_month = years2020.combine_first(years2021).sort_values("Date")
-    cols = cols + cols2021
+    cols2022 = ['Deaths 2022']
+    years2022 = by_month["2022-01-01":"2023-01-01"][cols2022 + ['Month']].reset_index().set_index("Month")
+    by_month = years2020.combine_first(years2021).combine_first(years2022).sort_values("Date")
+    cols = cols + cols2021 + cols2022
 
     plot_area(df=by_month,
               title='Excess Deaths - Thailand',
@@ -478,6 +543,20 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote='Note: Average 2015-19 plus known Covid deaths.\n' + footnote5,
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
+    by_region = excess.groupby(["region"]).apply(calc_pscore).reset_index()
+    by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['P-Score'], aggfunc="sum")
+    plot_area(df=by_region,
+              title='Mortaliy (all causes) compared to Previous Years - By Region - Thailand',
+              png_prefix='deaths_pscore_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              # ma_days=21,
+              kind='line', stacked=False, percent_fig=False, mini_map=True, limit_to_zero=False,
+              cmap=utils_thai.REG_COLOURS,
+              periods_to_plot=['all'],
+              y_formatter=perc_format,
+              table=trend_table(by_province['P-Score'], sensitivity=0.04, style="abs", ma_days=1),
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
     top5 = by_province.pipe(topprov, lambda adf: adf["Excess Deaths"], num=7)
     cols = top5.columns.to_list()
     plot_area(df=top5,
@@ -506,16 +585,27 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote='Note: Average 2015-2019 plus known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
-    by_age = excess.pipe(cut_ages, [15, 65, 75, 85]).groupby(["Age Group"]).apply(calc_pscore)
+    by_age = excess.pipe(cut_ages, AGE_BINS).groupby(["Age Group"]).apply(calc_pscore)
     by_age = by_age.reset_index().pivot(values=["P-Score"], index="Date", columns="Age Group")
     by_age.columns = [' '.join(c) for c in by_age.columns]
 
     plot_area(df=by_age,
-              title='Excess Deaths (P-Score) by Age - Thailand',
+              title='Mortaliy (all causes) compared to Previous Years - By Age - Thailand',
               png_prefix='deaths_pscore_age',
               cols_subset=list(by_age.columns),
-              periods_to_plot=['all'],
               kind='line', stacked=False, limit_to_zero=False,
+              y_formatter=perc_format,
+              periods_to_plot=['all'],
               cmap='tab10',
-              footnote='P-Test: A statistical method used to test one or more hypotheses within\n a population or a proportion within a population.',
+              footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
+
+    logger.info('======== Finish Deaths Plots ==========')
+
+
+if __name__ == "__main__":
+
+    df = import_csv("combined", index=["Date"])
+    os.environ["MAX_DAYS"] = '0'
+    os.environ['USE_CACHE_DATA'] = 'True'
+    save_deaths_plots(df)

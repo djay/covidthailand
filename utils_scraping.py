@@ -526,6 +526,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
             fixed.append((text, (url if url else None)))
         tweets[date] = fixed
     latest = max(tweets.keys()) if tweets else None
+    return tweets  # seems to be blocking and not useful new data anymore 2021-01-22
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in [50, 2000, 20000]:

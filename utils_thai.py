@@ -92,9 +92,19 @@ def today() -> datetime.datetime:
     return datetime.datetime.today()
 
 
-def to_gregyear(thai, short=False):
+def to_gregyear(thai, short=False, guess=False):
+    """
+    >>> to_gregyear("2565")
+    2022
+    >>> to_gregyear("2565", guess=True)
+    2022
+    >>> to_gregyear("2022", guess=True)
+    2022
+
+    """
     thai = thai if type(thai) != str else int(thai)
-    thai += (2500 if thai < 100 else 0) - 543
+    if not guess or thai > 2500 or (60 < thai < 100):
+        thai += (2500 if thai < 100 else 0) - 543
     return thai if not short else thai - 2000
 
 
@@ -113,23 +123,29 @@ def file2date(file):
 
     >>> file2date('files/report-100264.pdf')
     datetime.datetime(2021, 2, 10, 0, 0)
+
+    >>> str(file2date('Daily Report 20220118'))
+    '2022-01-18 00:00:00'
+
     """
 
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
     if m := re.search(r"\d{4}-\d{1,2}-\d{1,2}", file):
         return d(m.group(0))
-    # date = file.rsplit(".pdf", 1)[0]
-    # if "-" in file:
-    #     date = file.rsplit("-", 1).pop()
-    # else:
-    #     date = file.rsplit("_", 1).pop()
-    if m := re.search(r"\d{6}", file):
-        # thai date in briefing filenames
+    if m := re.search(r"(?:\d{8}|\d{6})", file):
         date = m.group(0)
-        return datetime.datetime(
-            day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
-        )
+        if len(date) == 8:
+            # assume non-thai year for 8 digits?
+            return pd.to_datetime(date)
+        else:
+            day, month, year = date[0:2], date[2:4], date[4:6]
+        # Try year at the end. thai year
+        if year[0] == "6":
+            year = int(year) - 43 + 2000
+        else:
+            year = int(year) + 2000
+        return datetime.datetime(day=int(day), month=int(month), year=year)
     return None
 
 
@@ -229,26 +245,38 @@ def find_thai_date(content, remove=False, all=False):
 
 def find_date_range(content):
     """
-    Parse thai date ranges like
-    >>> find_date_range('11-17 เม.ย. 2563')
-    (datetime.datetime(2020, 4, 11, 0, 0), datetime.datetime(2020, 4, 17, 0, 0))
+    >>> p = lambda x: tuple(str(d.date()) for d in x)
 
-    >>> find_date_range('04/04/2563 - 12/06/2563')
-    (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
+    Parse thai date ranges like
+    >>> p(find_date_range('11-17 เม.ย. 2563'))
+    ('2020-04-11', '2020-04-17')
+
+    >>> p(find_date_range('04/04/2563 - 12/06/2563'))
+    ('2020-04-04', '2020-06-12')
+
+    >>> p(find_date_range('27/02/2565 - 05-03/2565'))
+    ('2022-02-27', '2022-03-05')
+
+    Will handle gregorian too
+    >>> p(find_date_range('01/04/2021 – 04/03/2022'))
+    ('2021-04-01', '2022-03-04')
+
+    #>>> p(find_date_range('26 FEB – 04 \nMAR 22'))
+    #('2021-04-01', '2022-03-04')
     """
     m1 = re.search(
-        r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content
+        r"([0-9]+)[/-]([0-9]+)[/-]([0-9]+) *[-–] *([0-9]+)[/-]([0-9]+)[/-]([0-9]+)", content
     )
-    m2 = re.search(r"([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
-    m3 = re.search(r"([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    m2 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
+    m3 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
     if m1:
         d1, m1, y1, d2, m2, y2 = m1.groups()
-        start = datetime.datetime(day=int(d1), month=int(m1), year=int(y1) - 543)
-        end = datetime.datetime(day=int(d2), month=int(m2), year=int(y2) - 543)
+        start = datetime.datetime(day=int(d1), month=int(m1), year=to_gregyear(y1, guess=True))
+        end = datetime.datetime(day=int(d2), month=int(m2), year=to_gregyear(y2, guess=True))
         return start, end
     elif m2:
         d1, d2, month, year = m2.groups()
-        end = datetime.datetime(year=int(year) - 543, month=int(month), day=int(d2))
+        end = datetime.datetime(year=to_gregyear(year, guess=True), month=int(month), day=int(d2))
         start = previous_date(end, d1)
         return start, end
     elif m3:
@@ -260,7 +288,9 @@ def find_date_range(content):
             if month in THAI_FULL_MONTHS
             else None
         )
-        end = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
+        if not month:
+            return None, None
+        end = datetime.datetime(year=to_gregyear(year), month=month, day=int(d2))
         start = previous_date(end, d1)
         return start, end
     else:
@@ -558,7 +588,9 @@ def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     # trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
 
     # Use the per population number
-    if "rank" in style:
+    if "abs" in style:
+        trend = ma * sensitivity
+    elif "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
         trend = rank.groupby("Province").apply(lambda df: (df - df.shift(ma_days)) / peak * sensitivity)

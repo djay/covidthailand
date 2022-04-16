@@ -11,7 +11,7 @@
  - [API: Daily Summary of Cases/Deaths/Recovered](https://covid19.th-stat.com/json/covid19v2/getTimeline.json)
  - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
-### [cases_briefings.json](https://github.com/djay/covidthailand/wiki/cases_briefings) | [cases_briefings.csv](https://github.com/djay/covidthailand/wiki/cases_briefings.csv)
+### [cases_briefings.json](https://practical-ritchie-cca141.netlify.app/api/cases_briefings) | [cases_briefings.csv](https://practical-ritchie-cca141.netlify.app/api/cases_briefings.csv)
 
 Schema:
 
@@ -45,7 +45,7 @@ Schema:
 
 ### Cases/Deaths per province
 
-#### [cases_by_province.json](https://github.com/djay/covidthailand/wiki/cases_by_province) | [cases_by_province.csv](https://github.com/djay/covidthailand/wiki/cases_by_province.csv)
+#### [cases_by_province.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_province) | [cases_by_province.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_province.csv)
 
 Schema cases_by_province:
 
@@ -70,7 +70,7 @@ Schema cases_by_province:
 
 
 ### Cases/Deaths per Health District
-#### [cases_by_area.json](https://github.com/djay/covidthailand/wiki/cases_by_area), [cases_by_area.csv](https://github.com/djay/covidthailand/wiki/cases_by_area.csv)
+#### [cases_by_area.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_area), [cases_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_area.csv)
 
 Schema cases_by_area:
 
@@ -87,15 +87,15 @@ Schema cases_by_area:
 - [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
 
 
-<img alt="Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_all.png"  width=200>
-<img alt="Walk-in Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_walkins.png" width=200>
-<img alt="Proactive Cases by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_areas_proactive.png" width=200>
-<img alt="Cases by symptoms by Health Area" src="https://github.com/djay/covidthailand/wiki/cases_sym.png"  width=200>
+<img alt="Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_all.png"  width=200>
+<img alt="Walk-in Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_walkins.png" width=200>
+<img alt="Proactive Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_proactive.png" width=200>
+<img alt="Cases by symptoms by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_sym.png"  width=200>
 
 
 ## MOPH Covid-19 Dashboard <a name="dl-moph-dashboard">
 - Sources [MOPH Covid-19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/?dashboard=main)
-### [moph_dashboad.json](https://github.com/djay/covidthailand/wiki/moph_dashboard) | [moph_dashboard.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard.csv)
+### [moph_dashboad.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard) | [moph_dashboard.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard.csv)
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
 
 Schema
@@ -124,7 +124,7 @@ Schema
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
 | Source Cases | |
 
-### [moph_dashboad_prov.json](https://github.com/djay/covidthailand/wiki/moph_dashboard_prov) | [moph_dashboard_prov.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard_prov.csv)
+### [moph_dashboad_prov.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov) | [moph_dashboard_prov.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov.csv)
 
 Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
@@ -143,7 +143,7 @@ Schema
 | Vac Given {1-3} Cum | |
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
 
-### [moph_dashboad_ages.json](https://github.com/djay/covidthailand/wiki/moph_dashboard_ages) | [moph_dashboard_ages.csv](https://github.com/djay/covidthailand/wiki/moph_dashboard_ages.csv)
+### [moph_dashboad_ages.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages) | [moph_dashboard_ages.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages.csv)
 
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=select-trend-line
 
@@ -161,15 +161,15 @@ Age groups are {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70
 ## Daily Situation Reports <a name="dl-situation-reports">
 Case Types and PUI counts
 
-### [situation_reports.json](https://github.com/djay/covidthailand/wiki/situation_reports) | [situation_reports.csv](https://github.com/djay/covidthailand/wiki/situation_reports.csv)
+### [situation_reports.json](https://practical-ritchie-cca141.netlify.app/api/situation_reports) | [situation_reports.csv](https://practical-ritchie-cca141.netlify.app/api/situation_reports.csv)
 
 - Sources:
 - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
 - [MOPH daily situation report PDFs (english translations)](https://ddc.moph.go.th/viralpneumonia/eng/situation.php) (Updated a few days later)
 - [DDC Website](https://ddc.moph.go.th/viralpneumonia/index.php) - Today's PUI count
 
-<img alt="PUI from situation reports" src="https://github.com/djay/covidthailand/wiki/tested_pui_all.png" width=200>
-<img alt="Case Types" src="https://github.com/djay/covidthailand/wiki/cases_types_all.png" width=200>
+<img alt="PUI from situation reports" src="https://practical-ritchie-cca141.netlify.app/api/tested_pui_all.png" width=200>
+<img alt="Case Types" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_types_all.png" width=200>
 
 Schema
 
@@ -215,14 +215,14 @@ Bureau, Chaeng Watthana"
  - This datasource is incomplete as not all tests go via this [DMSc’co-lab database](https://www3.dmsc.moph.go.th/post-view/974). In particular times with large amounts of proactive testing
      sometimes result in more cases reported than positive results.
 
-<img src="https://github.com/djay/covidthailand/wiki/cases_all.png" width=200 alt="Private and Public Positive Test Results">
-<img alt="Private and Public Positive Tests" src="https://github.com/djay/covidthailand/wiki/tests_all.png" width=200>
-<img alt="Positive Test Results by health area" src="https://github.com/djay/covidthailand/wiki/pos_area_daily_all.png" width=200>
-<img alt="PCR Tests by health area" src="https://github.com/djay/covidthailand/wiki/tests_area_daily_all.png" width=200>
-<img alt="Positive Rate by Health District in overall positive rate (ex. some proactive tests)" src="https://github.com/djay/covidthailand/wiki/positivity_area_all.png" width=200>
+<img src="https://practical-ritchie-cca141.netlify.app/outputs/cases_all.png" width=200 alt="Private and Public Positive Test Results">
+<img alt="Private and Public Positive Tests" src="https://practical-ritchie-cca141.netlify.app/outputs/tests_all.png" width=200>
+<img alt="Positive Test Results by health area" src="https://practical-ritchie-cca141.netlify.app/outputs/pos_area_daily_all.png" width=200>
+<img alt="PCR Tests by health area" src="https://practical-ritchie-cca141.netlify.app/outputs/tests_area_daily_all.png" width=200>
+<img alt="Positive Rate by Health District in overall positive rate (ex. some proactive tests)" src="https://practical-ritchie-cca141.netlify.app/outputs/positivity_area_all.png" width=200>
 
 ### Daily Tests Private+Public
-#### [tests_pubpriv.json](https://github.com/djay/covidthailand/wiki/tests_pubpriv) | [tests_pubpriv.csv](https://github.com/djay/covidthailand/wiki/tests_pubpriv.csv)
+#### [tests_pubpriv.json](https://practical-ritchie-cca141.netlify.app/api/tests_pubpriv) | [tests_pubpriv.csv](https://practical-ritchie-cca141.netlify.app/api/tests_pubpriv.csv)
 
 Schema
 
@@ -243,7 +243,7 @@ Schema
   should be the same numbers as ```Pos``` and ```Tests```.
 
 ### Tests by Health District
-#### [tests_by_area.json](https://github.com/djay/covidthailand/wiki/tests_by_area) [tests_by_area.csv](https://github.com/djay/covidthailand/wiki/tests_by_area.csv)
+#### [tests_by_area.json](https://practical-ritchie-cca141.netlify.app/api/tests_by_area) [tests_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/tests_by_area.csv)
 
 
 Schema
@@ -264,7 +264,7 @@ Schema
 
 ## Vaccination Downloads <a name="dl-vac">
 ## Daily DDC Vaccination Reports
-### [vac_timeline.csv](https://github.com/djay/covidthailand/wiki/vac_timeline.csv)
+### [vac_timeline.csv](https://practical-ritchie-cca141.netlify.app/api/vac_timeline.csv)
 
 - Source:
  | [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
@@ -297,7 +297,7 @@ Schema
  - #TODO: put in thai group explanations.
 
 ## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety <a name="dl-vac-prov">
-### [vaccinations.csv](https://github.com/djay/covidthailand/wiki/vaccinations.csv)
+### [vaccinations.csv](https://practical-ritchie-cca141.netlify.app/api/vaccinations.csv)
 - Source:
  - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
  - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
@@ -318,7 +318,7 @@ Schema
 
 ## BORA Monthly Deaths (Excess Deaths) <a name="dl-deaths-all">
 
-### [deaths_all.csv](https://github.com/djay/covidthailand/wiki/deaths_all.csv)
+### [deaths_all.csv](https://practical-ritchie-cca141.netlify.app/api/deaths_all.csv)
 
 Total deaths from all causes by province, month, age, gender
 
@@ -336,7 +336,7 @@ Schema:
 | Deaths |  |
 
 ### Deaths by Province
-#### [deaths.json](https://github.com/djay/covidthailand/wiki/deaths), [deaths.csv](https://github.com/djay/covidthailand/wiki/deaths.csv)
+#### [deaths.json](https://practical-ritchie-cca141.netlify.app/api/deaths), [deaths.csv](https://practical-ritchie-cca141.netlify.app/api/deaths.csv)
 
 Source: briefing reports
 
@@ -361,7 +361,7 @@ Schema
 
 
 ## Combined <a name="dl-combined">
-### [combined.csv](https://github.com/djay/covidthailand/wiki/combined.csv)
+### [combined.csv](https://practical-ritchie-cca141.netlify.app/api/combined.csv)
 
 - Source:
   -  All the above daily sources combined
