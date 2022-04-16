@@ -66,6 +66,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ## Cases by Province
 
+![Provinces with Most Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_abstop_3.png)
+
 ![Provinces with Most Cases/100k](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_top_3.png)
 
 ![Trending Up Confirmed Cases (by Provinces)](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_increasing_3.png)

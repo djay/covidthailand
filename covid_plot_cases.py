@@ -303,6 +303,19 @@ def save_caseprov_plots(df=None):
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
+                      lambda adf: adf["Cases"],
+                      name="Province Cases",
+                      other_name="Other Provinces",
+                      num=7)
+    plot_area(df=top5,
+              title='Confirmed Covid Cases - Top Provinces - Thailand',
+              png_prefix='cases_prov_abstop', cols_subset=top5.columns.to_list(),
+              ma_days=14,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+
+    top5 = cases.pipe(topprov,
                       increasing(cases_per_capita('Cases Walkin'), 14),
                       cases_per_capita('Cases Walkin'),
                       name="Province Cases Walkin (7d MA)",
