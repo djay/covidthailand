@@ -306,7 +306,7 @@ def save_caseprov_plots(df=None):
                       lambda adf: adf["Cases"],
                       name="Province Cases",
                       other_name=None,
-                      num=8)
+                      num=10)
     plot_area(df=top5,
               title='Confirmed Covid Cases - Top Provinces - Thailand',
               png_prefix='cases_prov_abstop', cols_subset=top5.columns.to_list(),
