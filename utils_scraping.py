@@ -339,7 +339,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=1)
+                r = s.head(url, timeout=2)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")

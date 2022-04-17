@@ -20,12 +20,14 @@ Farmer,farmer,เกษตกร
 Farmer,agriculture,เกษตรกรรม
 Farmer,Farmer (raising animals),เกษตรกร (เลี้ยงสัตว์)
 Farmer,Fishing/Catching,ประมง/จับสัตว์น้ำ
+Farmer,Agriculture,เกษตร
 General Contractor,gardening,ทำสวน
 General Contractor,Laborer,กรรมกร
 General Contractor,,รับจ้างทั่วไป / ฟรีแลนซ์
 General Contractor,,รับจ้างทั่วไป
 General Contractor,Construction contractor,รับเหมาก่อสร้าง
 General Contractor,Repairman,ช่างซ่อม
+General Contractor,Security guard,พนักงานรักษาความปลอดภัย
 Trading,,ค้าขาย/ธุรกิจส่วนตัว
 Trading,Private business,ธุรกิจส่วนตัว
 Trading,Online trading/selling/personal business/restaurant,ค้าขาย/ขายของออนไลน์/ธุรกิจส่วนตัว/ร้านอาหาร
@@ -60,6 +62,8 @@ Service,Guide/tour guide,มัคคุเทศก์/ไกด์ทัวร
 Service,Bank employee,พนักงานธนาคาร
 Service,monks/novices,พระสงฆ์/สามเณร
 Service,Priest,นักบวช
+Service,Butler,พ่อบ้าน
+Service,Housewife/ Butler,แม่บ้าน/ พ่อบ้าน
 Medical Personal,,HCW (บุคลากรทางการแพทย์)
 Medical Personal,,พยาบาล
 Medical Personal,,HCW
@@ -72,9 +76,11 @@ Medical Personal,HCW(unspecified),HCW(ไม่ระบุ)
 Medical Personal,HCW(Nursing Assistant),HCW(ผู้ช่วยพยาบาล)
 Medical Personal,Medical staff,บุคคลากรทางการแพทย์
 Medical Personal,Registered Nurse,พนักงานรักษาความปลอดภัย
+Medical Personal,Patient helper,ผู้ช่วยเหลือคนไข้
 Children/Parents,,เด็กเล็ก/ในปกครอง
 Children/Parents,Housewife,แม่บ้าน
 Children/Parents,Children in parent,เด็กในปกครอง
+Children/Parents,small child,เด็กเล็ก
 Student,,นักเรียน/นักศึกษา
 Student,,นักเรียน
 Student,,นักศึกษา
