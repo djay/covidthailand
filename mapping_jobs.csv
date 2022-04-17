@@ -1,0 +1,100 @@
+Job Type,translation,alt
+Unskilled,Hired/employee/factory employee/cleaning housekeeper,รับจ้าง/ลูกจ้าง/พนักงานโรงงาน/แม่บ้านทำความสะอาด
+Unskilled,Company/factory employee,พนักงานบริษัท/โรงงาน
+Unskilled,Factory employee,พนักงานโรงงาน
+Unskilled,cleaning staff,พนักงานทำความสะอาด
+Unskilled,Hire,รับจ้าง
+Unskilled,Housekeeper,พ่อบ้าน/แม่บ้าน/ดูแลบ้าน
+Unskilled,Housework,งานบ้าน
+Unskilled,Factory work,รับจ้าง รง.สิ่งทอ
+Company employee,Company employee,พนักงานบริษัท
+Company employee,Employee,ลูกจ้าง
+Company employee,Airport staff,เจ้าหน้าที่สนามบิน
+Company employee,general worker,ลูกจ้างทั่วไป
+Company employee,staff,พนักงาน
+Company employee,Company/State Employee,พนักงานบริษัท/รัฐ
+Company employee,Company employee/bank employee/private company,พนักงานบริษัท/พนักงานธนาคาร/บริษัทเอกชน/
+Farmer,,เกษตรกร (ปลูกพืช)
+Farmer,,เกษตรกร
+Farmer,farmer,เกษตกร
+Farmer,agriculture,เกษตรกรรม
+Farmer,Farmer (raising animals),เกษตรกร (เลี้ยงสัตว์)
+Farmer,Fishing/Catching,ประมง/จับสัตว์น้ำ
+Farmer,Agriculture,เกษตร
+General Contractor,gardening,ทำสวน
+General Contractor,Laborer,กรรมกร
+General Contractor,,รับจ้างทั่วไป / ฟรีแลนซ์
+General Contractor,,รับจ้างทั่วไป
+General Contractor,Construction contractor,รับเหมาก่อสร้าง
+General Contractor,Repairman,ช่างซ่อม
+General Contractor,Security guard,พนักงานรักษาความปลอดภัย
+Trading,,ค้าขาย/ธุรกิจส่วนตัว
+Trading,Private business,ธุรกิจส่วนตัว
+Trading,Online trading/selling/personal business/restaurant,ค้าขาย/ขายของออนไลน์/ธุรกิจส่วนตัว/ร้านอาหาร
+Trading,Online trading,ค้าขายออนไลน์
+Trading,Private business/Trading,ธุรกิจส่วนตัว/ค้าขาย
+Sales,,ค้าขาย
+Sales,Salesperson,พนักงานขายสินค้า
+Sales,Department store employee,พนักงานห้างสรรพสินค้า
+Gov,,ข้าราชการ/พนักงานของรัฐ / รัฐวิสาหกิจ
+Gov,government service,รับราชการ
+Gov,Military service,รับราชการทหาร
+Gov,civil servant,ข้าราชการ
+Gov,Government employee,พนักงานราชการ
+Gov,State enterprise employees,พนักงานรัฐวิสาหกิจ
+Gov,Serving as a teacher,รับราชการครู
+Gov,teacher/teacher,ครู/อาจารย์
+Gov,Other government services/state enterprises/military/police,รับราชการอื่นๆ/รัฐวิสาหกิจ/ทหาร/ตำรวจ
+Gov,Government service/government employee,รับราชการ/พนักงานรัฐ
+Gov,Civil servants local councils,ข้าราชการ อบท ท้องถิ่น
+Gov,Police,ตำรวจ
+Gov,Military/Police,ทหาร/ตำรวจ
+Service,Entertainment workers,พนักงานในสถานบันเทิง
+Service,Restaurant staff,พนักงานร้านอาหาร
+Service,Massage therapist,พนักงานนวด/สปา
+Service,Hotel Staff,พนักงานโรงแรม
+Service,Flight attendants,เจ้าหน้าที่บนเครื่องบิน
+Service,Service staff,พนักงานบริการ
+Service,Bus/van/taxi driver,พนักงานขับรถโดยสาร/รถตู้/แท๊กซี่
+Service,Driving a delivery car,ขับรถส่งของ
+Service,Driver,พนักงานขับรถ
+Service,Guide/tour guide,มัคคุเทศก์/ไกด์ทัวร์
+Service,Bank employee,พนักงานธนาคาร
+Service,monks/novices,พระสงฆ์/สามเณร
+Service,Priest,นักบวช
+Service,Butler,พ่อบ้าน
+Service,Housewife/ Butler,แม่บ้าน/ พ่อบ้าน
+Medical Personal,,HCW (บุคลากรทางการแพทย์)
+Medical Personal,,พยาบาล
+Medical Personal,,HCW
+Medical Personal,,HCW (ผู้ช่วยทันตแพทย์)
+Medical Personal,,HCW (พนักงานช่วยเหลือผู้ป่วย)
+Medical Personal,แพทย์,Doctor
+Medical Personal,HCW(Nurse),HCW(พยาบาล)
+Medical Personal,Medical Personal,บุคลากรทางการแพทย์
+Medical Personal,HCW(unspecified),HCW(ไม่ระบุ)
+Medical Personal,HCW(Nursing Assistant),HCW(ผู้ช่วยพยาบาล)
+Medical Personal,Medical staff,บุคคลากรทางการแพทย์
+Medical Personal,Registered Nurse,พนักงานรักษาความปลอดภัย
+Medical Personal,Patient helper,ผู้ช่วยเหลือคนไข้
+Children/Parents,,เด็กเล็ก/ในปกครอง
+Children/Parents,Housewife,แม่บ้าน
+Children/Parents,Children in parent,เด็กในปกครอง
+Children/Parents,small child,เด็กเล็ก
+Student,,นักเรียน/นักศึกษา
+Student,,นักเรียน
+Student,,นักศึกษา
+Unemployed,,ว่างงาน
+Unemployed,Not working,ไม่ได้ประกอบอาชีพ
+Unemployed,Pensioners,ข้าราชการบำนาญ
+Unemployed,Elderly,ผู้สูงอายุ
+Unemployed,Unemployed/not working,ว่างงาน/ไม่ได้ทำงาน
+Unemployed,not working,ไม่ได้ทำงาน
+Unknown,Not specified,ไม่ระบุ
+Unknown,Unknown,ไม่ทราบ
+Unknown,Unknown occupation,ไม่ทราบอาชีพ
+Unknown,Other,อื่นๆ
+Unknown,0,0
+Unknown,in ruling,ในปกครอง
+Unknown,in ruling,ในความปกครอง
+Unknown,Tourist,นักท่องเที่ยว

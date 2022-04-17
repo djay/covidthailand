@@ -96,7 +96,13 @@ def get_case_details():
     cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
     cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
 
-    # cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
+    cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
+    # TODO: reduce down to smaller list or just show top 5?
+    cases, unmatched_jobs = fuzzy_join(cases, import_csv(
+        "mapping_jobs", 'alt', date_cols=[], dir="."), 'job', return_unmatched=True)
+    unmatched_jobs = unmatched_jobs.groupby(["job", "Job Type"], dropna=False).sum().sort_values(["count"], ascending=False)
+    export(unmatched_jobs, "unmatched_jobs", csv_only=True)
+    cases['Job Type'] = cases['Job Type'].fillna("Unknown")
 
     return cases
 

@@ -227,7 +227,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote='CFR: Case Fatality Rate\nMeasures the severity of a disease by defining the total number\n of deaths as a proportion of reported cases at a specific time.',
+              footnote="CFR: Case Fatality Rate is dependent on testing so doesn't show risk of death",
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     #ages = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
