@@ -268,7 +268,6 @@ Schema
 
 - Source:
  | [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
- | [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 
 Schema
 
@@ -293,14 +292,13 @@ Schema
  - dose is 1-4 currently
  - Some days some tables are images so there is missing data.
  - Summary vaccination data included in the combine download
- - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
+ - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC) - no longer updated
  - #TODO: put in thai group explanations.
 
-## COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety <a name="dl-vac-prov">
+## COVID-19 Vaccines by Province <a name="dl-vac-prov">
 ### [vaccinations.csv](https://practical-ritchie-cca141.netlify.app/api/vaccinations.csv)
 - Source:
  - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
- - [COVID-19 Vaccines Track and Traceability Platform for Cold Chain and Patient Safety](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC)
 
 Schema
 
