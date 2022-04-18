@@ -6,7 +6,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 - Updated daily 8-9am summary info, 1-3pm from full briefing. Testing data is updated every 1-3 weeks. [![last update was](https://github.com/djay/covidthailand/actions/workflows/main.yml/badge.svg)](https://github.com/djay/covidthailand/actions/workflows/main.yml).
 
-## [Cases](#cases) |  [Deaths](#deaths) | [Vaccinations](#vaccinations) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](downloads) | [About](#about)
+## [Cases](#cases) |  [Deaths](#deaths) | [Vaccinations](#vaccinations) | [Active Cases](#active-cases) | [Testing](#testing) | [Downloads](downloads.md) | [About](#about)
 
 **NEW** [Excess Deaths](#excess-deaths)
 
@@ -50,8 +50,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
   [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
   [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
   [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings),
-  [MOPH daily situation report](downloads#dl-situation-reports)
+- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
+  [MOPH daily situation report](downloads.md#dl-situation-reports)
 
 # Cases <a name="cases">
 
@@ -62,7 +62,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 ![Cases by Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_stacked_3.png)
 
 - [Cases by Region: Full Year](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_all.png)
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings)
+- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## Cases by Province
 
@@ -74,7 +74,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 - [Trending Down Confirmed Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_decreasing_3.png)
 
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
+- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 ## Cases by Where Tested
 
@@ -83,8 +83,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - see also [Provinces with Most Walkin Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_walkins_increasing_3.png) | [2020-2021](https://practical-ritchie-cca141.netlify.app/outputs/cases_types_all.png)
 - Contact tracing normally counts as a "Walk-in"
 - Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
-- Sources: [CCSA Daily Briefing](downloads#dl-briefings),
-  [MOPH daily situation report](downloads#dl-situation-reports)
+- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
+  [MOPH daily situation report](downloads.md#dl-situation-reports)
 
 ## Cases by Risk Classification
 
@@ -149,13 +149,13 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Deaths Top Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_top_3.png)
 
-- source: [CCSA Daily Briefing](downloads#dl-briefings)
+- source: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## COVID-19 Deaths Age Range
 
 ![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_3.png)
 
-- Source: [CCSA Daily Briefing](downloads#dl-briefings)
+- Source: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_dash_3.png)
 
@@ -163,7 +163,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Thailand Covid Deaths Risk](https://practical-ritchie-cca141.netlify.app/outputs/deaths_risk_3.png)
 
-- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
+- Source: [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard)
 
 ## Case Fatality Rate
 
@@ -172,7 +172,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - To show more recent trends last 90 days is used instead of total deaths / total cases which is normally used.
 - [CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected](https://ourworldindata.org/mortality-risk-covid#understanding-the-case-fatality-crude-mortality-and-the-infection-fatality-rate)
 - Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)
-- Source: [CCSA Daily Briefing](downloads#dl-briefings)
+- Source: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 # Vaccinations <a name="vaccinations">
 
@@ -186,7 +186,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Progress towards booster Vaccination](https://practical-ritchie-cca141.netlify.app/outputs/vac_groups_goals_3_3.png)
 
-- Source: [DDC Daily Vaccination Reports](downloads#dl-vac)
+- Source: [DDC Daily Vaccination Reports](downloads.md#dl-vac)
 
 ## Vaccinations by Region/Province
 
@@ -208,7 +208,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 
 
-- Source: [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads#dl-vac)
+- Source: [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [DDC Daily Vaccination Reports](downloads.md#dl-vac)
 
 - see also [Lowest Provinces by Vaccination 1st Jab](https://practical-ritchie-cca141.netlify.app/outputs/vac_low_doses_1_3.png) |
 [Vaccinations 1st given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_daily_1_3.png) |
@@ -224,7 +224,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - Other Active Cases + ICU + Ventilator + Field hospitals = Hospitalised, which is everyone who is
   confirmed (for 14days at least)
 - see [Thailand Active Cases 2020-2021]((https://practical-ritchie-cca141.netlify.app/outputs/cases_active_all.png))
-- Source: [CCSA Daily Briefing](downloads#dl-briefings)
+- Source: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 
 # Testing <a name="testing">
@@ -238,12 +238,12 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - [Positive rate < 5% for 2 weeks amd > 0.1%/w tested (10k/d tested)) means sufficient tests: WHO](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html)
 Assumes easy access to tests for everyone.
 - It's likely there is [missing test data](https://practical-ritchie-cca141.netlify.app/outputs#more-cases-than-positive-results). Using confirmed cases migth be more accurate.
-- This positive rate is based on [DMSC: Thailand Laboratory testing data](downloads#dl-testing). In the [Daily MOPH Situation Reports](downloads#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://practical-ritchie-cca141.netlify.app/outputs).
+- This positive rate is based on [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing). In the [Daily MOPH Situation Reports](downloads.md#dl-situation-reports) is a number labelled ```Total number of laboratory tests```.  [```Total number of laboratory tests``` is mislabelled and is exactly the same as the PUI number](https://practical-ritchie-cca141.netlify.app/outputs).
 - see also [Positive Rate: Full year](https://practical-ritchie-cca141.netlify.app/outputs/positivity_all.png), [Tests per Case Graph](https://practical-ritchie-cca141.netlify.app/outputs/tests_per_case_3.png) (Positive rate inverted) could be easier to understand,
 [Positive Rate - Top Provinces - Thailand](https://practical-ritchie-cca141.netlify.app/outputs/positivity_prov_top_3.png),
 [Positive Rate - Lowest Provinces - Thailand](https://practical-ritchie-cca141.netlify.app/outputs/positivity_prov_low_3.png)
 
-- Sources: [DMSC: Thailand Laboratory testing data](downloads#dl-testing), [Daily situation Reports](downloads#dl-situation-reports), [MOPH Covid-19 Dashboard](downloads#dl-moph-dashboard)
+- Sources: [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing), [Daily situation Reports](downloads.md#dl-situation-reports), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard)
 
 ## PCR Tests in Thailand by day
 
@@ -255,7 +255,7 @@ Assumes easy access to tests for everyone.
 
 - [There are more confirmed cases than positives in Thailand's testing data](https://practical-ritchie-cca141.netlify.app/outputs#more-cases-than-positive-results), this could be for various
   reasons but could make the positive rate lower.
-- Sources: [Daily situation Reports](downloads#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
+- Sources: [Daily situation Reports](downloads.md#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing)
 
 ## PCR Tests by Health District
 
@@ -263,7 +263,7 @@ Assumes easy access to tests for everyone.
 
 - [Tests by health area: Full Year](https://practical-ritchie-cca141.netlify.app/outputs/tests_area_daily_all.png)
 - *NOTE* Excludes some proactive tests (non-PCR) so actual tests is higher
-- Source: [DMSC: Thailand Laboratory testing data](downloads#dl-testing)
+- Source: [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing)
 
 
 # Excess Deaths <a name="excess-deaths">
@@ -294,7 +294,7 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 [All](https://practical-ritchie-cca141.netlify.app/outputs/deaths_excess_covid_all.png) | [by region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_excess_region_all.png) | [by age](https://practical-ritchie-cca141.netlify.app/outputs/deaths_excess_age_bar_all.png) show clearer baseline more similar to other countries.
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
-- Source [Office of Registration Administration, Department of Provincial Administration](downloads#dl-deaths-all)
+- Source [Office of Registration Administration, Department of Provincial Administration](downloads.md#dl-deaths-all)
 
 ## How to contribute
 
