@@ -1,5 +1,6 @@
 import datetime
 import os
+import time
 
 import pandas as pd
 import requests
@@ -295,6 +296,7 @@ def get_variants_plot_pdf(file, page, page_num):
 
 
 def get_variant_reports():
+    start = time.time()
     data = pd.DataFrame()
     raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     area = import_csv("variants_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
@@ -336,6 +338,8 @@ def get_variant_reports():
 
     export(nat, "variants")
     export(area, "variants_by_area")
+
+    logger.info(f"==== Testing Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return nat
 

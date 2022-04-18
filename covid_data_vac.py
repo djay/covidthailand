@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import re
+import time
 
 import numpy as np
 import pandas as pd
@@ -647,6 +648,7 @@ def vaccination_reports_files2(check=True,
 
 
 def vaccination_reports():
+    start = time.time()
     vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
     vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
 
@@ -703,6 +705,8 @@ def vaccination_reports():
     #     # vac_prov_reports = vac_prov_reports.drop(index=missing_data.index)
 
     #     # Just in case coldchain data not working
+
+    logger.info(f"==== Vac Reports Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return vac_daily, vac_prov_reports
 
@@ -911,6 +915,7 @@ def vac_slides_groups(df, page, file, page_num):
 
 
 def vac_slides():
+    start = time.time()
     df = pd.DataFrame(columns=['Date']).set_index("Date")
     for link, _, get_file in vac_slides_files():
         file = get_file()
@@ -918,6 +923,7 @@ def vac_slides():
             # pass
             df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
+    logger.info(f"==== Vac Slides Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 

@@ -1,3 +1,4 @@
+import datetime
 import sys
 import time
 
@@ -50,6 +51,7 @@ def todays_data():
 
 
 def dash_daily():
+    start = time.time()
     df = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
 
     # remove crap from bad pivot
@@ -163,10 +165,12 @@ def dash_daily():
     assert df[df['Recovered'] == 0.0].loc["2021-03-05":].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
+    logger.info(f"==== Dash Daily Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 
 def dash_ages():
+    start = time.time()
     df = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
 
     # Fix mistake in column name
@@ -215,10 +219,12 @@ def dash_ages():
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
     export(df, "moph_dashboard_ages", csv_only=True, dir="inputs/json")
+    logger.info(f"==== Dash Ages Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 
 def dash_trends_prov():
+    start = time.time()
     df = import_csv("moph_dashboard_prov_trends", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
@@ -252,11 +258,12 @@ def dash_trends_prov():
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
     export(df, "moph_dashboard_prov_trends", csv_only=True, dir="inputs/json")  # Speeds up things locally
-
+    logger.info(f"==== Dash Trends Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 
 def dash_by_province():
+    start = time.time()
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province"
@@ -373,6 +380,7 @@ def dash_by_province():
             # Save as we go to help debugging
             export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")  # Speeds up things locally
+    print(f"==== Dash Provinces Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return df
 
