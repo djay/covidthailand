@@ -31,4 +31,4 @@ show_downloads: true
 github:
   zip_url: https://djay.github.io/covidthailand/#downloads
   tar_url: https://djay.github.io/covidthailand/#downloads
-permalink: /:title:output_ext
+permalink: :path:basename:output_ext

@@ -1,0 +1,194 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Allocated AstraZeneca",
+        "type":"number"
+      },
+      {
+        "name":"Vac Allocated Sinovac",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Health Volunteer 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Health Volunteer 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Health Volunteer 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Kids 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Medical All 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical All 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical All 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical Staff 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical Staff 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Medical Staff 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Other Frontline Staff 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Other Frontline Staff 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Other Frontline Staff 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Over 60 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Over 60 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Disease 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Disease 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Disease 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Location 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Location 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Location 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Risk: Pregnant 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Risk: Pregnant 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Risk: Pregnant 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Student 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Group Student 3 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2022-04-10T00:00:00.000Z",
+      "Vac Allocated AstraZeneca":null,
+      "Vac Allocated Sinovac":null,
+      "Vac Given 1 Cum":55910538,
+      "Vac Given 2 Cum":50577061,
+      "Vac Given 3 Cum":24667381,
+      "Vac Group Health Volunteer 1 Cum":789965,
+      "Vac Group Health Volunteer 2 Cum":776755,
+      "Vac Group Health Volunteer 3 Cum":592450,
+      "Vac Group Kids 1 Cum":null,
+      "Vac Group Kids 2 Cum":null,
+      "Vac Group Kids 3 Cum":null,
+      "Vac Group Medical All 1 Cum":1655392,
+      "Vac Group Medical All 2 Cum":1626104,
+      "Vac Group Medical All 3 Cum":1338374,
+      "Vac Group Medical Staff 1 Cum":865427,
+      "Vac Group Medical Staff 2 Cum":849349,
+      "Vac Group Medical Staff 3 Cum":745924,
+      "Vac Group Other Frontline Staff 1 Cum":null,
+      "Vac Group Other Frontline Staff 2 Cum":null,
+      "Vac Group Other Frontline Staff 3 Cum":null,
+      "Vac Group Over 60 1 Cum":8556526,
+      "Vac Group Over 60 2 Cum":8145031,
+      "Vac Group Over 60 3 Cum":3938066,
+      "Vac Group Risk: Disease 1 Cum":5082849,
+      "Vac Group Risk: Disease 2 Cum":4866397,
+      "Vac Group Risk: Disease 3 Cum":2599052,
+      "Vac Group Risk: Location 1 Cum":34484510,
+      "Vac Group Risk: Location 2 Cum":32263844,
+      "Vac Group Risk: Location 3 Cum":16199439,
+      "Vac Group Risk: Pregnant 1 Cum":null,
+      "Vac Group Risk: Pregnant 2 Cum":null,
+      "Vac Group Risk: Pregnant 3 Cum":null,
+      "Vac Group Student 1 Cum":3640728,
+      "Vac Group Student 2 Cum":3519279,
+      "Vac Group Student 3 Cum":null
+    }
+  ]
+}

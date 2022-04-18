@@ -159,7 +159,7 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|วคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
     first_line = page.split("\n\n")[0]
     date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
@@ -689,6 +689,14 @@ def vaccination_reports():
             # TODO: 2022-03-27: work out why only 76 prov
             assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27")]
         vac_prov_reports = vac_prov_reports.combine_first(table)
+        if date < d("2021-12-11"):
+            # TODO: find days where day is yesterdays and fix them, or fix the check
+            pass
+        elif date in [d("2022-01-21"), d("2022-01-04"), d("2021-12-11")]:
+            # "2022-01-21": is actually "2022-01-20"
+            pass
+        else:
+            assert date in vac_daily.index
 
     # Do cross check we got the same number of allocations to vaccination
     # if not vac_prov_reports.empty:
