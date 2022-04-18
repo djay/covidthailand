@@ -1,6 +1,5 @@
-import os
-import shutil
 import sys
+import time
 
 import numpy as np
 import pandas as pd
@@ -33,17 +32,21 @@ from utils_thai import today
 def todays_data():
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
-    for get_wb, date in workbook_iterate(url, param_date=[today(), today()]):
+    while True:
+        get_wb, date = next(workbook_iterate(url, param_date=[today(), today()]))
         date = next(iter(date))
         if (wb := get_wb()) is None:
             continue
         last_update = wb.getWorksheet("D_UpdateTime").data
-        if not last_update.empty:
-            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
-            return last_update >= today().date()
-            # We got todays data too early
+        if last_update.empty:
+            continue
         else:
-            return False
+            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            if last_update >= today().date():
+                return True
+            # We got todays data too early
+        print("z", end="")
+        time.sleep(60)
 
 
 def dash_daily():
@@ -436,6 +439,7 @@ def skip_valid(df, idx_value, allow_na={}):
 
 
 def check_dash_ready():
+    print("Waiting for today's dashboard update ")
     gottoday = todays_data()
     print(gottoday)
     sys.exit(0 if gottoday else 1)
@@ -443,11 +447,10 @@ def check_dash_ready():
 
 if __name__ == '__main__':
 
+    # check_dash_ready()
     dash_by_province_df = dash_by_province()
     dash_daily_df = dash_daily()
     dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
     dash_trends_prov_df = dash_trends_prov()
-
-    check_dash_ready()

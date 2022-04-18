@@ -9,7 +9,7 @@ on:
   schedule: # can be up to 20min late. So better to have more updates
     # - cron: "*/19 23 * * *" # Quick checks for briefing after 7am
     - cron: "55 23 * * *" # after midnight is delayed
-    - cron: "*/15 00-02 * * *" # Quick checks for briefing after 7am (but often after 8:30am)
+#    - cron: "*/15 00-02 * * *" # Quick checks for briefing after 7am (but often after 8:30am)
     # - cron: "45 23 * * *" # 07:15 Dashboard
     # - cron: "02 00 * * *" # 08:02 Dashboard
     # - cron: "25 00 * * *" # 08:45 Dashboard
