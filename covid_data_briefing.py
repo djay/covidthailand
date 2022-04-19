@@ -232,6 +232,8 @@ def briefing_case_types(date, pages, url):
 
         assert not pd.isna(recovered)
 
+        occupancy = next(iter(get_next_numbers(text, "ครองเตียงระดับ 2-3", return_rest=False, ints=False)), np.nan)
+
         deaths, _ = get_next_number(text, "เสียชีวิตสะสม", "เสียชีวติสะสม", "เสียชีวติ", before=True)
         assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
         if date > d("2021-04-23"):
@@ -258,6 +260,7 @@ def briefing_case_types(date, pages, url):
             severe,
             respirator,
             hospitalised,
+            occupancy,
             recovered,
             deaths,
             url,
@@ -275,6 +278,7 @@ def briefing_case_types(date, pages, url):
         "Hospitalized Severe",
         "Hospitalized Respirator",
         "Hospitalized",
+        "Hospitalized Occupancy Level 2-3 %",
         "Recovered",
         "Deaths",
         "Source Cases",
