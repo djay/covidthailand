@@ -13,6 +13,7 @@ from utils_pandas import cut_ages
 from utils_pandas import cut_ages_labels
 from utils_pandas import get_cycle
 from utils_pandas import import_csv
+from utils_pandas import increasing
 from utils_pandas import normalise_to_total
 from utils_pandas import perc_format
 from utils_pandas import rearrange
@@ -53,9 +54,9 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
     cases_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Cases"], aggfunc="sum")
 
-    def cases_per_capita(col):
+    def cases_per_capita(col, per=100000):
         def func(adf):
-            return adf[col] / adf['Population'] * 100000
+            return adf[col] / adf['Population'] * per
         return func
 
     ####################
@@ -182,8 +183,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
 
     by_region = cases.reset_index()
     by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")
-    plot_area(df=by_region / pop_region * 100000,
-              title='Covid Deaths/100k - by Region - Thailand',
+    plot_area(df=by_region / pop_region * 10**6,
+              title='Covid Deaths/1M - by Region - Thailand',
               png_prefix='deaths_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
@@ -203,15 +204,28 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     top5 = cases.pipe(topprov,
-                      cases_per_capita("Deaths"),
+                      cases_per_capita("Deaths", 10**6),
                       name="Province Cases",
                       other_name="Other Provinces",
-                      num=5)
-    cols = top5.columns.to_list()
+                      num=7)
 
     plot_area(df=top5,
-              title='Covid Deaths/100k - Top Provinces - Thailand',
-              png_prefix='deaths_prov_top', cols_subset=cols,
+              title='Covid Deaths/1M - Top Provinces - Thailand',
+              png_prefix='deaths_prov_top', cols_subset=top5.columns.to_list(),
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False,
+              cmap='tab10',
+              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+
+    top5 = cases.pipe(topprov,
+                      increasing(cases_per_capita("Deaths", 10**6), 14),
+                      name="Province Cases",
+                      other_name="Other Provinces",
+                      num=7)
+
+    plot_area(df=top5,
+              title='Covid Deaths/1M - Trending Up Provinces - Thailand',
+              png_prefix='deaths_prov_incresing', cols_subset=top5.columns.to_list(),
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',

@@ -149,6 +149,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Deaths Top Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_top_3.png)
 
+![Deaths Trending up Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_increasing_3.png)
+
 - source: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## COVID-19 Deaths Age Range
