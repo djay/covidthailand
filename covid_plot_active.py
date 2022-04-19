@@ -142,15 +142,15 @@ def save_active_plots(df: pd.DataFrame) -> None:
         'Hospitalized Respirator',
         'Hospitalized Severe',
         'Hospitalized All Mild',
-        "Hospitalized Occupancy Level 2-3 %",
     ]
+    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
+    peaks["Hospitalized Occupancy Level 2-3 %"] = df["Hospitalized Occupancy Level 2-3 %"]
     legends = [
         'In Serious Condition on Ventilator',
         'In Serious Condition without Ventilator',
         'In Mild Condition',
-        'Level 2-3 Bed Occupancy'
+        'Hospital Bed Occupancy (Serious Condition Lvl 2-3)'
     ]
-    peaks = df[cols] / df.rolling(7).mean().max(axis=0) * 100
     plot_area(df=peaks,
               title='Active Covid Cases by Condition as % of Peak - Thailand',
               png_prefix='active_peak', cols_subset=cols,
