@@ -143,13 +143,13 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Thailand Covid Deaths by Reason](https://practical-ritchie-cca141.netlify.app/outputs/deaths_reason_3.png)
 
-![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_3.png)
+![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_4.png)
 
 ![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_stacked_3.png)
 
-![Deaths Top Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_top_3.png)
+![Deaths Top Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_top_4.png)
 
-![Deaths Trending up Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_increasing_3.png)
+![Deaths Trending up Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_increasing_4.png)
 
 - source: [CCSA Daily Briefing](downloads.md#dl-briefings)
 

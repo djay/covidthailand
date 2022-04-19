@@ -93,7 +93,7 @@ def plot_area(df: pd.DataFrame,
               unknown_percent=False,
               ma_days: int = None,
               cmap: str = 'tab20',
-              periods_to_plot=None,
+              periods_to_plot=['3'],
               actuals: List[str] = [],
               highlight: List[str] = [],
               box_cols: List[str] = [],
@@ -252,6 +252,7 @@ def plot_area(df: pd.DataFrame,
             # '1': df_clean[:'2020-06-01'],
             # '2': df_clean['2020-12-12':],
             '3': df_clean['2021-04-01':],
+            '4': df_clean['2022-02-01':],
             '30d': df_clean.last('30d')
         }
         quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch

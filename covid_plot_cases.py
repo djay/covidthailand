@@ -51,6 +51,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               actuals=["Cases"],
+              periods_to_plot=['3', 'all'],
               cmap="tab10",
               footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
                        + 'Contact tracing counts as a Walk-in.\n'
@@ -232,6 +233,7 @@ def save_caseprov_plots(df=None):
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, mini_map=True,
               unknown_name="Imported/Prisons", unknown_total="Cases",
+              periods_to_plot=['3', 'all'],
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 

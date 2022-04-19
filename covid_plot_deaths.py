@@ -1,6 +1,5 @@
 import os
 
-import matplotlib.cm
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 
@@ -189,8 +188,9 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
+              periods_to_plot=['3', '4'],
               table=trend_table(cases['Deaths'], sensitivity=25, style="green_down", ma_days=21),
-              footnote='Table of latest Deaths and 7 day trend per 100k',
+              footnote='Table of latest Deaths and regional 7 day trend per 1M',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     by_region['Deaths'] = df['Deaths']
@@ -199,6 +199,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               png_prefix='deaths_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
               kind='area', stacked=True, percent_fig=True, mini_map=True,
+              periods_to_plot=['3', '4'],
               #          unknown_name="Imported/Prisons", unknown_total="Deaths",  # I don't think deaths get seperated
               cmap=utils_thai.REG_COLOURS,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
@@ -215,6 +216,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              periods_to_plot=['3', '4'],
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     top5 = cases.pipe(topprov,
@@ -225,10 +227,11 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
 
     plot_area(df=top5,
               title='Covid Deaths/1M - Trending Up Provinces - Thailand',
-              png_prefix='deaths_prov_incresing', cols_subset=top5.columns.to_list(),
+              png_prefix='deaths_prov_increasing', cols_subset=top5.columns.to_list(),
               ma_days=21,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              periods_to_plot=['3', '4'],
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
     # Work out Death ages from CFR from situation reports
