@@ -312,7 +312,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
         "Boosted",
     ]
     legend = [
-        "Home Isolation based on ATK - Probable Case (% of peak)",
+        "Reg. ATK - Probable Case (% of peak)",
         "Confirmed Cases (% of peak)",
         "Vaccinated - 2nd dose (% of Thai Pop.)",
         "Reported Covid Deaths (% of peak)",

@@ -277,7 +277,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Confirmed Walk-in Cases',
         'Positive PCR Test Results',
         #    'Positive PCR Test Results (Public)',
-        'Probable Cases from ATK Tests (home isolation)',
+        'Registered ATK Probable Case (Home Isolation)',
         'Positive Proactive ATK Test Results (NHSO provided)',
     ]
     plot_area(df=df,
