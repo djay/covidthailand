@@ -302,7 +302,7 @@ def test_briefing_case_types(date, testdf, dl):
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, "")
     # write_scrape_data_back_to_test(df, "briefing_case_types")
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_province_cases", briefing_documents))
