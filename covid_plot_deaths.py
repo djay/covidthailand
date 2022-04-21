@@ -64,17 +64,19 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
 
     # TODO: predict median age of death based on population demographics
 
+    # I think they are the same really. or pretty close
+    df['Deaths Under 60yo without Underlying Diseases'] = df['Deaths Risk Under 60 Comorbidity None'].combine_first(
+        df['Deaths Comorbidity None'])
+
     cols = [
         'Deaths',
         'Deaths Risk Family',
-        'Deaths Comorbidity None',
-        'Deaths Risk Under 60 Comorbidity None',
+        'Deaths Under 60yo without Underlying Diseases',
         #        'Deaths Risk Unvaccinated',
     ]
     legends = [
         'Deaths',
         'Deaths Infected from Family',
-        'Deaths without Underlying Diseases',
         'Deaths Under 60yo without Underlying Diseases',
         #        'Deaths with no history of vaccination',
     ]
