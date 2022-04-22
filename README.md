@@ -76,15 +76,11 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Cases by Where Tested
 
-![Source of Confirmed Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_types_3.png)
+## Cases by Patient Type
 
-- see also [Provinces with Most Walkin Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_walkins_increasing_3.png) | [2020-2021](https://practical-ritchie-cca141.netlify.app/outputs/cases_types_all.png)
-- Contact tracing normally counts as a "Walk-in"
-- Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
-- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
-  [MOPH daily situation report](downloads.md#dl-situation-reports)
+![Cases by Patient Type](https://practical-ritchie-cca141.netlify.app/outputs/cases_patient_type_3.png)
+- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 ## Cases by Risk Classification
 
@@ -108,6 +104,16 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - [Cases by Risk: Full Year](https://practical-ritchie-cca141.netlify.app/outputs/cases_causes_all.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Cases by Where Tested
+
+![Source of Confirmed Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_types_3.png)
+
+- see also [Provinces with Most Walkin Cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_walkins_increasing_3.png) | [2020-2021](https://practical-ritchie-cca141.netlify.app/outputs/cases_types_all.png)
+- Contact tracing normally counts as a "Walk-in"
+- Proactive tests are normally done at specific high risk locations or places of known cases, rather than random sampling (but it's possible random sampling may also be included).
+- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
+  [MOPH daily situation report](downloads.md#dl-situation-reports)
+
 ## Cases by Age
 
 ![Ages of Confirmed cases](https://practical-ritchie-cca141.netlify.app/outputs/cases_ages_3.png)
@@ -130,11 +136,6 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 ## Cases in Non-Thai
 
 ![Cases by non-Thai nationality](https://practical-ritchie-cca141.netlify.app/outputs/cases_nation_3.png)
-- Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
-
-## Cases by Patient Type
-
-![Cases by Patient Type](https://practical-ritchie-cca141.netlify.app/outputs/cases_patient_type_3.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
 # Deaths <a name="deaths">
