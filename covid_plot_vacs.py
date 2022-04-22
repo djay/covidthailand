@@ -284,14 +284,6 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
 
     # Reset populations to the latest since they changed definitions over time
-    # vac_r = vac.reset_index()
-    # for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
-    #     all_pop = pd.crosstab(vac_r['Date'], vac_r['Province'], values=vac_r[pop_col], aggfunc="sum")
-    #     last_pop = all_pop.iloc[-1]
-    #     for col in all_pop.columns:
-    #         all_pop[col].values[:] = last_pop[col]
-    #     vac[pop_col] = all_pop.unstack()
-
     # Bring in vac populations
     pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
     # vac = vac.join(pops, rsuffix="2")

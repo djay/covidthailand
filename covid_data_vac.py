@@ -356,6 +356,7 @@ def vaccination_tables(df, _, page, file):
 
     vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
     vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
+    vaccols_medical = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Medical Staff"] for d in range(1, 4)]
 
     alloc2_doses = [
         "Date",
@@ -523,14 +524,17 @@ def vaccination_tables(df, _, page, file):
                 pop, d1, d1p, d2, d2p, d3, d3p, total, *numbers2 = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
                 # Over 60s
+                cols = vaccols_60s + ["Vac Population Over 60s"]
                 if len(numbers) == 22:
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
                 elif len(numbers) == 15:  # 2022-03-27
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
+                    if "ในกลุ่มบุคลำกรทำงกำรแพทย์และสำธำรณสุข" in page:
+                        cols = vaccols_medical + ["Vac Population Medical Staff"]
                 else:
                     pop, d1, d1p, d2, d2p, *numbers3 = numbers2
                     d3, d3p = [np.nan] * 2
-                add(prov, [d1, d2, d3, pop], vaccols_60s + ["Vac Population Over 60s"])
+                add(prov, [d1, d2, d3, pop], cols)
                 # Disease
                 if len(numbers) == 22:
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = numbers3
