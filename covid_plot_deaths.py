@@ -113,7 +113,9 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing',
+              footnote="A Comorbidity is not the cause of death but a condition that\n"
+              "may increase an individuals risk of death from Covid")
 
     cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c and "MA" not in c]
     # Just get ones that are still used. and sort by top
