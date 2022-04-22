@@ -161,7 +161,10 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_dash_3.png)
 
+## COVID-19 Death Comorbidities and Risks
+
 ![Thailand Covid Deaths Comorbidies](https://practical-ritchie-cca141.netlify.app/outputs/deaths_comorbidities_3.png)
+- [The existance of Comorbidities still means the cause of death was Covid](https://github.com/djay/covidthailand/discussions/251) and doesn't imply that these conditions were likely to cause death in that individual in the near future.
 
 ![Thailand Covid Deaths Risk](https://practical-ritchie-cca141.netlify.app/outputs/deaths_risk_3.png)
 
