@@ -24,6 +24,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
    - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
    - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
 - Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
+- Unsure of your risks with or without a vaccine? [AU Risk Calc](https://corical.immunisationcoalition.org.au/) (updated for omicron) - [UK Risk Calc](https://www.qcovid.org/Calculation) (based on delta?)
 
 ## Disclaimer
 
