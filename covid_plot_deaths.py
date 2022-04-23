@@ -372,6 +372,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               ma_days=None,
               kind='line', stacked=False, percent_fig=False, limit_to_zero=False,
               cmap='tab10',
+              periods_to_plot=['all'],
               y_formatter=perc_format,
               footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
@@ -393,6 +394,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               png_prefix='deaths_excess_years', cols_subset=cols,
               ma_days=None,
               kind='bar', stacked=False, percent_fig=False, limit_to_zero=False,
+              periods_to_plot=['all'],
               cmap='tab10',
               footnote='\n\n\n\nNote: Number of deaths from all causes compared to previous years.',
               footnote_left=f'\n\n\n\n{source}Data Source: MOPH Covid-19 Dashboard')
