@@ -353,8 +353,10 @@ def briefing_province_cases(file, date, pages):
                 #         print("no cases", linenum, thai, *numbers)
     data = ((d, p, c) for (d, p), c in rows.items())
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
-    assert date >= d(
-        "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
+    if date < d("2021-01-13"):
+        pass
+    else:
+        assert not df.empty, f"Briefing on {date} failed to parse cases per province"
     if date > d("2021-05-12") and date not in [d("2021-07-18"), d("2022-02-02")]:
         # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
         # 2022-02-02: page 2 is repeat of page 1 so missing data
@@ -790,6 +792,10 @@ def get_cases_by_prov_briefings():
     for briefing_url, date, get_file in briefing_documents():
         file = get_file()
         if file is None:
+            continue
+        if date in [d("2022-04-24")]:
+            # 2022-04-24: some kind of weird encoding.
+            # see - https://stackoverflow.com/questions/67551128/tika-compute-content-encoding-of-a-document
             continue
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
