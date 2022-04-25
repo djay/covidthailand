@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 import time
 
 import pandas as pd
@@ -267,7 +268,7 @@ def get_variants_by_area_pdf(file, page, page_num):
 
     # start, end = find_date_range(page) whole year
     # start, end = find_date_range(df.iloc[2][2])  # e.g. '26 FEB – 04 \nMAR 22'
-    start, end = df.iloc[2][2].split("–")
+    start, end = re.split("(?:–|-)", df.iloc[2][2])
     end = pd.to_datetime(end)
     start = pd.to_datetime(f"{start} {end.month} {end.year}", dayfirst=True, errors="coerce")
     if pd.isnull(start):
@@ -306,9 +307,9 @@ def get_variant_reports():
         file = dl()
         nat = pd.read_excel(file)
         nat.iloc[0, 0] = "End"
-        nat.columns = nat.iloc[0]
-        nat = nat.iloc[1:-1]
-        nat = nat.dropna(axis=1)
+        nat.columns = list(nat.iloc[0])
+        nat = nat.iloc[1:-1]  # Get rid of header and totals at the bottom
+        # nat = nat[[c for c in nat.columns if not pd.isna(c)]]  # get rid of empty cols
         dates = nat["End"].str.split("-", expand=True)
         a = pd.to_datetime(dates[1], errors="coerce", format="%d %b") + pd.offsets.DateOffset(years=121)
         b = pd.to_datetime(dates[1], errors="coerce", format="%d%b") + pd.offsets.DateOffset(years=121)
@@ -316,6 +317,8 @@ def get_variant_reports():
         ends = a.combine_first(b).combine_first(c)
         nat["End"] = ends
         nat = nat.set_index("End")
+        # There is now 3 lots of numbers. pick the last set?
+        nat = nat.iloc[:, 8:12]
         break
 
     for file, dl in get_variant_files(ext=".pdf"):
