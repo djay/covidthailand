@@ -313,6 +313,41 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
+    # Do CFR for all regions. show vaccine effectiveness
+    cfr_warning = "CFR is a poor estimate of IFR (risk of death if infected) due to low detection rates\n"
+    "Deaths shifted by 17d, median time till to death in Thailand"
+    # TODO: use actual med time to death from briefing. It changes slightly over time.
+    def cfr_est(df): return df['Deaths'].rolling(90).mean() / df['Cases'].shift(17).rolling(90).mean() * 100
+    by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
+    cfr_region = by_region.groupby("region", group_keys=False).apply(cfr_est).to_frame("CFR Est").reset_index()
+    cfr_region = pd.crosstab(cfr_region['Date'], cfr_region['region'], values=cfr_region["CFR Est"], aggfunc="sum")
+    plot_area(df=cfr_region,
+              title='Case Fatality Rate (CFR) - Last 90 days - by Region - Thailand',
+              png_prefix='cfr_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              ma_days=0,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
+              cmap=utils_thai.REG_COLOURS,
+              y_formatter=perc_format,
+              # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              footnote=cfr_warning,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+
+    case_ages = df[cut_ages_labels(AGE_BINS, "Cases Age")]
+    death_ages = df[cut_ages_labels(AGE_BINS, "Deaths Age")]
+    death_ages.columns = cut_ages_labels(AGE_BINS, "Age")
+    case_ages.columns = cut_ages_labels(AGE_BINS, "Age")
+    cfr_age = death_ages.combine(case_ages, lambda d, c: d.rolling(90).mean() / c.shift(17).rolling(90).mean() * 100)
+    plot_area(df=cfr_age,
+              title='Case Fatality Rate (CFR) - Last 90 days - by Age - Thailand',
+              png_prefix='cfr_age', cols_subset=list(reversed(cfr_age.columns)),
+              ma_days=0,
+              kind='line', stacked=False, percent_fig=False,
+              # cmap=utils_thai.REG_COLOURS,
+              y_formatter=perc_format,
+              # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
+              footnote=cfr_warning,
+              footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
     logger.info('======== Generating Excess Deaths Plots ==========')
 
     # Excess Deaths
