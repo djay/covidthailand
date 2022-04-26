@@ -227,7 +227,6 @@ def scrape_and_combine():
         variant_reports = pool.apply_async(covid_data_testing.get_variant_reports)
 
         xcess_deaths = pool.apply_async(covid_data_api.excess_deaths)
-        case_api_by_area = pool.apply_async(covid_data_api.get_cases_by_area_api)  # can be very wrong for the last days
 
         ihme_dataset = pool.apply_async(covid_data_api.ihme_dataset)
 
@@ -245,7 +244,7 @@ def scrape_and_combine():
         vac_slides = vac_slides.get()
         ihme_dataset = ihme_dataset.get()
         briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
-        cases_demo, risks_prov = cases_demo__risks_prov.get()
+        cases_demo, risks_prov, case_api_by_area = cases_demo__risks_prov.get()
 
         tweets_prov, twcases = tweets_prov__twcases.get()
         timelineapi = timelineapi.get()
@@ -255,7 +254,6 @@ def scrape_and_combine():
         variant_reports = variant_reports.get()
 
         xcess_deaths.get()
-        case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
 
         beds = beds.get()
 

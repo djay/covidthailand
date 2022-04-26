@@ -202,6 +202,12 @@ def get_cases_by_demographics_api():
 
     cases = get_case_details_api()
 
+    cases = cases.reset_index(drop=True)
+    cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
+    cases = join_provinces(cases, "province_of_onset")
+    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
+    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
+
     # Classify Jobs and patient types
 
     # Fix typos in Nationality columns
@@ -414,7 +420,7 @@ def get_cases_by_demographics_api():
     risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
 
     logger.info("======== Finish Covid19Daily Demographics ==========")
-    return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
+    return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov, case_areas
 
 
 def timeline_by_province():
@@ -494,16 +500,6 @@ def excess_deaths():
     return df
 
 
-def get_cases_by_area_api():
-    logger.info("========Covid-19 case details - get_cases_by_area_api==========")
-    cases, _ = get_cases_by_demographics_api()
-    cases = cases.reset_index(drop=True)
-    cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
-    cases = join_provinces(cases, "province_of_onset")
-    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
-    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
-    return case_areas
-
 # Get IHME dataset
 
 
@@ -576,8 +572,7 @@ def get_ifr():
 if __name__ == '__main__':
     timeline = get_cases()
     timeline_prov = timeline_by_province()
-    cases_demo, risks_prov = get_cases_by_demographics_api()
-    case_api_by_area = get_cases_by_area_api()
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
