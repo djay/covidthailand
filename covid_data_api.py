@@ -131,82 +131,10 @@ def get_cases():
 #     #assert cases.index.max() <
 #     return cases
 
+def cleanup_cases(cases):
 
-def get_case_details_api():
-    url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
-    chunk = 5000
-
-    cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
-    # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
-    data = []
-    pagenum = math.floor(len(cases) / chunk)
-    cases = cases.iloc[:pagenum * chunk]
-    page = []
-    last_page = -1
-    retries = 3
-    while not data or len(page) == chunk:
-        if len(data) >= 500000:
-            break
-        try:
-            r = s.get(f"{url}?page={pagenum}", timeout=40)
-        except Exception as e:
-            logger.warning("Covid19daily: Error {}", e)
-            if retries == 0:
-                logger.error("Covid19daily: Error: Giving up on pagenum: {}", pagenum)
-                break
-            else:
-                retries -= 1
-                continue
-        pagedata = json.loads(r.content)
-        page = pagedata['data']
-        last_page = pagedata['meta']['last_page']
-        data.extend(page)
-        print(".", end="")
-        pagenum += 1
-    df = pd.DataFrame(data)
-    df['Date'] = pd.to_datetime(df['txn_date'])
-    df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
-    df['age'] = pd.to_numeric(df['age_number'])
-    df = df.rename(columns=dict(province="province_of_onset"))
-    assert df.iloc[0]['Date'] <= cases.iloc[-1]["Date"]
-    # assert last_page == pagenum
-    # TODO: should probably store the page num with the data so match it up via that
-    cases = pd.concat([cases, df], ignore_index=True)
-    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
-    export(cases, "covid-19", csv_only=True, dir="inputs/json")
-
-    url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
-    init_cases = pd.read_csv(file).reset_index()
-    init_cases.columns = ['Date', "No.", "gender", "age", "age_range", "nationality", "job",
-                          "risk", "patient_type", "province_of_onset", "update_date", "update_date2", "patient_type2"]
-    init_cases['Date'] = pd.to_datetime(init_cases['Date'])
-    init_cases['update_date'] = pd.to_datetime(init_cases['update_date'], errors="coerce")
-    cases = pd.concat([init_cases, cases], ignore_index=True)
-
-    # cases = cases.set_index("Date")
-    logger.info("Covid19daily: covid-19 {}", len(cases))
-
-    # # they screwed up the date conversion. d and m switched sometimes
-    # # TODO: bit slow. is there way to do this in pandas?
-    # for record in records:
-    #     record['announce_date'] = to_switching_date(record['announce_date'])
-    #     record['Notified date'] = to_switching_date(record['Notified date'])
-    # cases = pd.DataFrame(records)
-    return cases
-
-
-@functools.lru_cache(maxsize=100, typed=False)
-def get_cases_by_demographics_api():
-    logger.info("========Covid19Daily Demographics==========")
-
-    cases = get_case_details_api()
-
-    cases = cases.reset_index(drop=True)
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = join_provinces(cases, "province_of_onset")
-    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
-    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
 
     # Classify Jobs and patient types
 
@@ -219,24 +147,13 @@ def get_cases_by_demographics_api():
     # TODO: reduce down to smaller list or just show top 5?
     cases, unmatched_jobs = fuzzy_join(cases, import_csv(
         "mapping_jobs", 'alt', date_cols=[], dir="."), 'job', return_unmatched=True)
-    unmatched_jobs = unmatched_jobs.groupby(["job", "Job Type"], dropna=False).sum().sort_values(["count"], ascending=False)
-    export(unmatched_jobs, "unmatched_jobs", csv_only=True)
+    if "job" in unmatched_jobs.columns:
+        unmatched_jobs = unmatched_jobs.groupby(["job", "Job Type"], dropna=False).sum().sort_values(["count"], ascending=False)
+        export(unmatched_jobs, "unmatched_jobs", csv_only=True)
     cases['Job Type'] = cases['Job Type'].fillna("Unknown")
-
-    # Age groups
-    age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
-    case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
-    case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
-
-    #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
-    #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
-    age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
-    case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
-    case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
 
     # Clean up Risks
     # TODO: move this to mapping file
-    cases['risk'].value_counts()
     risks = {}
     risks['สถานบันเทิง'] = "Entertainment"
     risks['อยู่ระหว่างการสอบสวน'] = "Investigating"  # Under investigation
@@ -398,19 +315,112 @@ def get_cases_by_demographics_api():
         risks[key] = cat
     risks = pd.DataFrame(risks.items(), columns=[
                          "risk", "risk_group"]).set_index("risk")
-    cases_risks, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
+    cases, unmatched = fuzzy_join(cases, risks, on="risk", return_unmatched=True)
 
     # dump mappings to file so can be inspected
-    matched = cases_risks[["risk", "risk_group"]]
+    matched = cases[["risk", "risk_group"]]
     export(matched.value_counts().to_frame("count"), "risk_groups", csv_only=True)
     export(unmatched, "risk_groups_unmatched", csv_only=True)
 
-    case_risks_daily = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
+    return cases
+
+
+def get_case_details_api():
+    url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
+    init_cases = pd.read_csv(file).reset_index()
+    init_cases.columns = ['Date', "No.", "gender", "age", "age_range", "nationality", "job",
+                          "risk", "patient_type", "province_of_onset", "update_date", "update_date2", "patient_type2"]
+    init_cases['Date'] = pd.to_datetime(init_cases['Date'])
+    init_cases['update_date'] = pd.to_datetime(init_cases['update_date'], errors="coerce")
+    init_cases = cleanup_cases(init_cases)
+
+    url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
+    chunk = 5000
+
+    cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
+    # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
+    data = []
+    pagenum = math.floor(len(cases) / chunk)
+    cases = cases.iloc[:pagenum * chunk]
+    page = []
+    last_page = -1
+    retries = 3
+    while not data or len(page) == chunk:
+        if len(data) >= 500000:
+            break
+        try:
+            r = s.get(f"{url}?page={pagenum}", timeout=40)
+        except Exception as e:
+            logger.warning("Covid19daily: Error {}", e)
+            if retries == 0:
+                logger.error("Covid19daily: Error: Giving up on pagenum: {}", pagenum)
+                break
+            else:
+                retries -= 1
+                continue
+        pagedata = json.loads(r.content)
+        page = pagedata['data']
+        last_page = pagedata['meta']['last_page']
+        data.extend(page)
+        print(".", end="")
+        pagenum += 1
+    df = pd.DataFrame(data)
+    df['Date'] = pd.to_datetime(df['txn_date'])
+    df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
+    df['age'] = pd.to_numeric(df['age_number'])
+    df = df.rename(columns=dict(province="province_of_onset"))
+    assert df.iloc[0]['Date'] <= cases.iloc[-1]["Date"]
+    # assert last_page == pagenum
+    # TODO: should probably store the page num with the data so match it up via that
+    if "risk_group" not in cases.columns:
+        cases = cleanup_cases(cases)
+    df = cleanup_cases(df)
+    cases = pd.concat([cases, df], ignore_index=True)
+    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
+    export(cases, "covid-19", csv_only=True, dir="inputs/json")
+
+    cases = pd.concat([init_cases, cases], ignore_index=True)
+
+    # cases = cases.set_index("Date")
+    logger.info("Covid19daily: covid-19 {}", len(cases))
+
+    # # they screwed up the date conversion. d and m switched sometimes
+    # # TODO: bit slow. is there way to do this in pandas?
+    # for record in records:
+    #     record['announce_date'] = to_switching_date(record['announce_date'])
+    #     record['Notified date'] = to_switching_date(record['Notified date'])
+    # cases = pd.DataFrame(records)
+    return cases
+
+
+@functools.lru_cache(maxsize=100, typed=False)
+def get_cases_by_demographics_api():
+    logger.info("========Covid19Daily Demographics==========")
+
+    cases = get_case_details_api()
+
+    cases = cases.reset_index(drop=True)
+    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
+    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
+
+    # Age groups
+    age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
+    case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
+    case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
+
+    #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+    #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
+    age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
+    case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
+    case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
+
+    case_risks_daily = pd.crosstab(cases['Date'], cases["risk_group"])
     case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
 
     # Prov data based on this api file
-    cases_risks['Province'] = cases_risks['province_of_onset']
-    risks_prov = join_provinces(cases_risks, 'Province')
+    cases['Province'] = cases['province_of_onset']
+    risks_prov = join_provinces(cases, 'Province')
     risks_prov = risks_prov.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
     risks_prov = risks_prov.reset_index()
     risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],

@@ -116,8 +116,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: API: Daily Reports of COVID-19 Infections')
 
     """ Thailand Covid Cases by Nationality """
-
-    cases, _, _ = covid_data_api.get_cases_by_demographics_api()  # TODO: import from CSV instead to make sure we don't redo
+    cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
     # List out all nationalities by number of occurrences, select only 5 largest nationalities excluding Thai and others(non-labled)
     nat_index = cases['nationality'].value_counts().index
     top5_list = nat_index[~nat_index.isin(['Thai', 'Others'])][:8]
