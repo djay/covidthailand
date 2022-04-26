@@ -413,7 +413,10 @@ def save_caseprov_plots(df=None):
     #         cmap='tab10',
     #         footnote='Note: Per 100,000 people.',
     #         footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+    logger.info('======== Finish Cases Prov Plots ==========')
 
+
+def save_infections_estimate(cases):
     # TODO: work out based on districts of deaths / IFR for that district
     cases['Deaths'] = cases['Deaths'].fillna(0)
     cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df[
@@ -454,8 +457,6 @@ def save_caseprov_plots(df=None):
                        + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
 
-    logger.info('======== Finish Cases Prov Plots ==========')
-
 
 if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
@@ -463,3 +464,4 @@ if __name__ == "__main__":
     os.environ['USE_CACHE_DATA'] = 'True'
     save_cases_plots(df)
     save_caseprov_plots(df)
+    # save_infections_estimate(cases)
