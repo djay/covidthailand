@@ -314,8 +314,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     # Do CFR for all regions. show vaccine effectiveness
-    cfr_warning = "CFR is a poor estimate of IFR (risk of death if infected) due to low detection rates\n"
-    "Deaths shifted by 17d, median time till to death in Thailand"
+    cfr_warning = "CFR is a poor estimate of IFR (risk of death if infected) due to low detection rates\n" + \
+        "Deaths shifted by 17d, median time till to death in Thailand"
     # TODO: use actual med time to death from briefing. It changes slightly over time.
     def cfr_est(df): return df['Deaths'].rolling(90).mean() / df['Cases'].shift(17).rolling(90).mean() * 100
     by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
