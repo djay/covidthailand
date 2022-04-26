@@ -3,8 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 
+import covid_data_api
 import utils_thai
-from covid_data_api import get_case_details
 from covid_data_api import get_ifr
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
@@ -117,7 +117,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     """ Thailand Covid Cases by Nationality """
 
-    cases = get_case_details()
+    cases, _ = covid_data_api.get_cases_by_demographics_api()
     # List out all nationalities by number of occurrences, select only 5 largest nationalities excluding Thai and others(non-labled)
     nat_index = cases['nationality'].value_counts().index
     top5_list = nat_index[~nat_index.isin(['Thai', 'Others'])][:8]

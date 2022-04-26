@@ -87,26 +87,6 @@ def get_cases():
     return cases
 
 
-@functools.lru_cache(maxsize=3, typed=False)
-def get_case_details():
-    cases = get_case_details_api()
-
-    # Fix typos in Nationality columns
-    # This won't include every possible misspellings and need some further improvement
-    cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
-    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
-
-    cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
-    # TODO: reduce down to smaller list or just show top 5?
-    cases, unmatched_jobs = fuzzy_join(cases, import_csv(
-        "mapping_jobs", 'alt', date_cols=[], dir="."), 'job', return_unmatched=True)
-    unmatched_jobs = unmatched_jobs.groupby(["job", "Job Type"], dropna=False).sum().sort_values(["count"], ascending=False)
-    export(unmatched_jobs, "unmatched_jobs", csv_only=True)
-    cases['Job Type'] = cases['Job Type'].fillna("Unknown")
-
-    return cases
-
-
 # def get_case_details_csv():
 #     cols = "No.,announce_date,Notified date,sex,age,Unit,nationality,province_of_isolation,risk,province_of_onset,district_of_onset".split(
 #         ",")
@@ -220,8 +200,24 @@ def get_case_details_api():
 def get_cases_by_demographics_api():
     logger.info("========Covid19Daily Demographics==========")
 
-    cases = get_case_details()
+    cases = get_case_details_api()
 
+    # Classify Jobs and patient types
+
+    # Fix typos in Nationality columns
+    # This won't include every possible misspellings and need some further improvement
+    cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
+    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
+
+    cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
+    # TODO: reduce down to smaller list or just show top 5?
+    cases, unmatched_jobs = fuzzy_join(cases, import_csv(
+        "mapping_jobs", 'alt', date_cols=[], dir="."), 'job', return_unmatched=True)
+    unmatched_jobs = unmatched_jobs.groupby(["job", "Job Type"], dropna=False).sum().sort_values(["count"], ascending=False)
+    export(unmatched_jobs, "unmatched_jobs", csv_only=True)
+    cases['Job Type'] = cases['Job Type'].fillna("Unknown")
+
+    # Age groups
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
     case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
@@ -232,6 +228,8 @@ def get_cases_by_demographics_api():
     case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
     case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
 
+    # Clean up Risks
+    # TODO: move this to mapping file
     cases['risk'].value_counts()
     risks = {}
     risks['สถานบันเทิง'] = "Entertainment"
@@ -404,6 +402,7 @@ def get_cases_by_demographics_api():
     case_risks_daily = pd.crosstab(cases_risks['Date'], cases_risks["risk_group"])
     case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
 
+    # Prov data based on this api file
     cases_risks['Province'] = cases_risks['province_of_onset']
     risks_prov = join_provinces(cases_risks, 'Province')
     risks_prov = risks_prov.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
@@ -414,6 +413,7 @@ def get_cases_by_demographics_api():
                              aggfunc="sum")
     risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
 
+    logger.info("======== Finish Covid19Daily Demographics ==========")
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov
 
 
@@ -496,7 +496,8 @@ def excess_deaths():
 
 def get_cases_by_area_api():
     logger.info("========Covid-19 case details - get_cases_by_area_api==========")
-    cases = get_case_details().reset_index(drop=True)
+    cases, _ = get_cases_by_demographics_api()
+    cases = cases.reset_index(drop=True)
     cases["province_of_onset"] = cases["province_of_onset"].str.strip(".")
     cases = join_provinces(cases, "province_of_onset")
     case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
