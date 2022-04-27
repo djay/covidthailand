@@ -189,6 +189,7 @@ def fuzzy_join(a,
     if on not in a.columns:
         old_index = a.index.names
         a = a.reset_index()
+    a = a[a.columns.difference(b.columns)]
     first = a.join(b, on=on)
     test = list(b.columns)[0]
     unmatched = first[first[test].isnull() & first[on].notna()]

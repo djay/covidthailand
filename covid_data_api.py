@@ -330,6 +330,8 @@ def cleanup_cases(cases):
 def get_case_details_api():
 
     cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
+    if "risk_group" not in cases.columns or cases["risk_group"].count() < 40000:
+        cases = cleanup_cases(cases)
     if cases["Date"].min() > d("2020-02-01"):
         url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
         file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
@@ -383,8 +385,6 @@ def get_case_details_api():
     assert total == len(cases) - init_cases_len + len(df)
     # assert last_page == pagenum
     # TODO: should probably store the page num with the data so match it up via that
-    if "risk_group" not in cases.columns:
-        cases = cleanup_cases(cases)
     df = cleanup_cases(df)
     cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
     assert total == len(cases) - init_cases_len
