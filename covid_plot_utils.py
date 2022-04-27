@@ -179,8 +179,8 @@ def plot_area(df: pd.DataFrame,
 
     if ma_days:
         ma_suffix = ' (MA)'
-        for c in cols:
-            df = df.assign(**{f'{c}{ma_suffix}': df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean()})
+        df = df.assign(**{f'{c}{ma_suffix}': df[c].rolling(ma_days,
+                       min_periods=int(ma_days / 2), center=True).mean() for c in cols})
         cols = [f'{c}{ma_suffix}' for c in cols]
     else:
         ma_suffix = ''

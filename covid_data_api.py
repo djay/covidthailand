@@ -400,10 +400,6 @@ def get_cases_by_demographics_api():
 
     cases = get_case_details_api()
 
-    cases = cases.reset_index(drop=True)
-    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
-    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
-
     # Age groups
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
     case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
@@ -420,14 +416,18 @@ def get_cases_by_demographics_api():
 
     # Prov data based on this api file
     cases['Province'] = cases['province_of_onset']
-    risks_prov = join_provinces(cases, 'Province')
-    risks_prov = risks_prov.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
+    # risks_prov = join_provinces(cases, 'Province')
+    risks_prov = cases.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
     risks_prov = risks_prov.reset_index()
     risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
                              columns=risks_prov["risk_group"],
                              values=risks_prov['Cases'],
                              aggfunc="sum")
     risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
+
+    cases = cases.reset_index(drop=True)
+    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
+    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
 
     logger.info("======== Finish Covid19Daily Demographics ==========")
     return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov, case_areas
@@ -597,5 +597,9 @@ if __name__ == '__main__':
     ihme_dataset()
     excess_deaths()
 
-    import covid_plot
-    covid_plot.save_plots(df)
+    import covid_plot_cases
+    covid_plot_cases.save_cases_plots(df)
+    import covid_plot_deaths
+    covid_plot_deaths.save_deaths_plots(df)
+    covid_plot_cases.save_caseprov_plots(df)
+    covid_plot_cases.save_infections_estimate(df)
