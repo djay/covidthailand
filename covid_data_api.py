@@ -7,8 +7,10 @@ import os
 import re
 import shutil
 
+import numpy as np
 import pandas as pd
 from datatable import fread
+from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 from requests.exceptions import ConnectionError
 
@@ -326,31 +328,35 @@ def cleanup_cases(cases):
 
 
 def get_case_details_api():
-    url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
-    init_cases = pd.read_csv(file).reset_index()
-    init_cases.columns = ['Date', "No.", "gender", "age", "age_range", "nationality", "job",
-                          "risk", "patient_type", "province_of_onset", "update_date", "update_date2", "patient_type2"]
-    init_cases['Date'] = pd.to_datetime(init_cases['Date'])
-    init_cases['update_date'] = pd.to_datetime(init_cases['update_date'], errors="coerce")
-    init_cases = cleanup_cases(init_cases)
-
-    url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
-    chunk = 5000
 
     cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
+    if cases["Date"].min() > d("2020-02-01"):
+        url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
+        file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
+        init_cases = pd.read_csv(file).reset_index()
+        init_cases.columns = ['Date', "No.", "gender", "age", "age_range", "nationality", "job",
+                              "risk", "patient_type", "province_of_onset", "update_date", "update_date2", "patient_type2"]
+        init_cases['Date'] = pd.to_datetime(init_cases['Date'])
+        init_cases['update_date'] = pd.to_datetime(init_cases['update_date'], errors="coerce")
+        init_cases = cleanup_cases(init_cases)
+        assert len(init_cases) == 28863
+        cases = pd.concat([init_cases, cases], ignore_index=True)
+    init_cases_len = 28863
     # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
     data = []
-    pagenum = math.floor(len(cases) / chunk)
-    cases = cases.iloc[:pagenum * chunk]
+    url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
+    chunk = 5000
+    pagenum = math.floor((len(cases) - init_cases_len) / chunk)
+    cases = cases.iloc[:pagenum * chunk + init_cases_len]
+    pagenum += 1  # pages start from 1
     page = []
-    last_page = -1
     retries = 3
-    while not data or len(page) == chunk:
-        if len(data) >= 500000:
-            break
+    last_page = np.nan
+    while not (pagenum > last_page):
+        # if len(data) >= 500000:
+        #     break
         try:
-            r = s.get(f"{url}?page={pagenum}", timeout=40)
+            r = s.get(f"{url}?page={pagenum}", timeout=25)
         except Exception as e:
             logger.warning("Covid19daily: Error {}", e)
             if retries == 0:
@@ -362,6 +368,8 @@ def get_case_details_api():
         pagedata = json.loads(r.content)
         page = pagedata['data']
         last_page = pagedata['meta']['last_page']
+        assert last_page >= pagenum
+        total = pagedata['meta']['total']
         data.extend(page)
         print(".", end="")
         pagenum += 1
@@ -370,17 +378,18 @@ def get_case_details_api():
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
-    assert df.iloc[0]['Date'] <= cases.iloc[-1]["Date"]
+    assert df.iloc[0]['Date'] >= cases.iloc[-1]["Date"]
+    assert df.iloc[0]['update_date'] >= cases.iloc[-1]["update_date"]
+    assert total == len(cases) - init_cases_len + len(df)
     # assert last_page == pagenum
     # TODO: should probably store the page num with the data so match it up via that
     if "risk_group" not in cases.columns:
         cases = cleanup_cases(cases)
     df = cleanup_cases(df)
-    cases = pd.concat([cases, df], ignore_index=True)
+    cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
+    assert total == len(cases) - init_cases_len
     # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
-
-    cases = pd.concat([init_cases, cases], ignore_index=True)
 
     # cases = cases.set_index("Date")
     logger.info("Covid19daily: covid-19 {}", len(cases))
@@ -598,8 +607,8 @@ if __name__ == '__main__':
     excess_deaths()
 
     import covid_plot_cases
+    covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
     import covid_plot_deaths
     covid_plot_deaths.save_deaths_plots(df)
-    covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_infections_estimate(df)

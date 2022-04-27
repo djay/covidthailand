@@ -226,9 +226,10 @@ def export(df, name, csv_only=False, dir="api"):
     try:
         df = df.reset_index()
     except:
+        # df = df.loc[:]
         pass
-    for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
-        df[c] = df[c].dt.strftime('%Y-%m-%d')
+    # for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
+    #     df[c] = df[c].dt.strftime('%Y-%m-%d')
     os.makedirs(dir, exist_ok=True)
     # TODO: save space by dropping nan
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
@@ -241,7 +242,8 @@ def export(df, name, csv_only=False, dir="api"):
         )
     df.to_csv(
         os.path.join(dir, f"{name}.csv"),
-        index=False
+        index=False,
+        date_format='%Y-%m-%d'
     )
 
 
