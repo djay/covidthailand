@@ -4,6 +4,7 @@ import shutil
 from multiprocessing import Pool
 
 import pandas as pd
+import tqdm
 
 import covid_data_api
 import covid_data_bed
@@ -180,6 +181,9 @@ def get_hospital_resources():
 #   - doesn't have pre 2020 dailies though
 # health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
+def do_work(job):
+    return job()
+
 
 def scrape_and_combine():
     os.makedirs("api", exist_ok=True)
@@ -194,68 +198,56 @@ def scrape_and_combine():
         old = import_csv("combined")
         old = old.set_index("Date")
         return old
-
-    with Pool(1 if MAX_DAYS > 0 else None) as pool:
-        api_provs = pool.apply_async(covid_data_api.timeline_by_province)
-
-        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
+    jobs = [
+        covid_data_api.timeline_by_province,
+        covid_data_dash.dash_daily,
         # These 3 are slowest so should go first
-        dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
+        covid_data_dash.dash_by_province,
         # This doesn't add any more info since severe cases was a mistake
         # dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
-        vac_slides = pool.apply_async(covid_data_vac.vac_slides)
-        vac_reports_and_prov = pool.apply_async(covid_data_vac.vaccination_reports)
+        covid_data_vac.vac_slides,
+        covid_data_vac.vaccination_reports,
         # beds = pool.apply_async(covid_data_bed.get_df)
-
         # TODO: split vac slides as that's the slowest
-
-        briefings_prov__cases_briefings = pool.apply_async(covid_data_briefing.get_cases_by_prov_briefings)
-
-        dash_ages = pool.apply_async(covid_data_dash.dash_ages)
-
+        covid_data_briefing.get_cases_by_prov_briefings,
+        covid_data_dash.dash_ages,
         # today_situation = pool.apply_async(covid_data_situation.get_situation_today)
-        th_situation = pool.apply_async(covid_data_situation.get_thai_situation)
-        en_situation = pool.apply_async(covid_data_situation.get_en_situation)
+        covid_data_situation.get_thai_situation,
+        covid_data_situation.get_en_situation,
+        covid_data_api.get_cases_by_demographics_api,
+        covid_data_tweets.get_cases_by_prov_tweets,
+        covid_data_api.get_cases,
+        covid_data_testing.get_tests_by_day,
+        covid_data_testing.get_test_reports,
+        covid_data_testing.get_variant_reports,
+        covid_data_api.excess_deaths,
+        covid_data_api.ihme_dataset,
+    ]
 
-        cases_demo__risks_prov = pool.apply_async(covid_data_api.get_cases_by_demographics_api)
+    pool = Pool(1 if MAX_DAYS > 0 else None)
+    values = tqdm.tqdm(pool.imap_unordered(do_work, jobs), total=len(jobs))
+    api_provs, \
+        dash_daily, \
+        dash_by_province, \
+        vac_slides, \
+        vaccination_reports, \
+        get_cases_by_prov_briefings, \
+        dash_ages, \
+        th_situation, \
+        en_situation, \
+        get_cases_by_demographics_api, \
+        get_cases_by_prov_tweets, \
+        timelineapi, \
+        tests, \
+        tests_reports, \
+        variant_reports, \
+        excess_deaths, \
+        ihme_dataset = values
 
-        tweets_prov__twcases = pool.apply_async(covid_data_tweets.get_cases_by_prov_tweets)
-        timelineapi = pool.apply_async(covid_data_api.get_cases)
-
-        tests = pool.apply_async(covid_data_testing.get_tests_by_day)
-        tests_reports = pool.apply_async(covid_data_testing.get_test_reports)
-        variant_reports = pool.apply_async(covid_data_testing.get_variant_reports)
-
-        xcess_deaths = pool.apply_async(covid_data_api.excess_deaths)
-
-        ihme_dataset = pool.apply_async(covid_data_api.ihme_dataset)
-
-        # Now block getting until we get each of the data
-        # today_situation = today_situation.get()
-        th_situation = th_situation.get()
-        en_situation = en_situation.get()
-
-        dash_daily = dash_daily.get()
-        dash_ages = dash_ages.get()
-        dash_by_province = dash_by_province.get()
-        # dash_trends_prov = dash_trends_prov.get()
-
-        vac_reports, vac_reports_prov = vac_reports_and_prov.get()
-        vac_slides = vac_slides.get()
-        ihme_dataset = ihme_dataset.get()
-        briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
-        cases_demo, risks_prov, case_api_by_area = cases_demo__risks_prov.get()
-
-        tweets_prov, twcases = tweets_prov__twcases.get()
-        timelineapi = timelineapi.get()
-
-        api_provs = api_provs.get()
-        tests = tests.get()
-        tests_reports = tests_reports.get()
-        variant_reports = variant_reports.get()
-        xcess_deaths.get()
-
-        # beds = beds.get()
+    vac_reports, vac_reports_prov = vaccination_reports
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api
+    tweets_prov, twcases = get_cases_by_prov_tweets
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)

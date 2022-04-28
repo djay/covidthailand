@@ -26,3 +26,4 @@ xlsx2csv
 datatable
 python-crfsuite
 benford_py
+tqdm
