@@ -781,8 +781,6 @@ def briefing_documents(check=True):
 
 
 def get_cases_by_prov_briefings():
-    start = time.time()
-    logger.info("========Briefings==========")
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
@@ -871,8 +869,6 @@ def get_cases_by_prov_briefings():
 
     # Since Deaths by province doesn't list all provinces, ensure missing are 0
     date_prov['Deaths'] = date_prov['Deaths'].unstack(fill_value=0).fillna(0).stack(dropna=False)
-
-    logger.info(f"==== Briefing Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return date_prov, types
 

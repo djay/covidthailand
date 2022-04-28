@@ -143,8 +143,6 @@ def parse_case_prov_tweet(walkins, proactive, date, text, url):
 
 
 def get_cases_by_prov_tweets():
-    start = time.time()
-    logger.info("========RB Tweets==========")
     # These are published early so quickest way to get data
     # previously also used to get per province case stats but no longer published
 
@@ -214,6 +212,5 @@ def get_cases_by_prov_tweets():
     index = pd.MultiIndex.from_frame(dfprov[['Date', 'Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
     df = df.combine_first(cum2daily(df))
-    logger.info(f"==== Tweet Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return dfprov, df

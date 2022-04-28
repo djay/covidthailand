@@ -576,5 +576,4 @@ def export_situation(th_situation, en_situation):
     #     situation = situation.combine_first(today_situation)
     export(situation, "situation_reports")
 
-    logger.info(f"==== Situation Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return situation

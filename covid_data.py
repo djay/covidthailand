@@ -1,6 +1,8 @@
+import datetime
 import json
 import os
 import shutil
+import time
 from multiprocessing import Pool
 
 import pandas as pd
@@ -57,8 +59,6 @@ def prov_to_districts(dfprov):
 
 
 def get_hospital_resources():
-    logger.info("========ArcGIS==========")
-
     # PUI + confirmed, recovered etc stats
     fields = [
         'OBJECTID', 'ID', 'agency_code', 'label', 'agency_status', 'status',
@@ -182,7 +182,11 @@ def get_hospital_resources():
 # health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
 def do_work(job):
-    return job()
+    start = time.time()
+    logger.info(f"==== {job.__name__} Start ====")
+    res = job()
+    logger.info(f"==== {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
+    return res
 
 
 def scrape_and_combine():
@@ -225,7 +229,7 @@ def scrape_and_combine():
     ]
 
     pool = Pool(1 if MAX_DAYS > 0 else None)
-    values = tqdm.tqdm(pool.imap_unordered(do_work, jobs), total=len(jobs))
+    values = tqdm.tqdm(pool.imap(do_work, jobs), total=len(jobs))
     api_provs, \
         dash_daily, \
         dash_by_province, \

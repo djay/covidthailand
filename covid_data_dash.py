@@ -165,7 +165,6 @@ def dash_daily():
     assert df[df['Recovered'] == 0.0].loc["2021-03-05":].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
-    logger.info(f"==== Dash Daily Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 
@@ -219,7 +218,6 @@ def dash_ages():
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
     export(df, "moph_dashboard_ages", csv_only=True, dir="inputs/json")
-    logger.info(f"==== Dash Ages Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 
@@ -258,7 +256,6 @@ def dash_trends_prov():
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
     export(df, "moph_dashboard_prov_trends", csv_only=True, dir="inputs/json")  # Speeds up things locally
-    logger.info(f"==== Dash Trends Data in {datetime.timedelta(seconds=time.time() - start)} ====")
     return df
 
 
