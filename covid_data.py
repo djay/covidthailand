@@ -215,7 +215,7 @@ def scrape_and_combine():
         covid_data_situation.get_en_situation,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_tweets.get_cases_by_prov_tweets,
-        covid_data_api.get_cases,
+        covid_data_api.get_cases_timelineapi,
         covid_data_testing.get_tests_by_day,
         covid_data_testing.get_test_reports,
         covid_data_testing.get_variant_reports,
@@ -236,13 +236,13 @@ def scrape_and_combine():
         vaccination_reports, \
         get_cases_by_prov_briefings, \
         dash_ages, \
-        th_situation, \
-        en_situation, \
+        get_thai_situation, \
+        get_en_situation, \
         get_cases_by_demographics_api, \
         get_cases_by_prov_tweets, \
-        timelineapi, \
-        tests, \
-        tests_reports, \
+        get_cases_timelineapi, \
+        get_tests_by_day, \
+        get_test_reports, \
         variant_reports, \
         excess_deaths, \
         ihme_dataset = values
@@ -292,13 +292,13 @@ def scrape_and_combine():
     export(ihme_dataset, "ihme")
 
     # Export situation
-    situation = covid_data_situation.export_situation(th_situation, en_situation)
+    situation = covid_data_situation.export_situation(get_thai_situation, get_en_situation)
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, vac_slides)
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, cases_briefings, timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [get_test_reports, get_tests_by_day, cases_briefings, get_cases_timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 

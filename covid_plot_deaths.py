@@ -117,7 +117,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote="A Comorbidity is not the cause of death but a condition that\n"
               "may increase an individuals risk of death from Covid")
 
-    cols = [c for c in df.columns if "Deaths Risk" in c and "60" not in c and "MA" not in c]
+    cols = [c for c in df.columns if "Deaths Risk" in str(c) and "60" not in str(c) and "MA" not in c]
     # Just get ones that are still used. and sort by top
     cols = list(df.iloc[-80:][cols].mean(axis=0).dropna().sort_values(ascending=False).index)
     legends = [col.replace("Deaths Risk ", "").replace(
