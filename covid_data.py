@@ -205,7 +205,7 @@ def scrape_and_combine():
         # dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         vac_slides = pool.apply_async(covid_data_vac.vac_slides)
         vac_reports_and_prov = pool.apply_async(covid_data_vac.vaccination_reports)
-        beds = pool.apply_async(covid_data_bed.get_df)
+        # beds = pool.apply_async(covid_data_bed.get_df)
 
         # TODO: split vac slides as that's the slowest
 
@@ -249,15 +249,13 @@ def scrape_and_combine():
         tweets_prov, twcases = tweets_prov__twcases.get()
         timelineapi = timelineapi.get()
 
+        api_provs = api_provs.get()
         tests = tests.get()
         tests_reports = tests_reports.get()
         variant_reports = variant_reports.get()
-
         xcess_deaths.get()
 
-        beds = beds.get()
-
-        api_provs = api_provs.get()
+        # beds = beds.get()
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)

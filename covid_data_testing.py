@@ -85,6 +85,7 @@ def get_variant_files(ext=".pdf", dir="inputs/variants"):
 
 
 def get_tests_by_day():
+    start = time.time()
     logger.info("========Tests by Day==========")
 
     def from_reports():
@@ -130,6 +131,7 @@ def get_tests_by_day():
 
     tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
     logger.info("{} {}", file, len(tests))
+    logger.info(f"==== Tests by day in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return tests
 
@@ -225,6 +227,8 @@ def get_tests_private_public_pptx(file, title, series, data):
 
 
 def get_test_reports():
+    logger.info(f"==== Test Reports Start ====")
+    start = time.time()
     data = pd.DataFrame()
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
@@ -250,6 +254,7 @@ def get_test_reports():
     pubpriv['Tests Public'] = pubpriv['Tests'] - pubpriv['Tests Private']
     export(pubpriv, "tests_pubpriv")
     data = data.combine_first(pubpriv)
+    logger.info(f"==== Testing Reports in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return data
 
@@ -297,6 +302,7 @@ def get_variants_plot_pdf(file, page, page_num):
 
 
 def get_variant_reports():
+    logger.info("==== Varient Data in Start ====")
     start = time.time()
     data = pd.DataFrame()
     raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
@@ -342,7 +348,7 @@ def get_variant_reports():
     export(nat, "variants")
     export(area, "variants_by_area")
 
-    logger.info(f"==== Testing Data in {datetime.timedelta(seconds=time.time() - start)} ====")
+    logger.info(f"==== Variant Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return nat
 

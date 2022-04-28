@@ -6,6 +6,7 @@ import math
 import os
 import re
 import shutil
+import time
 
 import numpy as np
 import pandas as pd
@@ -60,6 +61,7 @@ def get_cases_old():
 
 
 def get_cases():
+    start = time.time()
     logger.info("========Covid19 Timeline==========")
     # https://covid19.th-stat.com/json/covid19v2/getTimeline.json
     # https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all
@@ -86,6 +88,7 @@ def get_cases():
     if cases.iloc[-1]['Cases']:
         # 2022-02-27 dud data
         return pd.DataFrame()
+    logger.info(f"==== Covid19 Timeline api in {datetime.timedelta(seconds=time.time() - start)} ====")
     return cases
 
 
@@ -405,6 +408,7 @@ def get_case_details_api():
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
+    start = time.time()
     logger.info("========Covid19Daily Demographics==========")
 
     cases = get_case_details_api()
@@ -439,10 +443,14 @@ def get_cases_by_demographics_api():
     case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
 
     logger.info("======== Finish Covid19Daily Demographics ==========")
-    return case_risks_daily.combine_first(case_ages).combine_first(case_ages2), risks_prov, case_areas
+    cases_daily = case_risks_daily.combine_first(case_ages).combine_first(case_ages2)
+    logger.info(f"==== TCovid19Daily Demographics in {datetime.timedelta(seconds=time.time() - start)} ====")
+    return cases_daily, risks_prov, case_areas
 
 
 def timeline_by_province():
+    start = time.time()
+    logger.info("==== Timeline api by province start ====")
     url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
     file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True)))
     df = pd.read_json(file)
@@ -451,6 +459,8 @@ def timeline_by_province():
     df = join_provinces(df, "Province")
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.drop(columns=['update_date'])
+    logger.info(f"==== Timeline api by province in {datetime.timedelta(seconds=time.time() - start)} ====")
+
     return df.set_index(["Date", "Province"])
 
 
@@ -459,6 +469,8 @@ def timeline_by_province():
 ########################
 
 def excess_deaths():
+    start = time.time()
+    logger.info("==== Excess Deaths Start ====")
     url = "https://stat.bora.dopa.go.th/stat/statnew/connectSAPI/stat_forward.php?"
     url += "API=/api/stattranall/v1/statdeath/list?action=73"
     url += "&statType=-1&statSubType=999&subType=99"
@@ -515,6 +527,7 @@ def excess_deaths():
     if changed:
         export(df, "deaths_all", csv_only=True, dir="inputs/json")
         shutil.copy(os.path.join("inputs", "json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
+    logger.info(f"==== Excess Deaths in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return df
 
@@ -523,6 +536,8 @@ def excess_deaths():
 
 
 def ihme_dataset():
+    start = time.time()
+    logger.info("==== IHME api Start ====")
     data = pd.DataFrame()
 
     # listing out urls not very elegant, but this only need yearly update
@@ -544,6 +559,7 @@ def ihme_dataset():
     data["Date"] = pd.to_datetime(data["Date"]).dt.date
     data = data.sort_values(by="Date")
     data = data.set_index("Date")
+    logger.info(f"==== IHME api in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return(data)
 
