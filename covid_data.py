@@ -207,15 +207,10 @@ def scrape_and_combine():
         covid_data_dash.dash_daily,
         # These 3 are slowest so should go first
         covid_data_dash.dash_by_province,
-        # This doesn't add any more info since severe cases was a mistake
-        # dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
-        # beds = pool.apply_async(covid_data_bed.get_df)
-        # TODO: split vac slides as that's the slowest
         covid_data_briefing.get_cases_by_prov_briefings,
         covid_data_dash.dash_ages,
-        # today_situation = pool.apply_async(covid_data_situation.get_situation_today)
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
         covid_data_api.get_cases_by_demographics_api,
@@ -226,6 +221,10 @@ def scrape_and_combine():
         covid_data_testing.get_variant_reports,
         covid_data_api.excess_deaths,
         covid_data_api.ihme_dataset,
+        # This doesn't add any more info since severe cases was a mistake
+        # covid_data_dash.dash_trends_prov,
+        # covid_data_situation.get_situation_today,
+        # covid_data_bed.get_df,
     ]
 
     pool = Pool(1 if MAX_DAYS > 0 else None)
