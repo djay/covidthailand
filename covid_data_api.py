@@ -59,7 +59,7 @@ def get_cases_old():
     return cases
 
 
-def get_cases():
+def get_cases_timelineapi():
     # https://covid19.th-stat.com/json/covid19v2/getTimeline.json
     # https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all
     # https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all
@@ -587,7 +587,7 @@ def get_ifr():
 
 
 if __name__ == '__main__':
-    timeline = get_cases()
+    timeline = get_cases_timelineapi()
     timeline_prov = timeline_by_province()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
 
