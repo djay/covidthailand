@@ -249,7 +249,7 @@ jobs:
         id: makerelease
         if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" -czvf inputs.tar.gz inputs
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" -czvf inputs.tar.gz inputs
            tar -czvf datasets.tar.gz api inputs/json/*.csv
       - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
