@@ -203,49 +203,49 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
     jobs = [
-        covid_data_api.timeline_by_province,
-        covid_data_dash.dash_daily,
-        # These 3 are slowest so should go first
-        covid_data_dash.dash_by_province,
-        covid_data_vac.vac_slides,
-        covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
+        covid_data_dash.dash_by_province,
+        covid_data_api.get_cases_by_demographics_api,
         covid_data_dash.dash_ages,
+        covid_data_vac.vaccination_reports,
+        covid_data_vac.vac_slides,
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
-        covid_data_api.get_cases_by_demographics_api,
-        covid_data_tweets.get_cases_by_prov_tweets,
-        covid_data_api.get_cases_timelineapi,
+        covid_data_dash.dash_daily,
+        covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
         covid_data_testing.get_test_reports,
+        covid_data_tweets.get_cases_by_prov_tweets,
+        covid_data_api.get_cases_timelineapi,
         covid_data_testing.get_variant_reports,
-        covid_data_api.excess_deaths,
         covid_data_api.ihme_dataset,
+        covid_data_api.timeline_by_province,
         # This doesn't add any more info since severe cases was a mistake
-        # covid_data_dash.dash_trends_prov,
-        # covid_data_situation.get_situation_today,
-        # covid_data_bed.get_df,
+        # covid_data_dash.dash_trends_prov
+        # covid_data_bed.get_df
+        # covid_data_situation.get_situation_today
     ]
 
     pool = Pool(1 if MAX_DAYS > 0 else None)
     values = tqdm.tqdm(pool.imap(do_work, jobs), total=len(jobs))
-    api_provs, \
-        dash_daily, \
+    get_cases_by_prov_briefings, \
         dash_by_province, \
-        vac_slides, \
-        vaccination_reports, \
-        get_cases_by_prov_briefings, \
-        dash_ages, \
-        get_thai_situation, \
-        get_en_situation, \
         get_cases_by_demographics_api, \
+        dash_ages, \
+        vaccination_reports, \
+        vac_slides, \
+        th_situation, \
+        en_situation, \
+        dash_daily, \
+        excess_deaths, \
+        tests, \
+        tests_reports, \
         get_cases_by_prov_tweets, \
         get_cases_timelineapi, \
-        get_tests_by_day, \
-        get_test_reports, \
         variant_reports, \
-        excess_deaths, \
-        ihme_dataset = values
+        ihme_dataset, \
+        api_provs \
+        = values
 
     vac_reports, vac_reports_prov = vaccination_reports
     briefings_prov, cases_briefings = get_cases_by_prov_briefings
@@ -292,13 +292,13 @@ def scrape_and_combine():
     export(ihme_dataset, "ihme")
 
     # Export situation
-    situation = covid_data_situation.export_situation(get_thai_situation, get_en_situation)
+    situation = covid_data_situation.export_situation(th_situation, en_situation)
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, vac_slides)
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [get_test_reports, get_tests_by_day, cases_briefings, get_cases_timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [tests_reports, tests, cases_briefings, get_cases_timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 
