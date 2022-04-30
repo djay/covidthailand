@@ -209,12 +209,12 @@ def scrape_and_combine():
         covid_data_vac.vaccination_reports,
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
+        covid_data_testing.get_test_reports,
         covid_data_dash.dash_ages,
         covid_data_vac.vac_slides,
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
-        covid_data_testing.get_test_reports,
         covid_data_tweets.get_cases_by_prov_tweets,
         covid_data_api.get_cases_timelineapi,
         covid_data_testing.get_variant_reports,
@@ -234,12 +234,12 @@ def scrape_and_combine():
         vaccination_reports, \
         th_situation, \
         en_situation, \
+        tests_reports, \
         vac_slides, \
         dash_ages, \
         dash_daily, \
         excess_deaths, \
         tests, \
-        tests_reports, \
         get_cases_by_prov_tweets, \
         get_cases_timelineapi, \
         variant_reports, \
