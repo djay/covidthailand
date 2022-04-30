@@ -176,10 +176,15 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![](https://practical-ritchie-cca141.netlify.app/outputs/cfr_region_3.png)
 ![](https://practical-ritchie-cca141.netlify.app/outputs/cfr_age_3.png)
+![](https://practical-ritchie-cca141.netlify.app/outputs/cfr_ifr_3.png)
 - To show more recent trends last 90 days is used instead of total deaths / total cases which is normally used.
 - [CFR is not the IFR (Infection Fatality Rate) so doesn't tell the chance of dying if infected](https://ourworldindata.org/mortality-risk-covid#understanding-the-case-fatality-crude-mortality-and-the-infection-fatality-rate)
-- Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (11d)
+- Detection rate of cases & deaths can change CFR a lot. Deaths shifted by med. time till to death in Thailand (17d) however this number is likely shorter before vaccinations and longer after vaccinations and newer treatments.
+- IFR is estimated by IHME based on their modelling which factors in excess deaths, detection rate, immunity and other factors.
 - Source: [CCSA Daily Briefing](downloads.md#dl-briefings)
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+
+
 
 # Vaccinations <a name="vaccinations">
 

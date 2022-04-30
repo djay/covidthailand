@@ -145,7 +145,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
     df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
-    ihme = ihme_dataset()  # TODO: don't check again
+    ihme = ihme_dataset(check=False)
     df['infection_detection'] = ihme['infection_detection'] * 100
 
     cols = [

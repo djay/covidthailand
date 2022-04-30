@@ -5,6 +5,7 @@ from pandas.tseries.offsets import MonthEnd
 
 import utils_thai
 from covid_data_api import get_ifr
+from covid_data_api import ihme_dataset
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cum2daily
@@ -347,6 +348,19 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               # table=trend_table(cases['Cases'], sensitivity=25, style="green_down"),
               footnote=cfr_warning,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
+
+    ihme = ihme_dataset(check=False)
+    cfr_ifr = cfr_est(df).to_frame("Estimated CFR (90 days avg)")
+    cfr_ifr['Estimated IFR (IHME)'] = (ihme['infection_fatality'] * 100)
+    plot_area(df=cfr_ifr,
+              title='Case Fatality Rate (CFR) vs Infection Fatality Rate (IFR) - Estimated - Thailand',
+              png_prefix='cfr_ifr', cols_subset=list(cfr_ifr.columns),
+              ma_days=0,
+              kind='line', stacked=False, percent_fig=False,
+              cmap="tab10",
+              y_formatter=perc_format,
+              footnote=cfr_warning,
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing, IHME')
 
     logger.info('======== Generating Excess Deaths Plots ==========')
 
