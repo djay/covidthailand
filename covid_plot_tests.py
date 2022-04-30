@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import utils_thai
+from covid_data_api import ihme_dataset
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import import_csv
@@ -144,6 +145,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
     df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
+    ihme = ihme_dataset()  # TODO: don't check again
+    df['infection_detection'] = ihme['infection_detection'] * 100
+
     cols = [
         'Positivity Public+Private',
         'Positivity Cases/Tests',
@@ -152,6 +156,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Postive Rate ATK Proactive',
         'Postive Rate PCR + ATK',
         'Positive Rate Dash %',
+        'infection_detection',
     ]
     legends = [
         'Positive Results per PCR Test (Positive Rate)',
@@ -161,6 +166,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Positive Results per ATK Test (NHSO provided)',
         'Positive Results per PCR + ATK Test (NHSO provided)',
         'Positive Rate from DDC Dashboard',
+        'Estimated Cases per Infection (IHME detection rate)',
     ]
     plot_area(df=df,
               title='Positive Rate (PCR + ATK Proactive) - Thailand',
@@ -174,7 +180,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote='While PCR test data is missing, Cases per Test might be a better estimate of Positive Rate\n'
               'WHO recommends < 5% *assuming tests are > 7k per day over 2 weeks\n'
               'NHSO provided ATK go to "high risk" areas so should show higher than normal positive rate',
-              footnote_left=f'\n{source}Data Sources: DMSC Test Reports, MOPH Covid-19 Dashboard')
+              footnote_left=f'\n{source}Data Sources: DMSC Test Reports, DDC Dashboard, IHME')
 
     df['PUI per Case'] = df['Tested PUI'].divide(df['Cases'])
     df['PUI3 per Case'] = df['Tested PUI'] * 3 / df['Cases']
