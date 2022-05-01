@@ -51,7 +51,6 @@ def todays_data():
 
 
 def dash_daily():
-    start = time.time()
     df = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
 
     # remove crap from bad pivot
@@ -169,7 +168,6 @@ def dash_daily():
 
 
 def dash_ages():
-    start = time.time()
     df = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
 
     # Fix mistake in column name
@@ -222,7 +220,6 @@ def dash_ages():
 
 
 def dash_trends_prov():
-    start = time.time()
     df = import_csv("moph_dashboard_prov_trends", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
@@ -260,7 +257,6 @@ def dash_trends_prov():
 
 
 def dash_by_province():
-    start = time.time()
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province"
@@ -377,7 +373,6 @@ def dash_by_province():
             # Save as we go to help debugging
             export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     export(df, "moph_dashboard_prov", csv_only=True, dir="inputs/json")  # Speeds up things locally
-    print(f"==== Dash Provinces Data in {datetime.timedelta(seconds=time.time() - start)} ====")
 
     return df
 
