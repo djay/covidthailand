@@ -49,6 +49,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     # cases = cases.fillna(0)  # all the other values
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
+    ihme = ihme_dataset(check=False)
 
     cases_region = cases.reset_index()
     pop_region = pd.crosstab(cases_region['Date'], cases_region['region'], values=cases_region["Population"], aggfunc="sum")
@@ -66,30 +67,35 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     # TODO: predict median age of death based on population demographics
 
     # I think they are the same really. or pretty close
-    df['Deaths Under 60yo without Underlying Diseases'] = df['Deaths Risk Under 60 Comorbidity None'].combine_first(
-        df['Deaths Comorbidity None'])
+    deaths_reason = df['Deaths Risk Under 60 Comorbidity None'].combine_first(
+        df['Deaths Comorbidity None']).to_frame('Deaths Under 60yo without Underlying Diseases')
+    deaths_reason["Deaths"] = df["Deaths"]
+    deaths_reason['Deaths Risk Family'] = df['Deaths Risk Family']
+    deaths_reason["Estimated Total Deaths (IHME)"] = ihme['seir_daily_mean']
+    # deaths_reason["Estimated Deaths Max (IHME)"] = ihme['seir_daily_upper']
+    # deaths_reason["Estimated Deaths Min (IHME)"] = ihme['seir_daily_lower']
 
-    cols = [
-        'Deaths',
-        'Deaths Risk Family',
-        'Deaths Under 60yo without Underlying Diseases',
-        #        'Deaths Risk Unvaccinated',
-    ]
-    legends = [
-        'Deaths',
-        'Deaths Infected from Family',
-        'Deaths Under 60yo without Underlying Diseases',
-        #        'Deaths with no history of vaccination',
-    ]
-    plot_area(df=df,
+    # cols = [
+    #     'Deaths',
+    #     'Deaths Risk Family',
+    #     'Deaths Under 60yo without Underlying Diseases',
+    #     #        'Deaths Risk Unvaccinated',
+    # ]
+    # legends = [
+    #     'Deaths',
+    #     'Deaths Infected from Family',
+    #     'Deaths Under 60yo without Underlying Diseases',
+    #     #        'Deaths with no history of vaccination',
+    # ]
+    plot_area(df=deaths_reason,
               title='Covid Deaths - Thailand',
-              legends=legends,
-              png_prefix='deaths_reason', cols_subset=cols,
+              png_prefix='deaths_reason', cols_subset=list(deaths_reason.columns),
               actuals=['Deaths'],
+              # box_cols=[c for c in deaths_reason.columns if "IHME" in str(c)],
               ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+              footnote_left=f'{source}Data Source: CCSA Daily Briefing, IHME')
 
     df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
     df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
@@ -350,7 +356,6 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote=cfr_warning,
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
-    ihme = ihme_dataset(check=False)
     cfr_ifr = cfr_est(df).to_frame("Estimated CFR (90 days avg)")
     cfr_ifr['Estimated IFR (IHME)'] = (ihme['infection_fatality'] * 100)
     plot_area(df=cfr_ifr,

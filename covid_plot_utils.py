@@ -383,9 +383,14 @@ def plot_area(df: pd.DataFrame,
         elif not box_cols:
             box_cols = []
         for dist in box_cols:
-            mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
-            a0.fill_between(df.index, mins, maxes, facecolor="yellow", alpha=0.3, zorder=3, label=None, step=None)
-            avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=False)
+            if len(dist) == 3:
+                # assume its already min, mean max
+                # TODO: maybe should be other setting?
+                mins, avg, maxes = [df_plot[c] for c in dist]
+            else:
+                mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
+            a0.fill_between(mins.index, mins, maxes, facecolor="yellow", alpha=0.3, zorder=3, label=None, step=None)
+            avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=True)
             # boxes = df_plot[box_cols].transpose()
             # boxes.boxplot(ax=a0)
 

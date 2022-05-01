@@ -539,7 +539,7 @@ def ihme_dataset(check=True):
     # already filtered for just Thailand data above
     data.drop(['location_id', 'location_name'], axis=1, inplace=True)
     data.rename(columns={'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
-    data["Date"] = pd.to_datetime(data["Date"]).dt.date
+    data["Date"] = pd.to_datetime(data["Date"])
     data = data.sort_values(by="Date")
     data = data.set_index("Date")
 

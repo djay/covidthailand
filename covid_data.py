@@ -207,10 +207,10 @@ def scrape_and_combine():
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_vac.vaccination_reports,
+        covid_data_dash.dash_ages,
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
         covid_data_testing.get_test_reports,
-        covid_data_dash.dash_ages,
         covid_data_vac.vac_slides,
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
@@ -232,11 +232,11 @@ def scrape_and_combine():
         dash_by_province, \
         get_cases_by_demographics_api, \
         vaccination_reports, \
+        dash_ages, \
         th_situation, \
         en_situation, \
         tests_reports, \
         vac_slides, \
-        dash_ages, \
         dash_daily, \
         excess_deaths, \
         tests, \

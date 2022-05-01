@@ -77,6 +77,13 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
+## Estimated Daily Infections
+
+![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
+- Note: no country tests everyone so modelling is needed to estimate the real number
+  of infections in the community including asymtematic infections. Modelling includes
+  many factors such as the estimated deaths and fatality rate of the population.
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## Cases by Patient Type
 

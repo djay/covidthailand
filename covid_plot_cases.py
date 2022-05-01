@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import numpy as np
@@ -6,6 +7,7 @@ import pandas as pd
 import covid_data_api
 import utils_thai
 from covid_data_api import get_ifr
+from covid_data_api import ihme_dataset
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import cut_ages_labels
@@ -163,7 +165,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     cols = ['Cases']
     peaks = df[cols] / df[cols].rolling(7).mean().max(axis=0) * 100
 
-    ihme = import_csv("ihme", ['Date'])
+    ihme = ihme_dataset(check=False)
     col_list = ['Mobility Index', 'mobility_obs']
     mobility = ihme[col_list]
     # keep only observed mobility, removing forcasted part
@@ -186,6 +188,27 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
+
+    today = df['Cases'].index.max()
+    est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
+    est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
+    est_cases['Reported Cases'] = df['Cases']
+    pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
+    pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
+    pred_cases["Forecast Reported Cases (IHME)"] = ihme["cases_mean"].loc[today:]
+    pred_cases = pred_cases.loc[:today + datetime.timedelta(days=60)]
+
+    plot_area(df=est_cases.combine_first(pred_cases),
+              title='Estimated Daily Infections - IHME Model - Thailand',
+              png_prefix='cases_est_ihme', cols_subset=list(est_cases.columns),
+              legends=list(est_cases.columns),
+              ma_days=None,
+              clean_end=False,
+              actuals=list(pred_cases.columns),
+              kind='line', stacked=False, percent_fig=False,
+              periods_to_plot=["4", "3"],
+              cmap='tab10',
+              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation, CCSA Briefing')
 
     logger.info('======== Finish Cases Plots ==========')
 
