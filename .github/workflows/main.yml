@@ -89,7 +89,8 @@ jobs:
         continue-on-error: true
         run: (! grep ${{ steps.date.outputs.date }} api/moph_dashboard_prov.csv )
       - name: Cache multiple paths
-        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' }}
+        id: cache
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
         uses: pat-s/always-upload-cache@v2.1.5
         with:
           path: |
@@ -110,7 +111,7 @@ jobs:
             ${{ runner.os }}
       - name: Get release with cached docs
         id: docsrelease
-        if: ${{ steps.api.outcome == 'success' || steps.dash.outcome == 'success' }}
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
         uses: dsaltares/fetch-gh-release-asset@master
         with:
           file: "inputs.tar.gz"
