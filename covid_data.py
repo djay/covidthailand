@@ -227,7 +227,7 @@ def scrape_and_combine():
     ]
 
     pool = Pool(1 if MAX_DAYS > 0 else None)
-    values = tqdm.tqdm(pool.imap(do_work, jobs), total=len(jobs))
+    values = list(tqdm.tqdm(pool.imap(do_work, jobs), total=len(jobs)))
     get_cases_by_prov_briefings, \
         dash_by_province, \
         get_cases_by_demographics_api, \
@@ -246,6 +246,7 @@ def scrape_and_combine():
         ihme_dataset, \
         api_provs \
         = values
+    pool.close()
 
     vac_reports, vac_reports_prov = vaccination_reports
     briefings_prov, cases_briefings = get_cases_by_prov_briefings
