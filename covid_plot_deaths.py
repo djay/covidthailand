@@ -196,11 +196,11 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     plot_area(df=by_region / pop_region * 10**6,
               title='Covid Deaths/1M - by Region - Thailand',
               png_prefix='deaths_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
-              ma_days=21,
+              ma_days=14,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               periods_to_plot=['3', '4'],
-              table=trend_table(cases['Deaths'], sensitivity=25, style="green_down", ma_days=21),
+              table=trend_table(cases['Deaths'], sensitivity=25, style="green_down", ma_days=14),
               footnote='Table of latest Deaths and regional 7 day trend per 1M',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
@@ -208,7 +208,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     plot_area(df=by_region,
               title='Covid Deaths - by Region - Thailand',
               png_prefix='deaths_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
-              ma_days=21,
+              ma_days=14,
               kind='area', stacked=True, percent_fig=True, mini_map=True,
               periods_to_plot=['3', '4'],
               #          unknown_name="Imported/Prisons", unknown_total="Deaths",  # I don't think deaths get seperated
@@ -224,7 +224,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               title='Covid Deaths/1M - Top Provinces - Thailand',
               png_prefix='deaths_prov_top', cols_subset=top5.columns.to_list(),
-              ma_days=21,
+              ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               periods_to_plot=['3', '4'],
