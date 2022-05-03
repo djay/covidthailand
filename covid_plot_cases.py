@@ -193,6 +193,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
     est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
     est_cases['Reported Cases'] = df['Cases']
+    est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
     pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
     pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
     pred_cases["Forecast Reported Cases (IHME)"] = ihme["cases_mean"].loc[today:]
@@ -208,6 +209,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               periods_to_plot=["4", "3"],
               cmap='tab10',
+              footnote="Adding to ATK to confirmed cases (PCR) may double count those who do both",
               footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation, CCSA Briefing')
 
     logger.info('======== Finish Cases Plots ==========')

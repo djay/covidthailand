@@ -239,7 +239,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     plot_area(df=top5,
               title='Covid Deaths/1M - Trending Up Provinces - Thailand',
               png_prefix='deaths_prov_increasing', cols_subset=top5.columns.to_list(),
-              ma_days=21,
+              ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               periods_to_plot=['3', '4'],
@@ -325,7 +325,9 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     cfr_warning = "CFR is a poor estimate of IFR (risk of death if infected) due to low detection rates\n" + \
         f"Deaths shifted by {ttd} days, est detection to death dur."
     # TODO: use actual med time to death from briefing. It changes slightly over time.
-    def cfr_est(df): return df['Deaths'].rolling(90).mean() / df['Cases'].shift(ttd).rolling(90).mean() * 100
+
+    def cfr_est(df, cases_col="Cases"): return df['Deaths'].rolling(
+        90).mean() / df[cases_col].shift(ttd).rolling(90).mean() * 100
     by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
     cfr_region = by_region.groupby("region", group_keys=False).apply(cfr_est).to_frame("CFR Est").reset_index()
     cfr_region = pd.crosstab(cfr_region['Date'], cfr_region['region'], values=cfr_region["CFR Est"], aggfunc="sum")
@@ -357,6 +359,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     cfr_ifr = cfr_est(df).to_frame("Estimated CFR (90 days avg)")
+    cfr_ifr["Estimated CFR inc ATK (90d)"] = df['Deaths'].rolling(
+        90).mean() / (df['Cases'] + df['ATK']).shift(ttd).rolling(90).mean() * 100
     cfr_ifr['Estimated IFR (IHME)'] = (ihme['infection_fatality'] * 100)
     plot_area(df=cfr_ifr,
               title='Case Fatality Rate (CFR) vs Infection Fatality Rate (IFR) - Estimated - Thailand',
