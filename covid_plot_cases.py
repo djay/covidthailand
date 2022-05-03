@@ -193,6 +193,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
     est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
     est_cases['Reported Cases'] = df['Cases']
+    est_cases['Reported Cases (PCR) + Probable Cases (ATK)'] = df['Cases'] + df['ATK']
     pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
     pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
     pred_cases["Forecast Reported Cases (IHME)"] = ihme["cases_mean"].loc[today:]
