@@ -116,7 +116,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               legends=legends,
               png_prefix='deaths_comorbidities', cols_subset=cols,
               # actuals=['Deaths'],
-              ma_days=21,
+              ma_days=14,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               y_formatter=perc_format,

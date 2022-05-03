@@ -482,6 +482,9 @@ def add_regions_to_axis(axis, table_regions):
 
     # get the regions and add the heading
     regions = list(table_regions.loc[:, 'region'].tolist())
+    if len(regions) < 7:
+        # TODO: fix to at least show some
+        return
     # TODO: should fix region name at the source so appears everywhere
     regions[0] = {'Bangkok Metropolitan Region': 'Bangkok', 'Northeastern': 'Northeast'}.get(regions[0], regions[0])
     current_region = regions[0]
