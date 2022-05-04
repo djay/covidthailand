@@ -32,7 +32,7 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 and data feeds have been used effort has gone into making this data collection accurate and timely.
 This sites only intention is to give an accurate representation of all the available Covid data for Thailand in one place.*
 
-Links to all data sources are including in [Downloads](downloads)
+Links to all data sources are including in [Downloads](downloads.md)
 
 <br style="clear:both"/>
 
