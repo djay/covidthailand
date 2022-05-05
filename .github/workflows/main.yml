@@ -155,7 +155,7 @@ jobs:
           pip install -r requirements.txt --use-deprecated=html5lib --use-deprecated=legacy-resolver
       - name: is dash ready
         id: godash
-        if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success'}}
+        if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}
         continue-on-error: true
         run: python -c "import covid_data_dash; covid_data_dash.check_dash_ready()"
       - name: Run tests

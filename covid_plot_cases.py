@@ -246,8 +246,8 @@ def save_caseprov_plots(df=None):
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table=trend_table(cases['Cases'], sensitivity=25, style="green_down", ma_days=7),
-              footnote='Table is of latest Cases with trend using 7 day avg',
+              table=trend_table(cases['Cases'], sensitivity=15, style="green_down", ma_days=3),
+              footnote='Table is latest Cases with trend using 3d avg.',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     cases_region['Cases'] = df['Cases']
@@ -328,7 +328,7 @@ def save_caseprov_plots(df=None):
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Down Provinces - Thailand',
               png_prefix='cases_prov_decreasing', cols_subset=cols,
-              ma_days=14,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote='\nNote: Per 100,000 people.',
