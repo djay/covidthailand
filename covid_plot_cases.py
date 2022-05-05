@@ -247,7 +247,7 @@ def save_caseprov_plots(df=None):
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               table=trend_table(cases['Cases'], sensitivity=25, style="green_down", ma_days=7),
-              footnote='Table of latest Cases and 7 day trend per 100k',
+              footnote='Table is of latest Cases with trend using 7 day avg',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     cases_region['Cases'] = df['Cases']
@@ -302,7 +302,7 @@ def save_caseprov_plots(df=None):
         return func
 
     top5 = cases.pipe(topprov,
-                      increasing(cases_per_capita("Cases")),
+                      increasing(cases_per_capita("Cases"), ma=7),
                       cases_per_capita("Cases"),
                       name="Province Cases (3d MA)",
                       other_name="Other Provinces",
@@ -311,9 +311,10 @@ def save_caseprov_plots(df=None):
     plot_area(df=top5,
               title='Confirmed Covid Cases/100k - Trending Up Provinces - Thailand',
               png_prefix='cases_prov_increasing', cols_subset=cols,
-              ma_days=14,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
+              periods_to_plot=['3', '4'],
               footnote='\nNote: Per 100,000 people.',
               footnote_left=f'\n{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
 
@@ -360,6 +361,23 @@ def save_caseprov_plots(df=None):
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  API: Daily Reports of COVID-19 Infections')
+
+    for region in cases['region'].unique():
+        dfregion = cases[cases['region'] == region].reset_index()
+        dfregion = pd.crosstab(dfregion['Date'], dfregion['Province'], values=dfregion['Cases'], aggfunc="sum")
+        n = max(int(len(dfregion.columns) / 2), 8)
+        chunks = [list(dfregion.columns[i:i + n]) for i in range(0, len(dfregion.columns), n)]
+        for i, chunk in enumerate(chunks):
+            suffix = f"{i + 1}" if len(chunks) > 1 else ""
+            plot_area(df=dfregion[chunk],
+                      title=f'Confirmed Covid Cases - {region} - Thailand',
+                      png_prefix=f'cases_prov_{region.lower().replace(" ", "")}{suffix}', cols_subset=chunk,
+                      ma_days=7,
+                      actuals=True,
+                      periods_to_plot=['4'],
+                      kind='line', stacked=False, percent_fig=False,
+                      cmap='tab10',
+                      footnote_left=f'{source}Data Sources: CCSA Daily Briefing, MOPH Covid-19 Dashboard')
 
     # top5 = cases.pipe(topprov,
     #                   increasing(cases_per_capita('Cases Walkin'), 14),
@@ -486,6 +504,6 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_cases_plots(df)
     save_caseprov_plots(df)
+    save_cases_plots(df)
     # save_infections_estimate(cases)

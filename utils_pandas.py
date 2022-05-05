@@ -271,7 +271,7 @@ def increasing(col, ma=7):
             series = col(adf)
         else:
             series = adf[col]
-        return series.rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline)
+        return series.rolling(ma, min_periods=int(ma / 2), center=True).apply(trendline)
     return increasing_func
 
 
