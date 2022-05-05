@@ -493,7 +493,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
               y_formatter=perc_format,
-              table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down", ma_days=21),
+              # TODO: fix table when incomplete data
+              # table=trend_table(dash_prov["Positive Rate Dash"].dropna() * 100, sensitivity=4, style="green_down", ma_days=21),
               footnote='Positivity Rate: The % of COVID-19 tests that come back positive.\nDashboard positive rate differs from testing reports',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
