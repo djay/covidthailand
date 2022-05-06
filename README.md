@@ -60,10 +60,10 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Cases/100k by Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_3.png)
 
-![Cases by Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_stacked_3.png)
-
 - [Cases by Region: Full Year](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_all.png)
-- [Bangkok Eastern](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_bangkokmetropolitanregion_4.png) | [Central](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_central_4.png) | [Eastern](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_eastern_4.png) | [Western](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_western_4.png) | [Northern 1](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northern1_4.png) | [Northern 2](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northern2_4.png) | [Northeastern 1 ](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northeastern1_4.png) | [Northeastern 2 ](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_western2_4.png) | [Southern 1](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_southern1_4.png)| [Southern 2](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_southern2_4.png)
+- [Bangkok Metro Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_bangkokmetropolitanregion_4.png) | [Central](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_central_4.png) | [Eastern](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_eastern_4.png) | [Western](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_western_4.png) | [Northern C-N](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northern1_4.png) | [Northern P-U](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northern2_4.png) | [Northeastern A-N](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northeastern1_4.png) | [Northeastern N-Y](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northeastern2_4.png) | [Southern C-P](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_southern1_4.png) | [Southern R-Y](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_southern2_4.png)
+
+![Cases by Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_stacked_3.png)
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings)
 
