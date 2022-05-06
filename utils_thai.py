@@ -2,6 +2,7 @@ import datetime
 import difflib
 import functools
 import json
+import math
 import os
 import re
 
@@ -593,7 +594,7 @@ def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     elif "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
-        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(int(ma_days / 2))) / peak * sensitivity)
+        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(int(math.ceil(ma_days / 2)))) / peak * sensitivity)
     else:
         ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
         peak = ma.max().max() / ma_pop['Population'].max().max()

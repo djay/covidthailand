@@ -1,6 +1,7 @@
 import datetime
 import difflib
 import functools
+import math
 import os
 from typing import List
 from typing import Union
@@ -294,7 +295,7 @@ def value_ma(col, ma=3):
 
 
 def trendline(data: pd.DataFrame) -> float:
-    slope = (list(data)[-1] - list(data)[0]) / len(data.index.values)
+    slope = (list(data)[int(math.ceil(len(data) / 2))] - list(data)[0]) / len(data.index.values)
     return float(slope)
 
 
