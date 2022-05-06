@@ -246,8 +246,8 @@ def save_caseprov_plots(df=None):
               ma_days=7,
               kind='line', stacked=False, percent_fig=False, mini_map=True,
               cmap=utils_thai.REG_COLOURS,
-              table=trend_table(cases['Cases'], sensitivity=20, style="green_down", ma_days=3),
-              footnote='Table is latest Cases with trend using 3d avg.',
+              table=trend_table(cases['Cases'], sensitivity=20, style="green_down", ma_days=7),
+              footnote='Table is latest Cases with trend using 7d avg.',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     cases_region['Cases'] = df['Cases']

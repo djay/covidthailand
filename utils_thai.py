@@ -579,8 +579,8 @@ def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     """
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
-    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(ma_days).mean())
-
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(
+        ma_days, min_periods=int(ma_days / 2), center=True).mean())
     # Too sensitive to changes
     # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
 
@@ -593,12 +593,12 @@ def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     elif "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
-        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(ma_days)) / peak * sensitivity)
+        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(int(ma_days / 2))) / peak * sensitivity)
     else:
         ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
         peak = ma.max().max() / ma_pop['Population'].max().max()
         trend = ma_pop.groupby("Province", group_keys=False).apply(
-            lambda df: ((df['Value'] - df['Value'].shift(ma_days)) / df['Population'])
+            lambda df: ((df['Value'] - df['Value'].shift(int(ma_days / 2))) / df['Population'])
         ) / peak * sensitivity
 
     trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?
