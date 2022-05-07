@@ -764,9 +764,16 @@ def svg_hover(df, plt, fig, legend, stacked, path):
             </body>
             </foreignObject>
         </g>
+
+    </g>
+    """
+    linesvg = """
+    <g id="date_line" xmlns="http://www.w3.org/2000/svg">
+        <line x1="500" y1="0" x2="500" y2="2000" visibility="hidden" style="fill:none;stroke:#808080;stroke-dasharray:3.7,1.6;stroke-dashoffset:0;"/>
     </g>
     """
     xmlid["figure_1"].append(ET.XML(tooltipsvg))
+    xmlid["patch_1"].append(ET.XML(linesvg))
     xmlid["figure_1"].set("fill", "black")  # some browsers don't seem to respect background
 
     # TODO: get json list with [[start, date, [color, label, val_avg, val],...],...]). start is ratio
@@ -785,6 +792,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
 
         function init(event) {
             var tooltip = d3.select("g.tooltip.mouse");
+            var line = d3.select("g#date_line line");
             var plot = d3.select("#patch_2");
             var offset = plot.node().getBBox().x;
             var date_label = d3.select("#date");
@@ -800,11 +808,12 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 tooltip.attr('visibility', "visible")
                 var plotpos = d3.pointer(evt, plot.node())[0] - offset;
                 var index = Math.floor(plotpos / plot.node().getBBox().width * data.index.length);
-                var date = data.index[index].split("T")[0];
+                var date = data.index[index];
                 if (date) {
                     date = date.split("T")[0];
                 } else {
                     tooltip.attr('visibility', "hidden");
+                    line.attr('visibility', "hidden");
                 }
                 date_label.node().textContent = date;
 
@@ -841,9 +850,15 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                     .attr("transform", "translate("
                         + (x) + ","
                         + (mouseCoords[1] - bbox.height/2) + ")");
+                line.attr("x1", mouseCoords[0]);
+                line.attr("x2", mouseCoords[0]);
+                line.attr("y1", plot.node().getBBox().y);
+                line.attr("y2", plot.node().getBBox().y + plot.node().getBBox().height);
+                line.attr('visibility', "visible");
 
             })
             .on("mouseout", function () {
+                line.attr('visibility', "hidden");
                 return tooltip.attr('visibility', "hidden");
             });
 
