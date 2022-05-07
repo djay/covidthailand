@@ -757,12 +757,10 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                  overlapping tooltips! -->
             <foreignObject id="tooltiptext" width="500" height="550">
             <body xmlns="http://www.w3.org/1999/xhtml">
-               <div style="border:2px; color: white; font:DejaVuSans">
-                <table>
+                <table style="border:2px; color: white;  background-color: rgb(0, 0, 0, 0.5); font-family: 'DejaVu Sans', sans-serif;">
                   <tr><th id="date">2021-12-02</th></tr>
                     {value_rows}
                 </table>
-               </div>
             </body>
             </foreignObject>
         </g>
@@ -793,7 +791,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
             // var border = d3.select("#tooltiprect");
             var gap = 15;
             let padding = 4;
-            let bbox = d3.select("#tooltiptext div table").node().getBoundingClientRect();
+            let bbox = d3.select("#tooltiptext table").node().getBoundingClientRect();
             tooltip.attr("width", bbox.width);
             tooltip.attr("hieght", bbox.height);
 
@@ -803,6 +801,11 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 var plotpos = d3.pointer(evt, plot.node())[0] - offset;
                 var index = Math.floor(plotpos / plot.node().getBBox().width * data.index.length);
                 var date = data.index[index].split("T")[0];
+                if (date) {
+                    date = date.split("T")[0];
+                } else {
+                    tooltip.attr('visibility', "hidden");
+                }
                 date_label.node().textContent = date;
 
                 for ( let number = 0; number < data.data[index].length; number++ ) {
