@@ -1,6 +1,7 @@
 import datetime
 import difflib
 import functools
+import math
 import os
 from typing import List
 from typing import Union
@@ -189,6 +190,7 @@ def fuzzy_join(a,
     if on not in a.columns:
         old_index = a.index.names
         a = a.reset_index()
+    a = a[a.columns.difference(b.columns)]
     first = a.join(b, on=on)
     test = list(b.columns)[0]
     unmatched = first[first[test].isnull() & first[on].notna()]
@@ -206,7 +208,7 @@ def fuzzy_join(a,
     unmatched_counts = pd.DataFrame()
     if return_unmatched and not unmatched.empty:
         to_keep = [test, replace_on_with] if replace_on_with is not None else [test]
-        counts = unmatched.reset_index()[on].value_counts().to_frame('count')
+        counts = unmatched.reset_index(drop=True)[on].value_counts().to_frame('count')
         guessed = second[[on] + to_keep].set_index(on)
         unmatched_counts = counts.join(guessed).reset_index().rename(columns=dict(index=on))
 
@@ -223,9 +225,13 @@ def fuzzy_join(a,
 
 def export(df, name, csv_only=False, dir="api"):
     logger.info("Exporting: {}", name)
-    df = df.reset_index()
-    for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
-        df[c] = df[c].dt.strftime('%Y-%m-%d')
+    try:
+        df = df.reset_index()
+    except:
+        # df = df.loc[:]
+        pass
+    # for c in set(list(df.select_dtypes(include=['datetime64']).columns)):
+    #     df[c] = df[c].dt.strftime('%Y-%m-%d')
     os.makedirs(dir, exist_ok=True)
     # TODO: save space by dropping nan
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
@@ -238,14 +244,18 @@ def export(df, name, csv_only=False, dir="api"):
         )
     df.to_csv(
         os.path.join(dir, f"{name}.csv"),
-        index=False
+        index=False,
+        date_format='%Y-%m-%d'
     )
 
 
 def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="api"):
     path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
-        return pd.DataFrame(columns=index).set_index(index)
+        if index:
+            return pd.DataFrame(columns=index).set_index(index)
+        else:
+            return pd.DataFrame()
     logger.info("Importing CSV: {}", path)
     old = pd.read_csv(path)
     for c in date_cols:
@@ -262,7 +272,7 @@ def increasing(col, ma=7):
             series = col(adf)
         else:
             series = adf[col]
-        return series.rolling(ma, min_periods=1).mean().rolling(ma, min_periods=ma).apply(trendline)
+        return series.rolling(ma, min_periods=int(ma / 2), center=True).apply(trendline)
     return increasing_func
 
 
@@ -285,7 +295,7 @@ def value_ma(col, ma=3):
 
 
 def trendline(data: pd.DataFrame) -> float:
-    slope = (list(data)[-1] - list(data)[0]) / len(data.index.values)
+    slope = (list(data)[int(math.ceil(len(data) / 2))] - list(data)[0]) / len(data.index.values)
     return float(slope)
 
 
@@ -353,7 +363,7 @@ def pred_vac(dose1, dose2=None, ahead=90, lag=40, suffix=" Pred"):
     from_past.columns = [col + suffix for col in dose2.columns]
     from_future = future1.iloc[1:ahead - lag + 1]
     from_future.columns = from_past.columns
-    v2 = pd.concat([from_past, from_future], axis=0)
+    v2 = pd.concat([from_past, from_future], axis=0)[:ahead + 1]
     # adjust to start where dose2 finished
     future2 = (v2 - v2.loc[v2.index.min()]).add(list(dose2.loc[cur]))
     future2.index = future_dates

@@ -25,6 +25,7 @@ from requests.exceptions import Timeout
 from tika import config
 from tika import parser
 from webdav3.client import Client
+from xlsx2csv import Xlsx2csv
 
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -338,7 +339,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=1)
+                r = s.head(url, timeout=2)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")
@@ -525,6 +526,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
             fixed.append((text, (url if url else None)))
         tweets[date] = fixed
     latest = max(tweets.keys()) if tweets else None
+    return tweets  # seems to be blocking and not useful new data anymore 2021-01-22
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in [50, 2000, 20000]:
@@ -656,3 +658,11 @@ def camelot_cache(file, page_num, process_background=False, table=0):
         tables = camelot.read_pdf(file, pages=str(page_num), process_background=process_background)
         tables[table].df.to_json(cache_file)
         return tables[table].df
+
+
+def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
+    buffer = StringIO()
+    Xlsx2csv(path, outputencoding="utf-8", sheet_name=sheet_name).convert(buffer)
+    buffer.seek(0)
+    df = pd.read_csv(buffer)
+    return df

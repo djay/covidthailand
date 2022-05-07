@@ -9,6 +9,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
+            "justMyCode": false,
         },
         {
             "name": "covidthailand - full",

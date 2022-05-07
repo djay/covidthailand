@@ -1,11 +1,15 @@
+import datetime
 import json
 import os
 import shutil
+import time
 from multiprocessing import Pool
 
 import pandas as pd
+import tqdm
 
 import covid_data_api
+import covid_data_bed
 import covid_data_briefing
 import covid_data_dash
 import covid_data_situation
@@ -54,49 +58,7 @@ def prov_to_districts(dfprov):
 ################################
 
 
-def get_ifr():
-    # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
-    url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
-    pop = pd.read_excel(file, header=3, index_col=1)
-
-    def year_cols(start, end):
-        return [f"{i} year" for i in range(start, end)]
-
-    pop['At 0'] = pop[year_cols(1, 10) + ["under 1"]].sum(axis=1)
-    pop["At 10"] = pop[year_cols(10, 25)].sum(axis=1)
-    pop["At 25"] = pop[year_cols(25, 46) + ["47 year"] + year_cols(47, 54)].sum(axis=1)
-    pop["At 55"] = pop[year_cols(55, 65)].sum(axis=1)
-    pop["At 65"] = pop[year_cols(65, 73) + ["74 year", "74 year"]].sum(axis=1)
-    pop["At 75"] = pop[year_cols(75, 85)].sum(axis=1)
-    pop["At 85"] = pop[year_cols(85, 101) + ["101 and over"]].sum(axis=1)
-    # from http://epimonitor.net/Covid-IFR-Analysis.htm. Not sure why pd.read_html doesn't work in this case.
-    ifr = pd.DataFrame([[.002, .002, .01, .04, 1.4, 4.6, 15]],
-                       columns=["At 0", "At 10", "At 25",
-                                "At 55", "At 65", "At 75", "At 85"],
-                       ).transpose().rename(columns={0: "risk"})
-    pop = pop[ifr.index]
-    pop = pop.reset_index().dropna().set_index("Province").transpose()
-    unpop = pop.reset_index().melt(
-        id_vars=['index'],
-        var_name='Province',
-        value_name='Population'
-    ).rename(columns=dict(index="Age"))
-    total_pop = unpop.groupby("Province").sum().rename(
-        columns=dict(Population="total_pop"))
-    unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
-    unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
-    provifr = unpop.groupby("Province").sum()
-    provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
-
-    # now normalise the province names
-    provifr = join_provinces(provifr, "Province")
-    return provifr
-
-
 def get_hospital_resources():
-    logger.info("========ArcGIS==========")
-
     # PUI + confirmed, recovered etc stats
     fields = [
         'OBJECTID', 'ID', 'agency_code', 'label', 'agency_status', 'status',
@@ -219,6 +181,13 @@ def get_hospital_resources():
 #   - doesn't have pre 2020 dailies though
 # health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
+def do_work(job):
+    start = time.time()
+    logger.info(f"==== {job.__name__} Start ====")
+    res = job()
+    logger.info(f"==== {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
+    return res
+
 
 def scrape_and_combine():
     os.makedirs("api", exist_ok=True)
@@ -233,64 +202,56 @@ def scrape_and_combine():
         old = import_csv("combined")
         old = old.set_index("Date")
         return old
-
-    with Pool(1 if MAX_DAYS > 0 else None) as pool:
-
-        dash_daily = pool.apply_async(covid_data_dash.dash_daily)
-        # These 3 are slowest so should go first
-        dash_by_province = pool.apply_async(covid_data_dash.dash_by_province)
+    jobs = [
+        covid_data_briefing.get_cases_by_prov_briefings,
+        covid_data_dash.dash_by_province,
+        covid_data_api.get_cases_by_demographics_api,
+        covid_data_vac.vaccination_reports,
+        covid_data_dash.dash_ages,
+        covid_data_situation.get_thai_situation,
+        covid_data_situation.get_en_situation,
+        covid_data_testing.get_test_reports,
+        covid_data_vac.vac_slides,
+        covid_data_dash.dash_daily,
+        covid_data_api.excess_deaths,
+        covid_data_testing.get_tests_by_day,
+        covid_data_tweets.get_cases_by_prov_tweets,
+        covid_data_api.get_cases_timelineapi,
+        covid_data_testing.get_variant_reports,
+        covid_data_api.ihme_dataset,
+        covid_data_api.timeline_by_province,
         # This doesn't add any more info since severe cases was a mistake
-        # dash_trends_prov = pool.apply_async(covid_data_dash.dash_trends_prov)
-        vac_slides = pool.apply_async(covid_data_vac.vac_slides)
-        vac_reports_and_prov = pool.apply_async(covid_data_vac.vaccination_reports)
+        # covid_data_dash.dash_trends_prov
+        # covid_data_bed.get_df
+        # covid_data_situation.get_situation_today
+    ]
 
-        # TODO: split vac slides as that's the slowest
+    pool = Pool(1 if MAX_DAYS > 0 else None)
+    values = list(tqdm.tqdm(pool.imap(do_work, jobs), total=len(jobs)))
+    get_cases_by_prov_briefings, \
+        dash_by_province, \
+        get_cases_by_demographics_api, \
+        vaccination_reports, \
+        dash_ages, \
+        th_situation, \
+        en_situation, \
+        tests_reports, \
+        vac_slides, \
+        dash_daily, \
+        excess_deaths, \
+        tests, \
+        get_cases_by_prov_tweets, \
+        get_cases_timelineapi, \
+        variant_reports, \
+        ihme_dataset, \
+        api_provs \
+        = values
+    pool.close()
 
-        briefings_prov__cases_briefings = pool.apply_async(covid_data_briefing.get_cases_by_prov_briefings)
-
-        dash_ages = pool.apply_async(covid_data_dash.dash_ages)
-
-        # today_situation = pool.apply_async(covid_data_situation.get_situation_today)
-        th_situation = pool.apply_async(covid_data_situation.get_thai_situation)
-        en_situation = pool.apply_async(covid_data_situation.get_en_situation)
-
-        cases_demo__risks_prov = pool.apply_async(covid_data_api.get_cases_by_demographics_api)
-
-        tweets_prov__twcases = pool.apply_async(covid_data_tweets.get_cases_by_prov_tweets)
-        timelineapi = pool.apply_async(covid_data_api.get_cases)
-
-        tests = pool.apply_async(covid_data_testing.get_tests_by_day)
-        tests_reports = pool.apply_async(covid_data_testing.get_test_reports)
-
-        xcess_deaths = pool.apply_async(covid_data_api.excess_deaths)
-        case_api_by_area = pool.apply_async(covid_data_api.get_cases_by_area_api)  # can be very wrong for the last days
-
-        ihme_dataset = pool.apply_async(covid_data_api.ihme_dataset)
-
-        # Now block getting until we get each of the data
-        # today_situation = today_situation.get()
-        th_situation = th_situation.get()
-        en_situation = en_situation.get()
-
-        dash_daily = dash_daily.get()
-        dash_ages = dash_ages.get()
-        dash_by_province = dash_by_province.get()
-        # dash_trends_prov = dash_trends_prov.get()
-
-        vac_reports, vac_reports_prov = vac_reports_and_prov.get()
-        vac_slides = vac_slides.get()
-        ihme_dataset = ihme_dataset.get()
-        briefings_prov, cases_briefings = briefings_prov__cases_briefings.get()
-        cases_demo, risks_prov = cases_demo__risks_prov.get()
-
-        tweets_prov, twcases = tweets_prov__twcases.get()
-        timelineapi = timelineapi.get()
-
-        tests = tests.get()
-        tests_reports = tests_reports.get()
-
-        xcess_deaths.get()
-        case_api_by_area = case_api_by_area.get()  # can be very wrong for the last days
+    vac_reports, vac_reports_prov = vaccination_reports
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api
+    tweets_prov, twcases = get_cases_by_prov_tweets
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
@@ -299,16 +260,18 @@ def scrape_and_combine():
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
+    shutil.copy(os.path.join("inputs", "json", "moph_bed.csv"), "api")
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
-    briefings = briefings.combine_first(cases_briefings).combine_first(twcases).combine_first(timelineapi)
+    briefings = briefings.combine_first(cases_briefings).combine_first(twcases)
     export(briefings, "cases_briefings")
 
     # Export per province
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
+        api_provs).combine_first(
         dash_by_province).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
@@ -336,7 +299,7 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, cases_briefings, twcases, timelineapi, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [tests_reports, tests, cases_briefings, get_cases_timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
         df = df.combine_first(f)
     logger.info(df)
 

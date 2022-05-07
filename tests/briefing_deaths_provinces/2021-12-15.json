@@ -1,0 +1,120 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Bangkok",
+      "Deaths":3
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Samut Prakan",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Khon Kaen",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Chaiyaphum",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Nakhon Ratchasima",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Buriram",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Mae Hong Son",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Chai Nat",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Uttaradit",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Nakhon Si Thammarat",
+      "Deaths":4
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Surat Thani",
+      "Deaths":3
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Phatthalung",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Satun",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Trang",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Chonburi",
+      "Deaths":2
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Prachuap Khiri Khan",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Rayong",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Lopburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2021-12-15T00:00:00.000Z",
+      "Province":"Sa Kaeo",
+      "Deaths":1
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import datetime
 import re
+import time
 from itertools import islice
 
 import numpy as np
@@ -7,8 +8,11 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from dateutil.parser import parse as d
 
+import covid_plot_cases
+import covid_plot_deaths
 from utils_pandas import daterange
 from utils_pandas import export
+from utils_pandas import import_csv
 from utils_scraping import any_in
 from utils_scraping import camelot_cache
 from utils_scraping import get_next_number
@@ -171,7 +175,8 @@ def briefing_case_types(date, pages, url):
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
             cases, walkins, proactive, *quarantine = numbers
             domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
-            if domestic and date not in [d("2021-11-22"), d("2021-12-02")]:
+            if domestic and date not in [d("2021-11-22"), d("2021-12-02"), d("2021-12-29"), d("2022-03-31")]:
+                # Either domestic number is wrong or proactive is wrong
                 assert domestic <= cases
                 assert domestic == walkins + proactive
             quarantine = quarantine[0] if quarantine else 0
@@ -184,6 +189,9 @@ def briefing_case_types(date, pages, url):
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
+            if date == d("2022-03-22"):
+                # order got changed around
+                prison = 44
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
             if cases2 is not None and cases2 != cases:
                 # Total cases moved to the bottom
@@ -202,7 +210,10 @@ def briefing_case_types(date, pages, url):
             field, _ = get_next_number(text, "รพ.สนาม")
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
             hospitalised = num[0]
-            assert hospital + field == hospitalised or date in [d("2021-09-04")]
+            if date in [d("2021-09-04"), d("2022-03-07")]:
+                pass
+            else:
+                assert hospital + field == hospitalised
         elif "ผู้ป่วยรักษาอยู่" in text:
             hospitalised, *_ = get_next_numbers(text, "ผู้ป่วยรักษาอยู่", return_rest=False, before=True)
             if date > d("2021-03-31"):  # don't seem to add up before this
@@ -220,6 +231,8 @@ def briefing_case_types(date, pages, url):
                 recovered = cum_recovered_3rd
 
         assert not pd.isna(recovered)
+
+        occupancy = next(iter(get_next_numbers(text, "ครองเตียงระดับ 2-3", return_rest=False, ints=False)), np.nan)
 
         deaths, _ = get_next_number(text, "เสียชีวิตสะสม", "เสียชีวติสะสม", "เสียชีวติ", before=True)
         assert not any_in([None], cases, walkins, proactive, imported, recovered, deaths)
@@ -247,6 +260,7 @@ def briefing_case_types(date, pages, url):
             severe,
             respirator,
             hospitalised,
+            occupancy,
             recovered,
             deaths,
             url,
@@ -264,6 +278,7 @@ def briefing_case_types(date, pages, url):
         "Hospitalized Severe",
         "Hospitalized Respirator",
         "Hospitalized",
+        "Hospitalized Occupancy Level 2-3 %",
         "Recovered",
         "Deaths",
         "Source Cases",
@@ -279,16 +294,17 @@ def briefing_province_cases(file, date, pages):
     if date < d("2021-01-13"):
         pages = []
     rows = {}
-    for i, soup in enumerate(pages):
+    for pagenum, soup in enumerate(pages):
         text = str(soup)
         if "รวมท ัง้ประเทศ" in text:
             continue
-        if not re.search(r"(?:ที่|ที)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
+        if not re.search(r"(?:ที่|ที|ท่ี)#?\s*(?:จังหวัด|จงัหวดั)", text):  # 'ที# จงัหวดั' 2021-10-17
             continue
         if not re.search(r"(นวนผู้ติดเชื้อโควิดในประเทศรำยใหม่|อโควิดในประเทศรายให)", text):
             continue
         parts = [p.get_text() for p in soup.find_all("p")]
-        parts = [line for line in parts if line]
+        # parts = [line for line in parts if line]
+        parts = [p for line in parts for p in line.split("\n") if p]
         preamble, *tables = split(parts, re.compile(r"รวม\s*\((?:ราย|รำย)\)").search)
         if len(tables) <= 1:
             continue  # Additional top 10 report. #TODO: better detection of right report
@@ -337,10 +353,13 @@ def briefing_province_cases(file, date, pages):
                 #         print("no cases", linenum, thai, *numbers)
     data = ((d, p, c) for (d, p), c in rows.items())
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
-    assert date >= d(
-        "2021-01-13") and not df.empty, f"Briefing on {date} failed to parse cases per province"
-    if date > d("2021-05-12") and date not in [d("2021-07-18")]:
+    if date < d("2021-01-13"):
+        pass
+    else:
+        assert not df.empty, f"Briefing on {date} failed to parse cases per province"
+    if date > d("2021-05-12") and date not in [d("2021-07-18"), d("2022-02-02")]:
         # TODO: 2021-07-18 has only 76 prov. not sure why yet. maybe doubled up or mispelled names?
+        # 2022-02-02: page 2 is repeat of page 1 so missing data
         assert len(df.groupby("Province").count()) in [77, 78], f"Not enough provinces briefing {date}"
     return df
 
@@ -384,17 +403,27 @@ def briefing_deaths_provinces(dtext, date, file):
     province_count = {}
     last_provs = None
 
-    def add_deaths(provinces, num):
+    def add_deaths(provinces, num, bracket=False):
         provs_thai = [p.strip("() ") for p in provinces.split() if len(p) > 1 and p.strip("() ")]
         provs = [pr for p in provs_thai for pr in get_province(p, ignore_error=True, cutoff=0.76, split=True)]
 
         # TODO: unknown from another cell get in there. Work out how to remove it a better way
         provs = [p for p in provs if p and p != "Unknown"]
+        if date >= d("2022-01-22") and len(provs) == num and num > 1 and not bracket:
+            # special case where (1) is missing and total number is used
+            num = 1
+
+        if date >= d("2022-03-20") and provs != ['Bangkok'] and not bracket and num > 1:
+            # 2022-03-20: last prov in section missing (1)
+            # Let's hope these are well formatted after this
+            num = 1
+
         for p in provs:
             province_count[p] = province_count.get(p, 0) + num
 
     for provinces, num_text in pcells:
         # len() < 2 because some stray modifier?
+        bracket = any_in(num_text, "(", ")")
         text_num, rest = get_next_number(provinces, remove=True)
         num, _ = get_next_number(num_text)
         if num is None and text_num is not None:
@@ -408,7 +437,7 @@ def briefing_deaths_provinces(dtext, date, file):
             if not last_provs:
                 raise Exception(f"subset of province can't be adjusted for {rest}")
             add_deaths(last_provs, -num)  # TODO: should only be prison. check this
-        add_deaths(rest, num)
+        add_deaths(rest, num, bracket)
         last_provs = rest
     dfprov = pd.DataFrame(((date, p, c) for p, c in province_count.items()),
                           columns=["Date", "Province", "Deaths"]).set_index(["Date", "Province"])
@@ -416,8 +445,19 @@ def briefing_deaths_provinces(dtext, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
-    assert deaths_title == dfprov['Deaths'].sum() or date in [d("2021-07-20")], msg
+    if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14"), d("2022-01-21"), d("2022-01-23"), d("2022-01-31"), d("2022-02-26"), d("2022-03-04")]:
+        # 2021-12-15 - missing one from eastern
+        # 2022-02-26 - Uttaradit(2) Chiang Mai, Chiang Rai, Uthai Thani(1) 6
+        # 2022-03-04 - 9!=10 Lopburi(3) Kanchanaburi(2) Chonburi Nakhon Nayok Saraburi Prachinburi(1) 10
+        pass
+    elif date in [d("2022-03-08"), d("2022-03-18"), d("2022-03-31")]:
+        # 2022-03-08 - wrong total and subtotals
+        # 2022-03-18 - only got 77. and south and west got combined?
+        # 2022-03-31 - "Nakhon Si Thammarat(8) Chumphon(1) Krabi(1) 9"
+        pass
+    else:
+        msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
+        assert deaths_title == dfprov['Deaths'].sum(), msg
     return dfprov
 
 
@@ -452,20 +492,17 @@ def briefing_deaths_summary(text, date, file):
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
 
-    # deaths over 60
-    if date > d("2021-08-02"):
-        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
-        assert deaths_60 is not None
-    else:
-        deaths_60 = np.nan
-
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date != d("2021-08-09"):
         male, female, *_ = genders
         if get_next_numbers(text, "ชาย", return_rest=False)[0] == female:
             # They sometimes reorder them
             male, female = female, male
-        assert male + female == deaths_title or date in [d("2021-09-11")]
+        female = 8 if date == d("2022-01-29") else female
+        if date in [d("2021-09-11"), d("2022-01-14"), d("2022-04-08"), d("2022-04-26")]:
+            pass
+        else:
+            assert male + female == deaths_title
     else:
         male, female = None, None
 
@@ -482,37 +519,77 @@ def briefing_deaths_summary(text, date, file):
         "Obesity": ["โรคอ้วน", "อ้วน", "อ1วน"],
         "Cerebrovascular": ["หลอดเลือดสมอง"],
         "Kidney disease": ["โรคไต"],
-        "Heart disease": ["โรคหัวใจ"],
+        "Heart disease": ["โรคหัวใจ", "หัวใจ"],
         "Bedridden": ["ติดเตียง"],
+        "Cancer": ["มะเร็ง"],
         "Pregnant": ["ตั้งครรภ์"],
-        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั"],
+        "None": ["ไม่มีโรคประจ", "ปฏิเสธโรคประจ าตัว", "ไม่มีโรคประจ าตัว", "ไม่มีประวัตโิรคเรือ้รงั", "ไม่มี"],
         # ไม่มีประวัตโิรคเรือ้รงั 3 ราย (2% - 2021-09-15 - only applies under 60 so not exactly the same number
     }
+    text = text.replace("(BMI>30 kg/m2)", "")
+
+    def find_com(thdiseases):
+        num = get_next_number(text, *thdiseases, default=np.nan, return_rest=False, until=r"\)", require_until=True)
+        return num if num <= deaths_title else np.nan
+
     comorbidity = {
-        disease: get_next_number(text, *thdiseases, default=0, return_rest=False, until=r"\)", require_until=True)
+        disease: find_com(thdiseases)
         for disease, thdiseases in diseases.items()
     }
-    if date not in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10")]:
-        assert sum(comorbidity.values()) >= deaths_title, f"Missing comorbidity {comorbidity}\n{text}"
+    if date in [d("2021-8-10"), d("2021-09-23"), d("2021-11-22"), d("2021-12-10"), d("2022-01-03"), d("2022-01-17"), d("2022-02-27")]:
+        # comorbidities don't add to more than deaths
+        pass
+    elif date < d("2021-02-28"):  # Give up. It's not anywhere near covering the deaths now
+        cm_sum = sum([n for n in comorbidity.values() if n is not np.nan])
+        assert cm_sum >= deaths_title, f"Potentially Missing comorbidity {comorbidity}\n{text}"
+
+    # deaths over 60
+    if date > d("2021-08-02"):
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
+        assert deaths_60 is not None
+    else:
+        deaths_60 = np.nan
+    # deaths under 60
+    numbers, rest = get_next_numbers(text, "อายุน้อยกว่า 60", "อายุต่ ากว่า 60", "อยกว:า 60", return_rest=True)
+    if numbers:
+        no_comorbid = comorbidity['None']
+        comorbidity['None'] = np.nan
+        if len(numbers) == 2 and "รคเรื้อรัง" in rest:
+            # Just chronic disease under 60 2021-12-30
+            under_60_disease, *_ = numbers
+            under_60_none = 0
+        else:
+            under_60_disease, _, under_60_none, _, *_ = numbers  # also preganancy
+        # assert no_comorbid is np.nan or no_comorbid == under_60_none
+    else:
+        under_60_disease, under_60_none = np.nan, np.nan
+    if date >= d("2021-08-08"):
+        assert under_60_disease != np.nan
 
     risks = {
-        "Family": ["คนในครอบครัว", "ครอบครัว", "สัมผัสญาติติดเชื้อมาเยี่ยม"],
-        "Others": ["คนอื่นๆ", "คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก"],
-        "Residence": ["อาศัย"],
+        "Family": ["สัมผัสญาติติดเชื้อมาเยี่ยม", "ครอบคร"],
+        "Others": ["คนอ่ืนๆ", "คนรู้จัก", "คนรู1จัก", "คนอื่น", "คนรู้จัก"],
+        "Residence": ["อาศัย "],  # 2021-09-23 seperated  ติดเชื้อในพื้นที่ (location)
         "Location": [
-            "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพ้ืนที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด", "อาศัย/เข้าพ้ืนที่ระบาด",
-            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด", "ในพื้นท่ี",
+            "อาศัย/ไปพื้นที่ระบาด", "อาศัย/ไปพื้นทีร่ะบาด",
+            "อาศัย/เดินทางเข้าไปในพื้นที่ระบาด", "ในพื้นท่ี", "มาจากจังหวัดเสี่ยง", "อาศัยพื้นที่ระบาด",
+            "พ้ืนที่ระบาด", "ติดเชื้อในพื้นที่", "พื้นที่ระบาด"
         ],  # Live/go to an epidemic area
         "Crowds": [
             "ไปที่แออัด", "ไปท่ีแออัด", "ไปสถานที่แออัดพลุกพลา่น", "เข้าไปในสถานที่แออัดพลุกพลา่น",
-            "ไปสถานที่แออัดพลุกพล่าน"
+            "ไปสถานที่แออัดพลุกพล่าน", "ไปสถานที่คนแออัด",
         ],  # Go to crowded places
-        "Work": ["อาชีพเสี่ยง", "อาชีพเ"],  # Risky occupations
-        "HCW": ["HCW", "บุคลากรทางการแพทย์"],
-        "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน"],
+        "Work": ["อาชีพเ", "อาชีพเสี", "HCW", "บุคลากรทางการแพทย์"],  # Risky occupations inc health work
+        "Unknown": ["ระบุได้ไม่ชัดเจน", "ระบุไม่ชัดเจน", "ระบุไม่ได้"],
+        "Unvaccinated": ["ไม่เคยได้รับวัคซีน", "ไม่ครบตามเกณฑ์"],
+        "Close People": ["อจากคนใก"],
+        "Risk Area": ["จาก.นที่เสี่ยง", "จากพื้นที่เสี่ยง", "จังหวัดสีแดงเข้ม"],
+        "Bangkok": ["จากกทม./?ปริมณฑล"],
+        "Outside Hospital": ["เสียชีวิตนอกรพ", "เสียชีวิตที่บ้าน"],
+        "Prison": ["เรือนจ า"],
     }
     risk = {
-        en_risk: get_next_number(text, *th_risks, default=0, return_rest=False, dash_as_zero=True)
+        en_risk: get_next_number(text, *th_risks, default=np.nan, return_rest=False, dash_as_zero=True)
         for en_risk, th_risks in risks.items()
     }
     # TODO: Get all bullets and fuzzy match them to categories
@@ -531,10 +608,10 @@ def briefing_deaths_summary(text, date, file):
     cm_cols = [f"Deaths Comorbidity {cm}" for cm in comorbidity.keys()]
     row = pd.DataFrame(
         [[date, deaths_title, med_age, min_age, max_age, male, female] + list(risk.values())
-         + list(comorbidity.values()) + [deaths_60]],
+         + list(comorbidity.values()) + [under_60_disease, under_60_none, deaths_60]],
         columns=[
             "Date", "Deaths", "Deaths Age Median", "Deaths Age Min", "Deaths Age Max", "Deaths Male", "Deaths Female"
-        ] + risk_cols + cm_cols + ["Deaths 60 Plus"]).set_index("Date")
+        ] + risk_cols + cm_cols + ["Deaths Risk Under 60 Comorbidity ", "Deaths Risk Under 60 Comorbidity None", "Deaths Risk Over 60"]).set_index("Date")
     logger.info("{} Deaths: {}", date.date(), row.to_string(header=False, index=False), file)
     return row
 
@@ -704,7 +781,6 @@ def briefing_documents(check=True):
 
 
 def get_cases_by_prov_briefings():
-    logger.info("========Briefings==========")
     types = pd.DataFrame(columns=["Date", ]).set_index(['Date', ])
     date_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     date_prov_types = pd.DataFrame(columns=["Date", "Province", "Case Type"]).set_index(['Date', 'Province'])
@@ -714,6 +790,10 @@ def get_cases_by_prov_briefings():
     for briefing_url, date, get_file in briefing_documents():
         file = get_file()
         if file is None:
+            continue
+        if date in [d("2022-04-24")]:
+            # 2022-04-24: some kind of weird encoding.
+            # see - https://stackoverflow.com/questions/67551128/tika-compute-content-encoding-of-a-document
             continue
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
@@ -746,11 +826,12 @@ def get_cases_by_prov_briefings():
                 d("2021-02-19"),  # 02-19 death details is graphic (the doctor)
                 d("2021-02-15"),  # no details of deaths (2)
                 d("2021-02-10"),  # no details of deaths (1)
+                d("2022-01-05"),  # summary is 19 but prov is only 12.
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            assert wrong_deaths_report or (ddeaths == ideaths) or date in [d(
-                "2021-08-27"), d("2021-09-10")], f"Death details {ddeaths} didn't match total {ideaths}"
+            if date not in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
+                assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = deaths.append(each_death, verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
@@ -785,6 +866,9 @@ def get_cases_by_prov_briefings():
         date_prov_types = date_prov_types.reset_index().pivot(index=["Date", "Province"], columns=['Case Type'])
         date_prov_types.columns = [f"Cases {c}" for c in date_prov_types.columns.get_level_values(1)]
         date_prov = date_prov.combine_first(date_prov_types)
+
+    # Since Deaths by province doesn't list all provinces, ensure missing are 0
+    date_prov['Deaths'] = date_prov['Deaths'].unstack(fill_value=0).fillna(0).stack(dropna=False)
 
     return date_prov, types
 
@@ -857,3 +941,17 @@ def vac_briefing_provs(df, date, file, page, text):
     return df.combine_first(
         pd.DataFrame(rows, columns=["Date", "Province", "Vac Given Cum", "Vac Given 1 Cum",
                                     "Vac Given 2 Cum"]).set_index(["Date", "Province"]))
+
+
+if __name__ == '__main__':
+    briefings_prov, cases_briefings = get_cases_by_prov_briefings()
+    briefings = import_csv("cases_briefings", ["Date"], False)
+    briefings = cases_briefings.combine_first(briefings)
+    export(briefings, "cases_briefings")
+
+    old = import_csv("combined", index=["Date"])
+    df = briefings.combine(old, lambda s1, s2: s1)
+    export(df, "combined", csv_only=True)
+
+    covid_plot_deaths.save_deaths_plots(df)
+    covid_plot_cases.save_cases_plots(df)

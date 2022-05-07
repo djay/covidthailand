@@ -2,7 +2,9 @@ import datetime
 import itertools
 import json
 import time
+from json.decoder import JSONDecodeError
 
+import dateutil.parser
 import numpy as np
 import pandas as pd
 import requests
@@ -34,7 +36,7 @@ def workbook_explore(workbook):
             print("  {} : {} {}", f['column'], f['values'][:10], '...' if len(f['values']) > 10 else '')
 
 
-def workbook_flatten(wb, date=None, **mappings):
+def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     """return a single DataFrame from a workbook flattened according to mappings
     mappings is worksheetname=columns
     if columns is type str puts a single value into column
@@ -60,7 +62,7 @@ def workbook_flatten(wb, date=None, **mappings):
 
         if type(col) != str:
             if df.empty:
-                logger.info("Error getting tableau {}/{} {}", name, col, date)
+                # logger.info("Error getting tableau {}/{} {}", name, col, date)
                 continue
             # if it's not a single value can pass in mapping of cols
             df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
@@ -91,17 +93,19 @@ def workbook_flatten(wb, date=None, **mappings):
             #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
             #end = max([end, df.index.max()])
             end = df.index.max()
-            assert date is None or end <= date
+            assert date is None or end <= date, f"getting {date} found {end}"
             all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
+            default = [defaults.get(c, defaults.get("")) if defaults else 0.0 for c in df.columns]
             try:
-                df = df.reindex(all_days, fill_value=0.0)
+                df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
             except ValueError:
                 return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
 
             res = res.combine_first(df)
         elif df.empty:
             # TODO: Seems to mean that this is 0? Should be confirgurable?
-            data[col] = [0.0]
+            default = defaults.get(col, defaults.get("")) if defaults else 0.0
+            data[col] = [default]
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
@@ -132,6 +136,7 @@ def workbook_iterate(url, **selects):
         fix_timeouts(ts.session, timeout=30)
         wb = ts.getWorkbook()
         return wb
+
     wb = do_reset()
     if wb is None:
         return
@@ -212,6 +217,8 @@ def workbook_iterate(url, **selects):
 
 
 def force_setParameter(wb, parameterName, value):
+    "Allow for setting a parameter even if it's not present in getParameters"
+    # TODO: remove if they fix https://github.com/bertrandmartel/tableau-scraping/issues/49
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
     payload = (
@@ -249,6 +256,7 @@ def force_setParameter(wb, parameterName, value):
 # filterRemoveIndices: [2]
 def force_setFilter(wb, ws_name, columnName, values):
     "setFilter but ignore the listed filter options. also gets around wrong ordinal value which makes index value incorrect"
+    # TODO: remove if they fix https://github.com/bertrandmartel/tableau-scraping/issues/50
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
@@ -303,3 +311,75 @@ def force_setFilter(wb, ws_name, columnName, values):
         return tableauscraper.TableauWorkbook(
             scraper=scraper, originalData={}, originalInfo={}, data=[]
         )
+
+
+def get_woorkbook_updated_time(tableau_scapper: 'tableauscraper.TableauScraper') -> datetime.datetime:
+    time_str = tableau_scapper.tableauData.get('workbookLastPublishedAt')
+    if time_str is None:
+        tableau_scapper.logger.warn("please call `.loads()` first")
+        return None
+
+    return dateutil.parser.isoparse(time_str)
+
+
+def force_select(self, column, value, storyboard=None, storyPointId=None):
+    values = self.getSelectableValues(column)
+    if not values:
+        values = list(self.data[column])
+    tupleItems = self.getTupleIds()
+    try:
+
+        indexedByTuple = False
+        for tupleItem in tupleItems:
+            if len(tupleItem) >= len(values):
+                index = values.index(value)
+                index = tupleItem[index]
+                indexedByTuple = True
+                break
+        if not indexedByTuple:
+            index = values.index(value)
+            index = index + 1
+        if storyboard is not None and storyPointId is not None:
+            r = select(self._scraper, self.name, storyboard, storyPointId, [index])
+        else:
+            r = tableauscraper.api.select(self._scraper, self.name, [index])
+        self.updateFullData(r)
+        return tableauscraper.dashboard.getWorksheetsCmdResponse(self._scraper, r)
+    except ValueError as e:
+        self._scraper.logger.error(str(e))
+        return tableauscraper.TableauWorkbook(
+            scraper=self._scraper, originalData={}, originalInfo={}, data=[]
+        )
+
+# visualIdPresModel: {"worksheet":"map_total","dashboard":"Dashboard_Province_index_new_v3","storyboard":"Story 1","storyPointId":12}
+# zoneId: 3
+# zoneSelectionType: replace
+
+
+def select(scraper, worksheetName, dashboard, storyPointId, selection):
+    tableauscraper.api.delayExecution(scraper)
+    payload = (
+        (
+            "visualIdPresModel", (None, json.dumps({
+                "worksheet": worksheetName,
+                "dashboard": dashboard,  # TODO: where to get this value from?
+                "storyboard": scraper.dashboard,
+                "storyPointId": storyPointId,
+            }))
+        ),
+        ("selection", (None, json.dumps(
+            {"objectIds": selection, "selectionType": "tuples"}))),
+        ("selectOptions", (None, "select-options-simple")),
+        #        ("zoneId", (None, 3)),
+        ("zoneSelectionType", (None, "replace")),
+    )
+    r = scraper.session.post(
+        f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/select',
+        files=payload,
+        verify=scraper.verify
+    )
+    scraper.lastActionTime = time.time()
+    try:
+        return r.json()
+    except (ValueError, JSONDecodeError):
+        raise tableauscraper.api.APIResponseException(message=r.text)

@@ -1,0 +1,89 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Cases",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Walkin",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Proactive",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Imported",
+        "type":"integer"
+      },
+      {
+        "name":"Cases Area Prison",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Hospital",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Field",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Severe",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Respirator",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized",
+        "type":"integer"
+      },
+      {
+        "name":"Hospitalized Occupancy Level 2-3 %",
+        "type":"number"
+      },
+      {
+        "name":"Recovered",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      },
+      {
+        "name":"Source Cases",
+        "type":"string"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2022-04-16T00:00:00.000Z",
+      "Cases":18892,
+      "Cases Walkin":18759,
+      "Cases Proactive":40,
+      "Cases Imported":82,
+      "Cases Area Prison":11,
+      "Hospitalized Hospital":59899,
+      "Hospitalized Field":161553,
+      "Hospitalized Severe":2062,
+      "Hospitalized Respirator":867,
+      "Hospitalized":221452,
+      "Hospitalized Occupancy Level 2-3 %":26.7,
+      "Recovered":22220,
+      "Deaths":125,
+      "Source Cases":""
+    }
+  ]
+}

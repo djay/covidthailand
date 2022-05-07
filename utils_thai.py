@@ -2,6 +2,7 @@ import datetime
 import difflib
 import functools
 import json
+import math
 import os
 import re
 
@@ -92,9 +93,19 @@ def today() -> datetime.datetime:
     return datetime.datetime.today()
 
 
-def to_gregyear(thai, short=False):
+def to_gregyear(thai, short=False, guess=False):
+    """
+    >>> to_gregyear("2565")
+    2022
+    >>> to_gregyear("2565", guess=True)
+    2022
+    >>> to_gregyear("2022", guess=True)
+    2022
+
+    """
     thai = thai if type(thai) != str else int(thai)
-    thai += (2500 if thai < 100 else 0) - 543
+    if not guess or thai > 2500 or (60 < thai < 100):
+        thai += (2500 if thai < 100 else 0) - 543
     return thai if not short else thai - 2000
 
 
@@ -113,23 +124,29 @@ def file2date(file):
 
     >>> file2date('files/report-100264.pdf')
     datetime.datetime(2021, 2, 10, 0, 0)
+
+    >>> str(file2date('Daily Report 20220118'))
+    '2022-01-18 00:00:00'
+
     """
 
     file = os.path.basename(file)
     file, *_ = file.rsplit(".", 1)
     if m := re.search(r"\d{4}-\d{1,2}-\d{1,2}", file):
         return d(m.group(0))
-    # date = file.rsplit(".pdf", 1)[0]
-    # if "-" in file:
-    #     date = file.rsplit("-", 1).pop()
-    # else:
-    #     date = file.rsplit("_", 1).pop()
-    if m := re.search(r"\d{6}", file):
-        # thai date in briefing filenames
+    if m := re.search(r"(?:\d{8}|\d{6})", file):
         date = m.group(0)
-        return datetime.datetime(
-            day=int(date[0:2]), month=int(date[2:4]), year=int(date[4:6]) - 43 + 2000
-        )
+        if len(date) == 8:
+            # assume non-thai year for 8 digits?
+            return pd.to_datetime(date)
+        else:
+            day, month, year = date[0:2], date[2:4], date[4:6]
+        # Try year at the end. thai year
+        if year[0] == "6":
+            year = int(year) - 43 + 2000
+        else:
+            year = int(year) + 2000
+        return datetime.datetime(day=int(day), month=int(month), year=year)
     return None
 
 
@@ -163,7 +180,7 @@ def previous_date(end, day):
     return start
 
 
-def find_thai_date(content, remove=False):
+def find_thai_date(content, remove=False, all=False):
     """
     find thai date in a string
 
@@ -194,8 +211,12 @@ def find_thai_date(content, remove=False):
     >>> print(find_thai_date("10 พฤษ 2564"))
     2021-05-10 00:00:00
 
+    you can get all dates
+    >>> print(find_thai_date("สะสมตั้งแต่วันที่ 28 กุมภำพันธ์ 2564 – 10 มกรำคม 2565", all=True)[1])
+    2022-01-10 00:00:00
     """
     # TODO: prevent it finding numbers for the month name? finds too many
+    results = []
     for m3 in re.finditer(r"([0-9]+)(?=\s*([^ ]+)\s*((?:25)?[0-9][0-9]))", content):
         d2, month, year = m3.groups()
         if len(year) == 2:
@@ -213,32 +234,50 @@ def find_thai_date(content, remove=False):
         if month is None:
             continue
         date = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
-        return (date, content[:m3.start()] + " " + content[m3.end(m3.lastindex):]) if remove else date
-    return (None, content) if remove else None
+        content = content[:m3.start()] + " " + content[m3.end(m3.lastindex):]
+        results.append(date)
+        if not all:
+            return (date, content) if remove else date
+    if all:
+        return (results, content) if remove else results
+    else:
+        return (None, content) if remove else None
 
 
 def find_date_range(content):
     """
-    Parse thai date ranges like
-    >>> find_date_range('11-17 เม.ย. 2563')
-    (datetime.datetime(2020, 4, 11, 0, 0), datetime.datetime(2020, 4, 17, 0, 0))
+    >>> p = lambda x: tuple(str(d.date()) for d in x)
 
-    >>> find_date_range('04/04/2563 - 12/06/2563')
-    (datetime.datetime(2020, 4, 4, 0, 0), datetime.datetime(2020, 6, 12, 0, 0))
+    Parse thai date ranges like
+    >>> p(find_date_range('11-17 เม.ย. 2563'))
+    ('2020-04-11', '2020-04-17')
+
+    >>> p(find_date_range('04/04/2563 - 12/06/2563'))
+    ('2020-04-04', '2020-06-12')
+
+    >>> p(find_date_range('27/02/2565 - 05-03/2565'))
+    ('2022-02-27', '2022-03-05')
+
+    Will handle gregorian too
+    >>> p(find_date_range('01/04/2021 – 04/03/2022'))
+    ('2021-04-01', '2022-03-04')
+
+    #>>> p(find_date_range('26 FEB – 04 \nMAR 22'))
+    #('2021-04-01', '2022-03-04')
     """
     m1 = re.search(
-        r"([0-9]+)/([0-9]+)/([0-9]+) [-–] ([0-9]+)/([0-9]+)/([0-9]+)", content
+        r"([0-9]+)[/-]([0-9]+)[/-]([0-9]+) *[-–] *([0-9]+)[/-]([0-9]+)[/-]([0-9]+)", content
     )
-    m2 = re.search(r"([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
-    m3 = re.search(r"([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    m2 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
+    m3 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
     if m1:
         d1, m1, y1, d2, m2, y2 = m1.groups()
-        start = datetime.datetime(day=int(d1), month=int(m1), year=int(y1) - 543)
-        end = datetime.datetime(day=int(d2), month=int(m2), year=int(y2) - 543)
+        start = datetime.datetime(day=int(d1), month=int(m1), year=to_gregyear(y1, guess=True))
+        end = datetime.datetime(day=int(d2), month=int(m2), year=to_gregyear(y2, guess=True))
         return start, end
     elif m2:
         d1, d2, month, year = m2.groups()
-        end = datetime.datetime(year=int(year) - 543, month=int(month), day=int(d2))
+        end = datetime.datetime(year=to_gregyear(year, guess=True), month=int(month), day=int(d2))
         start = previous_date(end, d1)
         return start, end
     elif m3:
@@ -250,7 +289,9 @@ def find_date_range(content):
             if month in THAI_FULL_MONTHS
             else None
         )
-        end = datetime.datetime(year=int(year) - 543, month=month, day=int(d2))
+        if not month:
+            return None, None
+        end = datetime.datetime(year=to_gregyear(year), month=month, day=int(d2))
         start = previous_date(end, d1)
         return start, end
     else:
@@ -394,7 +435,9 @@ def prov_regions_wealth(provinces):
     def clean_column_name(col):
         return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()
 
-    df = pd.read_html("https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP")[0]
+    url = "https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP"
+    file, _, _ = next(web_files(url, dir="inputs/html", check=False))
+    df = pd.read_html(file)[0]
 
     df.columns = [clean_column_name(x) for x in df.columns]
 
@@ -531,14 +574,14 @@ def region_crosstab(df, col, suffix="", aggfunc="sum"):
     return given_by_area_2
 
 
-def trend_table(table_provinces, sensitivity=25, style="green_up"):
+def trend_table(table_provinces, sensitivity=25, style="green_up", ma_days=7):
     """Given Series indexed by date,province with a single value.
     Return latest values indexed by province with trend between (-1, +1)
     """
     # 14day MA just for cases
     #ma = table_provinces[['Cases','region']]
-    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(14).mean())
-
+    ma = table_provinces.groupby("Province").apply(lambda df: df.rolling(
+        ma_days, min_periods=int(ma_days / 2), center=True).mean())
     # Too sensitive to changes
     # trend = table_provinces.groupby("Province", group_keys=False).apply(increasing(lambda df: df, 3)).to_frame("Trend")
 
@@ -546,15 +589,17 @@ def trend_table(table_provinces, sensitivity=25, style="green_up"):
     # trend = ma.groupby("Province").apply(lambda df: ((df - df.shift(7)) / df.max())) * 6
 
     # Use the per population number
-    if "rank" in style:
+    if "abs" in style:
+        trend = ma * sensitivity
+    elif "rank" in style:
         rank = ma.groupby("Date").apply(lambda df: df.rank())
         peak = rank.max().max()
-        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(7)) / peak * sensitivity)
+        trend = rank.groupby("Province").apply(lambda df: (df - df.shift(int(math.ceil(ma_days / 2)))) / peak * sensitivity)
     else:
         ma_pop = ma.to_frame("Value").join(get_provinces()['Population'], on='Province')
         peak = ma.max().max() / ma_pop['Population'].max().max()
         trend = ma_pop.groupby("Province", group_keys=False).apply(
-            lambda df: ((df['Value'] - df['Value'].shift(7)) / df['Population'])
+            lambda df: ((df['Value'] - df['Value'].shift(int(ma_days / 2))) / df['Population'])
         ) / peak * sensitivity
 
     trend = trend[~trend.index.duplicated()]  # TODO: not sure why increasing puts duplicates in?

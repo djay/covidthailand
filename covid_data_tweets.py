@@ -1,4 +1,6 @@
+import datetime
 import re
+import time
 
 import pandas as pd
 from dateutil.parser import parse as d
@@ -141,7 +143,6 @@ def parse_case_prov_tweet(walkins, proactive, date, text, url):
 
 
 def get_cases_by_prov_tweets():
-    logger.info("========RB Tweets==========")
     # These are published early so quickest way to get data
     # previously also used to get per province case stats but no longer published
 
@@ -211,4 +212,5 @@ def get_cases_by_prov_tweets():
     index = pd.MultiIndex.from_frame(dfprov[['Date', 'Province']])
     dfprov = dfprov.set_index(index)[["Cases Walkin", "Cases Proactive"]]
     df = df.combine_first(cum2daily(df))
+
     return dfprov, df

@@ -1,0 +1,95 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Bangkok",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Samut Prakan",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Ubon Ratchathani",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Nakhon Ratchasima",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Phitsanulok",
+      "Deaths":3
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Phetchabun",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Chiang Mai",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Chiang Rai",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Uthai Thani",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Satun",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Phetchaburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Kanchanaburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Prachuap Khiri Khan",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-01-22T00:00:00.000Z",
+      "Province":"Rayong",
+      "Deaths":1
+    }
+  ]
+}

@@ -1,5 +1,6 @@
-import os
-import shutil
+import datetime
+import sys
+import time
 
 import numpy as np
 import pandas as pd
@@ -27,6 +28,27 @@ from utils_thai import today
 
 # # 5 kinds cases stats for last 30 days but we already have I think
 # url = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=30-days"
+
+
+def todays_data():
+    url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
+    # new day starts with new info comes in
+    while True:
+        get_wb, date = next(workbook_iterate(url, param_date=[today(), today()]))
+        date = next(iter(date))
+        if (wb := get_wb()) is None:
+            continue
+        last_update = wb.getWorksheet("D_UpdateTime").data
+        if last_update.empty:
+            continue
+        else:
+            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            if last_update >= today().date():
+                return True
+            # We got todays data too early
+        print("z", end="")
+        time.sleep(60)
+
 
 def dash_daily():
     df = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
@@ -60,7 +82,7 @@ def dash_daily():
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
-    dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7)).to_pydatetime())
+    dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, date in workbook_iterate(url, param_date=dates):
         date = next(iter(date))
         if skip_valid(df, date, allow_na):
@@ -70,6 +92,11 @@ def dash_daily():
         row = workbook_flatten(
             wb,
             date,
+            defaults={
+                "Positive Rate Dash": np.nan,
+                "": 0.0
+            },
+            # D_UpdateTime="Last_Update",
             D_New="Cases",
             D_Walkin="Cases Walkin",
             D_Proact="Cases Proactive",
@@ -120,6 +147,13 @@ def dash_daily():
 
         if row.empty:
             break
+        last_update = wb.getWorksheet("D_UpdateTime").data
+        if not last_update.empty:
+            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            if last_update.normalize() < row.index.max():
+                # We got todays data too early
+                continue
+        # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
         if date < today() - relativedelta(days=30):  # TODO: should use skip_valid rules to work which are delayed rather than 0?
@@ -127,7 +161,7 @@ def dash_daily():
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
     # We get negative values for field hospital before April
-    assert df[df['Recovered'] == 0.0].empty
+    assert df[df['Recovered'] == 0.0].loc["2021-03-05":].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
@@ -219,7 +253,6 @@ def dash_trends_prov():
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     df = df.loc[:, ~df.columns.duplicated()]  # remove duplicate columns
     export(df, "moph_dashboard_prov_trends", csv_only=True, dir="inputs/json")  # Speeds up things locally
-
     return df
 
 
@@ -235,16 +268,17 @@ def dash_by_province():
 
     last_pos_rate = max(df["Positive Rate Dash"].last_valid_index()[0], today() - relativedelta(days=31))
     valid = {
-        "Positive Rate Dash": (d("2021-05-20"), last_pos_rate, 0.001, 2),  # Might have to remove it completely.
+        # shouldn't be 0 pos rate. Maybe set to min 0.001 again later?
+        "Positive Rate Dash": (d("2021-05-20"), last_pos_rate, 0.0, 2),  # Might have to remove it completely.
         "Tests": today(),  # It's no longer there
         "Vac Given 1 Cum": (d("2021-08-01"), today() - relativedelta(days=2), 1),
         "Vac Given 2 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
         "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=2)),
         # all the non-series will take too long to get historically
-        "Cases Walkin": d("2021-07-01"),
-        "Cases Proactive": d("2021-08-01"),
-        "Cases Area Prison": d("2021-08-01"),
-        "Cases Imported": d("2021-08-01"),
+        "Cases Walkin": (d("2021-07-01"), today() - relativedelta(days=5)),
+        "Cases Proactive": (d("2021-08-01"), today() - relativedelta(days=5)),
+        "Cases Area Prison": (d("2021-08-01"), today() - relativedelta(days=5)),
+        "Cases Imported": (d("2021-08-01"), today() - relativedelta(days=5)),
         "Deaths": d("2021-07-12"),  # Not sure why but Lamphun seems to be missing death data before here?
         "Cases": d("2021-06-28"),  # Only Lampang?
     }
@@ -273,7 +307,7 @@ def dash_by_province():
         (d('2021-09-21'), 'Nan'),
     ]
 
-    dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7)).to_pydatetime())
+    dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
     for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
         date, province = idx_value
         if province is None:
@@ -286,6 +320,10 @@ def dash_by_province():
         row = workbook_flatten(
             wb,
             date,
+            defaults={
+                "Positive Rate Dash": np.nan,
+                "": 0.0
+            },
             D2_Vac_Stack={
                 "DAY(txn_date)-value": "Date",
                 "vaccine_plan_group-alias": {
@@ -318,6 +356,15 @@ def dash_by_province():
                 "DAY(txn_date)-value": "Date"
             },
         )
+        # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
+        # Need to work if the data has been updated yet. If it has last deaths should be today.
+        last_update_df = wb.getWorksheet("D2_DeathTL").data
+        last_update = None
+        if last_update_df.empty or date > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()):
+            # the date we are trying to get isn't the last deaths we know about. No new data yet
+            logger.warning("{} MOPH Dashboard {}", date.date(), f"Skipping {province} as data update={last_update}")
+            continue
+
         row['Province'] = province
         df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
         logger.info("{} MOPH Dashboard {}", date.date(),
@@ -389,3 +436,21 @@ def skip_valid(df, idx_value, allow_na={}):
     else:
         logger.info("{} MOPH Dashboard Retry Missing data at {} for {}. Retry", date, idx_value, nulls)
         return False
+
+
+def check_dash_ready():
+    print("Waiting for today's dashboard update ")
+    gottoday = todays_data()
+    print(gottoday)
+    sys.exit(0 if gottoday else 1)
+
+
+if __name__ == '__main__':
+
+    # check_dash_ready()
+    dash_by_province_df = dash_by_province()
+    dash_daily_df = dash_daily()
+    dash_ages_df = dash_ages()
+
+    # This doesn't add any more info since severe cases was a mistake
+    dash_trends_prov_df = dash_trends_prov()

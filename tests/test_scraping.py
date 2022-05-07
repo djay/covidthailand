@@ -85,14 +85,19 @@ def dl_files(target_dir, dl_gen, check=False):
 
 def pair(files):
     "return paired up combinations and also wrap in a cache so they don't get done generated twice"
-    all_files = [get_file for _, _, get_file in files()]
-    return zip(all_files[:-1], all_files[1:])
+    all_files = [(link, get_file) for link, _, get_file in files()]
+    return zip([link for link, _ in all_files[:-1]], [f for _, f in all_files[:-1]], [f for _, f in all_files[1:]])
 
 
 def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
     "Use this when you are sure the scraped data is correct"
     if fname is not None:
-        fname = os.path.splitext(os.path.basename(fname))[0]
+        try:
+            base, ext = os.path.splitext(os.path.basename(fname))
+            if len(ext) <= 4:
+                fname = base
+        except:
+            pass
     if date is None:
         latest = df.index.max()
         if type(latest) == tuple:
@@ -128,16 +133,16 @@ def test_vac_reports(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
 
-@pytest.mark.skip()
-@pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
-def test_vac_reports_assert(link, content, get_file):
-    assert get_file is not None
-    file = get_file()  # Actually download
-    if file is None:
-        return
-    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
-    for page in parse_file(file):
-        df = vaccination_daily(df, None, file, page)
+# @pytest.mark.skip()
+# @pytest.mark.parametrize("link, content, get_file", list(vaccination_reports_files2()))
+# def test_vac_reports_assert(link, content, get_file):
+#     assert get_file is not None
+#     file = get_file()  # Actually download
+#     if file is None:
+#         return
+#     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+#     for page in parse_file(file):
+#         df = vaccination_daily(df, None, file, page)
 
 
 @functools.lru_cache
@@ -152,9 +157,9 @@ def parse_vac_tables(*files):
     return df
 
 
-# @pytest.mark.skip()
-@pytest.mark.parametrize("get_file1, get_file2", pair(vaccination_reports_files2))
-def test_vac_tables_inc(get_file1, get_file2):
+@pytest.mark.skip()
+@pytest.mark.parametrize("link, get_file1, get_file2", pair(vaccination_reports_files2))
+def test_vac_tables_inc(link, get_file1, get_file2):
 
     if (df1 := parse_vac_tables(get_file1)).empty:
         return
@@ -231,7 +236,7 @@ def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     pages = parse_file(file, html=False, paged=True)
     for page in pages:
         data, raw = get_tests_by_area_pdf(file, page, data, raw)
-    # write_scrape_data_back_to_test(raw, "testing_moph", fname)
+    # write_scrape_data_back_to_test(raw, "testing_moph_pdf", fname)
     if testdf.index.max() >= dateutil.parser.parse("2021-08-08"):
         # plots stopped having numbers for positives so aren't scraped
         return
@@ -258,7 +263,7 @@ def test_briefing_deaths_provinces(date, testdf, dl):
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_summary", briefing_documents))
 def test_briefing_deaths_summary(date, testdf, dl):
-    dfprov = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     assert dl is not None
     file = dl()
     assert file is not None
@@ -268,12 +273,11 @@ def test_briefing_deaths_summary(date, testdf, dl):
 
     for i, soup in enumerate(pages):
         text = soup.get_text()
-        df = briefing_deaths_summary(text, dateutil.parser.parse(date), file)
-        dfprov = dfprov.combine_first(df)
-    # write_scrape_data_back_to_test(dfprov, "briefing_deaths_summary")
+        df = df.combine_first(briefing_deaths_summary(text, dateutil.parser.parse(date), file))
+    # write_scrape_data_back_to_test(df, "briefing_deaths_summary")
     if testdf.empty:
         return
-    pd.testing.assert_frame_equal(testdf.dropna(axis=1), dfprov.dropna(axis=1), check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))
@@ -298,7 +302,7 @@ def test_briefing_case_types(date, testdf, dl):
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, "")
     # write_scrape_data_back_to_test(df, "briefing_case_types")
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_province_cases", briefing_documents))

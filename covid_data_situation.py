@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import time
 
 import dateutil
 import numpy as np
@@ -564,6 +565,7 @@ def is_new_pui(today, situation):
 
 
 def export_situation(th_situation, en_situation):
+    start = time.time()
     situation = import_csv("situation_reports", ["Date"], not USE_CACHE_DATA)
     situation = situation.combine_first(th_situation).combine_first(en_situation)
     situation = situation.combine_first(cum2daily(situation))  # any direct non-cumulative are trusted more
@@ -573,4 +575,5 @@ def export_situation(th_situation, en_situation):
     # if covid_data_situation.is_new_pui(today, situation):
     #     situation = situation.combine_first(today_situation)
     export(situation, "situation_reports")
+
     return situation

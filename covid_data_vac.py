@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import re
+import time
 
 import numpy as np
 import pandas as pd
@@ -158,9 +159,17 @@ def vac_problem(daily, date, file, page):
 
 
 def vaccination_daily(daily, date, file, page):
-    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|สรปุกำรจดัสรรวคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
+    if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|วคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
-    date = find_thai_date(page)
+    first_line = page.split("\n\n")[0]
+    date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
+    if date:
+        date = date[-1]
+    else:
+        # prior to 2022 we could just get the first date of the page
+        date = find_thai_date(page)
+    assert date, f"No date found in {file}: {page}"
+
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
     if date == d("2021-05-06"):
@@ -194,7 +203,7 @@ def vaccination_daily(daily, date, file, page):
 
     def clean_num(numbers):
         if len(numbers) > 8:
-            return [n for n in numbers if n not in (60, 17, 12, 7, 3)]
+            return [n for n in numbers if n not in (60, 17, 12, 7, 3, 5, 11)]
         else:
             return [n for n in numbers if n not in (60, 7)]
 
@@ -202,22 +211,22 @@ def vaccination_daily(daily, date, file, page):
 
     # Daily totals at the bottom often make it harder to get the right numbers
     # ส ำหรับรำยงำนจ ำนวนผู้ได้รับวัคซีนโควิด 19 เพิ่มขึ้นในวันที่ 17 ตุลำคม 2564 มีผู้ได้รับวัคซีนทั้งหมด
-    gtext, *_ = re.split("หรับรำยงำนจ", page)
+    gtext, *_ = re.split("(?:หรับรำยงำนจ|าหรับรายงานจ)", page)
 
     d1_num, rest1 = get_next_numbers(gtext,
                                      r"1\s*(?:จํานวน|จำนวน|จ ำนวน)",
                                      r"เข็ม(?:ท่ี|ที่) 1 จํานวน",
-                                     r"ซีนเข็มที่ 1 จ",
+                                     r"นเข็มที่ 1 จ", r"ซนีเขม็ที่ 1 จ",
                                      until=r"(?:2 เข็ม)", return_until=True, require_until=True)
     d2_num, rest2 = get_next_numbers(gtext,
-                                     r"ได้รับวัคซีน 2 เข็ม",
-                                     r"ไดรับวัคซีน 2 เข็ม",
+                                     r"ได้รับ\s*วัคซีน\s+2\s+เข็ม",
+                                     r"ไดรับวัคซีน\s+2\s+เข็ม",
                                      until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
             ld1, ld2 = len(clean_num(d1_num)), len(clean_num(d2_num))
-            error = f"ERROR number of first doses ({ld1}) does not equal number of second doses ({ld2}) in {file} for {date}",
+            error = f"ERROR groups first dose1=({ld1}). groups for dose2=({ld2}) in {file} for {date}",
             logger.error(error)
             assert False, error
         else:
@@ -226,7 +235,7 @@ def vaccination_daily(daily, date, file, page):
     # assert len(d3_num) == 0 or len(d3_num) == len(d2_num)
 
     is_risks = re.compile(r"(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน|ได้รับวัคซีน 2|7 กลุ)")
-
+    row = [None] * 9
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2), (3, d3_num, rest3)]:
         cols = [
             "Date",
@@ -240,14 +249,19 @@ def vaccination_daily(daily, date, file, page):
             f"Vac Group Risk: Pregnant {dose} Cum",
             f"Vac Group Risk: Location {dose} Cum",
             f"Vac Group Student {dose} Cum",
+            f"Vac Group Kids {dose} Cum",
         ]
         numbers = clean_num(numbers)  # remove 7 chronic diseases and over 60 from numbers
-        if (num_len := len(numbers)) in (6, 8, 9) and is_risks.search(rest):
-            if num_len >= 8:
+        if (num_len := len(numbers)) in (6, 7, 8, 9) and is_risks.search(rest):
+            if num_len < 7 and date < d("2022-01-18"):
+                total, med_all, frontline, over60, chronic, area = numbers
+                pregnant = volunteer = medical = student = kids = None
+            else:
                 # They changed around the order too much. have to switch to picking per category
                 total, *_ = numbers
                 medical = get_next_number(rest, r"างการแพท", r"งกำรแพท", until="(?:ราย|รำย)",
                                           return_rest=False, thainorm=True, asserted=True)
+                # 2021-01-03 dropped frontline
                 frontline = get_next_number(rest, r"นหน้ำ", r"านหน้า", r"านหนา", until="(?:ราย|รำย)",
                                             return_rest=False, thainorm=True, asserted=False)
                 volunteer = get_next_number(rest, r"อาสาสมัคร", r"อำสำสมัคร", until="(?:ราย|รำย)",
@@ -257,12 +271,15 @@ def vaccination_daily(daily, date, file, page):
                 d7, chronic, *_ = get_next_numbers(rest, r"โรค", until="(?:ราย|รำย)",
                                                    return_rest=False, thainorm=True, asserted=True)
                 assert d7 == 7
-                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", r"จำนวน", until="(?:ราย|รำย)",
-                                           return_rest=False, thainorm=True, asserted=True)
+                pregnant = get_next_number(rest, r"งครร(?:ภ์|ภ)", until="(?:ราย|รำย)",
+                                           return_rest=False, thainorm=True, asserted=False)
                 area = get_next_number(rest, r"าชนทั่วไป", r"ประชาชน", r"ประชำชน", until="(?:ราย|รำย)",
                                        return_rest=False, thainorm=True, asserted=True)
-                student = get_next_numbers(rest, r"นักเรียน", until="(?:ราย|รำย)",
+                student = get_next_numbers(rest, r"ราย อายุ", r"นักเรียน", until="(?:ราย|รำย)",
                                            return_rest=False, thainorm=True, asserted=False)
+                kids = get_next_number(rest, r"อายุ 5 - 11 ปี", until="(?:ราย|รำย)",
+                                       return_rest=False, thainorm=True, asserted=False)
+
                 if len(student) == 3:
                     d12, d17, student = student
                     assert (d12, d17) == (12, 17)
@@ -271,33 +288,34 @@ def vaccination_daily(daily, date, file, page):
                 else:
                     # if something was captured into *student then hope it was the addition of students on 2021-10-06 or else...
                     raise Exception("Unexpected excess vaccination values found on {} in {}: {}", date, file, student)
+                if row and row[0] and row[0] < medical:
+                    # Dose 3 seems to be already adding volunteer to the medical number since 2022ish
+                    medical = medical - volunteer
                 med_all = medical + volunteer
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
-            else:
-                total, med_all, frontline, over60, chronic, area = numbers
-                pregnant = volunteer = medical = student = None
-            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student]
+            row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student, kids]
             if date not in [d("2021-08-11")]:
                 assert not any_in([None, np.nan], medical or med_all, over60, chronic, area)
-                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student]
-                assert 0.945 <= (sum(i for i in total_row if i and not pd.isna(i)) / total) <= 1.01
+                total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student, kids]
+                total_row = sum(i for i in total_row if i and not pd.isna(i))
+                assert 0.94 <= (total_row / total) <= 1.01
             df = pd.DataFrame([[date, total, med_all] + row], columns=cols).set_index("Date")
         elif dose == 3:
             if len(numbers) == 2:
-                numbers = numbers + [np.nan] * 8
+                numbers = numbers + [np.nan] * 9
             elif len(numbers) == 0:
-                numbers = [np.nan] * 10
+                numbers = [np.nan] * 11
             df = pd.DataFrame([[date] + numbers], columns=cols).set_index("Date")
         elif numbers:
-            assert date < d("2021-07-12")  # Should be getting all the numbers every day now
+            assert date < d("2021-07-12"), f"{date} {file} can't find vac groups for dose {dose} in {gtext}"
             total, *_ = numbers
             df = pd.DataFrame([[date, total]], columns=[
                 "Date",
                 f"Vac Given {dose} Cum",
             ]).set_index("Date")
         else:
-            assert date < d("2021-07-12")  # Should be getting all the numbers every day now
+            assert date < d("2021-07-12"), f"{date} {file} can't find vac groups for dose {dose} in {gtext}"
             continue
         daily = daily.combine_first(df)
     daily = daily.fillna(value=np.nan)
@@ -305,8 +323,14 @@ def vaccination_daily(daily, date, file, page):
     return daily
 
 
-def vaccination_tables(df, date, page, file):
-    date = find_thai_date(page)
+def vaccination_tables(df, _, page, file):
+    lines = [line.strip() for line in page.split('\n') if line.strip()]
+    first_line = page.split("\n\n")[0]
+    date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
+    if not date:
+        return df
+    else:
+        date = date[-1]
     givencols = [
         "Date",
         "Province",
@@ -329,6 +353,10 @@ def vaccination_tables(df, date, page, file):
     vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
     vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
     vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
+
+    vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
+    vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
+    vaccols_medical = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Medical Staff"] for d in range(1, 4)]
 
     alloc2_doses = [
         "Date",
@@ -372,7 +400,6 @@ def vaccination_tables(df, date, page, file):
 
     def in_heading(pat):
         return max(len(pat.findall(h)) for h in headings)
-    lines = [line.strip() for line in page.split('\n') if line.strip()]
     _, *rest = split(lines, lambda x: (july.search(x) or shots.search(x) or oldhead.search(x)) and '2564' not in x)
     for headings, lines in pairwise(rest):
         shot_count = in_heading(shots)
@@ -397,6 +424,9 @@ def vaccination_tables(df, date, page, file):
             cols = [c.strip() for c in NUM_OR_DASH.split(rest[0]) if c.strip()]
             if len(cols) < 5:
                 break
+            if area in ["ผู้ท่ีมีอายุต้ังแต่", 'เข็มที'] and len(cols) < 6:
+                # 2021-12-21, 2021-01-03 - header down the bottom
+                continue
             if added is None:
                 added = 0
             if NUM_OR_DASH.match(area):
@@ -475,8 +505,8 @@ def vaccination_tables(df, date, page, file):
                 if date >= d("2021-12-05"):
                     # seems like they stopped having columns for moderna so total always more
                     pass
-                else:
-                    assert pd.isna(total_alloc) or sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc
+                elif not pd.isna(total_alloc):
+                    assert sum([m for m in [sv, az, pf, sp, md] if not pd.isna(m)]) == total_alloc, f"Error{date} {file}"
                 if len(groups) == 15:  # 2021-08-06
                     # medical has 3 doses, rest 2, so insert some Nones
                     for i in range(5, len(groups) + 6, 3):
@@ -489,10 +519,35 @@ def vaccination_tables(df, date, page, file):
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
-            elif table == "percent" and len(numbers) in [18, 22]:
+            elif table == "percent" and len(numbers) in [18, 22, 15]:
                 # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
-                pop, d1, d1p, d2, d2p, d3, d3p, *_ = numbers
-                add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
+                pop, d1, d1p, d2, d2p, d3, d3p, total, *numbers2 = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
+                # Over 60s
+                cols = vaccols_60s + ["Vac Population Over 60s"]
+                if len(numbers) == 22:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
+                elif len(numbers) == 15:  # 2022-03-27
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
+                    if "ในกลุ่มบุคลำกรทำงกำรแพทย์และสำธำรณสุข" in page:
+                        cols = vaccols_medical + ["Vac Population Medical Staff"]
+                else:
+                    pop, d1, d1p, d2, d2p, *numbers3 = numbers2
+                    d3, d3p = [np.nan] * 2
+                add(prov, [d1, d2, d3, pop], cols)
+                # Disease
+                if len(numbers) == 22:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = numbers3
+                elif len(numbers) == 15:
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = [np.nan] * 7
+                else:
+                    pop, d1, d1p, d2, d2p, *numbers4 = numbers3
+                    d3, d3p = [np.nan] * 2
+                add(prov, [d1, d2, d3, pop], vaccols_disease + ["Vac Population Risk: Disease"])
+                assert not numbers4
+            elif table == "percent" and len(numbers) in [7, 8]:  # 2022-02 changed to simpler table
+                pop, d1, d1p, d2, d2p, d3, d3p, *total = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
         assert added is None or added > 7
@@ -533,23 +588,54 @@ def vaccination_tables(df, date, page, file):
 #         yield link, date, get_file
 
 
-def vaccination_reports_files2(check=True):
+# def vac_slides_files(check=True):
+#     # Also at https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd
+#     base = "https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth"
+#     folders = [f"{base}/{m}/10/{y}" for y in range(2021, 2023) for m in range(1, 13)]
+#     links = sorted((link for f in folders for link in web_links(f, ext=".pdf", check=check)), reverse=True)
+#     count = 0
+#     for link in links:
+#         if USE_CACHE_DATA and count > MAX_DAYS:
+#             break
+#         count += 1
+
+#         def dl_file(link=link):
+#             file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
+#             return file
+
+#         yield link, None, dl_file
+
+
+def vac_slides_files(check=True):
+    return vaccination_reports_files2(check=check,
+                                      base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd",
+                                      base2="https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m:02}/10/2021",
+                                      ext=".pdf"
+                                      )
+
+
+def vaccination_reports_files2(check=True,
+                               base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
+                               base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
+                               ext=".pdf",
+                               ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
-    folders = web_links("https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
-                        ext=None, match=re.compile("2564"), check=check)
-    links1 = (link for f in folders for link in web_links(f, ext=".pdf", check=check) if (
-        date := file2date(link)) is not None and date >= d("2021-12-01"))
+    hasyear = re.compile("(2564|2565)")
+    years = web_links(base1, ext=None, match=hasyear, check=check)
+    months = (link for y in years for link in web_links(y, ext=None, match=hasyear, check=check))
+    links1 = (link for f in months for link in web_links(f, ext=".pdf", check=check) if (
+        date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link, *['Wk', "Week"])))
 
     # this set was more reliable for awhile. Need to match tests
-    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021" for m in range(3, 12)]
-    links2 = (link for f in folders for link in web_links(f, ext=".pdf", check=check))
+    folders = [base2.format(m=m) for m in range(3, 12)]
+    links2 = (link for f in folders for link in web_links(f, ext=ext, check=check))
     links = list(links1) + list(reversed(list(links2)))
     count = 0
     for link in links:
-        if "1638863771691.pdf" in link:
+        if "1638863771691.pdf" in link and "Report" in base2:
             # it's really slides
             continue
 
@@ -566,6 +652,7 @@ def vaccination_reports_files2(check=True):
 
 
 def vaccination_reports():
+    start = time.time()
     vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
     vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
 
@@ -590,7 +677,7 @@ def vaccination_reports():
             vac_daily = vac_problem(vac_daily, date, file, page)
         logger.info("{} Vac Tables {} {} {}", date, len(table), "Provinces parsed", file)
         # TODO: move this into vaccination_tables so can be tested
-        if date in [d("2021-12-11")] and table.empty:
+        if date in [d("2021-12-11"), d("2022-01-06")] and table.empty:
             logger.info("{} doc has slides instead of report", date)
             continue
         elif d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
@@ -603,8 +690,17 @@ def vaccination_reports():
             logger.warning("{} Dropping table: alloc doesn't match prov", date)
             continue
         else:
-            assert len(table) == 77 or date < d("2021-08-01")
+            # TODO: 2022-03-27: work out why only 76 prov
+            assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27")]
         vac_prov_reports = vac_prov_reports.combine_first(table)
+        if date < d("2021-12-11"):
+            # TODO: find days where day is yesterdays and fix them, or fix the check
+            pass
+        elif date in [d("2022-01-21"), d("2022-01-04"), d("2021-12-11")]:
+            # "2022-01-21": is actually "2022-01-20"
+            pass
+        else:
+            assert date in vac_daily.index
 
     # Do cross check we got the same number of allocations to vaccination
     # if not vac_prov_reports.empty:
@@ -716,7 +812,9 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
 def vac_manuf_given(df, page, file, page_num, url):
     if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
         return df
-    if "AstraZeneca" not in page or int(os.path.splitext(os.path.basename(file))[0]) <= 1620104912165:  # 2021-03-21
+    fname = os.path.splitext(os.path.basename(file))[0]
+
+    if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
         return df
     table = camelot_cache(file, page_num, process_background=True)
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
@@ -825,21 +923,6 @@ def vac_slides_groups(df, page, file, page_num):
 # กลุ่มเปา้หมาย
 # จ านวนผู้ที่ไดร้ับวคัซีน
 
-def vac_slides_files(check=True):
-    folders = [f"https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m}/10/2021" for m in range(1, 12)]
-    links = sorted((link for f in folders for link in web_links(f, ext=".pdf", check=check)), reverse=True)
-    count = 0
-    for link in links:
-        if USE_CACHE_DATA and count > MAX_DAYS:
-            break
-        count += 1
-
-        def dl_file(link=link):
-            file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
-            return file
-
-        yield link, None, dl_file
-
 
 def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
@@ -850,3 +933,8 @@ def vac_slides():
             df = vac_manuf_given(df, page, file, i, link)
             #df = vac_slides_groups(df, page, file, i)
     return df
+
+
+if __name__ == '__main__':
+    reports, provs = vaccination_reports()
+    slides = vac_slides()

@@ -95,7 +95,7 @@ def plot_area(df: pd.DataFrame,
               unknown_percent=False,
               ma_days: int = None,
               cmap: str = 'tab20',
-              periods_to_plot=None,
+              periods_to_plot=['3'],
               actuals: List[str] = [],
               highlight: List[str] = [],
               box_cols: List[str] = [],
@@ -177,11 +177,13 @@ def plot_area(df: pd.DataFrame,
     else:
         actuals = []
 
+    # Make a copy
+
     if ma_days:
         ma_suffix = ' (MA)'
-        mas = {f'{c}{ma_suffix}': df[c].rolling(ma_days, min_periods=int(ma_days / 2), center=True).mean() for c in cols}
-        df = df.assign(**mas)
-        cols = list(mas.keys())
+        df = df.assign(**{f'{c}{ma_suffix}': df[c].rolling(ma_days,
+                       min_periods=int(ma_days / 2), center=True).mean() for c in cols})
+        cols = [f'{c}{ma_suffix}' for c in cols]
     else:
         ma_suffix = ''
 
@@ -192,9 +194,9 @@ def plot_area(df: pd.DataFrame,
 
     if unknown_total:
         if ma_days:
-            df[f'{unknown_total}{ma_suffix}'] = df[unknown_total].rolling(ma_days,
-                                                                          min_periods=int(ma_days / 2),
-                                                                          center=True).mean()
+            df = df.assign(**{f'{unknown_total}{ma_suffix}': df[unknown_total].rolling(ma_days,
+                                                                                       min_periods=int(ma_days / 2),
+                                                                                       center=True).mean()})
         total_col = f'{unknown_total}{ma_suffix}'
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
@@ -209,9 +211,9 @@ def plot_area(df: pd.DataFrame,
             if (not unknown_total or unknown_percent or c != unknown_col) and c not in (between + actuals)
         ]
         for c in perccols:
-            df[f'{c} (%)'] = df[f'{c}'] / df[perccols].sum(axis=1) * 100
+            df = df.assign(**{f'{c} (%)': df[f'{c}'] / df[perccols].sum(axis=1) * 100})
         if unknown_total and not unknown_percent:
-            df[f'{unknown_name}{ma_suffix} (%)'] = 0
+            df = df.assign(**{f'{unknown_name}{ma_suffix} (%)': 0})
         perccols = [f'{c} (%)' for c in perccols]
 
     if mini_map:
@@ -252,6 +254,7 @@ def plot_area(df: pd.DataFrame,
             # '1': df_clean[:'2020-06-01'],
             # '2': df_clean['2020-12-12':],
             '3': df_clean['2021-04-01':],
+            '4': df_clean['2022-02-01':],
             '30d': df_clean.last('30d')
         }
         quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch
@@ -374,7 +377,7 @@ def plot_area(df: pd.DataFrame,
                          )
 
         # If actuals are after cols then they are future predictions. put in a line to show today
-        if actuals and df[cols].last_valid_index() < df[actuals].last_valid_index():
+        if actuals and df[actuals].last_valid_index() and df[cols].last_valid_index() < df[actuals].last_valid_index():
             a0.axvline(df[cols].last_valid_index(), color='grey', linestyle='--', lw=1)
 
         if box_cols and type(box_cols[0]) != list:
@@ -382,9 +385,14 @@ def plot_area(df: pd.DataFrame,
         elif not box_cols:
             box_cols = []
         for dist in box_cols:
-            mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
-            a0.fill_between(df.index, mins, maxes, facecolor="yellow", alpha=0.3, zorder=3, label=None, step=None)
-            avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=False)
+            if len(dist) == 3:
+                # assume its already min, mean max
+                # TODO: maybe should be other setting?
+                mins, avg, maxes = [df_plot[c] for c in dist]
+            else:
+                mins, maxes, avg = df_plot[dist].min(axis=1), df_plot[dist].max(axis=1), df_plot[dist].mean(axis=1)
+            a0.fill_between(mins.index, mins, maxes, facecolor="yellow", alpha=0.3, zorder=3, label=None, step=None)
+            avg.plot(ax=a0, color="orange", style="--", zorder=5, x_compat=kind == 'bar', legend=True)
             # boxes = df_plot[box_cols].transpose()
             # boxes.boxplot(ax=a0)
 
@@ -478,6 +486,9 @@ def add_regions_to_axis(axis, table_regions):
 
     # get the regions and add the heading
     regions = list(table_regions.loc[:, 'region'].tolist())
+    if len(regions) < 7:
+        # TODO: fix to at least show some
+        return
     # TODO: should fix region name at the source so appears everywhere
     regions[0] = {'Bangkok Metropolitan Region': 'Bangkok', 'Northeastern': 'Northeast'}.get(regions[0], regions[0])
     current_region = regions[0]
@@ -536,8 +547,8 @@ def add_regions_to_axis(axis, table_regions):
 def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
+    regions_to_add = regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False])
     regions_to_add['Trend'].replace(np.nan, 0.00042, inplace=True)
-    regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False], inplace=True)
     add_regions_to_axis(axis, regions_to_add)
 
 
@@ -548,7 +559,7 @@ def rewrite_legends(df, legends, cols, y_formatter):
         y_formatter = thaipop2
 
     # add the values to the legends
-    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    values = df.ffill().iloc[-1][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     for number, value in enumerate(values):
         if not np.isnan(value) and number < len(legends):
             new_legends.append(f'{y_formatter(value, 0)} {legends[number]}')
@@ -597,7 +608,7 @@ def right_value_axis(df, axis, legend, cols, stacked, y_formatter, max_ticks=27)
         y_formatter = thaipop2
     new_axis = right_axis(axis, y_formatter)
 
-    values = df.ffill().loc[df.index.max()][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
+    values = df.ffill().iloc[-1][cols].apply(pd.to_numeric, downcast='float', errors='coerce')
     bottom, top = axis.get_ylim()
     ticks = Ticks(max_ticks, bottom, top)
     if stacked:
