@@ -296,6 +296,8 @@ def get_variants_plot_pdf(file, page, page_num):
 
 
 def get_variant_reports():
+    # TODO: historical variant data 2021 is in https://tncn.dmsc.moph.go.th/
+
     data = pd.DataFrame()
     raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     area = import_csv("variants_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
