@@ -749,7 +749,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = f"""
-      <g transform="scale(1.0)" xmlns="http://www.w3.org/2000/svg">
+      <g transform="scale(1.0)" xmlns="http://www.w3.org/2000/svg" pointer-events="none">
         <g class="tooltip mouse" visibility="hidden" style="background:#0000ff50;">
             <!-- The rectangle and text are positioned
                  to the right and above the <g> element's
@@ -757,7 +757,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                  overlapping tooltips! -->
             <foreignObject id="tooltiptext" width="500" height="550">
             <body xmlns="http://www.w3.org/1999/xhtml">
-                <table style="border:2px; color: white;  background-color: rgb(0, 0, 0, 0.5); font-family: 'DejaVu Sans', sans-serif;">
+                <table style="border:2px; color: white;  background-color: rgb(0, 0, 0, 0.75); font-family: 'DejaVu Sans', sans-serif;">
                   <tr><th id="date">2021-12-02</th></tr>
                     {value_rows}
                 </table>
@@ -768,12 +768,12 @@ def svg_hover(df, plt, fig, legend, stacked, path):
     </g>
     """
     linesvg = """
-    <g id="date_line" xmlns="http://www.w3.org/2000/svg">
+    <g id="date_line" xmlns="http://www.w3.org/2000/svg" pointer-events="none">
         <line x1="500" y1="0" x2="500" y2="2000" visibility="hidden" style="fill:none;stroke:#808080;stroke-dasharray:3.7,1.6;stroke-dashoffset:0;"/>
     </g>
     """
+    xmlid["figure_1"].append(ET.XML(linesvg))
     xmlid["figure_1"].append(ET.XML(tooltipsvg))
-    xmlid["patch_1"].append(ET.XML(linesvg))
     xmlid["figure_1"].set("fill", "black")  # some browsers don't seem to respect background
 
     # TODO: get json list with [[start, date, [color, label, val_avg, val],...],...]). start is ratio
