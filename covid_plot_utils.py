@@ -1,3 +1,4 @@
+import json
 import os
 import xml.etree.ElementTree as ET
 from io import BytesIO
@@ -736,16 +737,14 @@ def svg_hover(df, plt, fig, legend, stacked, path):
         return entry
 
     value_rows = ''
-    if stacked:
-        for number in range(len(legend.get_patches())):
-            text = legend.get_texts()[number].get_text()
-            color = legend.get_patches()[number].get_facecolor()
-            value_rows += make_tootip_entry(number, text, color)
-    else:
-        for number in range(len(legend.get_lines())):
-            text = legend.get_texts()[number].get_text()
-            color = legend.get_lines()[number].get_color()
-            value_rows += make_tootip_entry(number, text, color)
+    colours = []
+    legends = []
+    for number, patch in enumerate(legend.get_patches() if stacked else legend.get_lines()):
+        text = legend.get_texts()[number].get_text()
+        color = list(patch.get_facecolor() if stacked else patch.get_color())
+        value_rows += make_tootip_entry(number, text, color)
+        legends.append(text)
+        colours.append(color)
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = f"""
@@ -756,11 +755,12 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                  0,0 point, purely to help with all the
                  overlapping tooltips! -->
             <foreignObject id="tooltiptext" width="500" height="550">
-            <body xmlns="http://www.w3.org/1999/xhtml">
-                <table style="border:2px; color: white;  background-color: rgb(0, 0, 0, 0.75); font-family: 'DejaVu Sans', sans-serif;">
-                  <tr><th id="date">2021-12-02</th></tr>
-                    {value_rows}
+            <body xmlns="http://www.w3.org/1999/xhtml" >
+            <div style="border:2px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.75); font-family: 'DejaVu Sans', sans-serif;">
+              <h3 id="date">2022-01-01</h3>
+                <table id="tooltip_table">
                 </table>
+            </div>
             </body>
             </foreignObject>
         </g>
@@ -789,6 +789,23 @@ def svg_hover(df, plt, fig, legend, stacked, path):
     script = """
         <script type="text/ecmascript" xmlns="http://www.w3.org/2000/svg">
         <![CDATA[
+        function display(value) {
+            if(value == null) {
+                return "--";
+            }
+            var sensible_number = "";
+            if (Math.abs(value) < 10.0) {
+                sensible_number = value.toString().replace(/[.]0+$/, '');
+            }
+            else if (Math.abs(value) < 100.0) {
+                sensible_number = (Math.round(value*10)/10).toString().replace(/[.]0$/, '');
+            }
+            else {
+                sensible_number = Math.round(value).toString();
+            }
+            sensible_number = sensible_number.replace(/[.]$/, '');
+            return sensible_number;
+        };
 
         function init(event) {
             var tooltip = d3.select("g.tooltip.mouse");
@@ -816,29 +833,19 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                     line.attr('visibility', "hidden");
                 }
                 date_label.node().textContent = date;
-
-                for ( let number = 0; number < data.data[index].length; number++ ) {
-                    if(data.data[index][number] == null) {
-                        d3.select("#value" + number).text("--");
-                    }
-                    else {
-                        var value = data.data[index][number];
-                        var sensible_number = "";
-                        if (Math.abs(value) < 10.0) {
-                            sensible_number = value.toString().replace(/[.]0+$/, '');
-                        }
-                        else if (Math.abs(value) < 100.0) {
-                            sensible_number = (Math.round(value*10)/10).toString().replace(/[.]0$/, '');
-                        }
-                        else {
-                            sensible_number = Math.round(value).toString();
-                        }
-                        sensible_number = sensible_number.replace(/[.]$/, '');
-
-                        //d3.select("#tooltiptext table tr:nth-child(" + number + ") td:nth-child(2)").text(sensible_number);
-                        d3.select("#value" + number).text(sensible_number);
-                    }
+                values = [];
+                for ( let number = 0; number &lt; legends.length; number++ ) {
+                    values.push([data.data[index][number], display(data.data[index][number]), legends[number]])
                 }
+                values.sort(function(a,b) {return a[0] - b[0]});
+                values.reverse();
+
+                table = "";
+                for ( let number = 0; number < values.length; number++ ) {
+                    table += "<html:tr><html:td>" + values[number][2] + "</html:td><html:td>" + values[number][1] + "</html:td></html:tr>";
+                }
+                table += "";
+                d3.select("#tooltip_table").html(table);
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
                 let width = bbox.width;
@@ -865,7 +872,9 @@ def svg_hover(df, plt, fig, legend, stacked, path):
         }
         """
     script += f"""
-        var data = {df.round(2).to_json(orient="split", date_format="iso")}
+        var data = {df.round(2).to_json(orient="split", date_format="iso")};
+        var colours = {json.dumps(colours)};
+        var legends = {json.dumps(legends)};
         ]]>
         </script>
         """
