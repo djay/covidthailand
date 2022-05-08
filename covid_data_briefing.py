@@ -516,7 +516,7 @@ def briefing_deaths_summary(text, date, file):
         "Diabetes": ["เบาหวาน", "DM"],
         "Hyperlipidemia": ["ไขมันในเลือดสูง", "HPL"],
         "Lung disease": ["โรคปอด"],
-        "Obesity": ["โรคอ้วน", "อ้วน", "อ1วน"],
+        "Obesity": ["โรคอ้วน", "อ้วน", "อ1วน", "อUวน"],
         "Cerebrovascular": ["หลอดเลือดสมอง"],
         "Kidney disease": ["โรคไต"],
         "Heart disease": ["โรคหัวใจ", "หัวใจ"],
@@ -545,7 +545,7 @@ def briefing_deaths_summary(text, date, file):
 
     # deaths over 60
     if date > d("2021-08-02"):
-        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป)", return_rest=False)
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป|ป\)ข้ึนไป)", return_rest=False)
         assert deaths_60 is not None
     else:
         deaths_60 = np.nan
