@@ -132,6 +132,12 @@ jobs:
           echo  "${{ steps.date.outputs.hour }}(steps.date.outputs.hour) < 13 OR"
           echo  "('${{ steps.briefing.outcome }}'(steps.briefing.outcome) == 'success' AND"
           echo  " '${{ hashFiles(steps.date.outputs.briefingfile) }}'(hashFiles(${{ steps.date.outputs.briefingfile }}) == '')"
+      - name: Apt update
+        if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
+        id: dep_apt
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ghostscript python3-tk
       - name: Set up Python
         id: goscrape
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
@@ -147,8 +153,6 @@ jobs:
         if: ${{ steps.goscrape.outcome == 'success' }}
         id: dep
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ghostscript python3-tk
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install -r requirements.txt --use-deprecated=html5lib --use-deprecated=legacy-resolver
