@@ -165,6 +165,9 @@ def dash_daily():
     # We get negative values for field hospital before April
     assert df[df['Recovered'] == 0.0].loc["2021-03-05":].empty
     df.loc[:"2021-03-31", 'Hospitalized Field'] = np.nan
+    # 2022-05-07 and 03 got 0.0 by mistake
+    df['Hospitalized Respirator'] = df['Hospitalized Respirator'].replace(0.0, np.nan)
+    df["Hospitalized Severe"] = df["Hospitalized Severe"].replace(0.0, np.nan)
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
 
@@ -450,8 +453,8 @@ def check_dash_ready():
 if __name__ == '__main__':
 
     # check_dash_ready()
-    dash_by_province_df = dash_by_province()
     dash_daily_df = dash_daily()
+    dash_by_province_df = dash_by_province()
     dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
