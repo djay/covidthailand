@@ -94,7 +94,6 @@ jobs:
         uses: pat-s/always-upload-cache@v2.1.5
         with:
           path: |
-            inputs
             ~/.cache/pip
             ${{ env.pythonLocation }}
             /tmp/tika-server.jar
