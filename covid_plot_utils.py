@@ -834,7 +834,7 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 }
                 date_label.node().textContent = date;
                 values = [];
-                for ( let number = 0; number &lt; legends.length; number++ ) {
+                for ( let number = 0; number < legends.length; number++ ) {
                     values.push([data.data[index][number], display(data.data[index][number]), legends[number]])
                 }
                 values.sort(function(a,b) {return a[0] - b[0]});
@@ -844,7 +844,6 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 for ( let number = 0; number < values.length; number++ ) {
                     table += "<html:tr><html:td>" + values[number][2] + "</html:td><html:td>" + values[number][1] + "</html:td></html:tr>";
                 }
-                table += "";
                 d3.select("#tooltip_table").html(table);
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
