@@ -94,6 +94,8 @@ def dash_daily():
             date,
             defaults={
                 "Positive Rate Dash": np.nan,
+                "Hospitalized Severe": np.nan,
+                "Hospitalized Respirator": np.nan,
                 "": 0.0
             },
             # D_UpdateTime="Last_Update",
