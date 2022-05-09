@@ -443,8 +443,8 @@ def plot_area(df: pd.DataFrame,
         plt.tight_layout(pad=1.107, w_pad=-10.0, h_pad=1.0)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
-        svg_hover(df_plot[cols + list(orig_cols)], plt, fig, leg, stacked,
-                  os.path.join("outputs", f'{png_prefix}_{suffix}.svg'))
+        path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
+        svg_hover(plt, path, leg, stacked, df_plot[cols], *([df_plot[list(orig_cols)]] if orig_cols != cols else []))
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -712,12 +712,9 @@ class Tick:
         self.color = color
 
 
-def svg_hover(df, plt, fig, legend, stacked, path):
+def svg_hover(plt, path, legend, stacked, df, *extras):
     f = BytesIO()
     plt.savefig(f, format="svg", facecolor=theme_light_back)
-
-    # --- Add interactivity ---
-    ax = fig.axes[0]
 
     # Create XML tree from the SVG file.
     tree, xmlid = ET.XMLID(f.getvalue())
@@ -824,8 +821,8 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 // from https://codepen.io/billdwhite/pen/rgEbc
                 tooltip.attr('visibility', "visible")
                 var plotpos = d3.pointer(evt, plot.node())[0] - offset;
-                var index = Math.floor(plotpos / plot.node().getBBox().width * data.index.length);
-                var date = data.index[index];
+                var index = Math.floor(plotpos / plot.node().getBBox().width * data[0].index.length);
+                var date = data[0].index[index];
                 if (date) {
                     date = date.split("T")[0];
                 } else {
@@ -835,14 +832,22 @@ def svg_hover(df, plt, fig, legend, stacked, path):
                 date_label.node().textContent = date;
                 values = [];
                 for ( let number = 0; number < legends.length; number++ ) {
-                    values.push([data.data[index][number], display(data.data[index][number]), legends[number]])
+                    var row = [data[0].data[index][number], legends[number]];
+                    for (let d = 0; d < data.length; d++) {
+                        row.push(display(data[d].data[index][number]))
+                    }
+                    values.push(row);
                 }
                 values.sort(function(a,b) {return a[0] - b[0]});
                 values.reverse();
 
                 table = "";
-                for ( let number = 0; number < values.length; number++ ) {
-                    table += "<html:tr><html:td>" + values[number][2] + "</html:td><html:td>" + values[number][1] + "</html:td></html:tr>";
+                for (let col = 0; col < values.length; col++) {
+                    table += "<html:tr><html:td>" + values[col][1] + "</html:td>";
+                    for ( let number = 2; number < values[col].length; number++ ) {
+                        table += "<html:td>" + values[col][number] + "</html:td>";
+                    }
+                    table += "</html:tr>";
                 }
                 d3.select("#tooltip_table").html(table);
 
@@ -870,8 +875,9 @@ def svg_hover(df, plt, fig, legend, stacked, path):
 
         }
         """
+    data = [df.round(2).to_json(orient="split", date_format="iso") for d in [df] + list(extras)]
     script += f"""
-        var data = {df.round(2).to_json(orient="split", date_format="iso")};
+        var data = [{",".join(data)}];
         var colours = {json.dumps(colours)};
         var legends = {json.dumps(legends)};
         ]]>
