@@ -814,9 +814,6 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
             // var border = d3.select("#tooltiprect");
             var gap = 15;
             let padding = 4;
-            let bbox = d3.select("#tooltiptext table").node().getBoundingClientRect();
-            tooltip.attr("width", bbox.width);
-            tooltip.attr("hieght", bbox.height);
 
             d3.select("#figure_1").on("mousemove", function (evt) {
                 // from https://codepen.io/billdwhite/pen/rgEbc
@@ -854,9 +851,10 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
                 d3.select("#tooltip_table").html(table);
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
+                let bbox = d3.select("#tooltiptext table").node().getBoundingClientRect();
                 let width = bbox.width;
                 var x = mouseCoords[0] - width + offset - gap;
-                if (x < width) {
+                if (x < 0) {
                     x = mouseCoords[0] + offset + gap;
                 }
                 tooltip
