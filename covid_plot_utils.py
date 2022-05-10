@@ -445,7 +445,7 @@ def plot_area(df: pd.DataFrame,
         plt.savefig(path, facecolor=theme_light_back)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
         # TODO: use formatter to send values preformatted
-        svg_hover(plt, path, leg, stacked, df_plot[cols], *([df_plot[list(orig_cols)]] if orig_cols != cols else []))
+        svg_hover(plt, path, leg, stacked, df_plot[cols], *([df_plot[list(orig_cols)]] if ma_suffix else []))
         logger.info("Plot: {}", path)
         plt.close()
 
