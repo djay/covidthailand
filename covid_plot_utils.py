@@ -742,7 +742,7 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
         color = list(patch.get_facecolor() if stacked else patch.get_color())
         value_rows += make_tootip_entry(number, text, color)
         legends.append(text)
-        colours.append(color)
+        colours.append(matplotlib.colors.to_hex(color, keep_alpha=False))
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = f"""
@@ -833,7 +833,7 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
                 date_label.node().textContent = date;
                 values = [];
                 for ( let number = 0; number < legends.length; number++ ) {
-                    var row = [data[0].data[index][number], legends[number]];
+                    var row = [data[0].data[index][number], legends[number], colours[number]];
                     for (let d = 0; d < data.length; d++) {
                         row.push(display(data[d].data[index][number]))
                     }
@@ -844,8 +844,9 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
 
                 table = "";
                 for (let col = 0; col < values.length; col++) {
-                    table += "<html:tr><html:td>" + values[col][1] + "</html:td>";
-                    for ( let number = 2; number < values[col].length; number++ ) {
+                    var colour = values[col][2];
+                    table += "<html:tr><html:td style='color:" + colour + "'>" + values[col][1] + "</html:td>";
+                    for ( let number = 3; number < values[col].length; number++ ) {
                         table += "<html:td>" + values[col][number] + "</html:td>";
                     }
                     table += "</html:tr>";
