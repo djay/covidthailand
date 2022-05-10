@@ -444,6 +444,7 @@ def plot_area(df: pd.DataFrame,
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
+        # TODO: use formatter to send values preformatted
         svg_hover(plt, path, leg, stacked, df_plot[cols], *([df_plot[list(orig_cols)]] if orig_cols != cols else []))
         logger.info("Plot: {}", path)
         plt.close()
@@ -875,7 +876,7 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
 
         }
         """
-    data = [df.round(2).to_json(orient="split", date_format="iso") for d in [df] + list(extras)]
+    data = [d.round(2).to_json(orient="split", date_format="iso") for d in [df] + list(extras)]
     script += f"""
         var data = [{",".join(data)}];
         var colours = {json.dumps(colours)};
