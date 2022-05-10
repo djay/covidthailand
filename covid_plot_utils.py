@@ -715,7 +715,7 @@ class Tick:
 
 def svg_hover(plt, path, legend, stacked, df, *extras):
     f = BytesIO()
-    plt.savefig(f, format="svg", facecolor=theme_light_back)
+    plt.savefig(f, format="svg", facecolor=theme_light_back, transparent=False)
 
     # Create XML tree from the SVG file.
     tree, xmlid = ET.XMLID(f.getvalue())
