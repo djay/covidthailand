@@ -841,7 +841,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 values.sort(function(a,b) {return a[0] - b[0]});
                 values.reverse();
 
-                table = "<html:tr><html:th>"+date+"</html:th>";
+                table = "<html:tr><html:th>"+(new Date(date)).toDateString()+"</html:th>";
                 for (let l = 0; l < labels.length; l++) {
                     table += "<html:th>"+labels[l]+"</html:th>";
                 }
