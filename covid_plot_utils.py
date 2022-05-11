@@ -445,7 +445,12 @@ def plot_area(df: pd.DataFrame,
         plt.savefig(path, facecolor=theme_light_back)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
         # TODO: use formatter to send values preformatted
-        svg_hover(plt, path, leg, stacked, df_plot[cols], *([df_plot[list(orig_cols)]] if ma_suffix else []))
+        avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
+        if ma_suffix:
+            act_df = df_plot[list(orig_cols)].applymap(lambda v: y_formatter(v, 0))
+            svg_hover(plt, path, leg, stacked, df_plot[cols], act_df, avg_df, labels=["", f"{ma_days}d avg"])
+        else:
+            svg_hover(plt, path, leg, stacked, df_plot[cols], avg_df)
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -713,7 +718,7 @@ class Tick:
         self.color = color
 
 
-def svg_hover(plt, path, legend, stacked, df, *extras):
+def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
     f = BytesIO()
     plt.savefig(f, format="svg", facecolor=theme_light_back, transparent=False)
 
@@ -754,7 +759,6 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
             <foreignObject id="tooltiptext" width="500" height="550" style="overflow:visible">
             <body xmlns="http://www.w3.org/1999/xhtml" >
             <div style="border:2px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.75); font-family: 'DejaVu Sans', sans-serif;">
-              <h3 id="date">2022-01-01</h3>
                 <table id="tooltip_table">
                 </table>
             </div>
@@ -825,24 +829,28 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
                     line.attr('visibility', "hidden");
                     return;
                 }
-                date_label.node().textContent = date;
+                //date_label.node().textContent = date;
                 values = [];
                 for ( let number = 0; number < legends.length; number++ ) {
                     var row = [data[0].data[index][number], legends[number], colours[number]];
-                    for (let d = 0; d < data.length; d++) {
-                        row.push(display(data[d].data[index][number]))
+                    for (let d = 1; d < data.length; d++) {
+                        row.push(data[d].data[index][number])
                     }
                     values.push(row);
                 }
                 values.sort(function(a,b) {return a[0] - b[0]});
                 values.reverse();
 
-                table = "";
+                table = "<html:tr><html:th>"+date+"</html:th>";
+                for (let l = 0; l < labels.length; l++) {
+                    table += "<html:th>"+labels[l]+"</html:th>";
+                }
+                table += "</html:tr>";
                 for (let col = 0; col < values.length; col++) {
                     var colour = values[col][2];
                     table += "<html:tr><html:td style='color:" + colour + "'>" + values[col][1] + "</html:td>";
                     for ( let number = 3; number < values[col].length; number++ ) {
-                        table += "<html:td>" + values[col][number] + "</html:td>";
+                        table += "<html:td style='text-align: right'>" + values[col][number] + "</html:td>";
                     }
                     table += "</html:tr>";
                 }
@@ -873,11 +881,14 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
 
         }
         """
-    data = [d.round(2).to_json(orient="split", date_format="iso") for d in [df] + list(extras)]
+    data = [d.round(2).to_json(orient="split", date_format="iso") for d in [df] + list(displays)]
+    if not labels:
+        labels = [""] * len(displays)
     script += f"""
         var data = [{",".join(data)}];
         var colours = {json.dumps(colours)};
         var legends = {json.dumps(legends)};
+        var labels = {json.dumps(labels)};
         ]]>
         </script>
         """
