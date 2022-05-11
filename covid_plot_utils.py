@@ -746,13 +746,12 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = f"""
-      <g transform="scale(1.0)" xmlns="http://www.w3.org/2000/svg" pointer-events="none">
-        <g class="tooltip mouse" visibility="hidden" style="background:#0000ff50;">
+      <g  xmlns="http://www.w3.org/2000/svg" pointer-events="none" class="tooltip mouse" visibility="hidden" style="background:#0000ff50;">
             <!-- The rectangle and text are positioned
                  to the right and above the <g> element's
                  0,0 point, purely to help with all the
                  overlapping tooltips! -->
-            <foreignObject id="tooltiptext" width="500" height="550">
+            <foreignObject id="tooltiptext" width="500" height="550" style="overflow:visible">
             <body xmlns="http://www.w3.org/1999/xhtml" >
             <div style="border:2px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.75); font-family: 'DejaVu Sans', sans-serif;">
               <h3 id="date">2022-01-01</h3>
@@ -761,8 +760,6 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
             </div>
             </body>
             </foreignObject>
-        </g>
-
     </g>
     """
     linesvg = """
@@ -826,6 +823,7 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
                 } else {
                     tooltip.attr('visibility', "hidden");
                     line.attr('visibility', "hidden");
+                    return;
                 }
                 date_label.node().textContent = date;
                 values = [];
@@ -851,16 +849,16 @@ def svg_hover(plt, path, legend, stacked, df, *extras):
                 d3.select("#tooltip_table").html(table);
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
-                let bbox = d3.select("#tooltiptext table").node().getBoundingClientRect();
-                let width = bbox.width;
-                var x = mouseCoords[0] - width + offset - gap;
+                let tooltipbox = d3.select("#tooltiptext table").node();
+                let width = tooltipbox.clientWidth;
+                var x = mouseCoords[0] - width - gap;
                 if (x < 0) {
-                    x = mouseCoords[0] + offset + gap;
+                    x = mouseCoords[0] + gap;
                 }
                 tooltip
                     .attr("transform", "translate("
                         + (x) + ","
-                        + (mouseCoords[1] - bbox.height/2) + ")");
+                        + (mouseCoords[1] - tooltipbox.clientHeight/2) + ")");
                 line.attr("x1", mouseCoords[0]);
                 line.attr("x2", mouseCoords[0]);
                 line.attr("y1", plot.node().getBBox().y);
