@@ -1,0 +1,140 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Province",
+        "type":"string"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date",
+      "Province"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Bangkok",
+      "Deaths":16
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Nakhon Ratchasima",
+      "Deaths":4
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Maha Sarakham",
+      "Deaths":4
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Kalasin",
+      "Deaths":4
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Sakon Nakhon",
+      "Deaths":3
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Nakhon Sawan",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Roi Et",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Sisaket",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Ubon Ratchathani",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Nakhon Phanom",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Chiang Mai",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Lampang",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Lamphun",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Nakhon Si Thammarat",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Surat Thani",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Rayong",
+      "Deaths":4
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Saraburi",
+      "Deaths":4
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Chonburi",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Lopburi",
+      "Deaths":2
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Ang Thong",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Ratchaburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Phetchaburi",
+      "Deaths":1
+    },
+    {
+      "Date":"2022-05-12T00:00:00.000Z",
+      "Province":"Prachuap Khiri Khan",
+      "Deaths":1
+    }
+  ]
+}
