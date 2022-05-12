@@ -891,7 +891,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
 
             })
             .on("mouseout", function () {
-                line.attr('visibility', "hidden");
+                d3.select("#date_line").attr('visibility', "hidden");
                 return tooltip.attr('visibility', "hidden");
             });
 
