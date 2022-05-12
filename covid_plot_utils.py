@@ -758,7 +758,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                  overlapping tooltips! -->
             <foreignObject id="tooltiptext" width="500" height="550" style="overflow:visible">
             <body xmlns="http://www.w3.org/1999/xhtml" >
-            <div style="border:2px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.75); font-family: 'DejaVu Sans', sans-serif;">
+            <div style="border:1px solid white; padding: 10px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.60); font-family: 'DejaVu Sans', sans-serif;">
                 <table id="tooltip_table">
                 </table>
             </div>
@@ -857,7 +857,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 d3.select("#tooltip_table").html(table);
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
-                let tooltipbox = d3.select("#tooltiptext table").node();
+                let tooltipbox = d3.select("#tooltiptext body").node();
                 let width = tooltipbox.clientWidth;
                 var x = mouseCoords[0] - width - gap;
                 if (x < 0) {
