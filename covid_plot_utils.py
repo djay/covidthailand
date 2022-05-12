@@ -444,13 +444,15 @@ def plot_area(df: pd.DataFrame,
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.png')
         plt.savefig(path, facecolor=theme_light_back)
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
-        # TODO: use formatter to send values preformatted
+        lim = a0.get_ylim()
+        # TODO: should be way to generic it inside svg_hover
+        sort_df = df_plot[cols].applymap(lambda y: (y - lim[0]) / lim[1])  # make % of axis
         avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
         if ma_suffix:
             act_df = df_plot[list(orig_cols)].applymap(lambda v: y_formatter(v, 0))
-            svg_hover(plt, path, leg, stacked, df_plot[cols], act_df, avg_df, labels=["", f"{ma_days}d avg"])
+            svg_hover(plt, path, leg, stacked, sort_df, act_df, avg_df, labels=["", f"{ma_days}d avg"])
         else:
-            svg_hover(plt, path, leg, stacked, df_plot[cols], avg_df)
+            svg_hover(plt, path, leg, stacked, sort_df, avg_df)
         logger.info("Plot: {}", path)
         plt.close()
 
@@ -731,23 +733,26 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
     # box.set('onmouseover', "ShowTooltip(this)")
     # box.set('onmouseout', "HideTooltip(this)")
 
-    def make_tootip_entry(number, text, color):
-        """Make a single tooltip entry."""
+    # def make_tootip_entry(number, text, color):
+    #     """Make a single tooltip entry."""
 
-        color = matplotlib.colors.to_hex(color, keep_alpha=False)
-        text = text.replace("&", "&amp;")
-        entry = f'<tr style="color:{color}"><td >{text}</td><td id="value{number}">999999.99</td></tr>'
-        return entry
+    #     color = matplotlib.colors.to_hex(color, keep_alpha=False)
+    #     text = text.replace("&", "&amp;")
+    #     entry = f'<tr style="color:{color}"><td >{text}</td><td id="value{number}">999999.99</td></tr>'
+    #     return entry
 
-    value_rows = ''
+    # value_rows = ''
     colours = []
     legends = []
+    circles = []
     for number, patch in enumerate(legend.get_patches() if stacked else legend.get_lines()):
         text = legend.get_texts()[number].get_text()
         color = list(patch.get_facecolor() if stacked else patch.get_color())
-        value_rows += make_tootip_entry(number, text, color)
+        # value_rows += make_tootip_entry(number, text, color)
         legends.append(text)
-        colours.append(matplotlib.colors.to_hex(color, keep_alpha=False))
+        colour = matplotlib.colors.to_hex(color, keep_alpha=False)
+        colours.append(colour)
+        circles.append(f'<circle id="dot_{number}" r="5" fill="{colour}" />')
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
     tooltipsvg = f"""
@@ -766,9 +771,10 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
             </foreignObject>
     </g>
     """
-    linesvg = """
-    <g id="date_line" xmlns="http://www.w3.org/2000/svg" pointer-events="none">
-        <line x1="500" y1="0" x2="500" y2="2000" visibility="hidden" style="fill:none;stroke:#808080;stroke-dasharray:3.7,1.6;stroke-dashoffset:0;"/>
+    linesvg = f"""
+    <g id="date_line" xmlns="http://www.w3.org/2000/svg" pointer-events="none" visibility="hidden">
+        <line x1="500" y1="0" x2="500" y2="2000"  style="fill:none;stroke:#808080;stroke-dasharray:3.7,1.6;stroke-dashoffset:0;"/>
+        {"".join(circles)}
     </g>
     """
     xmlid["figure_1"].append(ET.XML(linesvg))
@@ -826,7 +832,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                     date = date.split("T")[0];
                 } else {
                     tooltip.attr('visibility', "hidden");
-                    line.attr('visibility', "hidden");
+                    d3.select("g#date_line").attr('visibility', "hidden");
                     return;
                 }
                 //date_label.node().textContent = date;
@@ -869,9 +875,19 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                         + (mouseCoords[1] - tooltipbox.clientHeight/2) + ")");
                 line.attr("x1", mouseCoords[0]);
                 line.attr("x2", mouseCoords[0]);
-                line.attr("y1", plot.node().getBBox().y);
-                line.attr("y2", plot.node().getBBox().y + plot.node().getBBox().height);
-                line.attr('visibility', "visible");
+                let top = plot.node().getBBox().y;
+                let bottom = top + plot.node().getBBox().height;
+                line.attr("y1", top);
+                line.attr("y2", bottom);
+                d3.select("#date_line").attr('visibility', "visible");
+
+                // Move the dots
+                for (let col = 0; col < legends.length; col++) {
+                    let dot = d3.select("#dot_"+col);
+                    dot.attr('cy', bottom - (data[0].data[index][col] * (bottom - top)) - 2 );
+                    dot.attr('cx', mouseCoords[0]);
+                }
+
 
             })
             .on("mouseout", function () {
