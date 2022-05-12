@@ -447,6 +447,8 @@ def plot_area(df: pd.DataFrame,
         lim = a0.get_ylim()
         # TODO: should be way to generic it inside svg_hover
         sort_df = df_plot[cols].applymap(lambda y: (y - lim[0]) / lim[1])  # make % of axis
+        if stacked:
+            sort_df = sort_df.cumsum(axis=1)
         avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
         if ma_suffix:
             act_df = df_plot[list(orig_cols)].applymap(lambda v: y_formatter(v, 0))
