@@ -897,7 +897,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
 
         }
         """
-    data = [d.round(2).to_json(orient="split", date_format="iso") for d in [df] + list(displays)]
+    data = [d.to_json(orient="split", date_format="iso") for d in [df] + list(displays)]
     if not labels:
         labels = [""] * len(displays)
     script += f"""
