@@ -884,7 +884,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 // Move the dots
                 for (let col = 0; col < legends.length; col++) {
                     let dot = d3.select("#dot_"+col);
-                    dot.attr('cy', bottom - (data[0].data[index][col] * (bottom - top)) - 2 );
+                    dot.attr('cy', bottom - (data[0].data[index][col] * (bottom - top)) );
                     dot.attr('cx', mouseCoords[0]);
                 }
 
