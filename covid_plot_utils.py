@@ -1,3 +1,4 @@
+import html
 import json
 import os
 import xml.etree.ElementTree as ET
@@ -749,6 +750,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
     circles = []
     for number, patch in enumerate(legend.get_patches() if stacked else legend.get_lines()):
         text = legend.get_texts()[number].get_text()
+        text = html.escape(text).encode('ascii', 'xmlcharrefreplace').decode("utf8")
         color = list(patch.get_facecolor() if stacked else patch.get_color())
         # value_rows += make_tootip_entry(number, text, color)
         legends.append(text)
@@ -763,7 +765,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                  to the right and above the <g> element's
                  0,0 point, purely to help with all the
                  overlapping tooltips! -->
-            <foreignObject id="tooltiptext" width="500" height="550" style="overflow:visible">
+            <foreignObject id="tooltiptext" width="700" height="750" style="overflow:visible">
             <body xmlns="http://www.w3.org/1999/xhtml" >
             <div style="border:1px solid white; padding: 10px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.60); font-family: 'DejaVu Sans', sans-serif;">
                 <table id="tooltip_table">
