@@ -504,6 +504,6 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_caseprov_plots(df)
     save_cases_plots(df)
+    save_caseprov_plots(df)
     # save_infections_estimate(cases)

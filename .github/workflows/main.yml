@@ -214,6 +214,8 @@ jobs:
           bundler install --jobs 4 --retry 3
           sed -i 's/https:\/\/practical-ritchie-cca141.netlify.app//g' README.md
           sed -i 's/https:\/\/practical-ritchie-cca141.netlify.app//g' downloads.md
+          sed -i 's#!\[.*\](\(.*_.*\)\.png)#<a href="\1.svg" target="_black"><object width="100%" type="image/svg+xml" data="\1.svg"><img src="\1.png" /></object></a>#g' README.md
+          sed -Ei 's#\[(.*)\]((.*_.*)\.png)#<a href="\2.svg" target="_black">\1</a>#g' README.md
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x

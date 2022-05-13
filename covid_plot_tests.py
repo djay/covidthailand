@@ -414,7 +414,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='tests_area_daily', cols_subset=cols,
               ma_days=7,
-              kind='line', stacked=True, percent_fig=False,
+              kind='line', stacked=False, percent_fig=False,
               cmap='tab20',
               footnote='Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
               + 'Proactive: Testing done at high risk locations, rather than random sampling.\n'

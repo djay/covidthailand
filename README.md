@@ -58,6 +58,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ## Cases by Region
 
+
 ![Cases/100k by Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_3.png)
 [Bangkok Region](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_bangkokmetropolitanregion_4.png) - [Central](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_central_4.png) - [Eastern](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_eastern_4.png) - [Western](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_western_4.png) - [Northeast A-N](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northeastern1_4.png) - [Northeast N-Y](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northeastern2_4.png) - [Northern C-N](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northern1_4.png) - [Northern P-U](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_northern2_4.png) - [Southern C-P](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_southern1_4.png) - [Southern R-Y](https://practical-ritchie-cca141.netlify.app/outputs/cases_prov_southern2_4.png)
 - [Cases by Region: Full Year](https://practical-ritchie-cca141.netlify.app/outputs/cases_region_all.png)
@@ -382,7 +383,7 @@ The plots are produced from csv files made in covid_data.py.
   ```
 
 3. You can comment out parts of covid_plot.py to skip some plots.
-   - In USE_CACHE_DATA  only ```*_3.png``` files are produced. 3 is for 3rd wave (since April 2021).
+   - In USE_CACHE_DATA  only ```*_3.svg``` files are produced. 3 is for 3rd wave (since April 2021).
 
 - When debugging, to scrape just one part first, rearrange the lines in covid_data.py/scrape_and_combine so that the scraping function you want to debug gets called before the others do
 
