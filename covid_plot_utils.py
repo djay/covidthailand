@@ -748,10 +748,10 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
     colours = []
     legends = []
     circles = []
-    for number, patch in enumerate(legend.get_patches() if stacked else legend.get_lines()):
+    for number, patch in enumerate(legend.get_patches() or legend.get_lines()):
         text = legend.get_texts()[number].get_text()
         text = html.escape(text).encode('ascii', 'xmlcharrefreplace').decode("utf8")
-        color = list(patch.get_facecolor() if stacked else patch.get_color())
+        color = list(patch.get_facecolor() if hasattr(patch, "get_facecolor") else patch.get_color())
         # value_rows += make_tootip_entry(number, text, color)
         legends.append(text)
         colour = matplotlib.colors.to_hex(color, keep_alpha=False)
