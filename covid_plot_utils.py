@@ -880,6 +880,12 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                     let dot = d3.select("#dot_"+col);
                     dot.attr('cy', bottom - (data[0].data[index][col] * (bottom - top)) );
                     dot.attr('cx', mouseCoords[0]);
+                    if (data[0].data[index][col] == null) {
+                        dot.attr("visibility", "hidden");
+                    }
+                    else {
+                        dot.attr("visibility", "visible");
+                    }
                 }
 
 
