@@ -457,7 +457,8 @@ def plot_area(df: pd.DataFrame,
             sort_df = sort_df.cumsum(axis=1)
         avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
         if ma_suffix:
-            act_df = df_plot[list(orig_cols) + [unknown_name] if unknown_total else []].applymap(lambda v: y_formatter(v, 0))
+            act_cols = list(orig_cols) + ([unknown_name] if unknown_total else [])
+            act_df = df_plot[act_cols].applymap(lambda v: y_formatter(v, 0))
             svg_hover(plt, path, leg, stacked, sort_df, act_df, avg_df, labels=["", f"{ma_days}d avg"])
         else:
             svg_hover(plt, path, leg, stacked, sort_df, avg_df)
