@@ -837,6 +837,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 } else {
                     tooltip.attr('visibility', "hidden");
                     d3.select("g#date_line").attr('visibility', "hidden");
+                    d3.select("#legend_1").attr('visibility', "visible");
                     return;
                 }
                 //date_label.node().textContent = date;
@@ -884,6 +885,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 line.attr("y1", top);
                 line.attr("y2", bottom);
                 d3.select("#date_line").attr('visibility', "visible");
+                d3.select("#legend_1").attr('visibility', "hidden");
 
                 // Move the dots
                 for (let col = 0; col < legends.length; col++) {
@@ -897,6 +899,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
             .on("mouseout", function () {
                 d3.select("#date_line").attr('visibility', "hidden");
                 return tooltip.attr('visibility', "hidden");
+                d3.select("#legend_1").attr('visibility', "visible");
             });
 
         }
