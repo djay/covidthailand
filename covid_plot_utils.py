@@ -447,7 +447,7 @@ def plot_area(df: pd.DataFrame,
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
         lim = a0.get_ylim()
         # TODO: should be way to generic it inside svg_hover
-        sort_df = df_plot[cols].applymap(lambda y: (y - lim[0]) / lim[1])  # make % of axis
+        sort_df = df_plot[cols].applymap(lambda y: (y - lim[0]) / (lim[1] - lim[0]))  # make % of axis
         if stacked:
             sort_df = sort_df.cumsum(axis=1)
         avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
@@ -798,23 +798,6 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
     script = """
         <script type="text/ecmascript" xmlns="http://www.w3.org/2000/svg">
         <![CDATA[
-        function display(value) {
-            if(value == null) {
-                return "--";
-            }
-            var sensible_number = "";
-            if (Math.abs(value) < 10.0) {
-                sensible_number = value.toString().replace(/[.]0+$/, '');
-            }
-            else if (Math.abs(value) < 100.0) {
-                sensible_number = (Math.round(value*10)/10).toString().replace(/[.]0$/, '');
-            }
-            else {
-                sensible_number = Math.round(value).toString();
-            }
-            sensible_number = sensible_number.replace(/[.]$/, '');
-            return sensible_number;
-        };
 
         function init(event) {
             var tooltip = d3.select("g.tooltip.mouse");
@@ -830,7 +813,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 // from https://codepen.io/billdwhite/pen/rgEbc
                 tooltip.attr('visibility', "visible")
                 var plotpos = d3.pointer(evt, plot.node())[0] - offset;
-                var index = Math.round(plotpos / plot.node().getBBox().width * data[0].index.length);
+                var index = Math.round(plotpos / plot.node().getBBox().width * (data[0].index.length-1));
                 var date = data[0].index[index];
                 if (date) {
                     date = date.split("T")[0];
