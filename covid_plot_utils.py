@@ -830,7 +830,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 // from https://codepen.io/billdwhite/pen/rgEbc
                 tooltip.attr('visibility', "visible")
                 var plotpos = d3.pointer(evt, plot.node())[0] - offset;
-                var index = Math.floor(plotpos / plot.node().getBBox().width * data[0].index.length);
+                var index = Math.round(plotpos / plot.node().getBBox().width * data[0].index.length);
                 var date = data[0].index[index];
                 if (date) {
                     date = date.split("T")[0];
