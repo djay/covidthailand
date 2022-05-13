@@ -488,6 +488,10 @@ def briefing_deaths_summary(text, date, file):
         numbers = get_next_numbers(text, "อายุระหว่าง", until="ปี", return_rest=False)
         min_age, max_age = numbers
         med_age = None
+    if date in [d("2021-12-21")]:
+        max_age = np.nan
+    else:
+        assert max_age > min_age
 
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num

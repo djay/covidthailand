@@ -1,0 +1,189 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Deaths",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Age Median",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Age Min",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Age Max",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Male",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Female",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Family",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Others",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Residence",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Location",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Crowds",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Work",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Unknown",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Unvaccinated",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Close People",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Risk Area",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Bangkok",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Outside Hospital",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Prison",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Comorbidity Hypertension",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Diabetes",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Hyperlipidemia",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Lung disease",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Comorbidity Obesity",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Cerebrovascular",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Comorbidity Kidney disease",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Heart disease",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Comorbidity Bedridden",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Comorbidity Cancer",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Comorbidity Pregnant",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Comorbidity None",
+        "type":"number"
+      },
+      {
+        "name":"Deaths Risk Under 60 Comorbidity ",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Under 60 Comorbidity None",
+        "type":"integer"
+      },
+      {
+        "name":"Deaths Risk Over 60",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"0.20.0"
+  },
+  "data":[
+    {
+      "Date":"2021-12-21T00:00:00.000Z",
+      "Deaths":32,
+      "Deaths Age Median":80.0,
+      "Deaths Age Min":26.0,
+      "Deaths Age Max":null,
+      "Deaths Male":19,
+      "Deaths Female":13,
+      "Deaths Risk Family":4,
+      "Deaths Risk Others":16,
+      "Deaths Risk Residence":null,
+      "Deaths Risk Location":11,
+      "Deaths Risk Crowds":null,
+      "Deaths Risk Work":1,
+      "Deaths Risk Unknown":null,
+      "Deaths Risk Unvaccinated":null,
+      "Deaths Risk Close People":20,
+      "Deaths Risk Risk Area":0,
+      "Deaths Risk Bangkok":null,
+      "Deaths Risk Outside Hospital":null,
+      "Deaths Risk Prison":null,
+      "Deaths Comorbidity Hypertension":17,
+      "Deaths Comorbidity Diabetes":8,
+      "Deaths Comorbidity Hyperlipidemia":6,
+      "Deaths Comorbidity Lung disease":null,
+      "Deaths Comorbidity Obesity":2,
+      "Deaths Comorbidity Cerebrovascular":null,
+      "Deaths Comorbidity Kidney disease":4,
+      "Deaths Comorbidity Heart disease":null,
+      "Deaths Comorbidity Bedridden":1,
+      "Deaths Comorbidity Cancer":null,
+      "Deaths Comorbidity Pregnant":null,
+      "Deaths Comorbidity None":null,
+      "Deaths Risk Under 60 Comorbidity ":7,
+      "Deaths Risk Under 60 Comorbidity None":0,
+      "Deaths Risk Over 60":25
+    }
+  ]
+}
