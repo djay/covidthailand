@@ -204,6 +204,11 @@ def plot_area(df: pd.DataFrame,
         other_cols = set(cols) - set([unknown_col])
         # TODO: should not be 0 when no unknown_total
         df[unknown_col] = df[total_col].sub(df[other_cols].sum(axis=1), fill_value=None).clip(lower=0)
+        if ma_days:
+            # Need to make this without MA for tooltip
+            df[unknown_name] = df[total_col].sub(df[set(orig_cols) - set([unknown_name])
+                                                    ].sum(axis=1), fill_value=None).clip(lower=0)
+
         if unknown_col not in cols:
             cols = cols + [unknown_col]
 
@@ -452,7 +457,7 @@ def plot_area(df: pd.DataFrame,
             sort_df = sort_df.cumsum(axis=1)
         avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
         if ma_suffix:
-            act_df = df_plot[list(orig_cols)].applymap(lambda v: y_formatter(v, 0))
+            act_df = df_plot[list(orig_cols) + [unknown_name] if unknown_total else []].applymap(lambda v: y_formatter(v, 0))
             svg_hover(plt, path, leg, stacked, sort_df, act_df, avg_df, labels=["", f"{ma_days}d avg"])
         else:
             svg_hover(plt, path, leg, stacked, sort_df, avg_df)
