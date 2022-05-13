@@ -865,9 +865,9 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
                 d3.select("#tooltip_table").html(table);
 
                 var mouseCoords = d3.pointer(evt, tooltip.node().parentElement);
-                let tooltipbox = d3.select("#tooltiptext body").node();
+                let tooltipbox = d3.select("#tooltiptext div").node();
                 let width = tooltipbox.clientWidth;
-                var x = mouseCoords[0] - width - gap;
+                var x = mouseCoords[0] - width - gap*2;
                 if (x < 0) {
                     x = mouseCoords[0] + gap;
                 }
