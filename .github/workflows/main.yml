@@ -222,7 +222,7 @@ jobs:
         uses: rlespinasse/github-slug-action@v3.x
       - name: Deploy gh-pages
         if: ${{ steps.gonetlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
-        uses: peaceiris/actions-gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
