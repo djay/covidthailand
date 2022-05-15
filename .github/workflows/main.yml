@@ -227,7 +227,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
           publish_branch: gh-pages
-          force_orphan: true
+          # force_orphan: true
       - name: Deploy to Netlify
         if: ${{ steps.gonetlify.outcome == 'success' }}
         id: netlify
