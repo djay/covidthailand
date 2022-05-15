@@ -217,6 +217,8 @@ jobs:
           sed -i 's#!\[.*\](\(.*_.*\)\.png)#<a href="\1.svg" target="_black"><object width="100%" type="image/svg+xml" data="\1.svg"><img src="\1.png" /></object></a>#g' README.md
           sed -Ei 's#\[(.*)\]((.*_.*)\.png)#<a href="\2.svg" target="_black">\1</a>#g' README.md
           cp *.md docs
+          cp -R assets docs/assets
+          cp _config.yml docs/_config.yml
           bundle exec jekyll build --destination=./_site
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
@@ -227,7 +229,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
           publish_branch: gh-pages
-          # force_orphan: true
+          force_orphan: true
       - name: Deploy to Netlify
         if: ${{ steps.gonetlify.outcome == 'success' }}
         id: netlify
