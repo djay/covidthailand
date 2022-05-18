@@ -42,7 +42,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 # Trends
 
-![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png) ![Hospitalisation as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/active_peak_3.png)
+![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
+![Hospitalisation as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/active_peak_3.png)
 
 - For forecasts of total infections/deaths/hospitalisations see
   [IHME Thailand](https://covid19.healthdata.org/thailand) |

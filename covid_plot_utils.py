@@ -737,20 +737,6 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
     tree, xmlid = ET.XMLID(f.getvalue())
     tree.set('onload', 'init(event)')
 
-    # # patch_2
-    # box = xmlid["patch_2"]
-    # box.set('onmouseover', "ShowTooltip(this)")
-    # box.set('onmouseout', "HideTooltip(this)")
-
-    # def make_tootip_entry(number, text, color):
-    #     """Make a single tooltip entry."""
-
-    #     color = matplotlib.colors.to_hex(color, keep_alpha=False)
-    #     text = text.replace("&", "&amp;")
-    #     entry = f'<tr style="color:{color}"><td >{text}</td><td id="value{number}">999999.99</td></tr>'
-    #     return entry
-
-    # value_rows = ''
     colours = []
     legends = []
     circles = []
@@ -758,19 +744,21 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
         text = legend.get_texts()[number].get_text()
         text = html.escape(text).encode('ascii', 'xmlcharrefreplace').decode("utf8")
         color = list(patch.get_facecolor() if hasattr(patch, "get_facecolor") else patch.get_color())
-        # value_rows += make_tootip_entry(number, text, color)
         legends.append(text)
         colour = matplotlib.colors.to_hex(color, keep_alpha=False)
         colours.append(colour)
         circles.append(f'<circle id="dot_{number}" r="5" fill="{colour}" />')
 
     # insert svg to for tooltip in - https://codepen.io/billdwhite/pen/rgEbc
+    linesvg = f"""
+    <g id="date_line" xmlns="http://www.w3.org/2000/svg" pointer-events="none" visibility="hidden">
+        <line x1="500" y1="0" x2="500" y2="2000"  style="fill:none;stroke:#808080;stroke-dasharray:3.7,1.6;stroke-dashoffset:0;"/>
+        {"".join(circles)}
+    </g>
+    """
+    xmlid["figure_1"].append(ET.XML(linesvg))
     tooltipsvg = f"""
       <g  xmlns="http://www.w3.org/2000/svg" pointer-events="none" class="tooltip mouse" visibility="hidden" style="background:#0000ff50;">
-            <!-- The rectangle and text are positioned
-                 to the right and above the <g> element's
-                 0,0 point, purely to help with all the
-                 overlapping tooltips! -->
             <foreignObject id="tooltiptext" width="700" height="750" style="overflow:visible">
             <body xmlns="http://www.w3.org/1999/xhtml" >
             <div style="border:1px solid white; padding: 10px; color: white;  display:table; background-color: rgb(0, 0, 0, 0.60); font-family: 'DejaVu Sans', sans-serif;">
@@ -781,24 +769,8 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
             </foreignObject>
     </g>
     """
-    linesvg = f"""
-    <g id="date_line" xmlns="http://www.w3.org/2000/svg" pointer-events="none" visibility="hidden">
-        <line x1="500" y1="0" x2="500" y2="2000"  style="fill:none;stroke:#808080;stroke-dasharray:3.7,1.6;stroke-dashoffset:0;"/>
-        {"".join(circles)}
-    </g>
-    """
-    xmlid["figure_1"].append(ET.XML(linesvg))
     xmlid["figure_1"].append(ET.XML(tooltipsvg))
     xmlid["figure_1"].set("fill", "black")  # some browsers don't seem to respect background
-
-    # TODO: get json list with [[start, date, [color, label, val_avg, val],...],...]). start is ratio
-    # TODO: on mousemove turn coords into ratio and lookup date etc
-    # TODO: insert values and resize tooltip as needed (maybe sort based on value?)
-    # TODO: hide the legend. make the tooltip look like the legend (fonts colours etc)
-    # TODO: put colored dots on the lines at the right place
-    # TODO: have a vertical line that moves
-    # TODO: move tooltip out of the way. maybe flip down on lower half and up on upper half?
-    # TODO: show % as well as avg and actual (or maybe only when there is a % chart visible?)
 
     # This is the script defining the ShowTooltip and HideTooltip functions.
     script = """
@@ -899,6 +871,7 @@ def svg_hover(plt, path, legend, stacked, df, *displays, labels=[]):
 
         }
         """
+    # TODO: get rid of redudant index lists
     data = [d.to_json(orient="split", date_format="iso") for d in [df] + list(displays)]
     if not labels:
         labels = [""] * len(displays)
