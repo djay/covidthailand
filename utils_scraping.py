@@ -172,7 +172,7 @@ def get_next_numbers(content, *matches, debug=False, before=False, remove=0, int
         else:
             rest = ""
         if dash_as_zero:
-            found = found.replace(r'(-)', '(0)')
+            found = found.replace(r'-', '0')
         numbers = (INT_RE if ints else NUM_RE).findall(found)
         numbers = [n.replace(",", "") for n in numbers]
         numbers = [int(n) if ints else float(n) for n in numbers if n]

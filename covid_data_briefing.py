@@ -172,7 +172,7 @@ def briefing_case_types(date, pages, url):
             assert imported == imported2
             assert prison == prison2
         else:
-            numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน")
+            numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน", dash_as_zero=True)
             cases, walkins, proactive, *quarantine = numbers
             domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
             if domestic and date not in [d("2021-11-22"), d("2021-12-02"), d("2021-12-29"), d("2022-03-31")]:
