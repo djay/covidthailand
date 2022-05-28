@@ -398,7 +398,7 @@ def briefing_deaths_provinces(dtext, date, file):
     ptext = ptext1 + ptext2
     # Now we have text that just contains provinces and numbers
     # but could have subtotals. Get each word + number (or 2 number) combo
-    pcells = pairwise(strip(re.split(r"(\(?\d+\)?\s*\d*)", ptext)))
+    pcells = pairwise(strip(re.split(r"(\(?(?:\d|-)+\)?\s*\d*)", ptext)))
 
     province_count = {}
     last_provs = None
@@ -424,12 +424,14 @@ def briefing_deaths_provinces(dtext, date, file):
     for provinces, num_text in pcells:
         # len() < 2 because some stray modifier?
         bracket = any_in(num_text, "(", ")")
-        text_num, rest = get_next_number(provinces, remove=True)
-        num, _ = get_next_number(num_text)
+        text_num, rest = get_next_number(provinces, remove=True, dash_as_zero=True)
+        num, _ = get_next_number(num_text, dash_as_zero=True)
         if num is None and text_num is not None:
             num = text_num
         elif num is None:
             raise Exception(f"No number of deaths found {date}: {text}")
+        elif text_num is not None:
+            raise Exception(f"Two numbers found {date}: {text}")
 
         if rest.strip().startswith("("):
             # special case where some in that province are in prison
