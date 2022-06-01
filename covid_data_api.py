@@ -348,6 +348,7 @@ def get_case_details_api():
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
     chunk = 5000
     pagenum = math.floor((len(cases) - init_cases_len) / chunk)
+    pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
     cases = cases.iloc[:pagenum * chunk + init_cases_len]
     pagenum += 1  # pages start from 1
     page = []
