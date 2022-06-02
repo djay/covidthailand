@@ -353,8 +353,8 @@ def briefing_province_cases(file, date, pages):
                 #         print("no cases", linenum, thai, *numbers)
     data = ((d, p, c) for (d, p), c in rows.items())
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
-    if date < d("2021-01-13"):
-        pass
+    if date < d("2021-01-13") or date in [d("2022-06-02")]:
+        return df
     else:
         assert not df.empty, f"Briefing on {date} failed to parse cases per province"
     if date > d("2021-05-12") and date not in [d("2021-07-18"), d("2022-02-02")]:
@@ -847,7 +847,7 @@ def get_cases_by_prov_briefings():
 
         # Do some checks across the data
         today_total = today_types[['Cases Proactive', "Cases Walkin"]].sum().sum()
-        prov_total = prov.groupby("Date").sum()['Cases'].loc[date]
+        prov_total = prov.groupby("Date").sum()['Cases'].loc[date] if not prov.empty else None
         warning = f"briefing provs={prov_total}, cases={today_total}"
         if today_total and prov_total:
             assert prov_total / today_total > 0.77, warning  # 2021-04-17 is very low but looks correct
