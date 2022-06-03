@@ -87,7 +87,9 @@ def get_variant_files(ext=".pdf", dir="inputs/variants"):
 def get_tests_by_day():
 
     def from_reports():
-        file, dl = next(get_test_files(ext="xlsx"))
+        file, dl = next(get_test_files(ext="xlsx"), [None, None])
+        if file is None:
+            return None, pd.DataFrame()
         dl()
         tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
         tests.dropna(how="any", inplace=True)  # get rid of totals row
@@ -102,6 +104,8 @@ def get_tests_by_day():
         return file, tests.rename(columns={'positive': "Pos", 'Total Testing': "Total"})
 
     file, tests = from_reports()
+    if file is None:
+        return tests
     tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
     tests = tests.set_index("Date")
 
@@ -346,6 +350,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    df_daily = get_tests_by_day()
     variants = get_variant_reports()
     df = get_test_reports()
-    df_daily = get_tests_by_day()
