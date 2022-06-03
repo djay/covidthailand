@@ -232,8 +232,8 @@ def scrape_and_combine():
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
         _ = list(pool.imap_unordered(do_work, jobs))
-        # pool.close()
-        # pool.join()
+        pool.close()
+        pool.join()
     # get_cases_by_prov_briefings, \
     #     dash_by_province, \
     #     get_cases_by_demographics_api, \
