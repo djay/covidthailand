@@ -353,7 +353,7 @@ def briefing_province_cases(file, date, pages):
                 #         print("no cases", linenum, thai, *numbers)
     data = ((d, p, c) for (d, p), c in rows.items())
     df = pd.DataFrame(data, columns=["Date", "Province", "Cases"]).set_index(["Date", "Province"])
-    if date < d("2021-01-13") or date in [d("2022-06-02")]:
+    if date < d("2021-01-13") or date >= d("2022-06-02"):
         return df
     else:
         assert not df.empty, f"Briefing on {date} failed to parse cases per province"
