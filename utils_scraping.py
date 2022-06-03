@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import pickle
 import re
@@ -656,8 +657,13 @@ def camelot_cache(file, page_num, process_background=False, table=0):
         return pd.read_json(cache_file)
     else:
         tables = camelot.read_pdf(file, pages=str(page_num), process_background=process_background)
-        tables[table].df.to_json(cache_file)
-        return tables[table].df
+        if len(tables) < table + 1:
+            with open(cache_file, "w") as fp:
+                json.dump(None, fp)
+            return None
+        else:
+            tables[table].df.to_json(cache_file)
+            return tables[table].df
 
 
 def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
