@@ -226,8 +226,8 @@ def scrape_and_combine():
         # covid_data_situation.get_situation_today
     ]
 
-    pool = Pool(1 if MAX_DAYS > 0 else None)
-    values = list(tqdm.tqdm(pool.imap(do_work, jobs), total=len(jobs)))
+    with Pool(1 if MAX_DAYS > 0 else None) as pool:
+        values = list(pool.imap(do_work, jobs))
     get_cases_by_prov_briefings, \
         dash_by_province, \
         get_cases_by_demographics_api, \
