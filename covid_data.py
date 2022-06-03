@@ -181,12 +181,16 @@ def get_hospital_resources():
 #   - doesn't have pre 2020 dailies though
 # health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
+res = {}
+
+
 def do_work(job):
     start = time.time()
     logger.info(f"==== {job.__name__} Start ====")
-    res = job()
+    data = job()
+    res[job.__name__] = data
     logger.info(f"==== {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
-    return res
+    return data
 
 
 def scrape_and_combine():
@@ -227,35 +231,36 @@ def scrape_and_combine():
     ]
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
-        values = list(pool.imap(do_work, jobs))
-    get_cases_by_prov_briefings, \
-        dash_by_province, \
-        get_cases_by_demographics_api, \
-        vaccination_reports, \
-        dash_ages, \
-        th_situation, \
-        en_situation, \
-        tests_reports, \
-        vac_slides, \
-        dash_daily, \
-        excess_deaths, \
-        tests, \
-        get_cases_by_prov_tweets, \
-        get_cases_timelineapi, \
-        variant_reports, \
-        ihme_dataset, \
-        api_provs \
-        = values
-    pool.close()
+        _ = list(pool.imap_unordered(do_work, jobs))
+        # pool.close()
+        # pool.join()
+    # get_cases_by_prov_briefings, \
+    #     dash_by_province, \
+    #     get_cases_by_demographics_api, \
+    #     vaccination_reports, \
+    #     dash_ages, \
+    #     get_th_situation, \
+    #     get_en_situation, \
+    #     get_tests_reports, \
+    #     vac_slides, \
+    #     dash_daily, \
+    #     excess_deaths, \
+    #     get_tests_by_day, \
+    #     get_cases_by_prov_tweets, \
+    #     get_cases_timelineapi, \
+    #     variant_reports, \
+    #     ihme_dataset, \
+    #     api_provs \
+    #     = values
 
-    vac_reports, vac_reports_prov = vaccination_reports
-    briefings_prov, cases_briefings = get_cases_by_prov_briefings
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api
-    tweets_prov, twcases = get_cases_by_prov_tweets
+    vac_reports, vac_reports_prov = res['vaccination_reports']
+    briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
+    cases_demo, risks_prov, case_api_by_area = res['get_cases_by_demographics_api']
+    tweets_prov, twcases = res['get_cases_by_prov_tweets']
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
-    export(dash_by_province, "moph_dashboard_prov", csv_only=True, dir="inputs/json")
+    export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     # "json" for caching, api so it's downloadable
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
@@ -271,8 +276,8 @@ def scrape_and_combine():
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
-        api_provs).combine_first(
-        dash_by_province).combine_first(
+        res['api_provs']).combine_first(
+        res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
@@ -290,16 +295,16 @@ def scrape_and_combine():
     export(cases_by_area, "cases_by_area")
 
     # Export IHME dataset
-    export(ihme_dataset, "ihme")
+    export(res['ihme_dataset'], "ihme")
 
     # Export situation
-    situation = covid_data_situation.export_situation(th_situation, en_situation)
+    situation = covid_data_situation.export_situation(res['th_situation'], res['en_situation'])
 
-    vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, vac_slides)
+    vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [tests_reports, tests, cases_briefings, get_cases_timelineapi, twcases, cases_demo, cases_by_area, situation, vac, dash_ages, dash_daily]:
+    for f in [res['get_tests_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], res['dash_daily']]:
         df = df.combine_first(f)
     logger.info(df)
 
