@@ -231,7 +231,7 @@ def scrape_and_combine():
     ]
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
-        _ = list(pool.imap_unordered(do_work, jobs))
+        data = list(pool.imap_unordered(do_work, jobs))
         pool.close()
         pool.join()
     # get_cases_by_prov_briefings, \
@@ -252,6 +252,8 @@ def scrape_and_combine():
     #     ihme_dataset, \
     #     api_provs \
     #     = values
+
+    logger.info(f"data={len(data)}, res={res.keys()}")
 
     vac_reports, vac_reports_prov = res['vaccination_reports']
     briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']

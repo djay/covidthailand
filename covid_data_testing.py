@@ -56,12 +56,14 @@ def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph"):
         res = requests.get(url).json()
         files.extend(res["files"])
 
+    count = 0
     for data in files:
         id = data['id']
         name = data['name']
         # TODO: how to get modification date?
         if not name.endswith(ext):
             continue
+        count += 1
         target = os.path.join(dir, name)
         os.makedirs(os.path.dirname(target), exist_ok=True)
 
@@ -71,6 +73,11 @@ def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph"):
             return file
 
         yield target, get_file
+
+    if count == 0:
+        logger.warning("No files found: Using local cached testing data only")
+        yield from local_files(ext, dir)
+        return
 
 
 def get_test_files(ext="pdf", dir="inputs/testing_moph"):
@@ -252,6 +259,7 @@ def get_test_reports():
     pubpriv['Pos Public'] = pubpriv['Pos'] - pubpriv['Pos Private']
     pubpriv['Tests Public'] = pubpriv['Tests'] - pubpriv['Tests Private']
     export(pubpriv, "tests_pubpriv")
+
     data = data.combine_first(pubpriv)
 
     return data
@@ -350,6 +358,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    df = get_test_reports()
     df_daily = get_tests_by_day()
     variants = get_variant_reports()
-    df = get_test_reports()
