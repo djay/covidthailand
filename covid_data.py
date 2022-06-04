@@ -184,7 +184,7 @@ def get_hospital_resources():
 res = {}
 
 
-def do_work(job):
+def do_work(job, res=res):
     start = time.time()
     logger.info(f"==== {job.__name__} Start ====")
     data = job()
