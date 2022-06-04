@@ -414,9 +414,9 @@ def local_files(ext=".pdf", dir=os.getcwd()):
     client_list = [
         (
             f"{file}",
-            f"{datetime.datetime.fromtimestamp(file.stat().st_mtime, tz=datetime.timezone.utc):%a, %d %b %Y %H:%M:%S %Z}"
+            datetime.datetime.fromtimestamp(file.stat().st_ctime, tz=datetime.timezone.utc)
         )
-        for file in Path(dir).glob('**/*') if file.is_file()
+        for file in Path(dir).glob(f'**/*{ext}') if file.is_file()
     ]
     # important we get them sorted newest files first as we only fill in NaN from each additional file
     files = sorted(
