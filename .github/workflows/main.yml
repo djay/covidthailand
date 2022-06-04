@@ -115,11 +115,20 @@ jobs:
         with:
           file: "inputs.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached briefings
+        id: briefingssrelease
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "briefings.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
         if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
           tar -xzvf inputs.tar.gz
-          rm inputs.tar.gz
+          tar -xzvf briefings.tar.gz || true
+          rm inputs.tar.gz briefings.tar.gz || true
       - name: du
         if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
@@ -270,7 +279,8 @@ jobs:
         id: makerelease
         if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" -czvf inputs.tar.gz inputs
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings" -czvf inputs.tar.gz inputs
+           tar --exclude="inputs" --include="inputs/briefings" -czvf briefings.tar.gz inputs
            tar -czvf datasets.tar.gz api inputs/json/*.csv
       - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
@@ -282,6 +292,16 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated docs"
+      - name: Upload briefings.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./briefings.tar.gz
+          asset_name: briefings.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated briefings"
       - name: Upload datasets.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
