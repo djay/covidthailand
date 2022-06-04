@@ -184,11 +184,12 @@ def get_hospital_resources():
 job_data = {}
 
 
-def do_work(job, res=job_data):
+def do_work(job):
+    global job_data
     start = time.time()
     logger.info(f"==== {job.__name__} Start ====")
     data = job()
-    res[job.__name__] = data
+    job_data[job.__name__] = data
     logger.info(f"==== {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
     return data
 
@@ -301,7 +302,7 @@ def scrape_and_combine():
     export(res['ihme_dataset'], "ihme")
 
     # Export situation
-    situation = covid_data_situation.export_situation(res['th_situation'], res['en_situation'])
+    situation = covid_data_situation.export_situation(res['get_th_situation'], res['get_en_situation'])
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 
