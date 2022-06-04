@@ -588,6 +588,7 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    ihme_dataset()
     timeline = get_cases_timelineapi()
     timeline_prov = timeline_by_province()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
@@ -602,7 +603,6 @@ if __name__ == '__main__':
     df = timeline.combine_first(cases_demo).combine_first(old)
     export(df, "combined", csv_only=True)
 
-    ihme_dataset()
     excess_deaths()
 
     import covid_plot_cases

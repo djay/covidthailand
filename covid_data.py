@@ -181,17 +181,14 @@ def get_hospital_resources():
 #   - doesn't have pre 2020 dailies though
 # health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
-job_data = {}
-
 
 def do_work(job):
     global job_data
     start = time.time()
     logger.info(f"==== {job.__name__} Start ====")
     data = job()
-    job_data[job.__name__] = data
     logger.info(f"==== {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
-    return data
+    return (job.__name__, data)
 
 
 def scrape_and_combine():
@@ -232,30 +229,29 @@ def scrape_and_combine():
     ]
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
-        values = list(pool.imap(do_work, jobs))
+        res = dict(pool.imap_unordered(do_work, jobs))
         pool.close()
         pool.join()
-    get_cases_by_prov_briefings, \
-        dash_by_province, \
-        get_cases_by_demographics_api, \
-        vaccination_reports, \
-        dash_ages, \
-        get_th_situation, \
-        get_en_situation, \
-        get_tests_reports, \
-        vac_slides, \
-        dash_daily, \
-        excess_deaths, \
-        get_tests_by_day, \
-        get_cases_by_prov_tweets, \
-        get_cases_timelineapi, \
-        variant_reports, \
-        ihme_dataset, \
-        api_provs \
-        = values
-
-    res = locals()
-    logger.info(f"data={len(values)}, res={job_data.keys()}")
+    # get_cases_by_prov_briefings, \
+    #     dash_by_province, \
+    #     get_cases_by_demographics_api, \
+    #     vaccination_reports, \
+    #     dash_ages, \
+    #     get_th_situation, \
+    #     get_en_situation, \
+    #     get_tests_reports, \
+    #     vac_slides, \
+    #     dash_daily, \
+    #     excess_deaths, \
+    #     get_tests_by_day, \
+    #     get_cases_by_prov_tweets, \
+    #     get_cases_timelineapi, \
+    #     variant_reports, \
+    #     ihme_dataset, \
+    #     api_provs \
+    #     = values
+    # res = locals()
+    logger.info(f"data={len(res)}")
 
     vac_reports, vac_reports_prov = res['vaccination_reports']
     briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
