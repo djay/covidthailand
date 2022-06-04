@@ -239,7 +239,7 @@ def scrape_and_combine():
     #     dash_ages, \
     #     get_thai_situation, \
     #     get_en_situation, \
-    #     get_tests_reports, \
+    #     get_test_reports, \
     #     vac_slides, \
     #     dash_daily, \
     #     excess_deaths, \
@@ -304,7 +304,7 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [res['get_tests_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], res['dash_daily']]:
+    for f in [res['get_test_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], res['dash_daily']]:
         df = df.combine_first(f)
     logger.info(df)
 
