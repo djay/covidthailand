@@ -181,10 +181,10 @@ def get_hospital_resources():
 #   - doesn't have pre 2020 dailies though
 # health district 8 data - https://r8way.moph.go.th/r8way/covid-19
 
-res = {}
+job_data = {}
 
 
-def do_work(job, res=res):
+def do_work(job, res=job_data):
     start = time.time()
     logger.info(f"==== {job.__name__} Start ====")
     data = job()
@@ -231,29 +231,30 @@ def scrape_and_combine():
     ]
 
     with Pool(1 if MAX_DAYS > 0 else None) as pool:
-        data = list(pool.imap_unordered(do_work, jobs))
+        values = list(pool.imap(do_work, jobs))
         pool.close()
         pool.join()
-    # get_cases_by_prov_briefings, \
-    #     dash_by_province, \
-    #     get_cases_by_demographics_api, \
-    #     vaccination_reports, \
-    #     dash_ages, \
-    #     get_th_situation, \
-    #     get_en_situation, \
-    #     get_tests_reports, \
-    #     vac_slides, \
-    #     dash_daily, \
-    #     excess_deaths, \
-    #     get_tests_by_day, \
-    #     get_cases_by_prov_tweets, \
-    #     get_cases_timelineapi, \
-    #     variant_reports, \
-    #     ihme_dataset, \
-    #     api_provs \
-    #     = values
+    get_cases_by_prov_briefings, \
+        dash_by_province, \
+        get_cases_by_demographics_api, \
+        vaccination_reports, \
+        dash_ages, \
+        get_th_situation, \
+        get_en_situation, \
+        get_tests_reports, \
+        vac_slides, \
+        dash_daily, \
+        excess_deaths, \
+        get_tests_by_day, \
+        get_cases_by_prov_tweets, \
+        get_cases_timelineapi, \
+        variant_reports, \
+        ihme_dataset, \
+        api_provs \
+        = values
 
-    logger.info(f"data={len(data)}, res={res.keys()}")
+    res = locals()
+    logger.info(f"data={len(values)}, res={job_data.keys()}")
 
     vac_reports, vac_reports_prov = res['vaccination_reports']
     briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
