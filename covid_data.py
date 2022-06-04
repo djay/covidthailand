@@ -237,7 +237,7 @@ def scrape_and_combine():
     #     get_cases_by_demographics_api, \
     #     vaccination_reports, \
     #     dash_ages, \
-    #     get_th_situation, \
+    #     get_thai_situation, \
     #     get_en_situation, \
     #     get_tests_reports, \
     #     vac_slides, \
@@ -298,7 +298,7 @@ def scrape_and_combine():
     export(res['ihme_dataset'], "ihme")
 
     # Export situation
-    situation = covid_data_situation.export_situation(res['get_th_situation'], res['get_en_situation'])
+    situation = covid_data_situation.export_situation(res['get_thai_situation'], res['get_en_situation'])
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 
