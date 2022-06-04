@@ -248,7 +248,7 @@ def scrape_and_combine():
     #     get_cases_timelineapi, \
     #     variant_reports, \
     #     ihme_dataset, \
-    #     api_provs \
+    #     timeline_by_province \
     #     = values
     # res = locals()
     logger.info(f"data={len(res)}")
@@ -276,7 +276,7 @@ def scrape_and_combine():
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
-        res['api_provs']).combine_first(
+        res['timeline_by_province']).combine_first(
         res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
