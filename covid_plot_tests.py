@@ -53,6 +53,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Tested PUI',
         'Tested PUI Walkin Public',
         'Tests ATK Proactive'
+        'Tests ATK'
     ]
     legends = [
         'PCR Tests',
@@ -60,6 +61,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Persons Under Investigation (PUI)',
         'Persons Under Investigation (Public Hospitals)',
         'ATK Tests (NHSO provided)',
+        'ATK Tests (DMSC)',
     ]
     plot_area(df=df,
               title='PCR Tests and PUI - Thailand',
@@ -277,6 +279,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         # 'Pos Public',
         'ATK',
         'Pos ATK Proactive',
+        'Pos ATK',
     ]
     legends = [
         'Confirmed Cases',
@@ -285,6 +288,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         #    'Positive PCR Test Results (Public)',
         'Registered ATK Probable Case (Home Isolation)',
         'Positive Proactive ATK Test Results (NHSO provided)',
+        'Positive ATK Test Results (DMSC)',
     ]
     plot_area(df=df,
               title='Positive Test Results vs. Confirmed Covid Cases - Thailand',

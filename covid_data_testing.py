@@ -94,15 +94,23 @@ def get_variant_files(ext=".pdf", dir="inputs/variants"):
 def get_tests_by_day():
 
     def from_reports():
-        file, dl = next(get_test_files(ext="xlsx"), [None, None])
-        if file is None:
-            return None, pd.DataFrame()
-        dl()
-        tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
-        tests.dropna(how="any", inplace=True)  # get rid of totals row
-        # tests.drop("Cannot specify date", inplace=True)
-        tests = tests.iloc[1:]  # Get rid of first row with unspecified data
-        return file, tests
+        df = pd.DataFrame()
+        files = ""
+        for file, dl in get_test_files(ext="xlsx"):
+            dl()
+            tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+            if "ATK" in file:
+                tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
+            else:
+                tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
+            tests.dropna(how="any", inplace=True)  # get rid of totals row
+            tests = tests.iloc[1:]  # Get rid of first row with unspecified data
+            tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
+            tests = tests.set_index("Date")
+            # tests.drop("Cannot specify date", inplace=True)
+            files += " " + file
+            df = df.combine_first(tests)
+        return files, df
 
     def from_data():
         url = "https://data.go.th/dataset/9f6d900f-f648-451f-8df4-89c676fce1c4/resource/0092046c-db85-4608-b519-ce8af099315e/download/thailand_covid-19_testing_data_update091064.csv"  # NOQA
@@ -113,8 +121,6 @@ def get_tests_by_day():
     file, tests = from_reports()
     if file is None:
         return tests
-    tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
-    tests = tests.set_index("Date")
 
     def redistribute(tests):
         pos = tests[tests["Date"] == "Cannot specify date"]['Pos']
@@ -138,7 +144,6 @@ def get_tests_by_day():
         # tests.reset_index(drop=False, inplace=True)
         return tests
 
-    tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
     logger.info("{} {}", file, len(tests))
 
     return tests
