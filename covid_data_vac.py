@@ -221,7 +221,7 @@ def vaccination_daily(daily, date, file, page):
     d2_num, rest2 = get_next_numbers(gtext,
                                      r"ได้รับ\s*วัคซีน\s+2\s+เข็ม",
                                      r"ไดรับวัคซีน\s+2\s+เข็ม",
-                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster dose\))", return_until=True, require_until=True)
+                                     until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster\s*dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
         if date > d("2021-04-24"):
@@ -326,6 +326,8 @@ def vaccination_daily(daily, date, file, page):
 def vaccination_tables(df, _, page, file):
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     first_line = page.split("\n\n")[0]
+    # 28 กมุภำพันธ์ 2564 – 6 กุมภำพันธ ์2565
+    first_line = first_line.replace(" ์", " ")  # TODO: generalise to remove stray that accents?
     date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
     if not date:
         return df
@@ -519,15 +521,18 @@ def vaccination_tables(df, _, page, file):
                 # extra table with %  per population for over 60s and totals
                 pop, d1, d1p, d2, d2p, d3, d3p, total, pop60, d60_1, d60_1p, d60_2, d60_2p = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p], givencols3)
-            elif table == "percent" and len(numbers) in [18, 22, 15]:
+            elif table == "percent" and len(numbers) in [18, 22, 15, 14]:
                 # extra table with %  per population for over 60s and totals - 2021-09-09, 2021-10-05
-                pop, d1, d1p, d2, d2p, d3, d3p, total, *numbers2 = numbers
+                if len(numbers) == 14:  # 2022-02-06
+                    pop, d1, d1p, d2, d2p, d3, d3p, *numbers2 = numbers
+                else:
+                    pop, d1, d1p, d2, d2p, d3, d3p, total, *numbers2 = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
                 # Over 60s
                 cols = vaccols_60s + ["Vac Population Over 60s"]
                 if len(numbers) == 22:
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
-                elif len(numbers) == 15:  # 2022-03-27
+                elif len(numbers) in [15, 14]:  # 2022-03-27 # 2022-02-06
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers3 = numbers2
                     if "ในกลุ่มบุคลำกรทำงกำรแพทย์และสำธำรณสุข" in page:
                         cols = vaccols_medical + ["Vac Population Medical Staff"]
@@ -538,7 +543,7 @@ def vaccination_tables(df, _, page, file):
                 # Disease
                 if len(numbers) == 22:
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = numbers3
-                elif len(numbers) == 15:
+                elif len(numbers) in [15, 14]:
                     pop, d1, d1p, d2, d2p, d3, d3p, *numbers4 = [np.nan] * 7
                 else:
                     pop, d1, d1p, d2, d2p, *numbers4 = numbers3
@@ -627,7 +632,7 @@ def vaccination_reports_files2(check=True,
     years = web_links(base1, ext=None, match=hasyear, check=check)
     months = (link for y in years for link in web_links(y, ext=None, match=hasyear, check=check))
     links1 = (link for f in months for link in web_links(f, ext=".pdf", check=check) if (
-        date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link, *['Wk', "Week"])))
+        date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(3, 12)]
