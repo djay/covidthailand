@@ -694,6 +694,10 @@ def vaccination_reports():
             # if not missing_data.empty:
             logger.warning("{} Dropping table: alloc doesn't match prov", date)
             continue
+        elif date in [d("2022-02-06")]:
+            # TODO: how to fix this?
+            logger.warning("{} Dropping table: missing headers on extra pages", date)
+            continue
         else:
             # TODO: 2022-03-27: work out why only 76 prov
             assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27")]
