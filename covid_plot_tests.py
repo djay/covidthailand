@@ -52,8 +52,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Tests Public',
         'Tested PUI',
         'Tested PUI Walkin Public',
-        'Tests ATK Proactive'
-        'Tests ATK'
+        'Tests ATK Proactive',
+        'Tests ATK',
     ]
     legends = [
         'PCR Tests',
