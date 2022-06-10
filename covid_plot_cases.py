@@ -191,7 +191,8 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     today = df['Cases'].index.max()
     est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
-    est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
+    # est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
+    # est_cases['Estimated Report Cases (IHME)'] = ihme['cases_mean'].loc[:today]
     est_cases['Reported Cases'] = df['Cases']
     est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
     pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
@@ -203,7 +204,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               title='Estimated Daily Infections - IHME Model - Thailand',
               png_prefix='cases_est_ihme', cols_subset=list(est_cases.columns),
               legends=list(est_cases.columns),
-              ma_days=None,
+              ma_days=7,
               clean_end=False,
               actuals=list(pred_cases.columns),
               kind='line', stacked=False, percent_fig=False,
