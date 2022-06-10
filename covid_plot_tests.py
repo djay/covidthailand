@@ -142,9 +142,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
     df['Cases per PUI3'] = df['Cases'].divide(df['Tested PUI']) / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
-    df['Postive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
-    df['Postive Rate ATK'] = df['Pos ATK'] / df['Tests ATK'] * 100
-    df['Postive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK Proactive']) / \
+    df['Positive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
+    df['Positive Rate ATK'] = df['Pos ATK'] / df['Tests ATK'] * 100
+    df['Positive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK Proactive']) / \
         (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
     df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
@@ -157,8 +157,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Positivity Cases/Tests',
         # 'Cases per PUI3',
         # 'Positivity Walkins/PUI3',
-        'Postive Rate ATK Proactive',
-        'Postive Rate PCR + ATK',
+        'Positive Rate ATK Proactive',
+        'Positive Rate PCR + ATK',
         'Positive Rate Dash %',
         'infection_detection',
     ]
