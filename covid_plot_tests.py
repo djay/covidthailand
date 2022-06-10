@@ -144,8 +144,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
     df['Positive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
     df['Positive Rate ATK'] = df['Pos ATK'] / df['Tests ATK'] * 100
-    df['Positive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK Proactive']) / \
-        (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
+    df['Positive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK']) / \
+        (df['Tests ATK Proactive'] + df['Tests ATK']) * 100
     df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
     ihme = ihme_dataset(check=False)
@@ -169,7 +169,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         # 'Confirmed Cases per PUI*3',
         # 'Walkin Cases per PUI*3',
         'Positive Results per ATK Test (NHSO provided)',
-        'Positive Results per PCR + ATK Test (NHSO provided)',
+        'Positive Results per PCR/ATK Test (DMSc)',
         'Positive Rate from DDC Dashboard',
         'Estimated Cases per Infection (IHME detection rate)',
     ]
