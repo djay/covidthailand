@@ -166,7 +166,7 @@ def briefing_case_types(date, pages, url):
         # walkins = get_next_number(text.split("รายผู้ที่เดิน")[0], "ในประเทศ", until="ราย")
         # quarantine = get_next_number(text, "ต่างประเทศ", until="ราย", default=0)
         if date == d("2021-05-17"):
-            numbers, rest = get_next_numbers(text.split("อาการหนัก")[1], "ในประเทศ")
+            numbers, rest = get_next_numbers(text.split("อาการหนัก")[1], "ในประเทศ", dash_as_zero=True)
             local, cases, imported, prison, walkins, proactive, imported2, prison2, *_ = numbers
             assert local == walkins + proactive
             assert imported == imported2
@@ -188,7 +188,7 @@ def briefing_case_types(date, pages, url):
                 default=0
             )
             imported = ports + quarantine
-            prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย")
+            prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย", dash_as_zero=True)
             if date == d("2022-03-22"):
                 # order got changed around
                 prison = 44
@@ -198,7 +198,8 @@ def briefing_case_types(date, pages, url):
                 # cases == domestic
                 cases = cases2
                 assert cases == domestic + imported + prison
-        if date not in [d("2021-11-01")]:
+        if date not in [d("2021-11-01"), d("2022-06-10")]:
+            # 2022-06-10: either prison or imported is 0 but which?
             assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
