@@ -174,7 +174,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Estimated Cases per Infection (IHME detection rate)',
     ]
     plot_area(df=df,
-              title='Positive Rate (PCR + ATK Proactive) - Thailand',
+              title='Positive Rate - Thailand',
               legends=legends,
               highlight=['Positivity Public+Private'],
               png_prefix='positivity', cols_subset=cols,
