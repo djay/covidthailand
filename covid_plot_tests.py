@@ -29,14 +29,24 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Tests Plots ==========')
 
     # Vartiants
-    raw = import_csv("variants", index=["End"], date_cols=["End"])
-    variants = raw.fillna(0)
-    variants["BA.2 (Omicron BA.2)"] = variants[(c for c in variants.columns if "BA.2" in c)].sum(axis=1)
-    variants = variants[(c for c in variants.columns if "(" in c)]
-    variants["BA.1 (Omicron BA.1)"] = variants['B.1.1.529 (Omicron'] - variants["BA.2 (Omicron BA.2)"]
-    variants = variants.drop(columns=['B.1.1.529 (Omicron'])
-    cols = variants.columns.to_list()
+    # sequence data have less of but more detail
+    seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
+    seq = seq.fillna(0)
+    # Group into major categories, BA.2 vs BA.1
+    seq["BA.2 (Omicron BA.2)"] = seq[(c for c in seq.columns if "BA.2" in c)].sum(axis=1)
+    seq["BA.1 (Omicron BA.1)"] = seq[(c for c in seq.columns if "BA.1" in c)].sum(axis=1)
+    # TODO: others?
+    seq = seq[(c for c in seq.columns if "(" in c)]
+    seq = seq.apply(lambda x: x / x.sum(), axis=1)
+
+    variants = import_csv("variants", index=["End"], date_cols=["End"])
+    variants = variants.fillna(0)
+    variants = variants.rename(columns={'B.1.1.529 (Omicron': 'BA.1 (Omicron BA.1)'})
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
+    # fill in leftover dates with SNP genotyping data (major varient types)
+    variants = seq.combine_first(variants)
+
+    cols = variants.columns.to_list()
     variants = variants.reindex(pd.date_range(variants.index.min(), variants.index.max(), freq='D')).interpolate()
     variants['Cases'] = df['Cases']
     variants = (variants[cols].multiply(variants['Cases'], axis=0))

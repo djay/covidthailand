@@ -296,11 +296,11 @@ def get_variants_plot_pdf(file, page, page_num):
     return bangkok
 
 
-def get_variant_lineage_table(file, page, page_num):
+def get_variant_sequenced_table(file, page, page_num):
     if "Prevalence of Pangolin lineages" not in page:
         return pd.DataFrame()
     df = camelot_cache(file, page_num + 1, process_background=False)
-    if df[0].iloc[-1] == "Total Sequences":
+    if "Total" in df[0].iloc[-1]:
         # Vertical
         df = df.transpose()
     # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
@@ -347,7 +347,7 @@ def get_variant_reports():
         nat = nat.iloc[:, 8:12]
         break
 
-    lineage = pd.DataFrame()
+    sequenced = pd.DataFrame()
     for file, dl in get_variant_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
@@ -364,11 +364,12 @@ def get_variant_reports():
                 # TODO: date ranges don't line up so can't do this
                 bangkok.index = nat.index[:len(bangkok.index)]
             area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
-            lineage = lineage.combine_first(get_variant_lineage_table(file, page, page_num))
+            sequenced = sequenced.combine_first(get_variant_sequenced_table(file, page, page_num))
 
-    nat = lineage.combine_first(nat)
+    # nat = sequenced.combine_first(nat) # Not the same thing. Sequenced is a subset
     export(nat, "variants")
     export(area, "variants_by_area")
+    export(sequenced, "variants_sequenced")
 
     return nat
 
