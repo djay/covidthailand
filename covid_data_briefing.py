@@ -198,8 +198,8 @@ def briefing_case_types(date, pages, url):
                 # cases == domestic
                 cases = cases2
                 assert cases == domestic + imported + prison
-        if date not in [d("2021-11-01"), d("2022-06-10")]:
-            # 2022-06-10: either prison or imported is 0 but which?
+        if date not in [d("2021-11-01"), d("2022-06-10"), d("2022-06-14")]:
+            # 2022-06-10,14: mixup prison and imported but which is right?
             assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
