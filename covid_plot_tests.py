@@ -1,9 +1,10 @@
+import io
 import os
-import re
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from dateutil.parser import parse as d
 
 import utils_thai
 from covid_data_api import ihme_dataset
@@ -24,6 +25,31 @@ from utils_thai import FIRST_AREAS
 from utils_thai import join_provinces
 from utils_thai import trend_table
 
+est_variants = """
+week,BA.1 (Omicron BA.1),BA.2 (Omicron BA.2)
+100, 100, 0
+101, 100, 0
+102, 100, 0
+103, 100, 0
+104, 100, 0
+105, 97, 3
+106, 97, 3
+107, 95, 5
+108, 92, 8
+109, 90, 10
+110, 80, 20
+111, 75, 25
+112, 70, 30
+113, 45, 55
+114, 40, 60
+115, 16, 83
+116, 15, 85
+117, 14, 86
+118, 8, 92
+119, 4, 96
+120, 3, 97
+"""
+
 
 def save_tests_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Tests Plots ==========')
@@ -39,10 +65,21 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = seq[(c for c in seq.columns if "(" in c)]
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
 
+    # add in manual values
+    mseq = pd.read_csv(io.StringIO(est_variants))
+    mseq['End'] = (mseq['week'] * 7).apply(pd.DateOffset) + d("2019-12-27")
+    mseq = mseq.set_index("End").drop(columns=["week"])
+    mseq = mseq / 100
+    seq = seq.combine_first(mseq)
+
     variants = import_csv("variants", index=["End"], date_cols=["End"])
     variants = variants.fillna(0)
     variants = variants.rename(columns={'B.1.1.529 (Omicron': 'BA.1 (Omicron BA.1)'})
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
+
+    # seq is all omicron variants
+    seq = seq.multiply(variants["BA.1 (Omicron BA.1)"], axis=0)
+
     # fill in leftover dates with SNP genotyping data (major varient types)
     variants = seq.combine_first(variants)
 
