@@ -80,6 +80,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # seq is all omicron variants
     seq = seq.multiply(variants["BA.1 (Omicron BA.1)"], axis=0)
 
+    # TODO: missing seq data results in all BA.1. so either need a other omicron or nan data after date we are sure its not all BA1
+    variants["2021-12-24":]['BA.1 (Omicron BA.1)'] = np.nan
+
     # fill in leftover dates with SNP genotyping data (major varient types)
     variants = seq.combine_first(variants)
 
