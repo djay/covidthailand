@@ -326,10 +326,10 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
                 yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=5):
     """if check is None, then always download"""
     s = requests.Session()
-    fix_timeouts(s)
+    fix_timeouts(s, timeout)
     i = 0
     for url in urls:
         file = filenamer(url, strip_version)
@@ -340,7 +340,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=2)
+                r = s.head(url, timeout=timeout)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")
@@ -365,7 +365,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             try:
                 # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
-                r = s.get(url, timeout=5, stream=True, headers=resume_header, allow_redirects=True)
+                r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True)
             except (Timeout, ConnectionError) as e:
                 err = str(e)
                 r = None
