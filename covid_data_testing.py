@@ -5,6 +5,7 @@ import time
 
 import pandas as pd
 import requests
+from dateutil.parser import parse as d
 
 from utils_pandas import daterange
 from utils_pandas import export
@@ -312,6 +313,31 @@ def get_variants_plot_pdf(file, page, page_num):
     return bangkok
 
 
+def get_variant_sequenced_table(file, page, page_num):
+    if "Prevalence of Pangolin lineages" not in page:
+        return pd.DataFrame()
+    df = camelot_cache(file, page_num + 1, process_background=False)
+    if "Total" in df[0].iloc[-1]:
+        # Vertical
+        df = df.transpose()
+    # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
+    df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
+    df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
+    # Some columns get combined. e.g.
+    df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
+    df.columns = df.iloc[0]
+    df = df.iloc[1:]
+    df["Lineage"] = pd.to_numeric(df["Lineage"].str.replace("w", ""))
+    df['End'] = (df['Lineage'] * 7).apply(pd.DateOffset) + d("2019-12-27")
+    df = df.set_index("End")
+    df = df.drop(columns=["Total Sequences", "Lineage"])
+    # TODO: Ensure Other is always counted in rest of numbers
+    df = df.drop(columns=[c for c in df.columns if "Other" in c])
+    df = df.apply(pd.to_numeric)
+    # TODO: replace weeks with dates
+    return df
+
+
 def get_variant_reports():
     # TODO: historical variant data 2021 is in https://tncn.dmsc.moph.go.th/
 
@@ -338,6 +364,7 @@ def get_variant_reports():
         nat = nat.iloc[:, 8:12]
         break
 
+    sequenced = pd.DataFrame()
     for file, dl in get_variant_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
@@ -353,11 +380,13 @@ def get_variant_reports():
                 # dates from pdf too hard to parse so assume as as xslx
                 # TODO: date ranges don't line up so can't do this
                 bangkok.index = nat.index[:len(bangkok.index)]
-            by_area = get_variants_by_area_pdf(file, page, page_num)
-            area = area.combine_first(by_area)
+            area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
+            sequenced = sequenced.combine_first(get_variant_sequenced_table(file, page, page_num))
 
+    # nat = sequenced.combine_first(nat) # Not the same thing. Sequenced is a subset
     export(nat, "variants")
     export(area, "variants_by_area")
+    export(sequenced, "variants_sequenced")
 
     return nat
 

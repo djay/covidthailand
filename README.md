@@ -132,7 +132,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - see [Ages of confirmed cases 2020-2021]((https://practical-ritchie-cca141.netlify.app/outputs/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Cases by Variant (Estimated mentifrom Surviellance)
+## Cases by Variant (Extrapolated from Surviellance)
 
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
 
