@@ -122,13 +122,15 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     cols = [
         'Tests XLS',
+        'Tests ATK',
         'Tests Public',
         'Tested PUI',
         'Tested PUI Walkin Public',
-        'Tests ATK Proactive'
+        'Tests ATK Proactive',
     ]
     legends = [
         'PCR Tests',
+        'ATK Tests (DMSC)',
         'PCR Tests (Public Hospitals)',
         'Persons Under Investigation (PUI)',
         'Persons Under Investigation (Public Hospitals)',
@@ -213,9 +215,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
     df['Cases per PUI3'] = df['Cases'].divide(df['Tested PUI']) / 3.0 * 100
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
-    df['Postive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
-    df['Postive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK Proactive']) / \
-        (df['Tests ATK Proactive'] + df['Tests ATK Proactive']) * 100
+    df['Positive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
+    df['Positive Rate ATK'] = df['Pos ATK'] / df['Tests ATK'] * 100
+    df['Positive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK']) / \
+        (df['Tests ATK Proactive'] + df['Tests ATK']) * 100
     df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
     ihme = ihme_dataset(check=False)
@@ -223,26 +226,28 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     cols = [
         'Positivity Public+Private',
+        'Positive Rate ATK',
         'Positivity Cases/Tests',
         # 'Cases per PUI3',
         # 'Positivity Walkins/PUI3',
-        'Postive Rate ATK Proactive',
-        'Postive Rate PCR + ATK',
+        'Positive Rate ATK Proactive',
+        'Positive Rate PCR + ATK',
         'Positive Rate Dash %',
         'infection_detection',
     ]
     legends = [
         'Positive Results per PCR Test (Positive Rate)',
+        'Positive Results per ATK Test (Positive Rate)',
         'Confirmed Cases per PCR Test',
         # 'Confirmed Cases per PUI*3',
         # 'Walkin Cases per PUI*3',
         'Positive Results per ATK Test (NHSO provided)',
-        'Positive Results per PCR + ATK Test (NHSO provided)',
+        'Positive Results per PCR/ATK Test (DMSc)',
         'Positive Rate from DDC Dashboard',
         'Estimated Cases per Infection (IHME detection rate)',
     ]
     plot_area(df=df,
-              title='Positive Rate (PCR + ATK Proactive) - Thailand',
+              title='Positive Rate - Thailand',
               legends=legends,
               highlight=['Positivity Public+Private'],
               png_prefix='positivity', cols_subset=cols,
@@ -347,6 +352,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Cases',
         'Cases Walkin',
         'Pos XLS',
+        'Pos ATK',
         # 'Pos Public',
         'ATK',
         'Pos ATK Proactive',
@@ -355,6 +361,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Confirmed Cases',
         'Confirmed Walk-in Cases',
         'Positive PCR Test Results',
+        'Positive ATK Test Results (DMSC)',
         #    'Positive PCR Test Results (Public)',
         'Registered ATK Probable Case (Home Isolation)',
         'Positive Proactive ATK Test Results (NHSO provided)',
