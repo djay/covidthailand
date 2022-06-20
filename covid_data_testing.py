@@ -1,8 +1,8 @@
 import datetime
 import os
 import re
-import time
 
+import numpy as np
 import pandas as pd
 import requests
 from dateutil.parser import parse as d
@@ -97,14 +97,17 @@ def get_tests_by_day():
     def from_reports():
         df = pd.DataFrame()
         files = ""
-        for file, dl in get_test_files(ext="xlsx"):
+        missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
+        for file, dl in list(get_test_files(ext="xlsx")) + list(get_test_files(ext=missing)):
             dl()
             tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
             if "ATK" in file:
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
             else:
                 tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
-            tests.dropna(how="any", inplace=True)  # get rid of totals row
+                tests["Tests ATK"] = np.nan
+                tests["Pos ATK"] = np.nan
+            tests = tests.drop(tests[tests['Date'].isna()].index)  # get rid of totals row
             tests = tests.iloc[1:]  # Get rid of first row with unspecified data
             tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
             tests = tests.set_index("Date")
@@ -327,14 +330,16 @@ def get_variant_sequenced_table(file, page, page_num):
     df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
     df.columns = df.iloc[0]
     df = df.iloc[1:]
-    df["Lineage"] = pd.to_numeric(df["Lineage"].str.replace("w", ""))
-    df['End'] = (df['Lineage'] * 7).apply(pd.DateOffset) + d("2019-12-27")
+    # Convert week number to a date
+    df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
+    df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
     df = df.set_index("End")
     df = df.drop(columns=["Total Sequences", "Lineage"])
     # TODO: Ensure Other is always counted in rest of numbers
     df = df.drop(columns=[c for c in df.columns if "Other" in c])
     df = df.apply(pd.to_numeric)
-    # TODO: replace weeks with dates
+    # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
+    df = df.loc[:, ~df.columns.duplicated()].copy()
     return df
 
 
@@ -393,5 +398,5 @@ def get_variant_reports():
 
 if __name__ == '__main__':
     df_daily = get_tests_by_day()
-    df = get_test_reports()
     variants = get_variant_reports()
+    df = get_test_reports()
