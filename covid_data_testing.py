@@ -1,7 +1,6 @@
 import datetime
 import os
 import re
-import time
 
 import pandas as pd
 import requests
@@ -327,14 +326,16 @@ def get_variant_sequenced_table(file, page, page_num):
     df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
     df.columns = df.iloc[0]
     df = df.iloc[1:]
-    df["Lineage"] = pd.to_numeric(df["Lineage"].str.replace("w", ""))
-    df['End'] = (df['Lineage'] * 7).apply(pd.DateOffset) + d("2019-12-27")
+    # Convert week number to a date
+    df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
+    df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
     df = df.set_index("End")
     df = df.drop(columns=["Total Sequences", "Lineage"])
     # TODO: Ensure Other is always counted in rest of numbers
     df = df.drop(columns=[c for c in df.columns if "Other" in c])
     df = df.apply(pd.to_numeric)
-    # TODO: replace weeks with dates
+    # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
+    df = df.loc[:, ~df.columns.duplicated()].copy()
     return df
 
 
@@ -392,6 +393,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
-    variants = get_variant_reports()
