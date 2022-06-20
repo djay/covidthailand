@@ -2,6 +2,7 @@ import datetime
 import os
 import re
 
+import numpy as np
 import pandas as pd
 import requests
 from dateutil.parser import parse as d
@@ -103,6 +104,9 @@ def get_tests_by_day():
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
             else:
                 tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
+                # TODO: get the file overwritten by Thailand_COVID-19_testing_data-update-20220611.xlsx with ATK in it?
+                tests["Tests ATK"] = np.nan
+                tests["Pos ATK"] = np.nan
             tests.dropna(how="any", inplace=True)  # get rid of totals row
             tests = tests.iloc[1:]  # Get rid of first row with unspecified data
             tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
