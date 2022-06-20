@@ -107,7 +107,7 @@ def get_tests_by_day():
                 tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
                 tests["Tests ATK"] = np.nan
                 tests["Pos ATK"] = np.nan
-            tests.dropna(how="any", inplace=True)  # get rid of totals row
+            tests = tests.drop(tests[tests['Date'].isna()].index)  # get rid of totals row
             tests = tests.iloc[1:]  # Get rid of first row with unspecified data
             tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
             tests = tests.set_index("Date")
