@@ -44,7 +44,7 @@ def add_data(data, df):
         idx_names = data.index.names
         if [None] != idx_names:
             data = data.reset_index()
-        data = data.append(df.reset_index()).drop_duplicates()
+        data = pd.concat([data, df.reset_index()]).drop_duplicates()
         if [None] != idx_names:
             data = data.set_index(idx_names)
     return data
