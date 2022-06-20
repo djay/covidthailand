@@ -112,7 +112,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
         "Hypertension", "High Blood Pressure (Hypertension)").replace(
         "Hyperlipidemia", "High Cholesterol (Hyperlipidemia)").replace(
         "Cerebrovascular", "Stroke (Cerebrovascular)") for col in cols]
-    plot_area(df=df[cols].replace(0, np.nan).div(df["Deaths"], axis=0) * 100,
+    plot_area(df=df[cols].div(df["Deaths"].replace(0, np.nan), axis=0) * 100,
               title='% of Covid Deaths - Comorbidities - Thailand',
               legends=legends,
               png_prefix='deaths_comorbidities', cols_subset=cols,
