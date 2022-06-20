@@ -216,6 +216,10 @@ jobs:
         with:
           ruby-version: 2.7.2 # Not needed with a .ruby-version file
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      - name: Make links relative so PRs still work
+        if: ${{ steps.gonetlify.outcome == 'success'  && github.ref != 'refs/heads/main'}}
+        run: |
+          sed -i 's#https://practical-ritchie-cca141\.netlify\.app#.#g' README.md
       - name: Jekyll Build
         if: ${{ steps.gonetlify.outcome == 'success' }}
         run: |
@@ -223,8 +227,6 @@ jobs:
           bundler install --jobs 4 --retry 3
           sed -i 's#!\[.*\](\(.*_.[^\)]*\)\.png)#<a href="\1.svg" target="_black"><object width="100%" type="image/svg+xml" data="\1.svg"><img src="\1.png" /></object></a>#g' README.md
           sed -Ei 's#\[(.*)\](\(.*_.[^\)]*\)\.png)#<a href="\2.svg" target="_black">\1</a>#g' README.md
-          # make links relative so PRs still work
-          sed -i 's#https://practical-ritchie-cca141\.netlify\.app#.#g' README.md
 
           cp *.md docs
           cp -R assets docs/assets
