@@ -558,12 +558,9 @@ def briefing_deaths_summary(text, date, file):
     else:
         deaths_60 = np.nan
     # deaths under 60
-    numbers, rest = get_next_numbers(text, "อายุน้อยกว่า 60", "อายุต่ ากว่า 60",
+    numbers, rest = get_next_numbers(text.replace("\n-", ""), "อายุน้อยกว่า 60", "อายุต่ ากว่า 60",
                                      "อยกว:า 60", return_rest=True, dash_as_zero=True)
     if numbers:
-        if numbers[0] == 0:
-            # dash from bullet point
-            _, *numbers = numbers
         no_comorbid = comorbidity['None']
         comorbidity['None'] = np.nan
         if len(numbers) == 2 and "รคเรื้อรัง" in rest:
