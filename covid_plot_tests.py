@@ -14,6 +14,7 @@ from utils_pandas import import_csv
 from utils_pandas import perc_format
 from utils_pandas import rearrange
 from utils_pandas import topprov
+from utils_scraping import any_in
 from utils_scraping import logger
 from utils_thai import area_crosstab
 from utils_thai import AREA_LEGEND
@@ -61,13 +62,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # Group into major categories, BA.2 vs BA.1
     seq["BA.2 (Omicron BA.2)"] = seq[(c for c in seq.columns if "BA.2" in c)].sum(axis=1)
     seq["BA.1 (Omicron BA.1)"] = seq[(c for c in seq.columns if "BA.1" in c)].sum(axis=1)
+    seq["Other"] = seq[(c for c in seq.columns if not any_in(c, "BA.1", "BA.2"))].sum(axis=1)
     # TODO: others?
     seq = seq[(c for c in seq.columns if "(" in c)]
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
 
     # add in manual values
     mseq = pd.read_csv(io.StringIO(est_variants))
-    mseq['End'] = (mseq['week'] * 7).apply(pd.DateOffset) + d("2019-12-27")
+    mseq['End'] = (mseq['week'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
     mseq = mseq.set_index("End").drop(columns=["week"])
     mseq = mseq / 100
     seq = seq.combine_first(mseq)
