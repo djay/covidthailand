@@ -257,13 +257,8 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="ap
         else:
             return pd.DataFrame()
     logger.info("Importing CSV: {}", path)
-    old = pd.read_csv(path)
-    for c in date_cols:
-        old[c] = pd.to_datetime(old[c])
-    if index:
-        return old.set_index(index)
-    else:
-        return old
+    # TODO: set dtypes when we know its all floats so works faster?
+    return pd.read_csv(path, parse_dates=date_cols, index_col=index)
 
 
 def increasing(col, ma=7):
