@@ -97,14 +97,14 @@ def get_tests_by_day():
     def from_reports():
         df = pd.DataFrame()
         files = ""
-        for file, dl in get_test_files(ext="xlsx"):
+        missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
+        for file, dl in list(get_test_files(ext="xlsx")) + list(get_test_files(ext=missing)):
             dl()
             tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
             if "ATK" in file:
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
             else:
                 tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
-                # TODO: get the file overwritten by Thailand_COVID-19_testing_data-update-20220611.xlsx with ATK in it?
                 tests["Tests ATK"] = np.nan
                 tests["Pos ATK"] = np.nan
             tests.dropna(how="any", inplace=True)  # get rid of totals row
@@ -397,6 +397,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    variants = get_variant_reports()
     df_daily = get_tests_by_day()
+    variants = get_variant_reports()
     df = get_test_reports()
