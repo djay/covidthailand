@@ -10,7 +10,7 @@ python-dateutil
 wheel
 pytwitterscraper
 camelot-py[cv,plot] == 0.8.2
-pandas == 1.2.4  # < 1.3.0 # div bt zero?
+pandas > 1.4.0  # < 1.3.0 # div bt zero?
 numpy
 matplotlib == 3.3.4
 pythainlp

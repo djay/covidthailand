@@ -69,8 +69,8 @@ def get_cases_timelineapi():
     url1 = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all"
     url2 = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all"
     try:
-        _, json1, url = next(web_files(url1, dir="inputs/json", check=False))
-        _, json2, url = next(web_files(url2, dir="inputs/json", check=True))
+        json1, _, url = next(web_files(url1, dir="inputs/json", check=False))
+        json2, _, url = next(web_files(url2, dir="inputs/json", check=True))
     except ConnectionError:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
