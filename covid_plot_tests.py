@@ -73,6 +73,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     mseq = mseq.set_index("End").drop(columns=["week"])
     mseq = mseq / 100
     seq = seq.combine_first(mseq)
+    last_data = seq.index.max()  # Sequence data is behind genotyping. Lets not interpolate past best data we have
 
     variants = import_csv("variants", index=["End"], date_cols=["End"])
     variants = variants.fillna(0)
@@ -89,7 +90,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     variants = seq.combine_first(variants)
 
     cols = variants.columns.to_list()
-    variants = variants.reindex(pd.date_range(variants.index.min(), variants.index.max(), freq='D')).interpolate()
+    variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
     variants['Cases'] = df['Cases']
     variants = (variants[cols].multiply(variants['Cases'], axis=0))
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
