@@ -552,12 +552,14 @@ def briefing_deaths_summary(text, date, file):
 
     # deaths over 60
     if date > d("2021-08-02"):
-        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป|ป\)ข้ึนไป)", return_rest=False)
+        deaths_60 = get_next_number(text, r"60\s*(?:ปีขึ้นไป|ปีข้ึนไป|ป9ขึ้นไป|ปขึ้นไป|ป\)ข้ึนไป)",
+                                    return_rest=False, dash_as_zero=True)
         assert deaths_60 is not None
     else:
         deaths_60 = np.nan
     # deaths under 60
-    numbers, rest = get_next_numbers(text, "อายุน้อยกว่า 60", "อายุต่ ากว่า 60", "อยกว:า 60", return_rest=True)
+    numbers, rest = get_next_numbers(text.replace("\n-", ""), "อายุน้อยกว่า 60", "อายุต่ ากว่า 60",
+                                     "อยกว:า 60", return_rest=True, dash_as_zero=True)
     if numbers:
         no_comorbid = comorbidity['None']
         comorbidity['None'] = np.nan
