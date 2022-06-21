@@ -680,7 +680,7 @@ def briefing_deaths_table(orig, date, all):
     df['gender'] = df['gender'].map(parse_gender)  # TODO: handle misspelling
     df = df.set_index("death_num")
     df = join_provinces(df, "Province")
-    all = all.append(df, verify_integrity=True)
+    all = pd.concat([all, df], verify_integrity=True)
     # parts = [l.get_text() for l in soup.find_all("p")]
     # parts = [l for l in parts if l]
     # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
@@ -842,7 +842,7 @@ def get_cases_by_prov_briefings():
             if date not in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
                 assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
-        deaths = deaths.append(each_death, verify_integrity=True)
+        deaths = pd.concat([deaths, each_death], verify_integrity=True)
         date_prov = date_prov.combine_first(death_by_prov)
         types = types.combine_first(death_sum).combine_first(atk)
 
