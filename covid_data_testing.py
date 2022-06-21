@@ -336,7 +336,7 @@ def get_variant_sequenced_table(file, page, page_num):
     df = df.set_index("End")
     df = df.drop(columns=["Total Sequences", "Lineage"])
     # TODO: Ensure Other is always counted in rest of numbers
-    df = df.drop(columns=[c for c in df.columns if "Other" in c])
+    df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
     df = df.apply(pd.to_numeric)
     # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
     df = df.loc[:, ~df.columns.duplicated()].copy()
@@ -346,7 +346,7 @@ def get_variant_sequenced_table(file, page, page_num):
 def get_variant_reports():
     # TODO: historical variant data 2021 is in https://tncn.dmsc.moph.go.th/
 
-    data = pd.DataFrame()
+    sequenced = pd.DataFrame()
     raw = import_csv("variants", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     area = import_csv("variants_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
 
@@ -369,7 +369,6 @@ def get_variant_reports():
         nat = nat.iloc[:, 8:12]
         break
 
-    sequenced = pd.DataFrame()
     for file, dl in get_variant_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
@@ -397,6 +396,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    df_daily = get_tests_by_day()
     variants = get_variant_reports()
+    df_daily = get_tests_by_day()
     df = get_test_reports()
