@@ -94,7 +94,7 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
             #end = max([end, df.index.max()])
             end = df.index.max()
             assert date is None or end <= date, f"getting {date} found {end}"
-            all_days = pd.date_range(start, end, name="Date", normalize=True, closed=None)
+            all_days = pd.date_range(start, end, name="Date", normalize=True, inclusive="both")
             default = [defaults.get(c, defaults.get("")) if defaults else 0.0 for c in df.columns]
             try:
                 df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
