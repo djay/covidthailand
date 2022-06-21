@@ -680,7 +680,7 @@ def briefing_deaths_table(orig, date, all):
     df['gender'] = df['gender'].map(parse_gender)  # TODO: handle misspelling
     df = df.set_index("death_num")
     df = join_provinces(df, "Province")
-    all = all.append(df, verify_integrity=True)
+    all = pd.concat([all, df], verify_integrity=True)
     # parts = [l.get_text() for l in soup.find_all("p")]
     # parts = [l for l in parts if l]
     # preamble, *tables = split(parts, re.compile("ปัจจัยเสี่ยงการ").search)
