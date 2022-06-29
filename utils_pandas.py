@@ -38,7 +38,7 @@ def spread_date_range(start, end, row, columns):
 def add_data(data, df):
     "Appends while dropping any duplicate rows"
     try:
-        data = data.append(df, verify_integrity=True)
+        data = pd.concat([data, df], verify_integrity=True)
     except ValueError:
         logger.info('detected duplicates; dropping only the duplicate rows')
         idx_names = data.index.names

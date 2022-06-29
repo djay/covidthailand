@@ -74,7 +74,7 @@ def get_cases_timelineapi():
     except ConnectionError:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
-    data = pd.read_json(json1).append(pd.read_json(json2))
+    data = pd.concat([pd.read_json(json1), pd.read_json(json2)])
     data['Date'] = pd.to_datetime(data['txn_date'])
     data = data.set_index("Date")
     data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
