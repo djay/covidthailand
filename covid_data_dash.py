@@ -120,12 +120,12 @@ def dash_daily():
                 "ATTR(txn_date)-alias": "Date",
             },
             D_NewTL={
-                "SUM(case_new)-value": "Cases",
-                "DAY(txn_date)-value": "Date"
+                "SUM(Case New)-value": "Cases",
+                "DAY(Txn Date)-value": "Date"
             },
             D_DeathTL={
-                "SUM(death_new)-value": "Deaths",
-                "DAY(txn_date)-value": "Date"
+                "SUM(Death New)-value": "Deaths",
+                "DAY(Txn Date)-value": "Date"
             },
             D_Vac_Stack={
                 "DAY(txn_date)-value": "Date",
@@ -141,8 +141,8 @@ def dash_daily():
             D_HICI="Hospitalized Field HICI",
             D_HFieldOth="Hospitalized Field Other",
             D_RecovL={
-                "DAY(txn_date)-value": "Date",
-                "SUM(recovered_new)-value": "Recovered"
+                "DAY(Txn Date)-value": "Date",
+                "SUM(Recovered New)-value": "Recovered"
             }
 
         )
@@ -151,7 +151,8 @@ def dash_daily():
             break
         last_update = wb.getWorksheet("D_UpdateTime").data
         if not last_update.empty:
-            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            last_update = pd.to_datetime(
+                last_update['max_update_date-alias'].str.replace("2565", "2022"), dayfirst=False).iloc[0]
             if last_update.normalize() < row.index.max():
                 # We got todays data too early
                 continue
