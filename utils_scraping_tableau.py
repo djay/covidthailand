@@ -67,11 +67,11 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
             # if it's not a single value can pass in mapping of cols
             df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
             try:
-                df['Date'] = pd.to_datetime(df['Date'], dayfirst=True).dt.normalize()
+                df['Date'] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
             except pd.errors.OutOfBoundsDatetime:
                 # Could be a Thai year. Hack to convert
                 df['Date'] = df['Date'].str.replace("2564", "2021").str.replace("2565", "2022")
-                df['Date'] = pd.to_datetime(df['Date'], dayfirst=True).dt.normalize()
+                df['Date'] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
             # if one mapping is dict then do pivot
             pivot = [(k, v) for k, v in col.items() if type(v) != str]
             if pivot:

@@ -120,12 +120,12 @@ def dash_daily():
                 "ATTR(txn_date)-alias": "Date",
             },
             D_NewTL={
-                "SUM(Case New)-value": "Cases",
-                "DAY(Txn Date)-value": "Date"
+                "SUM(case_new)-value": "Cases",
+                "DAY(txn_date)-value": "Date"
             },
             D_DeathTL={
-                "SUM(Death New)-value": "Deaths",
-                "DAY(Txn Date)-value": "Date"
+                "SUM(death_new)-value": "Deaths",
+                "DAY(txn_date)-value": "Date"
             },
             D_Vac_Stack={
                 "DAY(txn_date)-value": "Date",
@@ -141,8 +141,8 @@ def dash_daily():
             D_HICI="Hospitalized Field HICI",
             D_HFieldOth="Hospitalized Field Other",
             D_RecovL={
-                "DAY(Txn Date)-value": "Date",
-                "SUM(Recovered New)-value": "Recovered"
+                "DAY(txn_date)-value": "Date",
+                "SUM(recovered_new)-value": "Recovered"
             }
 
         )
@@ -428,7 +428,9 @@ def skip_valid(df, idx_value, allow_na={}):
             return True
 
         min_val, *max_val = mins
-        if min_val > val:
+        if type(val) == str:
+            return False
+        elif min_val > val:
             return False
         elif max_val and val > max_val[0]:
             return False
