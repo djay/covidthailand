@@ -346,6 +346,13 @@ def get_case_details_api():
     # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
     data = []
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
+    # First check api is working ok
+    r = s.get(url, timeout=25)
+    pagedata = json.loads(r.content)
+    page = pagedata['data']
+    last_page = pagedata['meta']['last_page']
+    total = pagedata['meta']['total']
+
     chunk = 5000
     pagenum = math.floor((len(cases) - init_cases_len) / chunk)
     pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
@@ -353,7 +360,6 @@ def get_case_details_api():
     pagenum += 1  # pages start from 1
     page = []
     retries = 3
-    last_page = np.nan
     while not (pagenum > last_page):
         # if len(data) >= 500000:
         #     break
@@ -367,11 +373,7 @@ def get_case_details_api():
             else:
                 retries -= 1
                 continue
-        pagedata = json.loads(r.content)
-        page = pagedata['data']
-        last_page = pagedata['meta']['last_page']
         assert last_page >= pagenum
-        total = pagedata['meta']['total']
         data.extend(page)
         print(".", end="")
         pagenum += 1
