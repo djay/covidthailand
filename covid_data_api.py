@@ -373,6 +373,8 @@ def get_case_details_api():
             else:
                 retries -= 1
                 continue
+        pagedata = json.loads(r.content)
+        page = pagedata['data']
         assert last_page >= pagenum
         data.extend(page)
         print(".", end="")
