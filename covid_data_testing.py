@@ -278,7 +278,8 @@ def get_variants_by_area_pdf(file, page, page_num):
     if "frequency distribution" not in page:
         return pd.DataFrame()
     df = camelot_cache(file, page_num + 1, process_background=False)
-    assert len(df.columns) == 13
+    if len(df.columns) != 13:
+        return pd.DataFrame()  # TODO: parse new table that includes BA4/5 probables
     assert len(df) == 17
     week = df[[0, 2, 5, 8, 11]]  # only want this week not whole year
     # variant names
@@ -335,7 +336,7 @@ def get_variant_sequenced_table(file, page, page_num):
     df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
     df = df.set_index("End")
     df = df.drop(columns=["Total Sequences", "Lineage"])
-    # TODO: Ensure Other is always counted in rest of numbers
+    # TODO: Ensure Other is always counted in rest of numbers. so far seems to
     df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
     df = df.apply(pd.to_numeric)
     # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
@@ -385,7 +386,10 @@ def get_variant_reports():
                 # TODO: date ranges don't line up so can't do this
                 bangkok.index = nat.index[:len(bangkok.index)]
             area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
-            sequenced = sequenced.combine_first(get_variant_sequenced_table(file, page, page_num))
+            seq_page = get_variant_sequenced_table(file, page, page_num)
+            # Important we take later pages as priority so that "Other" is the lowest value
+            # TODO: check that newer reports don't correct data from older weeks?
+            sequenced = seq_page.combine_first(sequenced)
 
     # nat = sequenced.combine_first(nat) # Not the same thing. Sequenced is a subset
     export(nat, "variants")
