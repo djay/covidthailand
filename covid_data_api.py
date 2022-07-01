@@ -352,15 +352,20 @@ def get_case_details_api():
     page = pagedata['data']
     last_page = pagedata['meta']['last_page']
     total = pagedata['meta']['total']
+    chunk = pagedata['meta']['per_page']
 
-    chunk = 5000
-    pagenum = math.floor((len(cases) - init_cases_len) / chunk)
-    pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
-    cases = cases.iloc[:pagenum * chunk + init_cases_len]
-    pagenum += 1  # pages start from 1
+    #pagenum = math.floor((len(cases) - init_cases_len) / chunk)
+    #pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
+    #cases = cases.iloc[:pagenum * chunk + init_cases_len]
+    pagenum = last_page
     page = []
     retries = 3
-    while not (pagenum > last_page):
+    # Because there is no unique case number to match up we will work backwards
+    # until we get to the start of the last date we have, or where update date is before our last
+    # update date
+    target_date = cases['Date'].max()
+    last_date = None
+    while last_date is None or last_date >= target_date:
         # if len(data) >= 500000:
         #     break
         try:
@@ -374,24 +379,31 @@ def get_case_details_api():
                 retries -= 1
                 continue
         pagedata = json.loads(r.content)
-        page = pagedata['data']
-        assert last_page >= pagenum
-        data.extend(page)
+        data = pagedata['data'] + data  # TODO: might be bit slow
+        last_date = d(pagedata['data'][0]['txn_date'])
+        last_update = d(pagedata['data'][0]['update_date'])
+        # TODO: if last_update is later than what we have in our data then should keep
+        # going back
+        # page = pagedata['data']
+        # assert last_page >= pagenum
         print(".", end="")
-        pagenum += 1
+        pagenum -= 1
+
     df = pd.DataFrame(data)
     df['Date'] = pd.to_datetime(df['txn_date'])
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
+
+    # Get rid of last partial day from cases
+    cases = cases[cases['Date'] < target_date]
+
     assert df.iloc[0]['Date'] >= cases.iloc[-1]["Date"]
     assert df.iloc[0]['update_date'] >= cases.iloc[-1]["update_date"]
-    assert total == len(cases) - init_cases_len + len(df)
-    # assert last_page == pagenum
-    # TODO: should probably store the page num with the data so match it up via that
+    # assert total == len(cases) - init_cases_len + len(df)
     df = cleanup_cases(df)
     cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
-    assert total == len(cases) - init_cases_len
+    # assert total == len(cases) - init_cases_len
     # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
 
@@ -592,10 +604,10 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     ihme_dataset()
     timeline = get_cases_timelineapi()
     timeline_prov = timeline_by_province()
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
