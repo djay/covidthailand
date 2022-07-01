@@ -27,7 +27,7 @@ from utils_thai import join_provinces
 from utils_thai import trend_table
 
 est_variants = """
-week,BA.1 (Omicron BA.1),BA.2 (Omicron BA.2)
+week,BA.1 (Omicron),BA.2 (Omicron)
 100, 100, 0
 101, 100, 0
 102, 100, 0
@@ -60,11 +60,19 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
     seq = seq.fillna(0)
     # Group into major categories, BA.2 vs BA.1
-    seq["BA.2 (Omicron BA.2)"] = seq[(c for c in seq.columns if "BA.2" in c)].sum(axis=1)
-    seq["BA.1 (Omicron BA.1)"] = seq[(c for c in seq.columns if "BA.1" in c)].sum(axis=1)
-    seq["Other (?)"] = seq[(c for c in seq.columns if not any_in(c, "BA.1", "BA.2"))].sum(axis=1)
-    # TODO: others?
-    seq = seq[(c for c in seq.columns if "(" in c)]
+    unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
+    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/5", "BA.5": "BA.4/5", "Other": "Other"}
+
+    def group(variant):
+        label = next((label for match, label in groups.items() if match in variant), "Other")
+        return label + " (Omicron)"
+    unstacked['Variant Group'] = unstacked['Variant'].apply(group)
+    seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
+    # seq["BA.2 (Omicron BA.2)"] = seq[(c for c in seq.columns if "BA.2" in c)].sum(axis=1)
+    # seq["BA.1 (Omicron BA.1)"] = seq[(c for c in seq.columns if "BA.1" in c)].sum(axis=1)
+    # seq["Other (?)"] = seq[(c for c in seq.columns if not any_in(c, "BA.1", "BA.2"))].sum(axis=1)
+    # # TODO: others?
+    # seq = seq[(c for c in seq.columns if "(" in c)]
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
 
     # add in manual values
@@ -77,14 +85,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     variants = import_csv("variants", index=["End"], date_cols=["End"])
     variants = variants.fillna(0)
-    variants = variants.rename(columns={'B.1.1.529 (Omicron': 'BA.1 (Omicron BA.1)'})
+    variants = variants.rename(columns={'B.1.1.529 (Omicron': 'BA.1 (Omicron)'})
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
 
     # seq is all omicron variants
-    seq = seq.multiply(variants["BA.1 (Omicron BA.1)"], axis=0)
+    seq = seq.multiply(variants["BA.1 (Omicron)"], axis=0)
 
     # TODO: missing seq data results in all BA.1. so either need a other omicron or nan data after date we are sure its not all BA1
-    variants.loc["2021-12-24":, 'BA.1 (Omicron BA.1)'] = np.nan
+    variants.loc["2021-12-24":, 'BA.1 (Omicron)'] = np.nan
 
     # fill in leftover dates with SNP genotyping data (major varient types)
     variants = seq.combine_first(variants)

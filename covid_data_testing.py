@@ -379,6 +379,7 @@ def get_variant_reports():
         # page 4 pie charts national + bangkok + regional
         # page 5 area chart: weekly national, bangkok, regional
         # page 6 samples submitted GSAID: weekly
+        fileseq = pd.DataFrame()
         for page_num, page in enumerate(pages):
             bangkok = get_variants_plot_pdf(file, page, page_num)
             if not bangkok.empty:
@@ -387,9 +388,10 @@ def get_variant_reports():
                 bangkok.index = nat.index[:len(bangkok.index)]
             area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
             seq_page = get_variant_sequenced_table(file, page, page_num)
-            # Important we take later pages as priority so that "Other" is the lowest value
-            # TODO: check that newer reports don't correct data from older weeks?
-            sequenced = seq_page.combine_first(sequenced)
+            # Important we take later pages as priority so that "Other" is not double counting
+            fileseq = seq_page.combine_first(fileseq)
+        # Later files can update prev reports
+        sequenced = sequenced.combine_first(fileseq)
 
     # nat = sequenced.combine_first(nat) # Not the same thing. Sequenced is a subset
     export(nat, "variants")
