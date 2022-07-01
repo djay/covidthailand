@@ -61,7 +61,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = seq.fillna(0)
     # Group into major categories, BA.2 vs BA.1
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
-    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/5", "BA.5": "BA.4/5", "Other": "Other"}
+    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/BA.5", "BA.5": "BA.4/BA.5", "Other": "Other"}
 
     def group(variant):
         label = next((label for match, label in groups.items() if match in variant), "Other")
@@ -81,11 +81,11 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     mseq = mseq.set_index("End").drop(columns=["week"])
     mseq = mseq / 100
     seq = seq.combine_first(mseq)
-    last_data = seq.index.max()  # Sequence data is behind genotyping. Lets not interpolate past best data we have
+    # last_data = seq.index.max()  # Sequence data is behind genotyping. Lets not interpolate past best data we have
 
     variants = import_csv("variants", index=["End"], date_cols=["End"])
     variants = variants.fillna(0)
-    variants = variants.rename(columns={'B.1.1.529 (Omicron': 'BA.1 (Omicron)'})
+    variants = variants.rename(columns={'B.1.1.529 (Omicron)': 'BA.1 (Omicron)'})
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
 
     # seq is all omicron variants
@@ -96,6 +96,16 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     # fill in leftover dates with SNP genotyping data (major varient types)
     variants = seq.combine_first(variants)
+
+    # There is extra breakdown in the health area data, at least for latest week
+    area = import_csv("variants_by_area", index=["Start", "End"], date_cols=["Start", "End"])
+    area = area.groupby(["Start", "End"]).sum()
+    area = area.reset_index().drop(columns=["Health Area", "Start"]).set_index(
+        "End").rename(columns={"B.1.1.529 (Omicron)": "Other (Omicron)"})
+    area = area.apply(lambda x: x / x.sum(), axis=1)
+    # Omicron didn't get spit out until 2022-06-24 so get rid of the rest
+    variants = variants.combine_first(area["2022-06-24":])
+    last_data = variants['BA.2 (Omicron)'].last_valid_index()
 
     cols = variants.columns.to_list()
     variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()

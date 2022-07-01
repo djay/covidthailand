@@ -279,9 +279,10 @@ def get_variants_by_area_pdf(file, page, page_num):
         return pd.DataFrame()
     df = camelot_cache(file, page_num + 1, process_background=False)
     if len(df.columns) == 13:
-        totals = df[[3, 6, 9, 12]]  # only want this week not whole year
+        totals = df[[2, 5, 8, 11]]  # only want this week not whole year
     elif len(df.columns) == 16:  # 2022-06-24 switched to inc BA4/5
-        totals = df[[1, 2, 3, 6, 9, 12, 15]]
+        totals = df[[1, 2, 3, 5, 8, 11, 14]]
+
     else:
         assert False, "Unknown Area Variant table"
     totals.columns = [v.replace("Potentially ", "").replace("\n", "") for v in df.iloc[1] if v]
@@ -289,17 +290,25 @@ def get_variants_by_area_pdf(file, page, page_num):
     assert len(df) == 17
     totals = totals.iloc[3:16]
 
+    totals = totals.apply(pd.to_numeric)
+
+    if len(totals.columns) == 7:
+        # HACK: Cols are totals not daily. Hack since they are likely 0
+        # TODO: return these seperate and work out diffs in case any were added
+        totals[["B.1.1.7 (Alpha)", "B.1.351 (Beta)", "B.1.617.2 (Delta)"]] = 0
+
     totals["Health Area"] = range(1, 14)
 
     # start, end = find_date_range(page) whole year
     # start, end = find_date_range(df.iloc[2][2])  # e.g. '26 FEB – 04 \nMAR 22'
     date_range = list(df.iloc[2])[-2]  # Last is total, 2nd last is this date range
-    start, end = re.split("(?:–|-)", date_range)
-    end = pd.to_datetime(end)
-    start = pd.to_datetime(f"{start} {end.strftime('%B')} {end.year}", dayfirst=True, errors="coerce")
+    start_txt, end_txt = re.split("(?:–|-)", date_range)
+    end = pd.to_datetime(end_txt)
+    start = pd.to_datetime(f"{start_txt} {end.strftime('%B')} {end.year}", dayfirst=True, errors="coerce")
     if pd.isnull(start):
         # Start includes the month
-        start = pd.to_datetime(f"{start} {end.year}", dayfirst=True, errors="coerce")
+        start = pd.to_datetime(f"{start_txt} {end.year}", dayfirst=True, errors="coerce")
+    assert not pd.isnull(start)
 
     totals["Start"] = start
     totals["End"] = end
@@ -374,6 +383,7 @@ def get_variant_reports():
         nat = nat.set_index("End")
         # There is now 3 lots of numbers. pick the last set?
         nat = nat.iloc[:, 8:12]
+        nat = nat.rename(columns={"B.1617.2 (Delta)": "B.1.617.2 (Delta)", "B.1.1.529 (Omicron": "B.1.1.529 (Omicron)"})
         break
 
     for file, dl in get_variant_files(ext=".pdf"):
@@ -399,7 +409,8 @@ def get_variant_reports():
         # Later files can update prev reports
         sequenced = sequenced.combine_first(fileseq)
 
-    # nat = sequenced.combine_first(nat) # Not the same thing. Sequenced is a subset
+    # TODO: variants_by_area is now totals but we can convert it to weekly if esp if we get the seed totals in the earliest report
+    area_grouped = area.groupby(["Start", "End"]).sum()
     export(nat, "variants")
     export(area, "variants_by_area")
     export(sequenced, "variants_sequenced")
