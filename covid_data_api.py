@@ -382,12 +382,16 @@ def get_case_details_api():
         data = pagedata['data'] + data  # TODO: might be bit slow
         last_date = d(pagedata['data'][0]['txn_date'])
         last_update = d(pagedata['data'][0]['update_date'])
-        # TODO: if last_update is later than what we have in our data then should keep
+        # if last_date < target_date and last_update > cases.iloc[-1]["update_date"]:
+        #     # data has been updated so keep going back further
+        #     target_date = last_date
         # going back
         # page = pagedata['data']
         # assert last_page >= pagenum
         print(".", end="")
         pagenum -= 1
+        if pagenum == 0:
+            break
 
     df = pd.DataFrame(data)
     df['Date'] = pd.to_datetime(df['txn_date'])
@@ -395,8 +399,9 @@ def get_case_details_api():
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
 
-    # Get rid of last partial day from cases
+    # Get rid of last partial day from cases and from the new data
     cases = cases[cases['Date'] < target_date]
+    df = df[df['Date'] >= target_date]
 
     assert df.iloc[0]['Date'] >= cases.iloc[-1]["Date"]
     assert df.iloc[0]['update_date'] >= cases.iloc[-1]["update_date"]
