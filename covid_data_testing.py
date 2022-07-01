@@ -278,26 +278,32 @@ def get_variants_by_area_pdf(file, page, page_num):
     if "frequency distribution" not in page:
         return pd.DataFrame()
     df = camelot_cache(file, page_num + 1, process_background=False)
-    if len(df.columns) != 13:
-        return pd.DataFrame()  # TODO: parse new table that includes BA4/5 probables
+    if len(df.columns) == 13:
+        totals = df[[3, 6, 9, 12]]  # only want this week not whole year
+    elif len(df.columns) == 16:  # 2022-06-24 switched to inc BA4/5
+        totals = df[[1, 2, 3, 6, 9, 12, 15]]
+    else:
+        assert False, "Unknown Area Variant table"
+    totals.columns = [v.replace("Potentially ", "").replace("\n", "") for v in df.iloc[1] if v]
+
     assert len(df) == 17
-    week = df[[0, 2, 5, 8, 11]]  # only want this week not whole year
-    # variant names
-    week.columns = ["Health Area", df.iloc[1][1], df.iloc[1][4], df.iloc[1][7], df.iloc[1][10]]
-    week = week.iloc[3:16]
-    week["Health Area"] = range(1, 14)
+    totals = totals.iloc[3:16]
+
+    totals["Health Area"] = range(1, 14)
 
     # start, end = find_date_range(page) whole year
     # start, end = find_date_range(df.iloc[2][2])  # e.g. '26 FEB – 04 \nMAR 22'
-    start, end = re.split("(?:–|-)", df.iloc[2][2])
+    date_range = list(df.iloc[2])[-2]  # Last is total, 2nd last is this date range
+    start, end = re.split("(?:–|-)", date_range)
     end = pd.to_datetime(end)
-    start = pd.to_datetime(f"{start} {end.month} {end.year}", dayfirst=True, errors="coerce")
+    start = pd.to_datetime(f"{start} {end.strftime('%B')} {end.year}", dayfirst=True, errors="coerce")
     if pd.isnull(start):
+        # Start includes the month
         start = pd.to_datetime(f"{start} {end.year}", dayfirst=True, errors="coerce")
 
-    week["Start"] = start
-    week["End"] = end
-    return week.set_index("Start")
+    totals["Start"] = start
+    totals["End"] = end
+    return totals.set_index("End")
 
 
 def get_variants_plot_pdf(file, page, page_num):
