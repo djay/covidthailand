@@ -1,32 +1,21 @@
-import codecs
 import datetime
 import functools
 import json
-import math
 import os
-import re
 import shutil
-import time
 
-import numpy as np
 import pandas as pd
-from datatable import fread
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from pydantic import NoneBytes
 from requests.exceptions import ConnectionError
 
-import utils_excel
 from utils_pandas import add_data
 from utils_pandas import cut_ages
 from utils_pandas import export
 from utils_pandas import fuzzy_join
 from utils_pandas import import_csv
-from utils_scraping import any_in
 from utils_scraping import logger
-from utils_scraping import read_excel
 from utils_scraping import s
-from utils_scraping import url2filename
 from utils_scraping import web_files
 from utils_thai import DISTRICT_RANGE
 from utils_thai import join_provinces
@@ -572,7 +561,7 @@ def ihme_dataset(check=True):
 def get_ifr():
     # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _, _ = next(web_files(url, dir="inputs/json", check=False), NoneBytes)
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False), None)
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):
