@@ -27,3 +27,4 @@ datatable
 python-crfsuite
 benford_py
 tqdm
+pydantic
