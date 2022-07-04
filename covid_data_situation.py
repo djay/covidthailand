@@ -276,7 +276,7 @@ def get_english_situation_files(check=False):
         "https://ddc.moph.go.th/viralpneumonia/eng/situation_more.php",
         ext=".pdf",
         dir=dir,
-        check=True,
+        check=1,
     )
 
     for count, link in enumerate(links):
@@ -491,7 +491,7 @@ def get_thai_situation_files(check=False):
         "https://ddc.moph.go.th/viralpneumonia/situation_more.php",
         ext=".pdf",
         dir="inputs/situation_th",
-        check=True,
+        check=1,
     )
     count = 0
     for link in links:

@@ -640,15 +640,15 @@ def vaccination_reports_files2(check=True,
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565)")
-    years = web_links(base1, ext=None, match=hasyear, check=check)
-    months = (link for y in years for link in web_links(y, ext=None, match=hasyear, check=check))
-    links1 = (link for f in months for link in web_links(f, ext=".pdf", check=check) if (
+    years = web_links(base1, ext=None, match=hasyear, check=1)
+    months = (link for link in web_links(*years, ext=None, match=hasyear, check=1))
+    links1 = (link for link in web_links(*months, ext=".pdf", check=1) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
-    folders = [base2.format(m=m) for m in range(3, 12)]
-    links2 = (link for f in folders for link in web_links(f, ext=ext, check=check))
-    links = list(links1) + list(reversed(list(links2)))
+    folders = [base2.format(m=m) for m in range(12, 2, -1)]
+    links2 = (link for f in folders for link in web_links(f, ext=ext, check=False))
+    links = list(links1) + list(links2)
     count = 0
     for link in links:
         if "1638863771691.pdf" in link and "Report" in base2:

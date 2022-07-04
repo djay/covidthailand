@@ -318,12 +318,11 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
-    for index_url in index_urls:
-        for file, index, _ in web_files(index_url, dir=dir, check=check, filenamer=filenamer):
-            soup = parse_file(file, html=True, paged=False)
-            links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
-            for link in links:
-                yield link
+    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer):
+        soup = parse_file(file, html=True, paged=False)
+        links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
+        for link in links:
+            yield link
 
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=5):
@@ -396,6 +395,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             logger.opt(raw=True).info("Error downloading: {}: skipping. {}", file, str(e))
                             remove = True
                 logger.opt(raw=True).info("\n")
+                if type(check) == int:
+                    check -= 1  # HACK: using int as Boolean above
             logger.bind(end="\n")
         if remove:
             os.remove(file)  # if we leave it without check it will never get fixed
