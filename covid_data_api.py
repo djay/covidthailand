@@ -13,6 +13,7 @@ import pandas as pd
 from datatable import fread
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
+from pydantic import NoneBytes
 from requests.exceptions import ConnectionError
 
 import utils_excel
@@ -571,7 +572,7 @@ def ihme_dataset(check=True):
 def get_ifr():
     # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False), NoneBytes)
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):

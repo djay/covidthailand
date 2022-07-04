@@ -778,6 +778,7 @@ def briefing_documents(check=True):
     links += [f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1)]
     # for file, text, briefing_url in web_files(*), dir="briefings"):
 
+    check = True
     for link in reversed(list(links)):
         date = file2date(link) if "249764.pdf" not in link else d("2021-07-24")
         if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS):
@@ -785,10 +786,11 @@ def briefing_documents(check=True):
 
         def get_file(link=link):
             try:
-                file, text, url = next(iter(web_files(link, dir="inputs/briefings")))
+                file, text, url = next(iter(web_files(link, dir="inputs/briefings", check=check)))
             except StopIteration:
                 return None
             return file
+        check = False  # Only check first one, assume others never get updated
 
         yield link, date, get_file
 
