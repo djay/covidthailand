@@ -113,14 +113,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     variants = (variants[cols].multiply(variants['Cases'], axis=0))
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
     plot_area(df=variants,
-              title='Covid Cases by Variant - Estimated - Thailand',
+              title='Cases by Major Variant - Interpolated from Sampling - Thailand',
               png_prefix='cases_by_variants', cols_subset=cols,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               # y_formatter=perc_format,
-              footnote="% of variant estimated from random sample, not all cases",
-              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report')
+              footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to cases. Not all cases are tested.",
+              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report (DMSc')
 
     # # matplotlib global settings
     # matplotlib.use('AGG')
