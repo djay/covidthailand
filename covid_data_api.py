@@ -22,6 +22,7 @@ from utils_thai import join_provinces
 from utils_thai import to_thaiyear
 from utils_thai import today
 
+
 #################################
 # Cases Apis
 #################################
@@ -337,7 +338,7 @@ def get_case_details_api():
     data = []
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
     # First check api is working ok
-    r = s.get(url, timeout=25)
+    r = s.get(url, timeout=25, verify=False)
     pagedata = json.loads(r.content)
     page = pagedata['data']
     last_page = pagedata['meta']['last_page']
@@ -359,7 +360,7 @@ def get_case_details_api():
         # if len(data) >= 500000:
         #     break
         try:
-            r = s.get(f"{url}?page={pagenum}", timeout=25)
+            r = s.get(f"{url}?page={pagenum}", timeout=25, verify=False)
         except Exception as e:
             logger.warning("Covid19daily: Error {}", e)
             if retries == 0:

@@ -15,6 +15,7 @@ import dateutil
 import pandas as pd
 import pythainlp
 import requests
+import urllib3
 from bs4 import BeautifulSoup
 from loguru import logger
 from pptx import Presentation
@@ -27,7 +28,7 @@ from tika import config
 from tika import parser
 from webdav3.client import Client
 from xlsx2csv import Xlsx2csv
-
+urllib3.disable_warnings()
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True'
