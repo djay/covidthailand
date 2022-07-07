@@ -125,13 +125,13 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     return res
 
 
-def workbook_iterate(url, **selects):
+def workbook_iterate(url, verify=True, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
     def do_reset(attempt=0):
         if attempt == 3:
             return None
-        ts = tableauscraper.TableauScraper()
+        ts = tableauscraper.TableauScraper(verify=verify)
         try:
             ts.loads(url)
         except Exception as err:

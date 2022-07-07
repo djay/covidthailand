@@ -196,7 +196,7 @@ def dash_ages():
     def range2eng(range):
         return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
-    for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range"):
+    for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range", verify=False):
         age_group = next(iter(idx_value))
         age_group = range2eng(age_group)
         skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
@@ -230,7 +230,7 @@ def dash_trends_prov():
 
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
-    for get_wb, idx_value in workbook_iterate(url, D4_CHART="province"):
+    for get_wb, idx_value in workbook_iterate(url, D4_CHART="province", verify=False):
         province = get_province(next(iter(idx_value)))
         date = str(today().date())
         try:
@@ -455,10 +455,10 @@ def check_dash_ready():
 
 if __name__ == '__main__':
 
+    # This doesn't add any more info since severe cases was a mistake
+    dash_trends_prov_df = dash_trends_prov()
+
+    dash_ages_df = dash_ages()
     # check_dash_ready()
     dash_daily_df = dash_daily()
     dash_by_province_df = dash_by_province()
-    dash_ages_df = dash_ages()
-
-    # This doesn't add any more info since severe cases was a mistake
-    dash_trends_prov_df = dash_trends_prov()
