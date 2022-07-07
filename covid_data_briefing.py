@@ -669,7 +669,7 @@ def briefing_deaths_cells(cells, date, all):
         pd.DataFrame(rows, columns=['death_num', "Date", "gender", "age", "Province", "nationality",
                                     "congenital_disease", "case_history", "risk_factor_sickness",
                                     "risk_factor_death"]).set_index("death_num")
-    return all.append(df, verify_integrity=True)
+    return pd.concat([all, df], verify_integrity=True)
 
 
 def briefing_deaths_table(orig, date, all):
