@@ -414,7 +414,7 @@ def get_variant_reports():
         # older reports include that data so we get the full row
         fileseq = fileseq.iloc[-2:]
         # Later files can update prev reports
-        sequenced = pd.concat([sequenced, fileseq]).reset_index().drop_duplicates(subset="End").set_index("End").set_index()
+        sequenced = pd.concat([sequenced, fileseq]).reset_index().drop_duplicates(subset="End").set_index("End").sort_index()
 
     # TODO: variants_by_area is now totals but we can convert it to weekly if esp if we get the seed totals in the earliest report
     # area_grouped = area.groupby(["Start", "End"]).sum()
