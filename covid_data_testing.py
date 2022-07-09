@@ -356,6 +356,10 @@ def get_variant_sequenced_table(file, page, page_num):
     df = df.apply(pd.to_numeric)
     # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
     df = df.loc[:, ~df.columns.duplicated()].copy()
+    if re.search("Thailand with (.*)sequence data", page).group(1) in ["", "Omicron"]:
+        # first table. Ignore others so no double counted
+        # TODO: need more general method
+        df = df.drop(columns=[c for c in df.columns if "Other" in c])
     return df
 
 
@@ -406,11 +410,14 @@ def get_variant_reports():
             seq_page = get_variant_sequenced_table(file, page, page_num)
             # Important we take later pages as priority so that "Other" is not double counting
             fileseq = seq_page.combine_first(fileseq)
+        # HACK: BA.1 data is from older time periods. Just keep last 2 and let
+        # older reports include that data so we get the full row
+        fileseq = fileseq.iloc[-2:]
         # Later files can update prev reports
-        sequenced = sequenced.combine_first(fileseq)
+        sequenced = pd.concat([sequenced, fileseq]).reset_index().drop_duplicates(subset="End").set_index("End").set_index()
 
     # TODO: variants_by_area is now totals but we can convert it to weekly if esp if we get the seed totals in the earliest report
-    area_grouped = area.groupby(["Start", "End"]).sum()
+    # area_grouped = area.groupby(["Start", "End"]).sum()
     export(nat, "variants")
     export(area, "variants_by_area")
     export(sequenced, "variants_sequenced")
