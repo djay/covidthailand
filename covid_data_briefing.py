@@ -842,6 +842,7 @@ def get_cases_by_prov_briefings():
                 d("2021-02-15"),  # no details of deaths (2)
                 d("2021-02-10"),  # no details of deaths (1)
                 d("2022-01-05"),  # summary is 19 but prov is only 12.
+                d("2022-07-09"),
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
