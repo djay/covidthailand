@@ -647,11 +647,11 @@ def vaccination_reports_files2(check=True,
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(12, 2, -1)]
-    links2 = (link for f in folders for link in web_links(f, ext=ext, check=False))
+    links2 = (link for f in folders for link in reversed(web_links(f, ext=ext, check=False)))
     links = list(links1) + list(links2)
     count = 0
     for link in links:
-        if "1638863771691.pdf" in link and "Report" in base2:
+        if any_in(link, "1638863771691.pdf", '1639206014644.pdf') and "Report" in base2:
             # it's really slides
             continue
 
@@ -709,9 +709,11 @@ def vaccination_reports():
             # TODO: how to fix this?
             logger.warning("{} Dropping table: missing headers on extra pages", date)
             continue
-        else:
+        elif date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10")]:
             # TODO: 2022-03-27: work out why only 76 prov
-            assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10")]
+            pass
+        else:
+            assert len(table) == 77
         vac_prov_reports = vac_prov_reports.combine_first(table)
         if date < d("2021-12-11"):
             # TODO: find days where day is yesterdays and fix them, or fix the check
