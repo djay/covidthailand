@@ -833,7 +833,7 @@ def get_cases_by_prov_briefings():
             vac = vac_briefing_totals(vac, date, file, page, text)
             vac = vac_briefing_groups(vac, date, file, page, text)
 
-        if date > d("2022-03-04") or date in [d("2022-06-22"), d("2022-04-11"), d("2022-03-31")]:
+        if date > d("2022-03-04") and date not in [d("2022-06-22"), d("2022-04-11"), d("2022-03-31")]:
             assert vac.iloc[0]["Vac Group Over 60 1 Cum"] > 0
         types = types.combine_first(vac)
 
