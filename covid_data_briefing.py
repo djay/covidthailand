@@ -215,7 +215,7 @@ def briefing_case_types(date, pages, url):
             field, _ = get_next_number(text, "รพ.สนาม")
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
             hospitalised = num[0]
-            if date in [d("2021-09-04"), d("2022-03-07")]:
+            if date in [d("2021-09-04"), d("2022-03-07"), d("2022-07-10")]:
                 pass
             else:
                 assert hospital + field == hospitalised
@@ -842,11 +842,14 @@ def get_cases_by_prov_briefings():
                 d("2021-02-15"),  # no details of deaths (2)
                 d("2021-02-10"),  # no details of deaths (1)
                 d("2022-01-05"),  # summary is 19 but prov is only 12.
-                d("2022-07-09"),
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            if date not in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
+            if date in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
+                pass
+            elif date >= d("2022-07-09"):
+                pass  # got rid of death summry from briefing
+            else:
                 assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = pd.concat([deaths, each_death], verify_integrity=True)
