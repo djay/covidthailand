@@ -830,6 +830,7 @@ def get_cases_by_prov_briefings():
             # Might throw out totals since doesn't include all prov
             # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
             types = vac_briefing_totals(types, date, file, page, text)
+            types = vac_briefing_groups(types, date, file, page, text)
 
         if not today_types.empty:
             wrong_deaths_report = date in [
@@ -935,6 +936,25 @@ def vac_briefing_totals(df, date, url, page, text):
     if not vac.empty:
         logger.info("{} Vac: {}", date.date(), vac.to_string(header=False, index=False))
     df = df.combine_first(vac)
+
+    return df
+
+
+def vac_briefing_groups(df, date, url, page, text):
+    if not re.search("(ผู้ที่มีอายุ 60|กลุ่มเป้าหมายหลัก)", text):
+        return df
+    over60x3, studentx3 = [
+        [f"Vac Group {g} {d} Cum" for d in range(1, 4)] for g in ["Over 60", "Student"]
+    ]
+
+    # Vaccines
+    pop, d1, d1p, d2, d2p, d3, d3p, * \
+        rest = get_next_numbers(text, "ผู้ที่มีอายุ 60", "ผู้ที่มีอายุ 60", ints=False, return_rest=False)
+    over60 = pd.DataFrame([[d1, d2, d3]], index=[date], columns=over60x3)
+    pop, d1, d1p, d2, d2p, d3, *rest = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
+    student = pd.DataFrame([[d1, d2, d3]], index=[date], columns=studentx3)
+
+    df = df.combine_first(over60).combine_first(student)
 
     return df
 
