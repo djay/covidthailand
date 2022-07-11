@@ -285,20 +285,21 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
             21, min_periods=13,
             center=True).mean() / 100 * case_ages_cum[f"Cases Age {ages_range.replace('60-', '60+')}"].rolling(
                 7, min_periods=3, center=True).mean()
-    deaths_by_age = cum2daily(case_ages_cum)
-    death_cols = [f'Deaths Age {age}' for age in age_ranges]
-    deaths_by_age['Deaths'] = df['Deaths']
-    deaths_by_age['Deaths Ages Median'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
-    deaths_by_age['Deaths Ages Sum'] = deaths_by_age[death_cols].sum(axis=1)
-    deaths_by_age = deaths_by_age.pipe(normalise_to_total, death_cols, 'Deaths Ages Median')
-    cols = death_cols + ['Deaths Ages Median', 'Deaths Ages Sum']
-    plot_area(df=deaths_by_age,
-              title='Covid Deaths Age Range - Thailand',
-              png_prefix='deaths_age_bins', cols_subset=cols,
-              ma_days=None,
-              kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+    # Not used and gets an error
+    # deaths_by_age = cum2daily(case_ages_cum)
+    # death_cols = [f'Deaths Age {age}' for age in age_ranges]
+    # deaths_by_age['Deaths'] = df['Deaths']
+    # deaths_by_age['Deaths Ages Median'] = deaths_by_age['Deaths'].rolling(7, min_periods=3, center=True).mean()
+    # deaths_by_age['Deaths Ages Sum'] = deaths_by_age[death_cols].sum(axis=1)
+    # deaths_by_age = deaths_by_age.pipe(normalise_to_total, death_cols, 'Deaths Ages Median')
+    # cols = death_cols + ['Deaths Ages Median', 'Deaths Ages Sum']
+    # plot_area(df=deaths_by_age,
+    #           title='Covid Deaths Age Range - Thailand',
+    #           png_prefix='deaths_age_bins', cols_subset=cols,
+    #           ma_days=None,
+    #           kind='line', stacked=False, percent_fig=False,
+    #           cmap='tab10',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
     # don't use this chart anymore since we can get this data from the dashboard
     # plot_area(df=deaths_by_age,
     #           png_prefix='deaths_age_est',
