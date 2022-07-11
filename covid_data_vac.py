@@ -711,7 +711,7 @@ def vaccination_reports():
             continue
         else:
             # TODO: 2022-03-27: work out why only 76 prov
-            assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27")]
+            assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10")]
         vac_prov_reports = vac_prov_reports.combine_first(table)
         if date < d("2021-12-11"):
             # TODO: find days where day is yesterdays and fix them, or fix the check
