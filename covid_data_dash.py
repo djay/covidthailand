@@ -63,7 +63,7 @@ def dash_daily():
         df = df.drop(columns=['Postitive Rate Dash'])
 
     allow_na = {
-        "ATK": [[d("2021-07-31")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
+        "ATK": [[d("2021-07-31"), d("2022-07-05")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
         "Cases Area Prison": d("2021-05-12"),
         "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=14)),
         "Tests": today(),  # it's no longer there
@@ -96,6 +96,7 @@ def dash_daily():
                 "Positive Rate Dash": np.nan,
                 "Hospitalized Severe": np.nan,
                 "Hospitalized Respirator": np.nan,
+                "ATK": np.nan,
                 "": 0.0
             },
             # D_UpdateTime="Last_Update",
@@ -149,6 +150,7 @@ def dash_daily():
 
         if row.empty:
             break
+
         last_update = wb.getWorksheet("D_UpdateTime").data
         if not last_update.empty:
             last_update = pd.to_datetime(
@@ -156,6 +158,19 @@ def dash_daily():
             if last_update.normalize() < row.index.max():
                 # We got todays data too early
                 continue
+        else:
+            last_update = None
+
+        # Not date indexed as it's weekly
+        atk_reg = wb.getWorksheet("WEEK_line_Total").data
+        if not atk_reg.empty and last_update and date.date() == last_update.date():
+            # It's the same value for all dates so only need on first iteration
+            col = "Infections Non-Hospital Cum"  # ATK+?  no real explanation for this number
+            atk_reg = atk_reg.rename(columns={"Week-value": "Week", "SUM(Cnt)-value": col})[["Week", col]]
+            atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
+            atk_reg = atk_reg.set_index("Date")[[col]]
+            row = row.combine_first(atk_reg)
+
         # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
@@ -455,10 +470,11 @@ def check_dash_ready():
 
 if __name__ == '__main__':
 
+    dash_daily_df = dash_daily()
+
     # This doesn't add any more info since severe cases was a mistake
     dash_trends_prov_df = dash_trends_prov()
 
     dash_ages_df = dash_ages()
     # check_dash_ready()
-    dash_daily_df = dash_daily()
     dash_by_province_df = dash_by_province()
