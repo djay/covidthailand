@@ -169,6 +169,7 @@ def dash_daily():
             atk_reg = atk_reg.rename(columns={"Week-value": "Week", "SUM(Cnt)-value": col})[["Week", col]]
             atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
             atk_reg = atk_reg.set_index("Date")[[col]]
+            atk_reg = atk_reg.cumsum()
             row = row.combine_first(atk_reg)
 
         # wb.getWorksheet("D_UpdateTime").data.iloc[0]
