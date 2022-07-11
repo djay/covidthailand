@@ -79,6 +79,7 @@ def dash_daily():
         'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
         'Recovered': (d('2021-01-01'), today(), 1),
         'Cases Walkin': (d('2021-01-01'), today(), 1),
+        'Infections Non-Hospital Cum': (d("2022-07-09"),),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
