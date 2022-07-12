@@ -79,6 +79,7 @@ def dash_daily():
         'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
         'Recovered': (d('2021-01-01'), today(), 1),
         'Cases Walkin': (d('2021-01-01'), today(), 1),
+        # 'Infections Non-Hospital Cum': (d("2022-07-09"),),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
@@ -161,21 +162,23 @@ def dash_daily():
         else:
             last_update = None
 
-        # Not date indexed as it's weekly
-        atk_reg = wb.getWorksheet("WEEK_line_Total").data
-        if not atk_reg.empty and last_update and date.date() == last_update.date():
-            # It's the same value for all dates so only need on first iteration
-            col = "Infections Non-Hospital Cum"  # ATK+?  no real explanation for this number
-            atk_reg = atk_reg.rename(columns={"Week-value": "Week", "SUM(Cnt)-value": col})[["Week", col]]
-            atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
-            atk_reg = atk_reg.set_index("Date")[[col]]
-            row = row.combine_first(atk_reg)
-
         # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
         if date < today() - relativedelta(days=30):  # TODO: should use skip_valid rules to work which are delayed rather than 0?
             row.loc[date] = row.loc[date].fillna(0.0)  # ATK and HICI etc are null to mean 0.0
+
+        # Not date indexed as it's weekly
+        atk_reg = wb.getWorksheet("WEEK_line_Total").data
+        if not atk_reg.empty:
+            # It's the same value for all dates so only need on first iteration
+            col = "Infections Non-Hospital Cum"  # ATK+?  no real explanation for this number
+            atk_reg = atk_reg.rename(columns={"Week-value": "Week", "SUM(Cnt)-value": col})[["Week", col]]
+            atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
+            atk_reg = atk_reg.set_index("Date")[[col]]
+            atk_reg = atk_reg.cumsum()
+            row = row.combine_first(atk_reg)
+
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
     # We get negative values for field hospital before April

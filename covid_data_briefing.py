@@ -956,9 +956,9 @@ def vac_briefing_groups(df, date, url, page, text):
     # Vaccines
     pop, d1, d1p, d2, d2p, d3, d3p, * \
         rest = get_next_numbers(text, "ที่มีอายุ 60", ints=False, return_rest=False)
-    over60 = pd.DataFrame([[d1, d2, d3]], index=[date], columns=over60x3)
+    over60 = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + over60x3).set_index("Date")
     pop, d1, d1p, d2, d2p, d3, *rest = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
-    student = pd.DataFrame([[d1, d2, d3]], index=[date], columns=studentx3)
+    student = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + studentx3).set_index("Date")
 
     df = df.combine_first(over60).combine_first(student)
 
@@ -990,13 +990,16 @@ def vac_briefing_provs(df, date, file, page, text):
 
 if __name__ == '__main__':
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    briefings = import_csv("cases_briefings", ["Date"], False)
+    briefings = import_csv("cases_briefings", ["Date"], False, date_cols=["Date"])
     briefings = cases_briefings.combine_first(briefings)
     export(briefings, "cases_briefings")
 
-    old = import_csv("combined", index=["Date"])
-    df = briefings.combine(old, lambda s1, s2: s1)
-    export(df, "combined", csv_only=True)
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+
+    # df = dash.combine(df, lambda s1, s2: s1)
+    # df = briefings.combine(df, lambda s1, s2: s1)
+    df = briefings.combine_first(dash).combine_first(df)
 
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_cases_plots(df)

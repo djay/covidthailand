@@ -258,7 +258,11 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="ap
             return pd.DataFrame()
     logger.info("Importing CSV: {}", path)
     # TODO: set dtypes when we know its all floats so works faster?
-    return pd.read_csv(path, parse_dates=date_cols, index_col=index)
+    df = pd.read_csv(path, parse_dates=date_cols)
+    if index:
+        return df.set_index(index)
+    else:
+        return df
 
 
 def increasing(col, ma=7):

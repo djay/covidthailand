@@ -595,7 +595,12 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
 if __name__ == "__main__":
 
-    df = import_csv("combined", index=["Date"])
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    briefings = import_csv("cases_briefings", index=["Date"], date_cols=["Date"])
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    # have vac in briefings and dashboard
+    df = briefings.combine_first(dash).combine_first(df)
+
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
     save_vacs_plots(df)

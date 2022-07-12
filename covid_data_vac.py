@@ -646,7 +646,7 @@ def vaccination_reports_files2(check=True,
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
-    folders = [base2.format(m=m) for m in range(12, 2, -1)]
+    folders = [base2.format(m=m) for m in range(11, 2, -1)]
     links2 = (link for f in folders for link in reversed(list(web_links(f, ext=ext, check=False))))
     links = list(links1) + list(links2)
     count = 0
