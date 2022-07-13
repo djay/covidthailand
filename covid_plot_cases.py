@@ -195,7 +195,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     # est_cases['Estimated Report Cases (IHME)'] = ihme['cases_mean'].loc[:today]
     est_cases['Reported Cases'] = df['Cases']
     est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
-    est_cases['Non-Hospital Infections + Cases'] = df['Infections Non-Hospital Cum'].cumsum().interpolate(
+    est_cases['Reported Cases (PCR) + Non-Hospital Infections (DDC ATK+)'] = df['Infections Non-Hospital Cum'].cumsum().interpolate(
         limit_area="inside").diff() + df['Cases']
     pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
     pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
