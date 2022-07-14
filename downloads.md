@@ -95,7 +95,7 @@ Schema cases_by_area:
 
 ## MOPH Covid-19 Dashboard <a name="dl-moph-dashboard">
 - Sources [MOPH Covid-19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/?dashboard=main)
-### [moph_dashboad.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard) | [moph_dashboard.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard.csv)
+### [moph_dashboard.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard.csv)
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
 
 Schema
@@ -124,7 +124,7 @@ Schema
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
 | Source Cases | |
 
-### [moph_dashboad_prov.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov) | [moph_dashboard_prov.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov.csv)
+### [moph_dashboard_prov.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov.csv)
 
 Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
@@ -143,7 +143,7 @@ Schema
 | Vac Given {1-3} Cum | |
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
 
-### [moph_dashboad_ages.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages) | [moph_dashboard_ages.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages.csv)
+### [moph_dashboard_ages.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages.csv)
 
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=select-trend-line
 

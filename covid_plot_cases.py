@@ -193,12 +193,12 @@ def save_cases_plots(df: pd.DataFrame) -> None:
     est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
     # est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
     # est_cases['Estimated Report Cases (IHME)'] = ihme['cases_mean'].loc[:today]
-    est_cases['Reported Cases'] = df['Cases']
-    est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
+    est_cases['Reported Cases (PCR)'] = df['Cases']
     est_cases['Reported Cases (PCR) + Non-Hospital Infections (DDC ATK+)'] = df['Infections Non-Hospital Cum'].interpolate(
         limit_area="inside").diff() + df['Cases']
+    est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
     pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
-    pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
+    # pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
     pred_cases["Forecast Reported Cases (IHME)"] = ihme["cases_mean"].loc[today:]
     pred_cases = pred_cases.loc[:today + datetime.timedelta(days=60)]
 
@@ -508,8 +508,6 @@ if __name__ == "__main__":
     briefings = import_csv("cases_briefings", ["Date"], False)
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
 
-    # df = dash.combine(df, lambda s1, s2: s1)
-    # df = briefings.combine(df, lambda s1, s2: s1)
     df = briefings.combine_first(dash).combine_first(df)
 
     os.environ["MAX_DAYS"] = '0'
