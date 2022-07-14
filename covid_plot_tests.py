@@ -68,11 +68,6 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         return label + " (Omicron)"
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
-    # seq["BA.2 (Omicron BA.2)"] = seq[(c for c in seq.columns if "BA.2" in c)].sum(axis=1)
-    # seq["BA.1 (Omicron BA.1)"] = seq[(c for c in seq.columns if "BA.1" in c)].sum(axis=1)
-    # seq["Other (?)"] = seq[(c for c in seq.columns if not any_in(c, "BA.1", "BA.2"))].sum(axis=1)
-    # # TODO: others?
-    # seq = seq[(c for c in seq.columns if "(" in c)]
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
 
     # add in manual values

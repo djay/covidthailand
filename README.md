@@ -57,6 +57,18 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 # Cases <a name="cases">
 
+## Estimated Daily Infections
+
+![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
+- Note: no country tests everyone so modelling is needed to estimate the real number
+  of infections in the community including asymtematic infections. Modelling includes
+  many factors such as the estimated deaths, immunity and fatality rate of the variants for a given demographic.
+- ATK+ from the DDC Dashboard is not clear if this is an estimate or some measure of reported infections to MOPH. Interpoloated from weekly figure.
+- ATK (Probable Cases) has stopped being reported
+- As of 1st June 2022, only severe cases are tested for PCR and report cases only includes PCR results so the trend of cases doesn't indicate
+  infections as well as it did previously.
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [CCSA Daily Briefing](downloads.md#dl-briefings)
+
 ## Cases by Region
 
 
@@ -80,13 +92,6 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Estimated Daily Infections
-
-![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
-- Note: no country tests everyone so modelling is needed to estimate the real number
-  of infections in the community including asymtematic infections. Modelling includes
-  many factors such as the estimated deaths and fatality rate of the population.
-- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## Cases by Patient Type
 
