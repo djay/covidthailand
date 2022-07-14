@@ -212,8 +212,8 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               periods_to_plot=["4", "3"],
               cmap='tab10',
-              footnote="Adding to ATK to confirmed cases (PCR) may double count those who do both",
-              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation, CCSA Briefing')
+              footnote="DDC ATK+ is interpolated from weekly and is unknown what it measures.",
+              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation, CCSA Briefing, DDC Dashboard')
 
     logger.info('======== Finish Cases Plots ==========')
 

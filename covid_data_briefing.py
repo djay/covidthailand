@@ -189,21 +189,28 @@ def briefing_case_types(date, pages, url):
                 "ช่องเส้นทางธรรมชาติ",
                 "รายผู้ที่เดินทางมาจากต่างประเทศ",
                 before=True,
-                default=0
+                default=0,
+                dash_as_zero=True
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย", dash_as_zero=True)
             if date == d("2022-03-22"):
                 # order got changed around
                 prison = 44
+
+            # Prison and imported switched around
+            imported = {d("2022-07-13"): 0, d("2022-06-14"): 1}.get(date, imported)
+            prison = {d("2022-06-10"): 0}.get(date, prison)
+
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
             if cases2 is not None and cases2 != cases:
                 # Total cases moved to the bottom
                 # cases == domestic
                 cases = cases2
                 assert cases == domestic + imported + prison
-        if date not in [d("2021-11-01"), d("2022-06-10"), d("2022-06-14")]:
-            # 2022-06-10,14: mixup prison and imported but which is right?
+        if date in [d("2021-11-01")]:
+            pass
+        else:
             assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
