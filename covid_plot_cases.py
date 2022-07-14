@@ -189,12 +189,13 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               y_formatter=perc_format,
               footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
 
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")
     today = df['Cases'].index.max()
     est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
     # est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
     # est_cases['Estimated Report Cases (IHME)'] = ihme['cases_mean'].loc[:today]
     est_cases['Reported Cases (PCR)'] = df['Cases']
-    est_cases['Reported Cases (PCR) + Non-Hospital Infections (DDC ATK+)'] = df['Infections Non-Hospital Cum'].interpolate(
+    est_cases['Reported Cases (PCR) + Non-Hospital Infections (DDC ATK+)'] = dash['Infections Non-Hospital Cum'].interpolate(
         limit_area="inside").diff() + df['Cases']
     est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
     pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
