@@ -135,6 +135,8 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # In case XLS is not updated before the pptx
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")
+    df['ATK+'] = dash['Infections Non-Hospital Cum'].interpolate(limit_area="inside").diff()
 
     cols = [
         'Tests XLS',
@@ -233,32 +235,30 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     df['Cases per Tests'] = df['Cases'] / df['Tests XLS'] * 100
     df['Positive Rate ATK Proactive'] = df['Pos ATK Proactive'] / df['Tests ATK Proactive'] * 100
     df['Positive Rate ATK'] = df['Pos ATK'] / df['Tests ATK'] * 100
-    df['Positive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK']) / \
-        (df['Tests ATK Proactive'] + df['Tests ATK']) * 100
+    df['Positive Rate PCR + ATK'] = (df['Pos XLS'] + df['Pos ATK']) / (df['Tests XLS'] + df['Tests ATK']) * 100
     df['Positive Rate Dash %'] = df['Positive Rate Dash'] * 100
 
     ihme = ihme_dataset(check=False)
     df['infection_detection'] = ihme['infection_detection'] * 100
-
     cols = [
         'Positivity Public+Private',
         'Positive Rate ATK',
+        'Positive Rate PCR + ATK',
         'Positivity Cases/Tests',
         # 'Cases per PUI3',
         # 'Positivity Walkins/PUI3',
         'Positive Rate ATK Proactive',
-        'Positive Rate PCR + ATK',
         'Positive Rate Dash %',
         'infection_detection',
     ]
     legends = [
         'Positive Results per PCR Test (Positive Rate)',
         'Positive Results per ATK Test (Positive Rate)',
+        'Positive Results per Test (PCR + ATK)',
         'Confirmed Cases per PCR Test',
         # 'Confirmed Cases per PUI*3',
         # 'Walkin Cases per PUI*3',
         'Positive Results per ATK Test (NHSO provided)',
-        'Positive Results per PCR/ATK Test (DMSc)',
         'Positive Rate from DDC Dashboard',
         'Estimated Cases per Infection (IHME detection rate)',
     ]
@@ -369,6 +369,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Cases Walkin',
         'Pos XLS',
         'Pos ATK',
+        # 'ATK+',
         # 'Pos Public',
         'ATK',
         'Pos ATK Proactive',
@@ -378,6 +379,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'Confirmed Walk-in Cases',
         'Positive PCR Test Results',
         'Positive ATK Test Results (DMSC)',
+        # 'ATK+ (DDC Dash)',
         #    'Positive PCR Test Results (Public)',
         'Registered ATK Probable Case (Home Isolation)',
         'Positive Proactive ATK Test Results (NHSO provided)',
