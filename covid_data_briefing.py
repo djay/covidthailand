@@ -199,7 +199,7 @@ def briefing_case_types(date, pages, url):
                 prison = 44
 
             # Prison and imported switched around
-            imported = {d("2022-07-13"): 0, d("2022-06-14"): 1}.get(date, imported)
+            imported = {d("2022-07-13"): 0, d("2022-06-14"): 1, d("2022-07-17"): 0}.get(date, imported)
             prison = {d("2022-06-10"): 0}.get(date, prison)
 
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
