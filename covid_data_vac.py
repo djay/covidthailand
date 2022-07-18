@@ -709,7 +709,7 @@ def vaccination_reports():
             # TODO: how to fix this?
             logger.warning("{} Dropping table: missing headers on extra pages", date)
             continue
-        elif date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10")]:
+        elif date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10"), d("2022-07-17")]:
             # TODO: 2022-03-27: work out why only 76 prov
             pass
         else:
