@@ -236,6 +236,7 @@ def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     pages = parse_file(file, html=False, paged=True)
     for page in pages:
         data, raw = get_tests_by_area_pdf(file, page, data, raw)
+
     # write_scrape_data_back_to_test(raw, "testing_moph_pdf", fname)
     if testdf.index.max() >= dateutil.parser.parse("2021-08-08"):
         # plots stopped having numbers for positives so aren't scraped

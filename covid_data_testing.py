@@ -178,9 +178,14 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
 
 
 def get_tests_by_area_pdf(file, page, data, raw):
-    start, end = find_date_range(page)
-    if start is None or any_in(page, "เริ่มเปิดบริการ", "90%") or not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
+    if not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
         return data, raw
+    elif any_in(page, "เริ่มเปิดบริการ", "90%"):
+        return data, raw
+    start, end = find_date_range(page)
+    if start is None:
+        return data, raw
+
     # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
     # no pdf available so data missing
     # Also missing 14-20 Nov 2020 (no pptx or pdf)
@@ -248,6 +253,12 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
+    # Also need pdf copies because of missing pptx
+    for file, dl in get_test_files(ext=".pdf"):
+        dl()
+        pages = parse_file(file, html=False, paged=True)
+        for page in pages:
+            data, raw = get_tests_by_area_pdf(file, page, data, raw)
     for file, dl in get_test_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
@@ -257,12 +268,6 @@ def get_test_reports():
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
         assert not data.empty
         # TODO: assert for pubpriv too. but disappeared after certain date
-    # Also need pdf copies because of missing pptx
-    for file, dl in get_test_files(ext=".pdf"):
-        dl()
-        pages = parse_file(file, html=False, paged=True)
-        for page in pages:
-            data, raw = get_tests_by_area_pdf(file, page, data, raw)
     export(raw, "tests_by_area")
 
     pubpriv['Pos Public'] = pubpriv['Pos'] - pubpriv['Pos Private']
@@ -426,6 +431,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    df = get_test_reports()
     variants = get_variant_reports()
     df_daily = get_tests_by_day()
-    df = get_test_reports()
