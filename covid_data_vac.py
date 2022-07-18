@@ -327,7 +327,58 @@ def vaccination_daily(daily, date, file, page):
     return daily
 
 
+givencols = [
+    "Date",
+    "Province",
+    "Vac Given 1 Cum",
+    "Vac Given 1 %",
+    "Vac Given 2 Cum",
+    "Vac Given 2 %",
+]
+givencols3 = givencols + [
+    "Vac Given 3 Cum",
+    "Vac Given 3 %",
+]
+givencols4 = givencols3 + [
+    "Vac Given 4 Cum",
+    "Vac Given 4 %",
+]
+vaccols8x3 = givencols3 + [
+    f"Vac Group {g} {d} Cum" for g in [
+        "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
+        "Risk: Location", "Student"
+    ] for d in range(1, 4)
+]
+# Student vaccination figures did not exist prior to 2021-10-06
+vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
+vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
+vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
+
+vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
+vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
+vaccols_medical = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Medical Staff"] for d in range(1, 4)]
+
+alloc2_doses = [
+    "Date",
+    "Province",
+    "Vac Allocated Sinovac 1",
+    "Vac Allocated Sinovac 2",
+    "Vac Allocated AstraZeneca 1",
+    "Vac Allocated AstraZeneca 2",
+    "Vac Allocated Sinovac",
+    "Vac Allocated AstraZeneca",
+]
+alloc2 = [
+    "Date",
+    "Province",
+    "Vac Allocated Sinovac",
+    "Vac Allocated AstraZeneca",
+]
+alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna", ]
+
+
 def vaccination_tables(df, _, page, file):
+    page = page.replace("( ร้อยละ )", "( ร้อยละ )\n")  # Ensure heading on it's own line
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     first_line = page.split("\n\n")[0]
     # 28 กมุภำพันธ์ 2564 – 6 กุมภำพันธ ์2565
@@ -337,66 +388,6 @@ def vaccination_tables(df, _, page, file):
         return df
     else:
         date = date[-1]
-    givencols = [
-        "Date",
-        "Province",
-        "Vac Given 1 Cum",
-        "Vac Given 1 %",
-        "Vac Given 2 Cum",
-        "Vac Given 2 %",
-    ]
-    givencols3 = givencols + [
-        "Vac Given 3 Cum",
-        "Vac Given 3 %",
-    ]
-    givencols4 = givencols3 + [
-        "Vac Given 4 Cum",
-        "Vac Given 4 %",
-    ]
-    vaccols8x3 = givencols3 + [
-        f"Vac Group {g} {d} Cum" for g in [
-            "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
-            "Risk: Location", "Student"
-        ] for d in range(1, 4)
-    ]
-    # Student vaccination figures did not exist prior to 2021-10-06
-    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
-    vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
-    vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
-
-    vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
-    vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
-    vaccols_medical = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Medical Staff"] for d in range(1, 4)]
-
-    alloc2_doses = [
-        "Date",
-        "Province",
-        "Vac Allocated Sinovac 1",
-        "Vac Allocated Sinovac 2",
-        "Vac Allocated AstraZeneca 1",
-        "Vac Allocated AstraZeneca 2",
-        "Vac Allocated Sinovac",
-        "Vac Allocated AstraZeneca",
-    ]
-    alloc2 = [
-        "Date",
-        "Province",
-        "Vac Allocated Sinovac",
-        "Vac Allocated AstraZeneca",
-    ]
-    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna", ]
-
-    # def add(df, prov, numbers, cols):
-    #     if not df.empty:
-    #         try:
-    #             prev = df[cols].loc[[date, prov]]
-    #         except KeyError:
-    #             prev = None
-    #         msg = f"Vac {date} {prov} repeated: {numbers} != {prev}"
-    #         assert prev in [None, numbers], msg
-    #     row = [date, prov] + numbers
-    #     df = df.combine_first(pd.DataFrame([row], columns=cols).set_index(["Date", "Province"]))
-    #     return df
 
     rows = {}
 
@@ -709,7 +700,7 @@ def vaccination_reports():
             # TODO: how to fix this?
             logger.warning("{} Dropping table: missing headers on extra pages", date)
             continue
-        elif date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10"), d("2022-07-17")]:
+        elif date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10")]:
             # TODO: 2022-03-27: work out why only 76 prov
             pass
         else:
