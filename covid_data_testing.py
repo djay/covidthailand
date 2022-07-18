@@ -190,22 +190,30 @@ def get_tests_by_area_pdf(file, page, data, raw):
     # no pdf available so data missing
     # Also missing 14-20 Nov 2020 (no pptx or pdf)
 
-    if "349585" in page:
-        page = page.replace("349585", "349 585")
+    page = page.replace(
+        "349585", "349 585").replace(
+        "4869151.1", "48691 51.1").replace(
+        "6993173.8", "69931 73.8").replace(
+        "988114.3", "9881 14.3").replace(
+        "2061119828", "2061 119828"
+    )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
         rest if "เพญ็พชิชำ" in first or "/" in first else page
     )  # get rid of first line that sometimes as date and time in it
-    numbers, _ = get_next_numbers(page, "", debug=True)  # "ภาคเอกชน",
+    numbers, _ = get_next_numbers(page, "", debug=True, ints=False)  # "ภาคเอกชน",
     # ภาครัฐ
     # ภาคเอกชน
     # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์
     # print(numbers)
     # TODO: should really find and parse X axis labels which contains 'เขต' and count
     tests_start = 13 if "total" not in page else 14
-    pos = numbers[0:13]
+    pos = list(map(int, numbers[0:13]))
+    assert all([p < 500000 for p in pos])
     tests = numbers[tests_start:tests_start + 13]
+    assert tests == list(map(int, tests))  # last number sometimes is joined to next %
+    tests = list(map(int, tests))
     row = pos + tests + [sum(pos), sum(tests)]
     results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     data = data.combine_first(results)
