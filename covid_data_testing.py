@@ -196,8 +196,8 @@ def get_tests_by_area_pdf(file, page, data, raw):
         "6993173.8", "69931 73.8").replace(
         "988114.3", "9881 14.3").replace(
         "2061119828", "2061 119828").replace(
-        "9881 14.3", "98811 4.3"
-    )
+        "9881 14.3", "98811 4.3").replace(
+        "2061 119828", "20611 19828")
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
@@ -215,6 +215,11 @@ def get_tests_by_area_pdf(file, page, data, raw):
     tests = numbers[tests_start:tests_start + 13]
     assert tests == list(map(int, tests))  # last number sometimes is joined to next %
     tests = list(map(int, tests))
+    pos_rate = numbers[tests_start + 13: tests_start + 26]
+    if start > d("2020-12-05"):
+        assert all([r <= 100 for r in pos_rate])
+        assert all([round(p / t * 100, 1) == r for p, t, r in zip(pos, tests, pos_rate)])  # double check we got right values
+
     row = pos + tests + [sum(pos), sum(tests)]
     results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     data = data.combine_first(results)
@@ -262,24 +267,27 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
+    # Also need pdf copies because of missing pptx
+    raw_pdf = pd.DataFrame()
+    for file, dl in get_test_files(ext=".pdf"):
+        dl()
+        pages = parse_file(file, html=False, paged=True)
+        for page in pages:
+            data, raw_pdf = get_tests_by_area_pdf(file, page, data, raw_pdf)
+
     # pptx less prone to scraping issues so should be trusted more
+    raw_ppt = pd.DataFrame()
     for file, dl in get_test_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
-            data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
+            data, raw_ppt = get_tests_by_area_chart_pptx(file, title, series, data, raw_ppt)
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
                 # Latest file as all the data we need
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
         assert not data.empty
         # TODO: assert for pubpriv too. but disappeared after certain date
 
-    # Also need pdf copies because of missing pptx
-    for file, dl in get_test_files(ext=".pdf"):
-        dl()
-        pages = parse_file(file, html=False, paged=True)
-        for page in pages:
-            data, raw = get_tests_by_area_pdf(file, page, data, raw)
-    export(raw, "tests_by_area")
+    export(raw.combine_first(raw_ppt).combine_first(raw_pdf), "tests_by_area")
 
     pubpriv['Pos Public'] = pubpriv['Pos'] - pubpriv['Pos Private']
     pubpriv['Tests Public'] = pubpriv['Tests'] - pubpriv['Tests Private']
