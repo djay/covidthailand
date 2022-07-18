@@ -195,7 +195,8 @@ def get_tests_by_area_pdf(file, page, data, raw):
         "4869151.1", "48691 51.1").replace(
         "6993173.8", "69931 73.8").replace(
         "988114.3", "9881 14.3").replace(
-        "2061119828", "2061 119828"
+        "2061119828", "2061 119828").replace(
+        "9881 14.3", "98811 4.3"
     )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
@@ -261,12 +262,7 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
-    # Also need pdf copies because of missing pptx
-    for file, dl in get_test_files(ext=".pdf"):
-        dl()
-        pages = parse_file(file, html=False, paged=True)
-        for page in pages:
-            data, raw = get_tests_by_area_pdf(file, page, data, raw)
+    # pptx less prone to scraping issues so should be trusted more
     for file, dl in get_test_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
@@ -276,6 +272,13 @@ def get_test_reports():
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
         assert not data.empty
         # TODO: assert for pubpriv too. but disappeared after certain date
+
+    # Also need pdf copies because of missing pptx
+    for file, dl in get_test_files(ext=".pdf"):
+        dl()
+        pages = parse_file(file, html=False, paged=True)
+        for page in pages:
+            data, raw = get_tests_by_area_pdf(file, page, data, raw)
     export(raw, "tests_by_area")
 
     pubpriv['Pos Public'] = pubpriv['Pos'] - pubpriv['Pos Private']
