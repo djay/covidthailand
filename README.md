@@ -262,6 +262,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Positive Rate by Region - Thailand](https://practical-ritchie-cca141.netlify.app/outputs/positivity_region_3.png)
 
+![Positive Rate by Health District - Thailand](https://practical-ritchie-cca141.netlify.app/outputs/positivity_area_3.png)
+
 - [Positive rate < 5% for 2 weeks amd > 0.1%/w tested (10k/d tested)) means sufficient tests: WHO](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html)
 Assumes easy access to tests for everyone.
 - It's likely there is [missing test data](https://practical-ritchie-cca141.netlify.app/outputs#more-cases-than-positive-results). Using confirmed cases migth be more accurate.

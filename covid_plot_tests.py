@@ -124,10 +124,6 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # # create directory if it does not exists
     # pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
-    # TODO: 0 maybe because no test data on that day? Does median make sense?
-    dash_prov["Positive Rate Dash"] = dash_prov["Positive Rate Dash"].replace({0.0: np.nan})
-
     # Computed data
     # TODO: has a problem if we have local transmission but no proactive
     # TODO: put somewhere else
@@ -470,16 +466,29 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
-    ##########################
-    # Tests by area
-    ##########################
+
+##########################
+# Tests by area
+##########################
+def save_area_plots(df):
     plt.rc('legend', **{'fontsize': 12})
 
-    cols = rearrange([f'Tests Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
+    # by_area = import_csv("tests_by_area", index=["Start"], date_cols=["Start", "End"]).drop(columns=["End"])
+    # # Works up until 2021-04-11. before this dates are offset?
+    # by_area = by_area.reindex(pd.date_range(by_area.index.min(), by_area.index.max(), freq='W'))
+    # # .interpolate(limit_area="inside")
+
+    by_area = import_csv("tests_by_area", index=["End"], date_cols=["Start", "End"])
+    by_area_d = by_area.drop(columns=["Start"]).div((by_area.index - by_area["Start"]).dt.days, axis=0)
+    # TODO: since it's daily mean, should move to the center of teh week?
+    by_area_d = by_area_d.reindex(pd.date_range(by_area_d.index.min(), by_area_d.index.max(),
+                                  freq='D')).interpolate(limit_area="inside")
+
+    cols = rearrange([f'Tests Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
+    plot_area(df=by_area_d,
               title='PCR Tests by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
-              png_prefix='tests_area', cols_subset=cols[:13],
+              png_prefix='tests_area', cols_subset=cols,
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
@@ -489,10 +498,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
     cols = rearrange([f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
-    plot_area(df=df,
+    plot_area(df=by_area_d,
               title='PCR Positive Test Results by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
-              png_prefix='pos_area', cols_subset=cols[:13],
+              png_prefix='pos_area', cols_subset=cols,
               ma_days=None,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
@@ -501,11 +510,11 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
+    # for area in DISTRICT_RANGE_SIMPLE:
+    #     df[f'Tests Area {area} (i)'] = df[f'Tests Area {area}'].interpolate(limit_area="inside")
+    test_cols = [f'Tests Area {area}' for area in DISTRICT_RANGE_SIMPLE]
     for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Tests Area {area} (i)'] = df[f'Tests Area {area}'].interpolate(limit_area="inside")
-    test_cols = [f'Tests Area {area} (i)' for area in DISTRICT_RANGE_SIMPLE]
-    for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Tests Daily {area}'] = (df[f'Tests Area {area} (i)'] / df[test_cols].sum(axis=1) * df['Tests'])
+        df[f'Tests Daily {area}'] = (by_area_d[f'Tests Area {area}'] / by_area_d[test_cols].sum(axis=1) * df['Tests XLS'])
     cols = rearrange([f'Tests Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
     plot_area(df=df,
               title='PCR Tests by Health District - Thailand',
@@ -519,11 +528,11 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
 
+    # for area in DISTRICT_RANGE_SIMPLE:
+    #     df[f'Pos Area {area} (i)'] = df[f'Pos Area {area}'].interpolate(limit_area="inside")
+    pos_cols = [f'Pos Area {area}' for area in DISTRICT_RANGE_SIMPLE]
     for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Pos Area {area} (i)'] = df[f'Pos Area {area}'].interpolate(limit_area="inside")
-    pos_cols = [f'Pos Area {area} (i)' for area in DISTRICT_RANGE_SIMPLE]
-    for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Pos Daily {area}'] = (df[f'Pos Area {area} (i)'] / df[pos_cols].sum(axis=1) * df['Pos'])
+        df[f'Pos Daily {area}'] = (by_area_d[f'Pos Area {area}'] / by_area_d[pos_cols].sum(axis=1) * df['Pos XLS'])
     cols = rearrange([f'Pos Daily {area}' for area in DISTRICT_RANGE_SIMPLE], *FIRST_AREAS)
 
     plot_area(df=df,
@@ -541,17 +550,32 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # Workout positivity for each area as proportion of positivity for that period
     for area in DISTRICT_RANGE_SIMPLE:
         df[f'Positivity {area}'] = (
-            df[f'Pos Area {area} (i)'] / df[f'Tests Area {area} (i)'] * 100
+            by_area_d[f'Pos Area {area}'] / by_area_d[f'Tests Area {area}'] * 100
         )
     cols = [f'Positivity {area}' for area in DISTRICT_RANGE_SIMPLE]
-    df['Total Positivity Area'] = df[cols].sum(axis=1)
-    for area in DISTRICT_RANGE_SIMPLE:
-        df[f'Positivity {area}'] = (df[f'Positivity {area}'] / df['Total Positivity Area']
-                                    * df['Positivity Public+Private'])
+
     plot_area(df=df,
               title='Positive Rate by Health District - Thailand',
               legends=AREA_LEGEND_SIMPLE,
               png_prefix='positivity_area', cols_subset=rearrange(cols, *FIRST_AREAS),
+              ma_days=7,
+              kind='line', stacked=True, percent_fig=False,
+              cmap='tab20',
+              y_formatter=perc_format,
+              footnote='PCR: Polymerase Chain Reaction\n'
+              + 'Positivity Rate: The percentage of COVID-19 tests that come back positive.\n'
+              + 'Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
+              + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+              footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
+
+    df['Total Positivity Area'] = df[cols].sum(axis=1)
+    for area in DISTRICT_RANGE_SIMPLE:
+        df[f'Positivity {area}'] = (df[f'Positivity {area}'] / df['Total Positivity Area']
+                                    * (df["Pos XLS"] / df["Tests XLS"] * 100))
+    plot_area(df=df,
+              title='Positive Rate by Health District - Thailand',
+              legends=AREA_LEGEND_SIMPLE,
+              png_prefix='positivity_area_stacked', cols_subset=rearrange(cols, *FIRST_AREAS),
               ma_days=7,
               kind='area', stacked=True, percent_fig=False,
               cmap='tab20',
@@ -561,6 +585,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               + 'Note: Excludes some proactive and private tests (non-PCR) so actual tests is higher.\n'
               + 'Proactive: Testing done at high risk locations, rather than random sampling.',
               footnote_left=f'{source}Data Source: DMSC: Thailand Laboratory Testing Data')
+
+    dash_prov = import_csv("moph_dashboard_prov", ["Date", "Province"], dir="inputs/json")
+    # TODO: 0 maybe because no test data on that day? Does median make sense?
+    dash_prov["Positive Rate Dash"] = dash_prov["Positive Rate Dash"].replace({0.0: np.nan})
 
     # for area in DISTRICT_RANGE_SIMPLE:
     #     df[f'Positivity Daily {area}'] = df[f'Pos Daily {area}'] / df[f'Tests Daily {area}'] * 100
@@ -667,4 +695,5 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
+    save_area_plots(df)
     save_tests_plots(df)
