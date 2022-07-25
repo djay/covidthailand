@@ -297,18 +297,18 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
     peaks["Boosted"] = df['Vac Given 3 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
     cols = [
-        'ATK',
         'Cases',
+        #        'ATK',
         'Vaccinated',
-        'Deaths',
         "Boosted",
+        'Deaths',
     ]
     legend = [
-        "Reg. ATK - Probable Case (% of peak)",
         "Confirmed Cases (% of peak)",
+        #        "Reg. ATK - Probable Case (% of peak)",
         "Vaccinated - 2nd dose (% of Thai Pop.)",
-        "Reported Covid Deaths (% of peak)",
         "Vaccinated - 3rd dose (% of Thai Pop.)",
+        "Reported Covid Deaths (% of peak)",
     ]
     plot_area(df=peaks,
               title='Covid 19 Trends - Thailand',
