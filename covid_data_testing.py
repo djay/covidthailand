@@ -450,6 +450,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    df = get_test_reports()
     variants = get_variant_reports()
+    df = get_test_reports()
     df_daily = get_tests_by_day()

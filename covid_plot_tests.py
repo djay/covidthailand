@@ -61,10 +61,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = seq.fillna(0)
     # Group into major categories, BA.2 vs BA.1
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
-    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/BA.5", "BA.5": "BA.4/BA.5", "Other": "Other"}
+    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/BA.5", "BA.5": "BA.4/BA.5", "BA.2.75": "BA.2.75", "Other": "Other"}
 
     def group(variant):
-        label = next((label for match, label in groups.items() if match in variant), "Other")
+        label = next((label for match, label in reversed(groups.items()) if match in variant), "Other")
         return label + " (Omicron)"
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
@@ -695,5 +695,5 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_area_plots(df)
     save_tests_plots(df)
+    save_area_plots(df)

@@ -600,8 +600,8 @@ def get_ifr():
 
 
 if __name__ == '__main__':
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     ihme_dataset()
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     timeline = get_cases_timelineapi()
     timeline_prov = timeline_by_province()
 
@@ -622,4 +622,4 @@ if __name__ == '__main__':
     covid_plot_cases.save_cases_plots(df)
     import covid_plot_deaths
     covid_plot_deaths.save_deaths_plots(df)
-    covid_plot_cases.save_infections_estimate(df)
+    # covid_plot_cases.save_infections_estimate(df)
