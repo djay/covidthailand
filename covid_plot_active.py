@@ -102,7 +102,7 @@ def save_active_plots(df: pd.DataFrame) -> None:
 
     # TODO: I think we can replace the recovered since april with plot showing just hospitalisations?
     df["Hospitalized Field Unknown"] = df["Hospitalized Field"].sub(
-        df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0)
+        df[["Hospitalized Field Hospitel", "Hospitalized Field HICI"]].sum(axis=1, skipna=True), fill_value=0).clip(0)
 
     cols = [
         'Hospitalized Respirator',
@@ -111,7 +111,7 @@ def save_active_plots(df: pd.DataFrame) -> None:
         'Hospitalized Field Hospitel',
         'Hospitalized Field HICI',
     ]
-    df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0)
+    df["Hospitalized Mild"] = df["Hospitalized"].sub(df[cols].sum(axis=1, skipna=True), fill_value=0).clip(0)
     cols = [
         'Hospitalized Respirator',
         'Hospitalized Severe',
@@ -169,6 +169,11 @@ def save_active_plots(df: pd.DataFrame) -> None:
 if __name__ == "__main__":
 
     df = import_csv("combined", index=["Date"])
+    briefings = import_csv("cases_briefings", ["Date"], False)
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+
+    df = briefings.combine_first(dash).combine_first(df)
+
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
     save_active_plots(df)
