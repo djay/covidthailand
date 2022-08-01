@@ -45,15 +45,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 ![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
 ![Hospitalisation as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/active_peak_3.png)
 
-- For forecasts of total infections/deaths/hospitalisations see
-  [IHME Thailand](https://covid19.healthdata.org/thailand) |
-  [IHME Thailand Report](http://www.healthdata.org/covid/updates) |
-  [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/) |
-  [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
-  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
-  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
-  [MOPH daily situation report](downloads.md#dl-situation-reports)
+  [MOPH daily situation report](downloads.md#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing)
 
 # Cases <a name="cases">
 
@@ -67,6 +60,13 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - ATK (Probable Cases) has stopped being reported
 - As of 1st June 2022, only severe cases are tested for PCR and report cases only includes PCR results so the trend of cases doesn't indicate
   infections as well as it did previously.
+- For forecasts of total infections/deaths/hospitalisations see
+  [IHME Thailand](https://covid19.healthdata.org/thailand) |
+  [IHME Thailand Report](http://www.healthdata.org/covid/updates) |
+  [ICL Thailand](https://mrc-ide.github.io/global-lmic-reports/THA/) |
+  [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
+  [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
+  [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## Cases by Region
@@ -140,6 +140,7 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 ## Cases by Variant (Extrapolated from Surviellance)
 
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
+- source: [DMSc Variant Report](downloads.md#dl-variant)
 
 ## Cases and Social Distancing
 

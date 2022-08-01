@@ -261,6 +261,14 @@ Schema
 - There are missing files, so some weeks' data are not shown
 - The example graphs shown have been extrapolated using daily totals from the test daily data
 
+## Variant Reports <a name="dl-variant">
+
+- Source:
+ - [DMSC: Variant Report](https://drive.google.com/drive/folders/13k14Hs61pgrK8raSMS9LFQn83PKswS-b)
+
+- variants_sequenced.csv
+- variants.csv
+- variants_by_area.csv
 
 ## Vaccination Downloads <a name="dl-vac">
 ## Daily DDC Vaccination Reports
