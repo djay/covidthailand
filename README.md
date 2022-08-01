@@ -12,19 +12,6 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 <img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=medium" width="400px" align="right" style="float: right">
 
-## Testing, isolation and Vaccine assistance
-
-
-- Annoucements on free testing, free hospitalisation, free vaccines and rules changes
-   - English: [Thailand PRD Twitter](https://twitter.com/prdthailand) - [Thailand PRD FB](https://www.facebook.com/thailandprd)
-   - Thai: [ThaiGov Covid-19 FB](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
-   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/)
-- Call [1422](tel:1422) if you have Covid with mild symptoms
-   - With only a positive ATK you can register for [free support during home isolation](https://twitter.com/prdthailand/status/1479301770388000768).
-   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
-   - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
-- Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
-- Unsure of your risks with or without a vaccine? [AU Risk Calc](https://corical.immunisationcoalition.org.au/) (updated for omicron) - [UK Risk Calc](https://www.qcovid.org/Calculation) (based on delta?)
 
 ## Disclaimer
 
@@ -68,6 +55,11 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
   [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
   [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [CCSA Daily Briefing](downloads.md#dl-briefings)
+
+## Cases by Variant (Extrapolated from Surviellance)
+
+![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
+- source: [DMSc Variant Report](downloads.md#dl-variant)
 
 ## Cases by Region
 
@@ -137,10 +129,6 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - see [Ages of confirmed cases 2020-2021]((https://practical-ritchie-cca141.netlify.app/outputs/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Cases by Variant (Extrapolated from Surviellance)
-
-![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
-- source: [DMSc Variant Report](downloads.md#dl-variant)
 
 ## Cases and Social Distancing
 
@@ -325,6 +313,20 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
 - Source [Office of Registration Administration, Department of Provincial Administration](downloads.md#dl-deaths-all)
+
+## Testing, isolation and Vaccine assistance
+
+
+- Annoucements on free testing, free hospitalisation, free vaccines and rules changes
+   - English: [Thailand PRD Twitter](https://twitter.com/prdthailand) - [Thailand PRD FB](https://www.facebook.com/thailandprd)
+   - Thai: [ThaiGov Covid-19 FB](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
+   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/)
+- Call [1422](tel:1422) if you have Covid with mild symptoms
+   - With only a positive ATK you can register for [free support during home isolation](https://twitter.com/prdthailand/status/1479301770388000768).
+   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
+   - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
+- Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
+- Unsure of your risks with or without a vaccine? [AU Risk Calc](https://corical.immunisationcoalition.org.au/) (updated for omicron) - [UK Risk Calc](https://www.qcovid.org/Calculation) (based on delta?)
 
 ## How to contribute
 
