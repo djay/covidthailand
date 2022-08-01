@@ -17,6 +17,7 @@ from utils_pandas import import_csv
 from utils_scraping import logger
 from utils_scraping import s
 from utils_scraping import web_files
+from utils_scraping import web_links
 from utils_thai import DISTRICT_RANGE
 from utils_thai import join_provinces
 from utils_thai import to_thaiyear
@@ -535,13 +536,14 @@ def excess_deaths():
 
 def ihme_dataset(check=True):
     data = pd.DataFrame()
-
     # listing out urls not very elegant, but this only need yearly update
     # TODO: get links directly from https://www.healthdata.org/covid/data-downloads so new year updates
-    urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv',
-            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
-            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv']
-    for file, _, _ in web_files(*urls, dir="inputs/IHME", check=check, appending=False):
+    # urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv',
+    #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
+    #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv']
+    # IHME seems to have problem with their latest section and have pointed main site back to archives
+    urls = [u for u in web_links("https://www.healthdata.org/covid/data-downloads", ext="csv") if "file_reference" in u]
+    for file, _, _ in web_files(*reversed(urls), dir="inputs/IHME", check=check, appending=False):
         data_in_file = pd.read_csv(file)
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)
