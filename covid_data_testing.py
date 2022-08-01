@@ -380,7 +380,8 @@ def get_variant_sequenced_table(file, page, page_num):
     df = df.apply(pd.to_numeric)
     # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
     df = df.loc[:, ~df.columns.duplicated()].copy()
-    if re.search("Thailand with (.*)sequence data", page).group(1) in ["", "Omicron"]:
+    match = re.search("Thailand with (.*)sequence data", page)
+    if match and match.group(1) in ["", "Omicron"]:
         # first table. Ignore others so no double counted
         # TODO: need more general method
         df = df.drop(columns=[c for c in df.columns if "Other" in c])
