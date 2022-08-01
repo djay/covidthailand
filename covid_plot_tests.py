@@ -61,7 +61,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = seq.fillna(0)
     # Group into major categories, BA.2 vs BA.1
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
-    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/BA.5", "BA.5": "BA.4/BA.5", "BA.2.75": "BA.2.75", "Other": "Other"}
+    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/BA.5", "BA.5": "BA.4/BA.5", "BA.2.76": "BA.2.76", "Other": "Other"}
 
     def group(variant):
         label = next((label for match, label in reversed(groups.items()) if match in variant), "Other")
