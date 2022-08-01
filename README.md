@@ -10,8 +10,6 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 **NEW** [Excess Deaths](#excess-deaths)
 
-<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=medium" width="400px" align="right" style="float: right">
-
 
 ## Disclaimer
 
@@ -313,6 +311,8 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
 - Source [Office of Registration Administration, Department of Provincial Administration](downloads.md#dl-deaths-all)
+
+<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=medium" width="400px" align="right" style="float: right">
 
 ## Testing, isolation and Vaccine assistance
 
