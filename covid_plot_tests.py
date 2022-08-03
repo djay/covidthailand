@@ -61,7 +61,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = seq.fillna(0)
     # Group into major categories, BA.2 vs BA.1
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
-    groups = {"BA.1": "BA.1", "BA.2": "BA.2", "BA.4": "BA.4/BA.5", "BA.5": "BA.4/BA.5", "BA.2.76": "BA.2.76", "Other": "Other"}
+    groups = {
+        "BA.1": "BA.1",
+        "BA.2": "BA.2",
+        "BA.4": "BA.4/BA.5",
+        "BA.5": "BA.4/BA.5",
+        # "BA.2.76": "BA.2.76",
+        "Other": "Other"
+    }
 
     def group(variant):
         label = next((label for match, label in reversed(groups.items()) if match in variant), "Other")
@@ -105,9 +112,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     cols = variants.columns.to_list()
     variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
     variants['Cases'] = df['Cases']
-    variants = (variants[cols].multiply(variants['Cases'], axis=0))
+    case_variants = (variants[cols].multiply(variants['Cases'], axis=0))
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
-    plot_area(df=variants,
+    plot_area(df=case_variants,
               title='Cases by Major Variant - Interpolated from Sampling - Thailand',
               png_prefix='cases_by_variants', cols_subset=cols,
               ma_days=7,
@@ -116,6 +123,21 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               # y_formatter=perc_format,
               footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to cases. Not all cases are tested.",
               footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report (DMSc')
+
+    ihme = ihme_dataset(check=False)
+    today = df['Cases'].index.max()
+    #est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
+    inf_variants = (variants[cols].multiply(ihme['inf_mean'], axis=0))
+    # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
+    plot_area(df=inf_variants,
+              title='Est. Infections by Major Variant - Interpolated from Sampling - Thailand',
+              png_prefix='inf_by_variants', cols_subset=cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              # y_formatter=perc_format,
+              footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to cases. Not all cases are tested.\nIHME infections is an estimate from modeling",
+              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
 
     # # matplotlib global settings
     # matplotlib.use('AGG')

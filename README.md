@@ -54,10 +54,10 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
   [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
-## Cases by Variant (Extrapolated from Surviellance)
+## Estimated Infections by Major Variant (Extrapolated from Surviellance)
 
-![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
-- source: [DMSc Variant Report](downloads.md#dl-variant)
+![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/inf_by_variants_3.png)
+- source: [DMSc Variant Report](downloads.md#dl-variant), [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
 
 ## Cases by Region
 

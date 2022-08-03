@@ -213,7 +213,7 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               periods_to_plot=["4", "3"],
               cmap='tab10',
-              footnote="DDC ATK+ is interpolated from weekly and is unknown what it measures.",
+              footnote="DDC ATK+ is interpolated from weekly and is unknown what it measures.\nIHME infections is an estimate from modeling",
               footnote_left=f'{source}Data Source: IHME and Evaluation, CCSA Briefing, DDC Dashboard')
 
     logger.info('======== Finish Cases Plots ==========')
