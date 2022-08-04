@@ -13,6 +13,8 @@
   - [API: Daily Summary of Cases/Deaths/Recovered](https://covid19.th-stat.com/json/covid19v2/getTimeline.json)
   - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
+See the [current priority order when combining](https://github.com/djay/covidthailand/blob/64849d291c2cfb234a6b8c6026639c2277a76f89/covid_data.py#L307-L308)
+
 Schema
 
 | Column | |
@@ -21,8 +23,14 @@ Schema
 | Cases Risk {Group} | Categorisation of Risk field from the covid-19-daily dataset  |
 | + See all the above for data definitions |
 
-### Cases/Deaths per province
-
+### Combined per province
+- Sources:
+   - Briefing by Province
+   - API timeline by Province
+   - Dashboard by Provice
+   - Tweets data by Province
+   - Risk Classification by Provice
+- [How these sources are combined](https://github.com/djay/covidthailand/blob/64849d291c2cfb234a6b8c6026639c2277a76f89/covid_data.py#L277-L289)
 #### [cases_by_province.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_province) | [cases_by_province.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_province.csv)
 
 Schema cases_by_province:
@@ -47,7 +55,7 @@ Schema cases_by_province:
 
 
 
-### Cases/Deaths per Health District
+### Combined per Health District
 #### [cases_by_area.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_area), [cases_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_area.csv)
 
 Schema cases_by_area:
@@ -287,7 +295,7 @@ Schema
   should be the same numbers as ```Pos``` and ```Tests```.
 
 ### Tests by Health District
-#### [tests_by_area.json](https://practical-ritchie-cca141.netlify.app/api/tests_by_area) [tests_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/tests_by_area.csv)
+#### [tests_by_area.json](https://practical-ritchie-cca141.netlify.app/api/tests_by_area) | [tests_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/tests_by_area.csv)
 
 
 Schema
@@ -310,22 +318,49 @@ Schema
 - Source:
  - [DMSC: Variant Report](https://drive.google.com/drive/folders/13k14Hs61pgrK8raSMS9LFQn83PKswS-b)
 
-### Daily Variants by Major Group
+### Variants by Major Group
+
+Comes from XLS
 #### [variants.csv](https://practical-ritchie-cca141.netlify.app/api/variants.csv)
 
+Schema
+
+| Column | |
+| -- | -- |
+| End | e.g "2021-04-13" |
+| {Variant ID (Variant Group)} | Number of samples |
+
+
 ### Variants Sequenced (Weekly)
-Comes from pdf tables
+Comes from pdf tables - "Prevalence of Pangolin lineages in the Thailand with sequence data"
 #### [variants_sequenced.csv](https://practical-ritchie-cca141.netlify.app/api/variants_sequenced.csv)
 
-### Variants by PCR (Weekly)
+Schema
+
+| Column | |
+| -- | -- |
+| End | e.g "2021-04-13" |
+| {Variant ID} | Number of samples |
+
+### Variants via PCR by Health District (Weekly)
+Comes from PDF Tables - "Random selection for screening by real-time PCR"
 #### [variants_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/variants_by_area.csv)
+
+Schema
+
+
+| Column | |
+| -- | -- |
+| End | e.g "2021-04-13" |
+| Health District | e.g 13 |
+| {Variant ID (Variant Group)} | Number of samples |
+
 
 ## Vaccination Downloads <a name="dl-vac">
 ### Daily DDC Vaccination Reports
 #### [vac_timeline.csv](https://practical-ritchie-cca141.netlify.app/api/vac_timeline.csv)
 
-- Source:
- - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
 
 Schema
 
@@ -355,8 +390,7 @@ Schema
 
 ### COVID-19 Vaccines by Province <a name="dl-vac-prov">
 #### [vaccinations.csv](https://practical-ritchie-cca141.netlify.app/api/vaccinations.csv)
-- Source:
- - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
 
 Schema
 
