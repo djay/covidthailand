@@ -66,7 +66,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         "BA.2": "BA.2",
         "BA.4": "BA.4/BA.5",
         "BA.5": "BA.4/BA.5",
-        # "BA.2.76": "BA.2.76",
+        "BA.2.76": "Other",
         "Other": "Other"
     }
 
@@ -136,7 +136,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               # y_formatter=perc_format,
-              footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to cases. Not all cases are tested.\nIHME infections is an estimate from modeling",
+              footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections. Not all infections are tested. IHME infections is an estimate from modeling",
               footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
 
     # # matplotlib global settings
