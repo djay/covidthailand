@@ -356,36 +356,74 @@ def get_variants_plot_pdf(file, page, page_num):
     return bangkok
 
 
-def get_variant_sequenced_table(file, page, page_num):
-    if "Prevalence of Pangolin lineages" not in page:
-        return pd.DataFrame()
-    df = camelot_cache(file, page_num + 1, process_background=False)
-    if "Total" in df[0].iloc[-1]:
-        # Vertical
-        df = df.transpose()
-    # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
-    df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
-    df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
-    # Some columns get combined. e.g.
-    df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
-    df.columns = df.iloc[0]
-    df = df.iloc[1:]
-    # Convert week number to a date
-    df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
-    df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
-    df = df.set_index("End")
-    df = df.drop(columns=["Total Sequences", "Lineage"])
-    # TODO: Ensure Other is always counted in rest of numbers. so far seems to
-    df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
-    df = df.apply(pd.to_numeric)
-    # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
-    df = df.loc[:, ~df.columns.duplicated()].copy()
-    match = re.search("Thailand with (.*)sequence data", page)
-    if match and match.group(1) in ["", "Omicron"]:
-        # first table. Ignore others so no double counted
-        # TODO: need more general method
-        df = df.drop(columns=[c for c in df.columns if "Other" in c])
-    return df
+def get_variant_sequenced_table(file, pages):
+    fileseq = pd.DataFrame()
+    first_seq_table = None
+    for page_num, page in enumerate(pages):
+        if "Prevalence of Pangolin lineages" not in page:
+            continue
+        df = camelot_cache(file, page_num + 1, process_background=False)
+        if "Total" in df[0].iloc[-1]:
+            # Vertical
+            df = df.transpose()
+        # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
+        df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
+        df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
+        # Some columns get combined. e.g.
+        df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
+        if "20220715" in file and df.iloc[0, 3] == "Other BA.2":
+            # Other BA.2 is there twice. One is wrong
+            df.iloc[0, 3] = "Other BA.2.9"
+        elif "20220610" in file and page_num == 11:
+            df.iloc[1, 0] = "w126"
+            df.iloc[2, 0] = "w127"
+        df.columns = df.iloc[0]
+        df = df.iloc[1:]
+        # Convert week number to a date
+        df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
+        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
+        df = df.set_index("End")
+        df = df.drop(columns=["Total Sequences", "Lineage"])
+        # TODO: Ensure Other is always counted in rest of numbers. so far seems to
+        # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
+        df = df.apply(pd.to_numeric)
+        # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
+        df = df.loc[:, ~df.columns.duplicated()].copy()
+        # match = re.search("Thailand with (.*)sequence data", page)
+        # if match and match.group(1) in ["", "Omicron"]:
+        #     # first table. Ignore others so no double counted
+        #     # 2022-06-24 - Other=5 in first table but this is BA4/5 in next table
+        #     # 2022-07-15 - Other=1 in first table but not represented in other tables
+        #     # TODO: need more general method
+        #     df = df.drop(columns=[c for c in df.columns if "Other" in c])
+        seq_table = df
+
+        # The first table should include all the numbers from the next more detailed tables
+        if first_seq_table is None and not seq_table.empty:
+            first_seq_table = seq_table
+        else:
+            fileseq = seq_table.combine_first(fileseq)
+    # HACK: Most reports have only 2 rows. BA.1 data is from older time periods. Just keep last 2 and let
+    # older reports include that data so we get the full row
+    fileseq = fileseq.iloc[-2:]
+
+    # Check sub tables add up to the initial table. If not these are our "others"
+    exceptions = ["Other BA.5"] if "20220715" in file else []
+    fileseq = fileseq.drop(columns=[c for c in fileseq.columns if "Other" in c and c not in exceptions])
+    if first_seq_table is None:
+        return fileseq
+    others = first_seq_table.sum(axis=1) - fileseq.sum(axis=1)
+    if any_in(file, "20220715", "20220610"):
+        # Other doesn't add up. 2 is a mistake?
+        # 2022-05-07 is 1 out in 20220610
+        pass
+    elif any_in(file, "20220708", "20220701", "20220627"):
+        # BA4/5 are the "Other" in the first table but counted later on
+        pass
+    else:
+        assert(others.sum() == 0 or (first_seq_table['Other'] == others).all())
+    fileseq['Other'] = others
+    return fileseq
 
 
 def get_variant_reports():
@@ -424,7 +462,6 @@ def get_variant_reports():
         # page 4 pie charts national + bangkok + regional
         # page 5 area chart: weekly national, bangkok, regional
         # page 6 samples submitted GSAID: weekly
-        fileseq = pd.DataFrame()
         for page_num, page in enumerate(pages):
             bangkok = get_variants_plot_pdf(file, page, page_num)
             if not bangkok.empty:
@@ -432,12 +469,8 @@ def get_variant_reports():
                 # TODO: date ranges don't line up so can't do this
                 bangkok.index = nat.index[:len(bangkok.index)]
             area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
-            seq_page = get_variant_sequenced_table(file, page, page_num)
-            # Important we take later pages as priority so that "Other" is not double counting
-            fileseq = seq_page.combine_first(fileseq)
-        # HACK: BA.1 data is from older time periods. Just keep last 2 and let
-        # older reports include that data so we get the full row
-        fileseq = fileseq.iloc[-2:]
+        fileseq = get_variant_sequenced_table(file, pages)
+
         # Later files can update prev reports
         sequenced = pd.concat([sequenced, fileseq]).reset_index().drop_duplicates(subset="End").set_index("End").sort_index()
 
