@@ -464,10 +464,11 @@ def briefing_deaths_provinces(dtext, date, file):
         # 2022-02-26 - Uttaradit(2) Chiang Mai, Chiang Rai, Uthai Thani(1) 6
         # 2022-03-04 - 9!=10 Lopburi(3) Kanchanaburi(2) Chonburi Nakhon Nayok Saraburi Prachinburi(1) 10
         pass
-    elif date in [d("2022-03-08"), d("2022-03-18"), d("2022-03-31")]:
+    elif date in [d("2022-03-08"), d("2022-03-18"), d("2022-03-31"), d("2022-08-15")]:
         # 2022-03-08 - wrong total and subtotals
         # 2022-03-18 - only got 77. and south and west got combined?
         # 2022-03-31 - "Nakhon Si Thammarat(8) Chumphon(1) Krabi(1) 9"
+        # 2022-08-15 - adds to 33. maybe public total (30) is wrong?
         pass
     else:
         msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
