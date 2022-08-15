@@ -26,6 +26,7 @@ from utils_thai import FIRST_AREAS
 from utils_thai import join_provinces
 from utils_thai import trend_table
 
+# Eyeballed from the plots for sequenced varaints in the reports
 est_variants = """
 week,BA.1 (Omicron),BA.2 (Omicron)
 100, 100, 0
@@ -99,13 +100,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     # fill in leftover dates with SNP genotyping data (major varient types)
     variants = seq.combine_first(variants)
 
-    # There is extra breakdown in the health area data, at least for latest week
+    # This is the PCR based survalience. Less detailed but more samples and 1 week ahead of sequencing.
     area = import_csv("variants_by_area", index=["Start", "End"], date_cols=["Start", "End"])
     area = area.groupby(["Start", "End"]).sum()
     area = area.reset_index().drop(columns=["Health Area", "Start"]).set_index(
         "End").rename(columns={"B.1.1.529 (Omicron)": "Other (Omicron)"})
     area = area.apply(lambda x: x / x.sum(), axis=1)
     # Omicron didn't get spit out until 2022-06-24 so get rid of the rest
+    # TODO: should we prefer seq data or pcr data?
     variants = variants.combine_first(area["2022-06-24":])
     last_data = variants['BA.2 (Omicron)'].last_valid_index()
 
