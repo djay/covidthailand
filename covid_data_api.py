@@ -455,7 +455,7 @@ def get_cases_by_demographics_api():
 
 def timeline_by_province():
     url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True, timeout=20)), None)
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True, timeout=40)), None)
     df = pd.read_json(file)
     df = df.rename(columns={"txn_date": "Date", "province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})

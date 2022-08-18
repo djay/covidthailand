@@ -306,15 +306,19 @@ def get_variants_by_area_pdf(file, page, page_num):
         totals = df[[2, 5, 8, 11]]  # only want this week not whole year
     elif len(df.columns) == 16:  # 2022-06-24 switched to inc BA4/5
         totals = df[[1, 2, 3, 5, 8, 11, 14]]
+    elif len(df.columns) == 19:  # 2022-08-18 add BA.2.75
+        # TODO: inc BA.2.75/BA2.76
+        totals = df[[1, 2, 3, 5, 8, 11, 14, 17]]
 
     else:
         assert False, "Unknown Area Variant table"
-    totals.columns = [v.replace("Potentially ", "").replace("\n", "") for v in df.iloc[1] if v]
+    cols = [v.replace("Potentially ", "").replace("\n", "") for v in df.iloc[1] if v]
+    totals.columns = cols
 
     assert len(df) == 17
     totals = totals.iloc[3:16]
 
-    totals = totals.apply(pd.to_numeric)
+    totals = totals.replace(r"([0-9]*) \+ \([0-9]\)", r"\1", regex=True).apply(pd.to_numeric)
 
     if len(totals.columns) == 7:
         # HACK: Cols are totals not daily. Hack since they are likely 0
