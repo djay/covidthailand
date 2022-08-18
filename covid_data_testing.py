@@ -320,11 +320,6 @@ def get_variants_by_area_pdf(file, page, page_num):
 
     totals = totals.replace(r"([0-9]*) \+ \([0-9]\)", r"\1", regex=True).apply(pd.to_numeric)
 
-    if len(totals.columns) == 7:
-        # HACK: Cols are totals not daily. Hack since they are likely 0
-        # TODO: return these seperate and work out diffs in case any were added
-        totals[["B.1.1.7 (Alpha)", "B.1.351 (Beta)", "B.1.617.2 (Delta)"]] = 0
-
     totals["Health Area"] = range(1, 14)
 
     # start, end = find_date_range(page) whole year
@@ -340,6 +335,12 @@ def get_variants_by_area_pdf(file, page, page_num):
 
     totals["Start"] = start
     totals["End"] = end
+
+    if "BA.2 (Omicron)" in totals.columns:
+        # HACK: Cols are totals not daily. Hack since they are likely 0
+        # TODO: return these seperate and work out diffs in case any were added
+        totals[["B.1.1.7 (Alpha)", "B.1.351 (Beta)", "B.1.617.2 (Delta)"]] = 0
+
     return totals.set_index("End")
 
 

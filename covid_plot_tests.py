@@ -61,7 +61,6 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
     seq = seq.fillna(0)
     # Group into major categories, BA.2 vs BA.1
-    unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
     groups = {
         "BA.1": "BA.1",
         "BA.2": "BA.2",
@@ -74,6 +73,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     def group(variant):
         label = next((label for match, label in reversed(groups.items()) if match in variant), "Other")
         return label + " (Omicron)"
+    unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
