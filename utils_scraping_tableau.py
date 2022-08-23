@@ -53,8 +53,9 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     if date is not None:
         data["Date"] = [date]
     for name, col in mappings.items():
+        closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
         try:
-            df = wb.getWorksheet(name).data
+            df = wb.getWorksheet(closest).data
         except (KeyError, TypeError, AttributeError):
             # TODO: handle error getting wb properly earlier
             logger.info("Error getting tableau {}/{} {}", name, col, date)

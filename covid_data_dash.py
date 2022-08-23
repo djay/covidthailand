@@ -157,7 +157,7 @@ def dash_daily():
         if row.empty:
             break
 
-        last_update = wb.getWorksheet("D_UpdateTime").data
+        last_update = wb.getWorksheet("D_UpdateTime (2)").data
         if not last_update.empty:
             last_update = pd.to_datetime(
                 last_update['max_update_date-alias'].str.replace("2565", "2022"), dayfirst=False).iloc[0]
