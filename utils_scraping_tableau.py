@@ -116,11 +116,9 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
             try:
-                data[col] = list(pd.to_numeric(df.loc[0]))  # HACK: should have better way to convert numbers
+                data[col] = list(pd.to_numeric(df.loc[0]))  # HACK: shouldn't assume we want numbers
             except ValueError:
-                data[col] = list(pd.to_numeric(df.loc[0].str.replace(",", "")))
-            if data[col] == ["%null%"]:
-                data[col] = [np.nan]
+                data[col] = list(pd.to_numeric(df.loc[0].str.replace(",", "").replace("%null%", "")))
     # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
     if not df.empty:
