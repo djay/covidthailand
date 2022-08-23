@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import pandas as pd
+import tableauscraper
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 
@@ -34,18 +35,22 @@ def todays_data():
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
     while True:
-        get_wb, date = next(workbook_iterate(url, param_date=[today(), today()]))
-        date = next(iter(date))
-        if (wb := get_wb()) is None:
-            continue
-        last_update = wb.getWorksheet("D_UpdateTime").data
+        # dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
+        # get_wb, date = next(workbook_iterate(url, param_date=dates))
+        # date = next(iter(date))
+        # if (wb := get_wb()) is None:
+        #     continue
+        ts = tableauscraper.TableauScraper(verify=False)
+        ts.loads(url)
+        wb = ts.getWorkbook()
+
+        last_update = wb.getWorksheet("D_UpdateTime (2)").data
         if last_update.empty:
             continue
-        else:
-            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
-            if last_update >= today().date():
-                return True
-            # We got todays data too early
+        last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+        if last_update >= today().date():
+            return True
+        # We got todays data too early
         print("z", end="")
         time.sleep(60)
 
@@ -472,6 +477,7 @@ def check_dash_ready():
 
 
 if __name__ == '__main__':
+    # check_dash_ready()
 
     dash_daily_df = dash_daily()
 
@@ -479,5 +485,4 @@ if __name__ == '__main__':
     dash_trends_prov_df = dash_trends_prov()
 
     dash_ages_df = dash_ages()
-    # check_dash_ready()
     dash_by_province_df = dash_by_province()
