@@ -480,10 +480,10 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
+    dash_by_province_df = dash_by_province()
     dash_daily_df = dash_daily()
 
     # This doesn't add any more info since severe cases was a mistake
     dash_trends_prov_df = dash_trends_prov()
 
     dash_ages_df = dash_ages()
-    dash_by_province_df = dash_by_province()

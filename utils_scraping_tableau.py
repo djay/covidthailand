@@ -164,7 +164,8 @@ def workbook_iterate(url, verify=True, **selects):
 
             set_value.append(do_param)
             continue
-        ws = next(ws for ws in wb.worksheets if ws.name == name)
+        ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
+        assert ws is not None
         # TODO: allow a select to be manual list of values
         svalues = ws.getSelectableValues(values)
         if svalues:
@@ -172,7 +173,7 @@ def workbook_iterate(url, verify=True, **selects):
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_select(wb, value, name=name, values=values):
-                ws = next(ws for ws in wb.worksheets if ws.name == name)
+                ws = next((ws for ws in wb.worksheets if ws.name == name), None)
                 return ws.select(values, value)
             set_value.append(do_select)
         else:
@@ -183,7 +184,7 @@ def workbook_iterate(url, verify=True, **selects):
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):
-                ws = next(ws for ws in wb.worksheets if ws.name == ws_name)
+                ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == ws_name), None)
                 # return ws.setFilter(values, value)
                 return force_setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
