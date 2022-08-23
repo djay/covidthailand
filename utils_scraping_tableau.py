@@ -115,7 +115,10 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
-            data[col] = list(df.loc[0])
+            try:
+                data[col] = list(pd.to_numeric(df.loc[0]))  # HACK: should have better way to convert numbers
+            except ValueError:
+                data[col] = list(pd.to_numeric(df.loc[0].str.replace(",", "")))
             if data[col] == ["%null%"]:
                 data[col] = [np.nan]
     # combine all the single values with any subplots from the dashboard

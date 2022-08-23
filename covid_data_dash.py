@@ -13,6 +13,7 @@ from utils_pandas import import_csv
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import workbook_explore
 from utils_scraping_tableau import workbook_flatten
 from utils_scraping_tableau import workbook_iterate
 from utils_thai import get_province
