@@ -1,6 +1,7 @@
 import datetime
 import sys
 import time
+from lib2to3.pgen2.pgen import DFAState
 
 import numpy as np
 import pandas as pd
@@ -67,6 +68,8 @@ def dash_daily():
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
+
+    all_atk_reg = pd.DataFrame()
 
     allow_na = {
         "ATK": [[d("2021-07-31"), d("2022-07-05")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
@@ -189,8 +192,8 @@ def dash_daily():
             atk_reg = atk_reg.rename(columns={"Week-value": "Week", 'SUM(#SETDATE_WEEK_CNT)-value': col})[["Week", col]]
             atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
             atk_reg = atk_reg.set_index("Date")[[col]]
-            atk_reg = atk_reg.cumsum()
-            row = row.combine_first(atk_reg)
+            # atk_reg = atk_reg.cumsum()
+            all_atk_reg = all_atk_reg.combine_first(atk_reg)
 
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
@@ -200,6 +203,7 @@ def dash_daily():
     # 2022-05-07 and 03 got 0.0 by mistake
     df['Hospitalized Respirator'] = df['Hospitalized Respirator'].replace(0.0, np.nan)
     df["Hospitalized Severe"] = df["Hospitalized Severe"].replace(0.0, np.nan)
+    df = all_atk_reg.cumsum().combine_first(df)
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
 
