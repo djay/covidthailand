@@ -90,8 +90,15 @@ def dash_daily():
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
     dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
-    for get_wb, date in workbook_iterate(url, param_date=dates):
-        date = next(iter(date))
+    # for get_wb, date in workbook_iterate(url, D_NewTL="DAY(txn_date)"):
+    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
+        if date is None:
+            # initial one which is today
+            date = today()
+        else:
+            date = next(iter(date), None)
+        if type(date) == str:
+            date = d(date)
         if skip_valid(df, date, allow_na):
             continue
         if (wb := get_wb()) is None:
@@ -175,11 +182,11 @@ def dash_daily():
             row.loc[date] = row.loc[date].fillna(0.0)  # ATK and HICI etc are null to mean 0.0
 
         # Not date indexed as it's weekly
-        atk_reg = wb.getWorksheet("WEEK_line_Total").data
+        atk_reg = wb.getWorksheet("ATK+WEEK_line_Total (1)").data
         if not atk_reg.empty:
             # It's the same value for all dates so only need on first iteration
             col = "Infections Non-Hospital Cum"  # ATK+?  no real explanation for this number
-            atk_reg = atk_reg.rename(columns={"Week-value": "Week", "SUM(Cnt)-value": col})[["Week", col]]
+            atk_reg = atk_reg.rename(columns={"Week-value": "Week", 'SUM(#SETDATE_WEEK_CNT)-value': col})[["Week", col]]
             atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
             atk_reg = atk_reg.set_index("Date")[[col]]
             atk_reg = atk_reg.cumsum()
@@ -480,8 +487,8 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_by_province_df = dash_by_province()
     dash_daily_df = dash_daily()
+    dash_by_province_df = dash_by_province()
 
     # This doesn't add any more info since severe cases was a mistake
     dash_trends_prov_df = dash_trends_prov()

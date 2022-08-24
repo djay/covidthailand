@@ -127,7 +127,7 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     return res
 
 
-def workbook_iterate(url, verify=True, **selects):
+def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
     def do_reset(attempt=0):
@@ -173,7 +173,7 @@ def workbook_iterate(url, verify=True, **selects):
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_select(wb, value, name=name, values=values):
-                ws = next((ws for ws in wb.worksheets if ws.name == name), None)
+                ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
                 return ws.select(values, value)
             set_value.append(do_select)
         else:
@@ -188,6 +188,8 @@ def workbook_iterate(url, verify=True, **selects):
                 # return ws.setFilter(values, value)
                 return force_setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
+    if inc_no_param:
+        yield lambda: wb, None
 
     last_idx = [None] * len(selects)
     # Get all combinations of the values of params, select or filter
