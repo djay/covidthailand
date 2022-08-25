@@ -88,7 +88,7 @@ def dash_daily():
         'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
         'Recovered': (d('2021-01-01'), today(), 1),
         'Cases Walkin': (d('2021-01-01'), today(), 1),
-        # 'Infections Non-Hospital Cum': (d("2022-07-09"),),
+        'Infections Non-Hospital Cum': (d("2022-04-08"), d("2022-06-12"), 800000),  # Redo older rows because cumsum cal was off
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
