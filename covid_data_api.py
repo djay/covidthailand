@@ -339,7 +339,11 @@ def get_case_details_api():
     data = []
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
     # First check api is working ok
-    r = s.get(url, timeout=25, verify=False)
+    try:
+        r = s.get(url, timeout=25, verify=False)
+    except Exception as e:
+        logger.warning("Covid19daily: Error {}", e)
+        return cases
     pagedata = json.loads(r.content)
     page = pagedata['data']
     last_page = pagedata['meta']['last_page']
