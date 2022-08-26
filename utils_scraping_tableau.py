@@ -130,19 +130,19 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
 def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
-    def do_reset(attempt=0):
-        if attempt == 3:
-            return None
-        ts = tableauscraper.TableauScraper(verify=verify)
-        try:
-            ts.loads(url)
-        except Exception as err:
-            # ts library fails in all sorts of weird ways depending on the data sent back
-            logger.info("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
-            return do_reset(attempt=attempt + 1)
-        fix_timeouts(ts.session, timeout=30)
-        wb = ts.getWorkbook()
-        return wb
+    def do_reset():
+        for _ in range(3):
+            ts = tableauscraper.TableauScraper(verify=verify)
+            try:
+                ts.loads(url)
+            except Exception as err:
+                # ts library fails in all sorts of weird ways depending on the data sent back
+                logger.info("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
+                continue
+            fix_timeouts(ts.session, timeout=30)
+            wb = ts.getWorkbook()
+            return wb
+        return None
 
     wb = do_reset()
     if wb is None:
@@ -151,7 +151,9 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
     # match the params to iterate to param, filter or select
     for name, values in selects.items():
         param = next((p for p in wb.getParameters() if p['column'] == name), None)
-        if param is not None:
+        ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
+        if param is not None or ws is None:
+            # We will force param if it's not select
             if type(values) == str:
                 selects[name] = param['values']
             else:
@@ -164,8 +166,6 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
 
             set_value.append(do_param)
             continue
-        ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
-        assert ws is not None
         # TODO: allow a select to be manual list of values
         svalues = ws.getSelectableValues(values)
         if svalues:
@@ -191,7 +191,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
     if inc_no_param:
         yield lambda: wb, None
 
-    last_idx = [None] * len(selects)
+    last_idx = [None] * len(selects)  # Outside so we know if we need to change teh params or not
     # Get all combinations of the values of params, select or filter
     for next_idx in itertools.product(*selects.values()):
         def get_workbook(wb=wb, next_idx=next_idx):
@@ -204,7 +204,8 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
                         continue
                     reset = False
                 for do_set, last_value, value in zip(set_value, last_idx, next_idx):
-                    if last_value != value:
+                    if last_value != value and value is not None:
+                        # None means to skip setting this value. #TODO: but does it make sense unless it's just reset?
                         try:
                             wb = do_set(wb, value)
                         except Exception as err:
@@ -237,6 +238,7 @@ def force_setParameter(wb, parameterName, value):
     )
     r = scraper.session.post(
         f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
+        # data=dict(fieldCaption=parameterName, valueString=value),
         files=payload,
         verify=scraper.verify
     )

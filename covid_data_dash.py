@@ -300,7 +300,7 @@ def dash_trends_prov():
 def dash_by_province():
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
-    url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province"
+    url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
@@ -349,8 +349,13 @@ def dash_by_province():
     ]
 
     dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
-    for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
+    #dates = [d.strftime('%m/%d/%Y') for d in dates]
+    # Add in None for today as selecting today doesn't give us new data anymore. TODO: fix TableauScraper to remember the last data it had
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province"):
         date, province = idx_value
+        #date = d(date, dayfirst=False)
+        if date is None:
+            date = (today() - relativedelta(hours=7.5))
         if province is None:
             continue
         province = get_province(province)
@@ -399,9 +404,9 @@ def dash_by_province():
         )
         # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
         # Need to work if the data has been updated yet. If it has last deaths should be today.
-        last_update_df = wb.getWorksheet("D2_DeathTL").data
+        last_update_df = wb.getWorksheet("D2_NewTL (2)").data
         last_update = None
-        if last_update_df.empty or date > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()):
+        if last_update_df.empty or date.date() > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()).date():
             # the date we are trying to get isn't the last deaths we know about. No new data yet
             logger.warning("{} MOPH Dashboard {}", date.date(), f"Skipping {province} as data update={last_update}")
             continue
@@ -491,8 +496,8 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_daily_df = dash_daily()
     dash_by_province_df = dash_by_province()
+    dash_daily_df = dash_daily()
 
     # This doesn't add any more info since severe cases was a mistake
     dash_trends_prov_df = dash_trends_prov()
