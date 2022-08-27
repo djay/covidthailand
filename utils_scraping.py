@@ -312,14 +312,14 @@ def links_html_namer(url, _):
     return "-".join(url.split("/")[2:]) + ".html"
 
 
-def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True):
+def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=5):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
-    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer):
+    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=5):
         soup = parse_file(file, html=True, paged=False)
         links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
         for link in links:
@@ -337,7 +337,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         os.makedirs(os.path.dirname(file), exist_ok=True)
         resumable = False
         size = None
-        verify = "ddc.moph.go.th" not in url
+        #verify = "ddc.moph.go.th" not in url
+        verify = True
 
         if check or MAX_DAYS:
             try:

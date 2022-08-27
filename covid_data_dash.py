@@ -500,6 +500,6 @@ if __name__ == '__main__':
     dash_daily_df = dash_daily()
 
     # This doesn't add any more info since severe cases was a mistake
-    dash_trends_prov_df = dash_trends_prov()
+#    dash_trends_prov_df = dash_trends_prov()
 
     dash_ages_df = dash_ages()
