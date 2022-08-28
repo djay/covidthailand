@@ -711,6 +711,11 @@ def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
 
 
 def get_proxy():
+    while True:
+        yield {
+            "http": "socks4://127.0.0.1:9050",
+            "https": "socks4://127.0.0.1:9050"
+        }
     url = "https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data-with-geolocation.json"
     url = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/json/proxies-advanced.json"
     data = requests.get(url).json()
