@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import pickle
+import random
 import re
 import sys
 import urllib.parse
@@ -19,7 +20,10 @@ import urllib3
 from bs4 import BeautifulSoup
 from loguru import logger
 from pptx import Presentation
-from pytwitterscraper import TwitterScraper
+try:
+    from pytwitterscraper import TwitterScraper
+except:
+    TwitterScraper = None
 from requests.adapters import HTTPAdapter
 from requests.adapters import Retry
 from requests.exceptions import ConnectionError
@@ -28,6 +32,33 @@ from tika import config
 from tika import parser
 from webdav3.client import Client
 from xlsx2csv import Xlsx2csv
+#from proxyscrape import create_collector
+
+
+# https://proxybroker.readthedocs.io/en/latest/
+
+# collector = create_collector('my-collector', 'http')
+# collectors = create_collector('my-collectors', 'https')
+
+# import asyncio
+# from proxybroker import Broker
+
+
+# proxy = None
+# async def show(proxies):
+#     global proxy
+#     proxy = await proxies.get()
+
+# proxies = asyncio.Queue()
+# broker = Broker(proxies)
+# tasks = asyncio.gather(
+#     broker.find(types=['HTTP', 'HTTPS'], limit=1),
+#     show(proxies))
+
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(tasks)
+
+
 urllib3.disable_warnings()
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
@@ -312,21 +343,21 @@ def links_html_namer(url, _):
     return "-".join(url.split("/")[2:]) + ".html"
 
 
-def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=5):
+def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=5, proxy=False):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
-    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=5):
+    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=5, proxy=proxy):
         soup = parse_file(file, html=True, paged=False)
         links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
         for link in links:
             yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=5):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=5, proxy=False):
     """if check is None, then always download"""
     s = requests.Session()
     fix_timeouts(s, timeout)
@@ -342,7 +373,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=timeout, verify=verify)
+                r = s.head(url, timeout=timeout, verify=verify, proxies=next(get_proxy()) if proxy else None)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")
@@ -367,7 +398,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             try:
                 # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
-                r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True, verify=verify)
+                r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True,
+                          verify=verify, proxies=next(get_proxy()) if proxy else None)
             except (Timeout, ConnectionError) as e:
                 err = str(e)
                 r = None
@@ -515,7 +547,6 @@ def parse_tweet(tw, tweet, found, *matches):
 def get_tweets_from(userid, datefrom, dateto, *matches):
     """return tweets from single person that match, merging in followups of the form [1/2]. Caches to speed up"""
 
-    tw = TwitterScraper()
     filename = os.path.join("inputs", "tweets", f"tweets2_{userid}.pickle")
     os.makedirs("inputs/tweets", exist_ok=True)
     try:
@@ -532,6 +563,7 @@ def get_tweets_from(userid, datefrom, dateto, *matches):
         tweets[date] = fixed
     latest = max(tweets.keys()) if tweets else None
     return tweets  # seems to be blocking and not useful new data anymore 2021-01-22
+    tw = TwitterScraper()
     if latest and dateto and latest >= (datetime.datetime.today() if not dateto else dateto).date():
         return tweets
     for limit in [50, 2000, 20000]:
@@ -676,3 +708,33 @@ def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
     buffer.seek(0)
     df = pd.read_csv(buffer)
     return df
+
+
+def get_proxy():
+    url = "https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data-with-geolocation.json"
+    url = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/json/proxies-advanced.json"
+    data = requests.get(url).json()
+    random.shuffle(data)
+    for d in data:
+        if not d['location']['isocode'] == "TH":
+            continue
+        if "http" in [p["type"] for p in d['protocols']]:
+            proxies = {
+                p["type"]: f"{p['type']}://{d['ip']}:{p['port']}" for p in d['protocols']
+            }
+        else:
+            p = d['protocols'][0]
+            proxies = {
+                "http": f"{p['type']}://{d['ip']}:{p['port']}",
+                "https": f"{p['type']}://{d['ip']}:{p['port']}",
+            }
+
+        logger.info(f"Testing proxy {proxies}")
+        while True:
+            try:
+                if requests.get("https://ddc.moph.go.th", proxies=proxies).status_code == 200:
+                    yield proxies
+                else:
+                    break
+            except requests.exceptions.RequestException as e:
+                break
