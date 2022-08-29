@@ -1,3 +1,4 @@
+import concurrent.futures
 import datetime
 import json
 import os
@@ -711,35 +712,40 @@ def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
 
 
 def get_proxy():
-    while True:
-        yield {
-            "http": "socks4://127.0.0.1:9050",
-            "https": "socks4://127.0.0.1:9050"
-        }
     url = "https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data-with-geolocation.json"
     url = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/json/proxies-advanced.json"
     data = requests.get(url).json()
     random.shuffle(data)
-    for d in data:
-        if not d['location']['isocode'] == "TH":
-            continue
+
+    def to_proxies(d):
         if "http" in [p["type"] for p in d['protocols']]:
-            proxies = {
+            return {
                 p["type"]: f"{p['type']}://{d['ip']}:{p['port']}" for p in d['protocols']
             }
         else:
             p = d['protocols'][0]
-            proxies = {
+            return {
                 "http": f"{p['type']}://{d['ip']}:{p['port']}",
                 "https": f"{p['type']}://{d['ip']}:{p['port']}",
             }
+    proxies = [{
+        "http": "socks4://127.0.0.1:9050",
+        "https": "socks4://127.0.0.1:9050"
+    }] + [to_proxies(d) for d in data if not d['location']['isocode'] == "TH"]
 
-        logger.info(f"Testing proxy {proxies}")
-        while True:
-            try:
-                if requests.get("https://ddc.moph.go.th", proxies=proxies).status_code == 200:
+    def test_proxy(proxies):
+        try:
+            if requests.get("https://ddc.moph.go.th", proxies=proxies).status_code == 200:
+                logger.info(f"Pass Test proxy {proxies}")
+                return proxies
+        except requests.exceptions.RequestException:
+            pass
+        logger.info(f"Failed Test proxy {proxies}")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
+        for future in concurrent.futures.as_completed(executor.submit(test_proxy, p) for p in proxies):
+            proxies = future.result()
+            if proxies is not None:
+                yield proxies
+                while test_proxy(proxies):
                     yield proxies
-                else:
-                    break
-            except requests.exceptions.RequestException as e:
-                break
