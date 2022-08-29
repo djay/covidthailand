@@ -374,7 +374,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=timeout, verify=verify, proxies=next(get_proxy()) if proxy else None)
+                r = s.head(url, timeout=timeout, verify=verify, proxies=next(proxies_itor) if proxy else None)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")
@@ -400,7 +400,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
                 r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True,
-                          verify=verify, proxies=next(get_proxy()) if proxy else None)
+                          verify=verify, proxies=next(proxies_itor) if proxy else None)
             except (Timeout, ConnectionError) as e:
                 err = str(e)
                 r = None
@@ -735,7 +735,7 @@ def get_proxy():
 
     def test_proxy(proxies):
         try:
-            if requests.get("https://ddc.moph.go.th", proxies=proxies).status_code == 200:
+            if requests.head("https://ddc.moph.go.th", proxies=proxies, timeout=15).status_code == 200:
                 logger.info(f"Pass Test proxy {proxies}")
                 return proxies
         except requests.exceptions.RequestException:
@@ -745,7 +745,11 @@ def get_proxy():
     with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
         for future in concurrent.futures.as_completed(executor.submit(test_proxy, p) for p in proxies):
             proxies = future.result()
-            if proxies is not None:
+            if proxies is None:
+                continue
+            yield proxies
+            while test_proxy(proxies):
                 yield proxies
-                while test_proxy(proxies):
-                    yield proxies
+
+
+proxies_itor = get_proxy()

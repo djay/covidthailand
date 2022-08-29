@@ -648,7 +648,7 @@ def vaccination_reports_files2(check=True,
 
         def get_file(link=link):
             try:
-                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations")))
+                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations", proxy=True)))
             except StopIteration:
                 return None
             return file
