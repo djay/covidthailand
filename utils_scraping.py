@@ -351,7 +351,7 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
-    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=5, proxy=proxy):
+    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=timeout, proxy=proxy):
         soup = parse_file(file, html=True, paged=False)
         links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
         for link in links:
@@ -363,6 +363,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
     s = requests.Session()
     fix_timeouts(s, timeout)
     i = 0
+    proxies = next(proxies_itor, None) if proxy else None
     for url in urls:
         file = filenamer(url, strip_version)
         file = os.path.join(dir, file)
@@ -374,7 +375,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=timeout, verify=verify, proxies=next(proxies_itor) if proxy else None)
+                r = s.head(url, timeout=timeout, verify=verify, proxies=proxies)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")
@@ -400,7 +401,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
                 r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True,
-                          verify=verify, proxies=next(proxies_itor) if proxy else None)
+                          verify=verify, proxies=proxies)
             except (Timeout, ConnectionError) as e:
                 err = str(e)
                 r = None
@@ -720,7 +721,7 @@ def get_proxy():
     def to_proxies(d):
         if "http" in [p["type"] for p in d['protocols']]:
             return {
-                p["type"]: f"{p['type']}://{d['ip']}:{p['port']}" for p in d['protocols']
+                p["type"]: f"http://{d['ip']}:{p['port']}" for p in d['protocols']
             }
         else:
             p = d['protocols'][0]
@@ -740,7 +741,7 @@ def get_proxy():
                 return proxies
         except requests.exceptions.RequestException:
             pass
-        logger.info(f"Failed Test proxy {proxies}")
+        # logger.info(f"Failed Test proxy {proxies}")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
         for future in concurrent.futures.as_completed(executor.submit(test_proxy, p) for p in proxies):

@@ -625,20 +625,21 @@ def vaccination_reports_files2(check=True,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
+                               timeout=20,
                                ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565)")
-    years = web_links(base1, ext=None, match=hasyear, check=1, proxy=True)
-    months = (link for link in web_links(*years, ext=None, match=hasyear, check=1, proxy=True))
-    links1 = (link for link in web_links(*months, ext=".pdf", check=1, proxy=True) if (
+    years = web_links(base1, ext=None, match=hasyear, check=1, proxy=True, timeout=timeout)
+    months = (link for link in web_links(*years, ext=None, match=hasyear, check=1, proxy=True, timeout=timeout))
+    links1 = (link for link in web_links(*months, ext=".pdf", check=1, proxy=True, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(11, 2, -1)]
-    links2 = (link for f in folders for link in reversed(list(web_links(f, ext=ext, check=False, proxy=True))))
+    links2 = (link for f in folders for link in reversed(list(web_links(f, ext=ext, check=False, proxy=True, timeout=timeout))))
     links = list(links1) + list(links2)
     count = 0
     for link in links:
@@ -648,7 +649,7 @@ def vaccination_reports_files2(check=True,
 
         def get_file(link=link):
             try:
-                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations", proxy=True)))
+                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations", proxy=True, timeout=timeout)))
             except StopIteration:
                 return None
             return file
