@@ -55,6 +55,9 @@ def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph"):
         token = res['nextPageToken']
         url = f"https://www.googleapis.com/drive/v3/files?q=%27{folder_id}%27+in+parents&key={key}&pageToken={token}"
         res = requests.get(url).json()
+        if "files" not in res:
+            logger.error(str(res))
+            break
         files.extend(res["files"])
 
     count = 0
