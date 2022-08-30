@@ -5,9 +5,9 @@ import os
 import shutil
 
 import pandas as pd
+import requests
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from requests.exceptions import ConnectionError
 
 from utils_pandas import add_data
 from utils_pandas import cut_ages
@@ -61,9 +61,9 @@ def get_cases_timelineapi():
     url1 = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all"
     url2 = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all"
     try:
-        json1, _, url = next(web_files(url1, dir="inputs/json", check=False))
-        json2, _, url = next(web_files(url2, dir="inputs/json", check=True))
-    except ConnectionError:
+        json1, _, url = next(web_files(url1, dir="inputs/json", check=False), None)
+        json2, _, url = next(web_files(url2, dir="inputs/json", check=True), None)
+    except requests.exceptions.RequestException:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
     data = pd.concat([pd.read_json(json1), pd.read_json(json2)])
