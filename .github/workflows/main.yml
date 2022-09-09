@@ -181,6 +181,8 @@ jobs:
         if: ${{ steps.gofull.outcome != 'success' && steps.godash.outcome != 'success' && steps.goapi.outcome == 'success' }}
         run: |
             python covid_data_api.py
+            python matplotlib_svg_x_crosshairs.py
+            mv crosshairs.svg outputs
         env:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
