@@ -175,8 +175,12 @@ def briefing_case_types(date, pages, url):
             numbers, rest = get_next_numbers(text, "รวม", until="รายผู้ที่เดิน", dash_as_zero=True)
             cases, walkins, proactive, *quarantine = numbers
             domestic = get_next_number(rest, "ในประเทศ", return_rest=False, until="ราย")
-            if domestic and date not in [d("2021-11-22"), d("2021-12-02"), d("2021-12-29"), d("2022-03-31")]:
+            if date in [d("2022-06-24")]:
+                walkins = 2309
+            elif [d("2021-11-22"), d("2021-12-02"), d("2021-12-29"), d("2022-03-31")]:
                 # Either domestic number is wrong or proactive is wrong
+                pass
+            elif domestic:
                 assert domestic <= cases
                 assert domestic == walkins + proactive
             quarantine = quarantine[0] if quarantine else 0
@@ -185,21 +189,28 @@ def briefing_case_types(date, pages, url):
                 "ช่องเส้นทางธรรมชาติ",
                 "รายผู้ที่เดินทางมาจากต่างประเทศ",
                 before=True,
-                default=0
+                default=0,
+                dash_as_zero=True
             )
             imported = ports + quarantine
             prison, _ = get_next_number(text.split("รวม")[1], "ที่ต้องขัง", default=0, until="ราย", dash_as_zero=True)
             if date == d("2022-03-22"):
                 # order got changed around
                 prison = 44
+
+            # Prison and imported switched around
+            imported = {d("2022-07-13"): 0, d("2022-06-14"): 1, d("2022-07-17"): 0}.get(date, imported)
+            prison = {d("2022-06-10"): 0}.get(date, prison)
+
             cases2 = get_next_number(rest, r"\+", return_rest=False, until="ราย")
             if cases2 is not None and cases2 != cases:
                 # Total cases moved to the bottom
                 # cases == domestic
                 cases = cases2
                 assert cases == domestic + imported + prison
-        if date not in [d("2021-11-01"), d("2022-06-10"), d("2022-06-14")]:
-            # 2022-06-10,14: mixup prison and imported but which is right?
+        if date in [d("2021-11-01")]:
+            pass
+        else:
             assert cases == walkins + proactive + imported + prison, f"{date}: briefing case types don't match"
 
         # hospitalisations
@@ -211,7 +222,7 @@ def briefing_case_types(date, pages, url):
             field, _ = get_next_number(text, "รพ.สนาม")
             num, _ = get_next_numbers(text, "ใน รพ.", before=True)
             hospitalised = num[0]
-            if date in [d("2021-09-04"), d("2022-03-07")]:
+            if date in [d("2021-09-04"), d("2022-03-07"), d("2022-07-10")]:
                 pass
             else:
                 assert hospital + field == hospitalised
@@ -453,10 +464,11 @@ def briefing_deaths_provinces(dtext, date, file):
         # 2022-02-26 - Uttaradit(2) Chiang Mai, Chiang Rai, Uthai Thani(1) 6
         # 2022-03-04 - 9!=10 Lopburi(3) Kanchanaburi(2) Chonburi Nakhon Nayok Saraburi Prachinburi(1) 10
         pass
-    elif date in [d("2022-03-08"), d("2022-03-18"), d("2022-03-31")]:
+    elif date in [d("2022-03-08"), d("2022-03-18"), d("2022-03-31"), d("2022-08-15")]:
         # 2022-03-08 - wrong total and subtotals
         # 2022-03-18 - only got 77. and south and west got combined?
         # 2022-03-31 - "Nakhon Si Thammarat(8) Chumphon(1) Krabi(1) 9"
+        # 2022-08-15 - adds to 33. maybe public total (30) is wrong?
         pass
     else:
         msg = f"in {file} only found {dfprov['Deaths'].sum()}/{deaths_title} from {dtext}\n{pcells}"
@@ -665,7 +677,7 @@ def briefing_deaths_cells(cells, date, all):
         pd.DataFrame(rows, columns=['death_num', "Date", "gender", "age", "Province", "nationality",
                                     "congenital_disease", "case_history", "risk_factor_sickness",
                                     "risk_factor_death"]).set_index("death_num")
-    return all.append(df, verify_integrity=True)
+    return pd.concat([all, df], verify_integrity=True)
 
 
 def briefing_deaths_table(orig, date, all):
@@ -774,6 +786,7 @@ def briefing_documents(check=True):
     links += [f"{url}{f.day:02}{f.month:02}{f.year-1957}.pdf" for f in daterange(start, end, 1)]
     # for file, text, briefing_url in web_files(*), dir="briefings"):
 
+    check = True
     for link in reversed(list(links)):
         date = file2date(link) if "249764.pdf" not in link else d("2021-07-24")
         if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS):
@@ -781,10 +794,11 @@ def briefing_documents(check=True):
 
         def get_file(link=link):
             try:
-                file, text, url = next(iter(web_files(link, dir="inputs/briefings")))
+                file, text, url = next(iter(web_files(link, dir="inputs/briefings", check=check)))
             except StopIteration:
                 return None
             return file
+        check = False  # Only check first one, assume others never get updated
 
         yield link, date, get_file
 
@@ -819,11 +833,17 @@ def get_cases_by_prov_briefings():
 
         each_death, death_sum, death_by_prov = briefing_deaths(file, date, pages)
         # TODO: This should be redundant now with dashboard having early info on vac progress.
+        vac = pd.DataFrame()
         for i, page in enumerate(pages):
             text = page.get_text()
             # Might throw out totals since doesn't include all prov
             # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
-            types = vac_briefing_totals(types, date, file, page, text)
+            vac = vac_briefing_totals(vac, date, file, page, text)
+            vac = vac_briefing_groups(vac, date, file, page, text)
+
+        if date > d("2022-03-04") and date not in [d("2022-06-22"), d("2022-04-11"), d("2022-03-31")]:
+            assert vac.iloc[0]["Vac Group Over 60 1 Cum"] > 0
+        types = types.combine_first(vac)
 
         if not today_types.empty:
             wrong_deaths_report = date in [
@@ -839,7 +859,11 @@ def get_cases_by_prov_briefings():
             ] or date < d("2021-02-01")  # TODO: check out why later
             ideaths, ddeaths = today_types.loc[today_types.last_valid_index()]['Deaths'], death_sum.loc[
                 death_sum.last_valid_index()]['Deaths']
-            if date not in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
+            if date in [d("2021-08-27"), d("2021-09-10"), d("2022-01-14")]:
+                pass
+            elif date >= d("2022-07-09"):
+                pass  # got rid of death summry from briefing
+            else:
                 assert wrong_deaths_report or (ddeaths == ideaths), f"Death details {ddeaths} didn't match total {ideaths}"
 
         deaths = pd.concat([deaths, each_death], verify_integrity=True)
@@ -929,6 +953,26 @@ def vac_briefing_totals(df, date, url, page, text):
     return df
 
 
+def vac_briefing_groups(df, date, url, page, text):
+    if not re.search("(ที่มีอายุ 60)", text):
+        return df
+    over60x3, studentx3 = [
+        [f"Vac Group {g} {d} Cum" for d in range(1, 4)] for g in ["Over 60", "Student"]
+    ]
+    date = date - datetime.timedelta(days=1)
+
+    # Vaccines
+    pop, d1, d1p, d2, d2p, d3, d3p, * \
+        rest = get_next_numbers(text, "ที่มีอายุ 60", ints=False, return_rest=False)
+    over60 = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + over60x3).set_index("Date")
+    pop, d1, d1p, d2, d2p, d3, *rest = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
+    student = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + studentx3).set_index("Date")
+
+    df = df.combine_first(over60).combine_first(student)
+
+    return df
+
+
 def vac_briefing_provs(df, date, file, page, text):
     if "ความครอบคลุมการรับบริการวัคซีนโควิด 19" not in text:
         return df
@@ -954,13 +998,16 @@ def vac_briefing_provs(df, date, file, page, text):
 
 if __name__ == '__main__':
     briefings_prov, cases_briefings = get_cases_by_prov_briefings()
-    briefings = import_csv("cases_briefings", ["Date"], False)
+    briefings = import_csv("cases_briefings", ["Date"], False, date_cols=["Date"])
     briefings = cases_briefings.combine_first(briefings)
     export(briefings, "cases_briefings")
 
-    old = import_csv("combined", index=["Date"])
-    df = briefings.combine(old, lambda s1, s2: s1)
-    export(df, "combined", csv_only=True)
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+
+    # df = dash.combine(df, lambda s1, s2: s1)
+    # df = briefings.combine(df, lambda s1, s2: s1)
+    df = briefings.combine_first(dash).combine_first(df)
 
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_cases_plots(df)

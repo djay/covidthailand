@@ -1,15 +1,88 @@
 
 # Downloads
 
+## Combined <a name="dl-combined">
+
+### Daily combined
+#### [combined.csv](https://practical-ritchie-cca141.netlify.app/api/combined.csv)
+
+- Source:
+  -  Many of the daily sources combined
+  -  plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
+  - [API: Details of all confirmed COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
+  - [API: Daily Summary of Cases/Deaths/Recovered](https://covid19.th-stat.com/json/covid19v2/getTimeline.json)
+  - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
+
+See the [current priority order when combining](https://github.com/djay/covidthailand/blob/64849d291c2cfb234a6b8c6026639c2277a76f89/covid_data.py#L307-L308)
+
+Schema
+
+| Column | |
+| -- | -- |
+| Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'} | |
+| Cases Risk {Group} | Categorisation of Risk field from the covid-19-daily dataset  |
+| + See all the above for data definitions |
+
+### Combined per province
+- Sources:
+   - Briefing by Province
+   - API timeline by Province
+   - Dashboard by Provice
+   - Tweets data by Province
+   - Risk Classification by Provice
+- [How these sources are combined](https://github.com/djay/covidthailand/blob/64849d291c2cfb234a6b8c6026639c2277a76f89/covid_data.py#L277-L289)
+#### [cases_by_province.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_province) | [cases_by_province.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_province.csv)
+
+Schema cases_by_province:
+
+| Column | |
+| -- | -- |
+| "Date |  e.g "2021-04-06" |
+| "Province |  e.g "Samut Sakhon" |
+| "Health District Number |  1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)   |
+| "Cases |  Confirmed cases in this province |
+| "Deaths |  31.0 |
+| Vac Given 1 Cum | null |
+| Vac Given 2 Cum | null |
+| Vac Given 3 Cum | null |
+| Health District Number | 13 |
+| The following comes from moph_dashboad_prov |
+| Cases Walkin |  Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria.  |
+| Cases Proactive |  Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. |
+| Cases Area Prison | see moph_dashboad_prov |
+| Positive Rate Dash | see moph_dashboad_prov|
+| Tests | see moph_dashboad_prov. No longer updated |
+
+
+
+### Combined per Health District
+#### [cases_by_area.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_area), [cases_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_area.csv)
+
+Schema cases_by_area:
+
+| Column | |
+| -- | -- |
+| Date |  e.g "2021-04-06" |
+| Cases Area {1-13} |  Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  |
+| Deaths Area {1-13} |  Deaths that day in the health district |
+| Cases Risk {Group} Area {1-13} |  Categorisation of Risk field from the covid-19-daily dataset  |
+| The following are no longer updated but have some historical data |
+| Cases {Proactive,Walkin} Area {1-13} |  Cases found by people where tested |
+
+- Notes:
+- [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
+
+
+<img alt="Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_all.png"  width=200>
+<img alt="Walk-in Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_walkins.png" width=200>
+<img alt="Proactive Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_proactive.png" width=200>
+<img alt="Cases by symptoms by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_sym.png"  width=200>
+
 
 ## Daily CCSA Briefings <a name="dl-briefings">
 
 - Sources
  - [CCSA Daily Briefing](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
- - [MOPH COVID 19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main)
- - [API: Details of all confirmed COVID-19 infections](https://data.go.th/dataset/covid-19-daily) - 1-2 days delayed
- - [API: Daily Summary of Cases/Deaths/Recovered](https://covid19.th-stat.com/json/covid19v2/getTimeline.json)
- - [Daily infographics translated and tweeted](https://twitter.com/search?q=%22%F0%9F%91%89%22%20%F0%9F%93%8D%20(from%3ARichardBarrow)&src=typed_query&f=live) Updated daily around midday (after gov briefing) - *No Longer updated*
 
 ### [cases_briefings.json](https://practical-ritchie-cca141.netlify.app/api/cases_briefings) | [cases_briefings.csv](https://practical-ritchie-cca141.netlify.app/api/cases_briefings.csv)
 
@@ -43,59 +116,36 @@ Schema:
 | Fields no longer updated |
 | Cases (Asymptomatic,Symptomatic) | - No longer reported in briefing reports |
 
-### Cases/Deaths per province
+### Deaths by Province
+#### [deaths.json](https://practical-ritchie-cca141.netlify.app/api/deaths), [deaths.csv](https://practical-ritchie-cca141.netlify.app/api/deaths.csv)
 
-#### [cases_by_province.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_province) | [cases_by_province.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_province.csv)
+Source: briefing reports
 
-Schema cases_by_province:
-
-| Column | |
-| -- | -- |
-| "Date |  e.g "2021-04-06" |
-| "Province |  e.g "Samut Sakhon" |
-| "Health District Number |  1-13 - see [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)   |
-| "Cases |  Confirmed cases in this province |
-| "Deaths |  31.0 |
-| Vac Given 1 Cum | null |
-| Vac Given 2 Cum | null |
-| Vac Given 3 Cum | null |
-| Health District Number | 13 |
-| The following comes from moph_dashboad_prov |
-| Cases Walkin |  Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria.  |
-| Cases Proactive |  Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. |
-| Cases Area Prison | see moph_dashboad_prov |
-| Positive Rate Dash | see moph_dashboad_prov|
-| Tests | see moph_dashboad_prov. No longer updated |
-
-
-
-### Cases/Deaths per Health District
-#### [cases_by_area.json](https://practical-ritchie-cca141.netlify.app/api/cases_by_area), [cases_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/cases_by_area.csv)
-
-Schema cases_by_area:
+Schema
 
 | Column | |
 | -- | -- |
-| Date |  e.g "2021-04-06" |
-| Cases Area {1-13} |  Confirmed cases in a given [Health Area](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)  |
-| Deaths Area {1-13} |  Deaths that day in the health district |
-| Cases Risk {Group} Area {1-13} |  Categorisation of Risk field from the covid-19-daily dataset  |
-| The following are no longer updated but have some historical data |
-| Cases {Proactive,Walkin} Area {1-13} |  Cases found by people where tested |
+| Date | 2021-04-27 |
+| death_num | 149.0 |
+| gender | Male" |
+| nationality | ไทย" |
+| age | 47.0 |
+| Province | Bangkok"
+| Following information is extracted by not properly parsed yet |
+| congenital_disease |
+| case_history |
+| risk_factor_sickness |
+| risk_factor_death |
 
 - Notes:
-- [Thailand Health Areas](https://mophgis.maps.arcgis.com/apps/opsdashboard/index.html#/bcd61791c8b441fa9224d129f28e8be0)
-
-
-<img alt="Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_all.png"  width=200>
-<img alt="Walk-in Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_walkins.png" width=200>
-<img alt="Proactive Cases by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_areas_proactive.png" width=200>
-<img alt="Cases by symptoms by Health Area" src="https://practical-ritchie-cca141.netlify.app/outputs/cases_sym.png"  width=200>
+- Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
 
 ## MOPH Covid-19 Dashboard <a name="dl-moph-dashboard">
 - Sources [MOPH Covid-19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/?dashboard=main)
-### [moph_dashboad.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard) | [moph_dashboard.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard.csv)
+
+### Dasboard by day
+#### [moph_dashboard.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard.csv)
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
 
 Schema
@@ -124,7 +174,8 @@ Schema
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
 | Source Cases | |
 
-### [moph_dashboad_prov.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov) | [moph_dashboard_prov.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov.csv)
+### Dashboard by Province
+#### [moph_dashboard_prov.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_prov.csv)
 
 Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
@@ -143,7 +194,8 @@ Schema
 | Vac Given {1-3} Cum | |
 | Positive Rate Dash | The pre-calculated positive rate shown on the dashboard. It is already 7 day averaged. Doesn't match exactly the calculated value from the test reports |
 
-### [moph_dashboad_ages.json](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages) | [moph_dashboard_ages.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages.csv)
+### Dashboard by Age
+#### [moph_dashboard_ages.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard_ages.csv)
 
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=select-trend-line
 
@@ -161,7 +213,7 @@ Age groups are {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70
 ## Daily Situation Reports <a name="dl-situation-reports">
 Case Types and PUI counts
 
-### [situation_reports.json](https://practical-ritchie-cca141.netlify.app/api/situation_reports) | [situation_reports.csv](https://practical-ritchie-cca141.netlify.app/api/situation_reports.csv)
+#### [situation_reports.json](https://practical-ritchie-cca141.netlify.app/api/situation_reports) | [situation_reports.csv](https://practical-ritchie-cca141.netlify.app/api/situation_reports.csv)
 
 - Sources:
 - [MOPH daily situation report PDFs](https://ddc.moph.go.th/viralpneumonia/situation.php) (Updated daily in the evening)
@@ -212,7 +264,7 @@ Bureau, Chaeng Watthana"
  - [DMSC: Thailand Laboratory testing data - weekly summary reports](https://www3.dmsc.moph.go.th/) (updated weekly but sporadic)
  - also available via [data.go.th testing data](https://data.go.th/dataset/covid-19-testing-data)
  - [Other info on lab network](https://service.dmsc.moph.go.th/labscovid19/indexen.php)
- - This datasource is incomplete as not all tests go via this [DMSc’co-lab database](https://www3.dmsc.moph.go.th/post-view/974). In particular times with large amounts of proactive testing
+ - This datasource seems incomplete as not all tests go via this [DMSc’co-lab database](https://www3.dmsc.moph.go.th/post-view/974). In particular times with large amounts of proactive testing
      sometimes result in more cases reported than positive results.
 
 <img src="https://practical-ritchie-cca141.netlify.app/outputs/cases_all.png" width=200 alt="Private and Public Positive Test Results">
@@ -243,7 +295,7 @@ Schema
   should be the same numbers as ```Pos``` and ```Tests```.
 
 ### Tests by Health District
-#### [tests_by_area.json](https://practical-ritchie-cca141.netlify.app/api/tests_by_area) [tests_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/tests_by_area.csv)
+#### [tests_by_area.json](https://practical-ritchie-cca141.netlify.app/api/tests_by_area) | [tests_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/tests_by_area.csv)
 
 
 Schema
@@ -261,13 +313,54 @@ Schema
 - There are missing files, so some weeks' data are not shown
 - The example graphs shown have been extrapolated using daily totals from the test daily data
 
-
-## Vaccination Downloads <a name="dl-vac">
-## Daily DDC Vaccination Reports
-### [vac_timeline.csv](https://practical-ritchie-cca141.netlify.app/api/vac_timeline.csv)
+## Variant Reports <a name="dl-variant">
 
 - Source:
- | [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+ - [DMSC: Variant Report](https://drive.google.com/drive/folders/13k14Hs61pgrK8raSMS9LFQn83PKswS-b)
+
+### Variants by Major Group
+
+Comes from XLS
+#### [variants.csv](https://practical-ritchie-cca141.netlify.app/api/variants.csv)
+
+Schema
+
+| Column | |
+| -- | -- |
+| End | e.g "2021-04-13" |
+| {Variant ID (Variant Group)} | Number of samples |
+
+
+### Variants Sequenced (Weekly)
+Comes from pdf tables - "Prevalence of Pangolin lineages in the Thailand with sequence data"
+#### [variants_sequenced.csv](https://practical-ritchie-cca141.netlify.app/api/variants_sequenced.csv)
+
+Schema
+
+| Column | |
+| -- | -- |
+| End | e.g "2021-04-13" |
+| {Variant ID} | Number of samples |
+
+### Variants via PCR by Health District (Weekly)
+Comes from PDF Tables - "Random selection for screening by real-time PCR"
+#### [variants_by_area.csv](https://practical-ritchie-cca141.netlify.app/api/variants_by_area.csv)
+
+Schema
+
+
+| Column | |
+| -- | -- |
+| End | e.g "2021-04-13" |
+| Health District | e.g 13 |
+| {Variant ID (Variant Group)} | Number of samples |
+
+
+## Vaccination Downloads <a name="dl-vac">
+### Daily DDC Vaccination Reports
+#### [vac_timeline.csv](https://practical-ritchie-cca141.netlify.app/api/vac_timeline.csv)
+
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
 
 Schema
 
@@ -295,10 +388,9 @@ Schema
  - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC) - no longer updated
  - #TODO: put in thai group explanations.
 
-## COVID-19 Vaccines by Province <a name="dl-vac-prov">
-### [vaccinations.csv](https://practical-ritchie-cca141.netlify.app/api/vaccinations.csv)
-- Source:
- - [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+### COVID-19 Vaccines by Province <a name="dl-vac-prov">
+#### [vaccinations.csv](https://practical-ritchie-cca141.netlify.app/api/vaccinations.csv)
+- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
 
 Schema
 
@@ -316,7 +408,8 @@ Schema
 
 ## BORA Monthly Deaths (Excess Deaths) <a name="dl-deaths-all">
 
-### [deaths_all.csv](https://practical-ritchie-cca141.netlify.app/api/deaths_all.csv)
+### All Deaths in thailand (Monthly)
+#### [deaths_all.csv](https://practical-ritchie-cca141.netlify.app/api/deaths_all.csv)
 
 Total deaths from all causes by province, month, age, gender
 
@@ -333,42 +426,5 @@ Schema:
 | Age | 0-101 | |
 | Deaths |  |
 
-### Deaths by Province
-#### [deaths.json](https://practical-ritchie-cca141.netlify.app/api/deaths), [deaths.csv](https://practical-ritchie-cca141.netlify.app/api/deaths.csv)
-
-Source: briefing reports
-
-Schema
-
-| Column | |
-| -- | -- |
-| Date | 2021-04-27 |
-| death_num | 149.0 |
-| gender | Male" |
-| nationality | ไทย" |
-| age | 47.0 |
-| Province | Bangkok"
-| Following information is extracted by not properly parsed yet |
-| congenital_disease |
-| case_history |
-| risk_factor_sickness |
-| risk_factor_death |
-
-- Notes:
-- Stopped being published 2021-04-28. Only summary data in cases_by_area is continuing
 
 
-## Combined <a name="dl-combined">
-### [combined.csv](https://practical-ritchie-cca141.netlify.app/api/combined.csv)
-
-- Source:
-  -  All the above daily sources combined
-  -  plus [COVID-19 report, periodic summary](https://data.go.th/dataset/covid-19-daily)
-
-Schema
-
-| Column | |
-| -- | -- |
-| Cases Age {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'} | |
-| Cases Risk {Group} | Categorisation of Risk field from the covid-19-daily dataset  |
-| + See all the above for data definitions |

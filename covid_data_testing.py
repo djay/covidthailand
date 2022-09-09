@@ -178,29 +178,48 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
 
 
 def get_tests_by_area_pdf(file, page, data, raw):
-    start, end = find_date_range(page)
-    if start is None or any_in(page, "เริ่มเปิดบริการ", "90%") or not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
+    if not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
         return data, raw
+    elif any_in(page, "เริ่มเปิดบริการ", "90%"):
+        return data, raw
+    start, end = find_date_range(page)
+    if start is None:
+        return data, raw
+
     # Can't parse '35_21_12_2020_COVID19_(ถึง_18_ธันวาคม_2563)(powerpoint).pptx' because data is a graph
     # no pdf available so data missing
     # Also missing 14-20 Nov 2020 (no pptx or pdf)
 
-    if "349585" in page:
-        page = page.replace("349585", "349 585")
+    page = page.replace(
+        "349585", "349 585").replace(
+        "4869151.1", "48691 51.1").replace(
+        "6993173.8", "69931 73.8").replace(
+        "988114.3", "9881 14.3").replace(
+        "2061119828", "2061 119828").replace(
+        "9881 14.3", "98811 4.3").replace(
+        "2061 119828", "20611 19828")
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
         rest if "เพญ็พชิชำ" in first or "/" in first else page
     )  # get rid of first line that sometimes as date and time in it
-    numbers, _ = get_next_numbers(page, "", debug=True)  # "ภาคเอกชน",
+    numbers, _ = get_next_numbers(page, "", debug=True, ints=False)  # "ภาคเอกชน",
     # ภาครัฐ
     # ภาคเอกชน
     # จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์
     # print(numbers)
     # TODO: should really find and parse X axis labels which contains 'เขต' and count
     tests_start = 13 if "total" not in page else 14
-    pos = numbers[0:13]
+    pos = list(map(int, numbers[0:13]))
+    assert all([p < 500000 for p in pos])
     tests = numbers[tests_start:tests_start + 13]
+    assert tests == list(map(int, tests))  # last number sometimes is joined to next %
+    tests = list(map(int, tests))
+    pos_rate = numbers[tests_start + 13: tests_start + 26]
+    if start > d("2020-12-05"):
+        assert all([r <= 100 for r in pos_rate])
+        assert all([round(p / t * 100, 1) == r for p, t, r in zip(pos, tests, pos_rate)])  # double check we got right values
+
     row = pos + tests + [sum(pos), sum(tests)]
     results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
     data = data.combine_first(results)
@@ -248,22 +267,27 @@ def get_test_reports():
     raw = import_csv("tests_by_area", ["Start"], not USE_CACHE_DATA, date_cols=["Start", "End"])
     pubpriv = import_csv("tests_pubpriv", ["Date"], not USE_CACHE_DATA)
 
+    # Also need pdf copies because of missing pptx
+    raw_pdf = pd.DataFrame()
+    for file, dl in get_test_files(ext=".pdf"):
+        dl()
+        pages = parse_file(file, html=False, paged=True)
+        for page in pages:
+            data, raw_pdf = get_tests_by_area_pdf(file, page, data, raw_pdf)
+
+    # pptx less prone to scraping issues so should be trusted more
+    raw_ppt = pd.DataFrame()
     for file, dl in get_test_files(ext=".pptx"):
         dl()
         for chart, title, series, pagenum in pptx2chartdata(file):
-            data, raw = get_tests_by_area_chart_pptx(file, title, series, data, raw)
+            data, raw_ppt = get_tests_by_area_chart_pptx(file, title, series, data, raw_ppt)
             if not all_in(pubpriv.columns, 'Tests', 'Tests Private'):
                 # Latest file as all the data we need
                 pubpriv = get_tests_private_public_pptx(file, title, series, pubpriv)
         assert not data.empty
         # TODO: assert for pubpriv too. but disappeared after certain date
-    # Also need pdf copies because of missing pptx
-    for file, dl in get_test_files(ext=".pdf"):
-        dl()
-        pages = parse_file(file, html=False, paged=True)
-        for page in pages:
-            data, raw = get_tests_by_area_pdf(file, page, data, raw)
-    export(raw, "tests_by_area")
+
+    export(raw.combine_first(raw_ppt).combine_first(raw_pdf), "tests_by_area")
 
     pubpriv['Pos Public'] = pubpriv['Pos'] - pubpriv['Pos Private']
     pubpriv['Tests Public'] = pubpriv['Tests'] - pubpriv['Tests Private']
@@ -278,25 +302,46 @@ def get_variants_by_area_pdf(file, page, page_num):
     if "frequency distribution" not in page:
         return pd.DataFrame()
     df = camelot_cache(file, page_num + 1, process_background=False)
-    assert len(df.columns) == 13
+    if len(df.columns) == 13:
+        totals = df[[2, 5, 8, 11]]  # only want this week not whole year
+    elif len(df.columns) == 16:  # 2022-06-24 switched to inc BA4/5
+        totals = df[[1, 2, 3, 5, 8, 11, 14]]
+    elif len(df.columns) == 19:  # 2022-08-18 add BA.2.75
+        # TODO: inc BA.2.75/BA2.76
+        totals = df[[1, 2, 3, 5, 8, 11, 14, 17]]
+
+    else:
+        assert False, "Unknown Area Variant table"
+    cols = [v.replace("Potentially ", "").replace("\n", "") for v in df.iloc[1] if v]
+    totals.columns = cols
+
     assert len(df) == 17
-    week = df[[0, 2, 5, 8, 11]]  # only want this week not whole year
-    # variant names
-    week.columns = ["Health Area", df.iloc[1][1], df.iloc[1][4], df.iloc[1][7], df.iloc[1][10]]
-    week = week.iloc[3:16]
-    week["Health Area"] = range(1, 14)
+    totals = totals.iloc[3:16]
+
+    totals = totals.replace(r"([0-9]*) \+ \([0-9]\)", r"\1", regex=True).apply(pd.to_numeric)
+
+    totals["Health Area"] = range(1, 14)
 
     # start, end = find_date_range(page) whole year
     # start, end = find_date_range(df.iloc[2][2])  # e.g. '26 FEB – 04 \nMAR 22'
-    start, end = re.split("(?:–|-)", df.iloc[2][2])
-    end = pd.to_datetime(end)
-    start = pd.to_datetime(f"{start} {end.month} {end.year}", dayfirst=True, errors="coerce")
+    date_range = list(df.iloc[2])[-2]  # Last is total, 2nd last is this date range
+    start_txt, end_txt = re.split("(?:–|-)", date_range)
+    end = pd.to_datetime(end_txt)
+    start = pd.to_datetime(f"{start_txt} {end.strftime('%B')} {end.year}", dayfirst=True, errors="coerce")
     if pd.isnull(start):
-        start = pd.to_datetime(f"{start} {end.year}", dayfirst=True, errors="coerce")
+        # Start includes the month
+        start = pd.to_datetime(f"{start_txt} {end.year}", dayfirst=True, errors="coerce")
+    assert not pd.isnull(start)
 
-    week["Start"] = start
-    week["End"] = end
-    return week.set_index("Start")
+    totals["Start"] = start
+    totals["End"] = end
+
+    if "BA.2 (Omicron)" in totals.columns:
+        # HACK: Cols are totals not daily. Hack since they are likely 0
+        # TODO: return these seperate and work out diffs in case any were added
+        totals[["B.1.1.7 (Alpha)", "B.1.351 (Beta)", "B.1.617.2 (Delta)"]] = 0
+
+    return totals.set_index("End")
 
 
 def get_variants_plot_pdf(file, page, page_num):
@@ -316,31 +361,74 @@ def get_variants_plot_pdf(file, page, page_num):
     return bangkok
 
 
-def get_variant_sequenced_table(file, page, page_num):
-    if "Prevalence of Pangolin lineages" not in page:
-        return pd.DataFrame()
-    df = camelot_cache(file, page_num + 1, process_background=False)
-    if "Total" in df[0].iloc[-1]:
-        # Vertical
-        df = df.transpose()
-    # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
-    df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
-    df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
-    # Some columns get combined. e.g.
-    df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
-    df.columns = df.iloc[0]
-    df = df.iloc[1:]
-    # Convert week number to a date
-    df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
-    df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
-    df = df.set_index("End")
-    df = df.drop(columns=["Total Sequences", "Lineage"])
-    # TODO: Ensure Other is always counted in rest of numbers
-    df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
-    df = df.apply(pd.to_numeric)
-    # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
-    df = df.loc[:, ~df.columns.duplicated()].copy()
-    return df
+def get_variant_sequenced_table(file, pages):
+    fileseq = pd.DataFrame()
+    first_seq_table = None
+    for page_num, page in enumerate(pages):
+        if "Prevalence of Pangolin lineages" not in page:
+            continue
+        df = camelot_cache(file, page_num + 1, process_background=False)
+        if "Total" in df[0].iloc[-1]:
+            # Vertical
+            df = df.transpose()
+        # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
+        df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
+        df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
+        # Some columns get combined. e.g.
+        df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
+        if "20220715" in file and df.iloc[0, 3] == "Other BA.2":
+            # Other BA.2 is there twice. One is wrong
+            df.iloc[0, 3] = "Other BA.2.9"
+        elif "20220610" in file and page_num == 11:
+            df.iloc[1, 0] = "w126"
+            df.iloc[2, 0] = "w127"
+        df.columns = df.iloc[0]
+        df = df.iloc[1:]
+        # Convert week number to a date
+        df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
+        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
+        df = df.set_index("End")
+        df = df.drop(columns=["Total Sequences", "Lineage"])
+        # TODO: Ensure Other is always counted in rest of numbers. so far seems to
+        # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
+        df = df.apply(pd.to_numeric)
+        # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
+        df = df.loc[:, ~df.columns.duplicated()].copy()
+        # match = re.search("Thailand with (.*)sequence data", page)
+        # if match and match.group(1) in ["", "Omicron"]:
+        #     # first table. Ignore others so no double counted
+        #     # 2022-06-24 - Other=5 in first table but this is BA4/5 in next table
+        #     # 2022-07-15 - Other=1 in first table but not represented in other tables
+        #     # TODO: need more general method
+        #     df = df.drop(columns=[c for c in df.columns if "Other" in c])
+        seq_table = df
+
+        # The first table should include all the numbers from the next more detailed tables
+        if first_seq_table is None and not seq_table.empty:
+            first_seq_table = seq_table
+        else:
+            fileseq = seq_table.combine_first(fileseq)
+    # HACK: Most reports have only 2 rows. BA.1 data is from older time periods. Just keep last 2 and let
+    # older reports include that data so we get the full row
+    fileseq = fileseq.iloc[-2:]
+
+    # Check sub tables add up to the initial table. If not these are our "others"
+    exceptions = ["Other BA.5"] if "20220715" in file else []
+    fileseq = fileseq.drop(columns=[c for c in fileseq.columns if "Other" in c and c not in exceptions])
+    if first_seq_table is None:
+        return fileseq
+    others = first_seq_table.sum(axis=1) - fileseq.sum(axis=1)
+    if any_in(file, "20220715", "20220610"):
+        # Other doesn't add up. 2 is a mistake?
+        # 2022-05-07 is 1 out in 20220610
+        pass
+    elif any_in(file, "20220708", "20220701", "20220627"):
+        # BA4/5 are the "Other" in the first table but counted later on
+        pass
+    else:
+        assert(others.sum() == 0 or (first_seq_table['Other'] == others).all())
+    fileseq['Other'] = others
+    return fileseq
 
 
 def get_variant_reports():
@@ -367,6 +455,7 @@ def get_variant_reports():
         nat = nat.set_index("End")
         # There is now 3 lots of numbers. pick the last set?
         nat = nat.iloc[:, 8:12]
+        nat = nat.rename(columns={"B.1617.2 (Delta)": "B.1.617.2 (Delta)", "B.1.1.529 (Omicron": "B.1.1.529 (Omicron)"})
         break
 
     for file, dl in get_variant_files(ext=".pdf"):
@@ -385,9 +474,13 @@ def get_variant_reports():
                 # TODO: date ranges don't line up so can't do this
                 bangkok.index = nat.index[:len(bangkok.index)]
             area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
-            sequenced = sequenced.combine_first(get_variant_sequenced_table(file, page, page_num))
+        fileseq = get_variant_sequenced_table(file, pages)
 
-    # nat = sequenced.combine_first(nat) # Not the same thing. Sequenced is a subset
+        # Later files can update prev reports
+        sequenced = pd.concat([sequenced, fileseq]).reset_index().drop_duplicates(subset="End").set_index("End").sort_index()
+
+    # TODO: variants_by_area is now totals but we can convert it to weekly if esp if we get the seed totals in the earliest report
+    # area_grouped = area.groupby(["Start", "End"]).sum()
     export(nat, "variants")
     export(area, "variants_by_area")
     export(sequenced, "variants_sequenced")
@@ -396,6 +489,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    variants = get_variant_reports()
     df_daily = get_tests_by_day()
+    variants = get_variant_reports()
     df = get_test_reports()

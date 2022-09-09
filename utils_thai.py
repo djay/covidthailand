@@ -79,7 +79,7 @@ THAI_FULL_MONTHS = [
     "เมษายน",
     "พฤษภาคม",
     "มิถุนายน",
-    "กรกฎาคม",
+    "กรกฎาคม",  # กรกฎำคม
     "สิงหาคม",
     "กันยายน",
     "ตุลาคม",
@@ -244,6 +244,18 @@ def find_thai_date(content, remove=False, all=False):
         return (None, content) if remove else None
 
 
+def to_month(month):
+    closest = next(iter(difflib.get_close_matches(month, THAI_FULL_MONTHS + THAI_ABBR_MONTHS, 1, cutoff=0.85)), None)
+    if closest:
+        return (
+            THAI_ABBR_MONTHS.index(closest) + 1
+            if closest in THAI_ABBR_MONTHS
+            else THAI_FULL_MONTHS.index(closest) + 1
+            if closest in THAI_FULL_MONTHS
+            else None
+        )
+
+
 def find_date_range(content):
     """
     >>> p = lambda x: tuple(str(d.date()) for d in x)
@@ -251,6 +263,9 @@ def find_date_range(content):
     Parse thai date ranges like
     >>> p(find_date_range('11-17 เม.ย. 2563'))
     ('2020-04-11', '2020-04-17')
+
+    >>> p(find_date_range('10 กรกฎาคม ถึง 16 กรกฎาคม 2565'))
+    ('2022-07-10', '2022-07-16')
 
     >>> p(find_date_range('04/04/2563 - 12/06/2563'))
     ('2020-04-04', '2020-06-12')
@@ -270,6 +285,7 @@ def find_date_range(content):
     )
     m2 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+)/([0-9]+)/(25[0-9][0-9])", content)
     m3 = re.search(r"(?<!/)([0-9]+) *[-–] *([0-9]+) *([^ ]+) *(25[0-9][0-9])", content)
+    m4 = re.search(r"(?<!/)([0-9]+) *([^\s\d]+) *(-|–|to|ถึง) *([0-9]+) *([^\s\d]+) *(25[0-9][0-9])", content)
     if m1:
         d1, m1, y1, d2, m2, y2 = m1.groups()
         start = datetime.datetime(day=int(d1), month=int(m1), year=to_gregyear(y1, guess=True))
@@ -282,17 +298,16 @@ def find_date_range(content):
         return start, end
     elif m3:
         d1, d2, month, year = m3.groups()
-        month = (
-            THAI_ABBR_MONTHS.index(month) + 1
-            if month in THAI_ABBR_MONTHS
-            else THAI_FULL_MONTHS.index(month) + 1
-            if month in THAI_FULL_MONTHS
-            else None
-        )
+        month = to_month(month)
         if not month:
             return None, None
         end = datetime.datetime(year=to_gregyear(year), month=month, day=int(d2))
         start = previous_date(end, d1)
+        return start, end
+    elif m4:
+        d1, m1, sep, d2, m2, year = m4.groups()
+        start = datetime.datetime(year=to_gregyear(year), month=to_month(m1), day=int(d1))
+        end = datetime.datetime(year=to_gregyear(year), month=to_month(m2), day=int(d2))
         return start, end
     else:
         return None, None

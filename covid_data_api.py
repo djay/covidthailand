@@ -1,36 +1,28 @@
-import codecs
 import datetime
 import functools
 import json
-import math
 import os
-import re
 import shutil
-import time
 
-import numpy as np
 import pandas as pd
-from datatable import fread
+import requests
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
-from requests.exceptions import ConnectionError
 
-import utils_excel
 from utils_pandas import add_data
 from utils_pandas import cut_ages
 from utils_pandas import export
 from utils_pandas import fuzzy_join
 from utils_pandas import import_csv
-from utils_scraping import any_in
 from utils_scraping import logger
-from utils_scraping import read_excel
 from utils_scraping import s
-from utils_scraping import url2filename
 from utils_scraping import web_files
+from utils_scraping import web_links
 from utils_thai import DISTRICT_RANGE
 from utils_thai import join_provinces
 from utils_thai import to_thaiyear
 from utils_thai import today
+
 
 #################################
 # Cases Apis
@@ -69,12 +61,12 @@ def get_cases_timelineapi():
     url1 = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all"
     url2 = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all"
     try:
-        json1, _, url = next(web_files(url1, dir="inputs/json", check=False))
-        json2, _, url = next(web_files(url2, dir="inputs/json", check=True))
-    except ConnectionError:
+        json1, _, url = next(web_files(url1, dir="inputs/json", check=False), None)
+        json2, _, url = next(web_files(url2, dir="inputs/json", check=True), None)
+    except requests.exceptions.RequestException:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
-    data = pd.read_json(json1).append(pd.read_json(json2))
+    data = pd.concat([pd.read_json(json1), pd.read_json(json2)])
     data['Date'] = pd.to_datetime(data['txn_date'])
     data = data.set_index("Date")
     data = data.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
@@ -346,19 +338,34 @@ def get_case_details_api():
     # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
     data = []
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
-    chunk = 5000
-    pagenum = math.floor((len(cases) - init_cases_len) / chunk)
-    pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
-    cases = cases.iloc[:pagenum * chunk + init_cases_len]
-    pagenum += 1  # pages start from 1
+    # First check api is working ok
+    try:
+        r = s.get(url, timeout=25, verify=False)
+    except Exception as e:
+        logger.warning("Covid19daily: Error {}", e)
+        return cases
+    pagedata = json.loads(r.content)
+    page = pagedata['data']
+    last_page = pagedata['meta']['last_page']
+    total = pagedata['meta']['total']
+    chunk = pagedata['meta']['per_page']
+
+    #pagenum = math.floor((len(cases) - init_cases_len) / chunk)
+    #pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
+    #cases = cases.iloc[:pagenum * chunk + init_cases_len]
+    pagenum = last_page
     page = []
     retries = 3
-    last_page = np.nan
-    while not (pagenum > last_page):
+    # Because there is no unique case number to match up we will work backwards
+    # until we get to the start of the last date we have, or where update date is before our last
+    # update date
+    target_date = cases['Date'].max()
+    last_date = None
+    while last_date is None or last_date >= target_date:
         # if len(data) >= 500000:
         #     break
         try:
-            r = s.get(f"{url}?page={pagenum}", timeout=25)
+            r = s.get(f"{url}?page={pagenum}", timeout=25, verify=False)
         except Exception as e:
             logger.warning("Covid19daily: Error {}", e)
             if retries == 0:
@@ -368,26 +375,36 @@ def get_case_details_api():
                 retries -= 1
                 continue
         pagedata = json.loads(r.content)
-        page = pagedata['data']
-        last_page = pagedata['meta']['last_page']
-        assert last_page >= pagenum
-        total = pagedata['meta']['total']
-        data.extend(page)
+        data = pagedata['data'] + data  # TODO: might be bit slow
+        last_date = d(pagedata['data'][0]['txn_date'])
+        last_update = d(pagedata['data'][0]['update_date'])
+        # if last_date < target_date and last_update > cases.iloc[-1]["update_date"]:
+        #     # data has been updated so keep going back further
+        #     target_date = last_date
+        # going back
+        # page = pagedata['data']
+        # assert last_page >= pagenum
         print(".", end="")
-        pagenum += 1
+        pagenum -= 1
+        if pagenum == 0:
+            break
+
     df = pd.DataFrame(data)
     df['Date'] = pd.to_datetime(df['txn_date'])
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
+
+    # Get rid of last partial day from cases and from the new data
+    cases = cases[cases['Date'] < target_date]
+    df = df[df['Date'] >= target_date]
+
     assert df.iloc[0]['Date'] >= cases.iloc[-1]["Date"]
     assert df.iloc[0]['update_date'] >= cases.iloc[-1]["update_date"]
-    assert total == len(cases) - init_cases_len + len(df)
-    # assert last_page == pagenum
-    # TODO: should probably store the page num with the data so match it up via that
+    # assert total == len(cases) - init_cases_len + len(df)
     df = cleanup_cases(df)
     cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
-    assert total == len(cases) - init_cases_len
+    # assert total == len(cases) - init_cases_len
     # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
     export(cases, "covid-19", csv_only=True, dir="inputs/json")
 
@@ -442,7 +459,7 @@ def get_cases_by_demographics_api():
 
 def timeline_by_province():
     url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True, timeout=20)), None)
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True, timeout=40)), None)
     df = pd.read_json(file)
     df = df.rename(columns={"txn_date": "Date", "province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
@@ -523,17 +540,14 @@ def excess_deaths():
 
 def ihme_dataset(check=True):
     data = pd.DataFrame()
-
     # listing out urls not very elegant, but this only need yearly update
     # TODO: get links directly from https://www.healthdata.org/covid/data-downloads so new year updates
-    urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv',
-            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
-            'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv']
-    for url in urls:
-        try:
-            file, _, _ = next(iter(web_files(url, dir="inputs/IHME", check=check, appending=False)))
-        except StopIteration:
-            continue
+    # urls = ['https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2022.csv',
+    #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
+    #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv']
+    # IHME seems to have problem with their latest section and have pointed main site back to archives
+    urls = [u for u in web_links("https://www.healthdata.org/covid/data-downloads", ext="csv") if "file_reference" in u]
+    for file, _, _ in web_files(*reversed(urls), dir="inputs/IHME", check=check, appending=False):
         data_in_file = pd.read_csv(file)
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)
@@ -550,7 +564,7 @@ def ihme_dataset(check=True):
 def get_ifr():
     # replace with https://stat.bora.dopa.go.th/new_stat/webPage/statByAgeMonth.php
     url = "http://statbbi.nso.go.th/staticreport/Page/sector/EN/report/sector_01_11101_EN_.xlsx"
-    file, _, _ = next(web_files(url, dir="inputs/json", check=False))
+    file, _, _ = next(web_files(url, dir="inputs/json", check=False), None)
     pop = pd.read_excel(file, header=3, index_col=1)
 
     def year_cols(start, end):
@@ -589,9 +603,9 @@ def get_ifr():
 
 if __name__ == '__main__':
     ihme_dataset()
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     timeline = get_cases_timelineapi()
     timeline_prov = timeline_by_province()
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
@@ -610,4 +624,4 @@ if __name__ == '__main__':
     covid_plot_cases.save_cases_plots(df)
     import covid_plot_deaths
     covid_plot_deaths.save_deaths_plots(df)
-    covid_plot_cases.save_infections_estimate(df)
+    # covid_plot_cases.save_infections_estimate(df)

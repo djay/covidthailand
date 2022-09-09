@@ -53,8 +53,9 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     if date is not None:
         data["Date"] = [date]
     for name, col in mappings.items():
+        closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
         try:
-            df = wb.getWorksheet(name).data
+            df = wb.getWorksheet(closest).data
         except (KeyError, TypeError, AttributeError):
             # TODO: handle error getting wb properly earlier
             logger.info("Error getting tableau {}/{} {}", name, col, date)
@@ -66,7 +67,12 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
                 continue
             # if it's not a single value can pass in mapping of cols
             df = df[col.keys()].rename(columns={k: v for k, v in col.items() if type(v) == str})
-            df['Date'] = pd.to_datetime(df['Date']).dt.normalize()
+            try:
+                df['Date'] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
+            except pd.errors.OutOfBoundsDatetime:
+                # Could be a Thai year. Hack to convert
+                df['Date'] = df['Date'].str.replace("2564", "2021").str.replace("2565", "2022")
+                df['Date'] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
             # if one mapping is dict then do pivot
             pivot = [(k, v) for k, v in col.items() if type(v) != str]
             if pivot:
@@ -109,9 +115,10 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
         elif col == "Date":
             data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
         else:
-            data[col] = list(df.loc[0])
-            if data[col] == ["%null%"]:
-                data[col] = [np.nan]
+            try:
+                data[col] = list(pd.to_numeric(df.loc[0]))  # HACK: shouldn't assume we want numbers
+            except ValueError:
+                data[col] = list(pd.to_numeric(df.loc[0].str.replace(",", "").replace("%null%", "")))
     # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
     if not df.empty:
@@ -120,22 +127,22 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     return res
 
 
-def workbook_iterate(url, **selects):
+def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
-    def do_reset(attempt=0):
-        if attempt == 3:
-            return None
-        ts = tableauscraper.TableauScraper()
-        try:
-            ts.loads(url)
-        except Exception as err:
-            # ts library fails in all sorts of weird ways depending on the data sent back
-            logger.info("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
-            return do_reset(attempt=attempt + 1)
-        fix_timeouts(ts.session, timeout=30)
-        wb = ts.getWorkbook()
-        return wb
+    def do_reset():
+        for _ in range(3):
+            ts = tableauscraper.TableauScraper(verify=verify)
+            try:
+                ts.loads(url)
+            except Exception as err:
+                # ts library fails in all sorts of weird ways depending on the data sent back
+                logger.info("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
+                continue
+            fix_timeouts(ts.session, timeout=30)
+            wb = ts.getWorkbook()
+            return wb
+        return None
 
     wb = do_reset()
     if wb is None:
@@ -144,7 +151,9 @@ def workbook_iterate(url, **selects):
     # match the params to iterate to param, filter or select
     for name, values in selects.items():
         param = next((p for p in wb.getParameters() if p['column'] == name), None)
-        if param is not None:
+        ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
+        if param is not None or ws is None:
+            # We will force param if it's not select
             if type(values) == str:
                 selects[name] = param['values']
             else:
@@ -157,7 +166,6 @@ def workbook_iterate(url, **selects):
 
             set_value.append(do_param)
             continue
-        ws = next(ws for ws in wb.worksheets if ws.name == name)
         # TODO: allow a select to be manual list of values
         svalues = ws.getSelectableValues(values)
         if svalues:
@@ -165,7 +173,7 @@ def workbook_iterate(url, **selects):
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_select(wb, value, name=name, values=values):
-                ws = next(ws for ws in wb.worksheets if ws.name == name)
+                ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
                 return ws.select(values, value)
             set_value.append(do_select)
         else:
@@ -176,12 +184,14 @@ def workbook_iterate(url, **selects):
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):
-                ws = next(ws for ws in wb.worksheets if ws.name == ws_name)
+                ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == ws_name), None)
                 # return ws.setFilter(values, value)
                 return force_setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
+    if inc_no_param:
+        yield lambda: wb, None
 
-    last_idx = [None] * len(selects)
+    last_idx = [None] * len(selects)  # Outside so we know if we need to change teh params or not
     # Get all combinations of the values of params, select or filter
     for next_idx in itertools.product(*selects.values()):
         def get_workbook(wb=wb, next_idx=next_idx):
@@ -194,7 +204,8 @@ def workbook_iterate(url, **selects):
                         continue
                     reset = False
                 for do_set, last_value, value in zip(set_value, last_idx, next_idx):
-                    if last_value != value:
+                    if last_value != value and value is not None:
+                        # None means to skip setting this value. #TODO: but does it make sense unless it's just reset?
                         try:
                             wb = do_set(wb, value)
                         except Exception as err:
@@ -227,6 +238,7 @@ def force_setParameter(wb, parameterName, value):
     )
     r = scraper.session.post(
         f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
+        # data=dict(fieldCaption=parameterName, valueString=value),
         files=payload,
         verify=scraper.verify
     )

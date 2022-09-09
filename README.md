@@ -10,21 +10,6 @@ Thailand COVID-19 case/test/vaccination data gathered and combined from various 
 
 **NEW** [Excess Deaths](#excess-deaths)
 
-<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=medium" width="400px" align="right" style="float: right">
-
-## Testing, isolation and Vaccine assistance
-
-
-- Annoucements on free testing, free hospitalisation, free vaccines and rules changes
-   - English: [Thailand PRD Twitter](https://twitter.com/prdthailand) - [Thailand PRD FB](https://www.facebook.com/thailandprd)
-   - Thai: [ThaiGov Covid-19 FB](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
-   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/)
-- Call [1422](tel:1422) if you have Covid with mild symptoms
-   - With only a positive ATK you can register for [free support during home isolation](https://twitter.com/prdthailand/status/1479301770388000768).
-   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
-   - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
-- Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
-- Unsure of your risks with or without a vaccine? [AU Risk Calc](https://corical.immunisationcoalition.org.au/) (updated for omicron) - [UK Risk Calc](https://www.qcovid.org/Calculation) (based on delta?)
 
 ## Disclaimer
 
@@ -45,6 +30,21 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 ![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
 ![Hospitalisation as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/active_peak_3.png)
 
+- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
+  [MOPH daily situation report](downloads.md#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing)
+
+# Cases <a name="cases">
+
+## Estimated Daily Infections
+
+![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
+- Note: no country tests everyone so modelling is needed to estimate the real number
+  of infections in the community including asymtematic infections. Modelling includes
+  many factors such as the estimated deaths, immunity and fatality rate of the variants for a given demographic.
+- ATK+ from the DDC Dashboard is not clear if this is an estimate or some measure of reported infections to MOPH. Interpoloated from weekly figure.
+- ATK (Probable Cases) has stopped being reported
+- As of 1st June 2022, only severe cases are tested for PCR and report cases only includes PCR results so the trend of cases doesn't indicate
+  infections as well as it did previously.
 - For forecasts of total infections/deaths/hospitalisations see
   [IHME Thailand](https://covid19.healthdata.org/thailand) |
   [IHME Thailand Report](http://www.healthdata.org/covid/updates) |
@@ -52,10 +52,12 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
   [LSHTM Thailand](https://epiforecasts.io/covid/posts/national/thailand/) |
   [OWID Covid Models for Thailand](https://ourworldindata.org/grapher/daily-new-estimated-infections-of-covid-19?country=~THA) |
   [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
-- Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
-  [MOPH daily situation report](downloads.md#dl-situation-reports)
+- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
-# Cases <a name="cases">
+## Estimated Infections by Major Variant (Extrapolated from Surviellance)
+
+![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/inf_by_variants_3.png)
+- source: [DMSc Variant Report](downloads.md#dl-variant), [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
 
 ## Cases by Region
 
@@ -80,13 +82,6 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings), [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Estimated Daily Infections
-
-![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
-- Note: no country tests everyone so modelling is needed to estimate the real number
-  of infections in the community including asymtematic infections. Modelling includes
-  many factors such as the estimated deaths and fatality rate of the population.
-- Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
 ## Cases by Patient Type
 
@@ -132,9 +127,6 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 - see [Ages of confirmed cases 2020-2021]((https://practical-ritchie-cca141.netlify.app/outputs/cases_ages_all.png))
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-## Cases by Variant (Extrapolated from Surviellance)
-
-![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
 
 ## Cases and Social Distancing
 
@@ -257,6 +249,8 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 ![Positive Rate by Region - Thailand](https://practical-ritchie-cca141.netlify.app/outputs/positivity_region_3.png)
 
+![Positive Rate by Health District - Thailand](https://practical-ritchie-cca141.netlify.app/outputs/positivity_area_3.png)
+
 - [Positive rate < 5% for 2 weeks amd > 0.1%/w tested (10k/d tested)) means sufficient tests: WHO](https://www.jhsph.edu/covid-19/articles/covid-19-testing-understanding-the-percent-positive.html)
 Assumes easy access to tests for everyone.
 - It's likely there is [missing test data](https://practical-ritchie-cca141.netlify.app/outputs#more-cases-than-positive-results). Using confirmed cases migth be more accurate.
@@ -317,6 +311,22 @@ Shows Deaths from all causes in comparison to the min, max and mean of Deaths fr
 - Compare Excess deaths across countries with [OWID Excess Deaths](https://ourworldindata.org/excess-mortality-covid#excess-mortality-p-scores-by-age-group) or
   [Economist Excess Death Tracker](https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker).
 - Source [Office of Registration Administration, Department of Provincial Administration](downloads.md#dl-deaths-all)
+
+<img src="https://pbs.twimg.com/media/FId59btVgAYKWii?format=jpg&name=medium" width="400px" align="right" style="float: right">
+
+## Testing, isolation and Vaccine assistance
+
+
+- Annoucements on free testing, free hospitalisation, free vaccines and rules changes
+   - English: [Thailand PRD Twitter](https://twitter.com/prdthailand) - [Thailand PRD FB](https://www.facebook.com/thailandprd)
+   - Thai: [ThaiGov Covid-19 FB](https://www.facebook.com/informationcovid19) - [MOPH Twitter](https://www.facebook.com/thailandprd)
+   - Stats: [DDC Dashboard](https://ddc.moph.go.th/covid19-dashboard/) - [MOPH Hospital Capacity](https://public.tableau.com/app/profile/karon5500/viz/moph_covid_v3/Story1) - [TheResearcherTH (Maps)](https://covid-19.researcherth.co/) - [IHME Forecasts](https://covid19.healthdata.org/thailand?view=cumulative-deaths&tab=trend) - [Reuters World Covid Tracker](https://graphics.reuters.com/world-coronavirus-tracker-and-maps/vaccination-rollout-and-access/)
+- Call [1422](tel:1422) if you have Covid with mild symptoms
+   - With only a positive ATK you can register for [free support during home isolation](https://twitter.com/prdthailand/status/1479301770388000768).
+   - If you can't isolate at home you can opt for [free field hospital care](https://twitter.com/prdthailand/status/1479301770388000768) once confirmed with a PCR test
+   - You can sign up for this [early prevention clinical trial](https://form.typeform.com/to/v3lCPFrj?typeform-source=com.google.android.googlequicksearchbox) if you had symptoms less than 48 hours
+- Call [1668](tel:1668) if you have Covid with [severe symptoms](https://twitter.com/prdthailand/status/1479301770388000768)
+- Unsure of your risks with or without a vaccine? [AU Risk Calc](https://corical.immunisationcoalition.org.au/) (updated for omicron) - [UK Risk Calc](https://www.qcovid.org/Calculation) (based on delta?)
 
 ## How to contribute
 

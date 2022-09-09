@@ -296,19 +296,22 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     peaks = df[cols] / df[cols].rolling(7, 3, center=True).mean().max(axis=0) * 100
     peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
     peaks["Boosted"] = df['Vac Given 3 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
+    peaks["Positive Rate"] = (df["Pos XLS"] / df["Tests XLS"] * 100)
     cols = [
-        'ATK',
         'Cases',
+        #        'ATK',
         'Vaccinated',
-        'Deaths',
         "Boosted",
+        'Deaths',
+        'Positive Rate',
     ]
     legend = [
-        "Reg. ATK - Probable Case (% of peak)",
         "Confirmed Cases (% of peak)",
+        #        "Reg. ATK - Probable Case (% of peak)",
         "Vaccinated - 2nd dose (% of Thai Pop.)",
-        "Reported Covid Deaths (% of peak)",
         "Vaccinated - 3rd dose (% of Thai Pop.)",
+        "Reported Covid Deaths (% of peak)",
+        "PCR +ve per PCR Test (Positive Rate)",
     ]
     plot_area(df=peaks,
               title='Covid 19 Trends - Thailand',
@@ -595,7 +598,12 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
 if __name__ == "__main__":
 
-    df = import_csv("combined", index=["Date"])
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    briefings = import_csv("cases_briefings", index=["Date"], date_cols=["Date"])
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    # have vac in briefings and dashboard
+    df = briefings.combine_first(dash).combine_first(df)
+
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
     save_vacs_plots(df)

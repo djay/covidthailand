@@ -327,7 +327,58 @@ def vaccination_daily(daily, date, file, page):
     return daily
 
 
+givencols = [
+    "Date",
+    "Province",
+    "Vac Given 1 Cum",
+    "Vac Given 1 %",
+    "Vac Given 2 Cum",
+    "Vac Given 2 %",
+]
+givencols3 = givencols + [
+    "Vac Given 3 Cum",
+    "Vac Given 3 %",
+]
+givencols4 = givencols3 + [
+    "Vac Given 4 Cum",
+    "Vac Given 4 %",
+]
+vaccols8x3 = givencols3 + [
+    f"Vac Group {g} {d} Cum" for g in [
+        "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
+        "Risk: Location", "Student"
+    ] for d in range(1, 4)
+]
+# Student vaccination figures did not exist prior to 2021-10-06
+vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
+vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
+vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
+
+vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
+vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
+vaccols_medical = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Medical Staff"] for d in range(1, 4)]
+
+alloc2_doses = [
+    "Date",
+    "Province",
+    "Vac Allocated Sinovac 1",
+    "Vac Allocated Sinovac 2",
+    "Vac Allocated AstraZeneca 1",
+    "Vac Allocated AstraZeneca 2",
+    "Vac Allocated Sinovac",
+    "Vac Allocated AstraZeneca",
+]
+alloc2 = [
+    "Date",
+    "Province",
+    "Vac Allocated Sinovac",
+    "Vac Allocated AstraZeneca",
+]
+alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna", ]
+
+
 def vaccination_tables(df, _, page, file):
+    page = page.replace("( ร้อยละ )", "( ร้อยละ )\n")  # Ensure heading on it's own line
     lines = [line.strip() for line in page.split('\n') if line.strip()]
     first_line = page.split("\n\n")[0]
     # 28 กมุภำพันธ์ 2564 – 6 กุมภำพันธ ์2565
@@ -337,62 +388,6 @@ def vaccination_tables(df, _, page, file):
         return df
     else:
         date = date[-1]
-    givencols = [
-        "Date",
-        "Province",
-        "Vac Given 1 Cum",
-        "Vac Given 1 %",
-        "Vac Given 2 Cum",
-        "Vac Given 2 %",
-    ]
-    givencols3 = givencols + [
-        "Vac Given 3 Cum",
-        "Vac Given 3 %",
-    ]
-    vaccols8x3 = givencols3 + [
-        f"Vac Group {g} {d} Cum" for g in [
-            "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
-            "Risk: Location", "Student"
-        ] for d in range(1, 4)
-    ]
-    # Student vaccination figures did not exist prior to 2021-10-06
-    vaccols7x3 = [col for col in vaccols8x3 if "Student" not in col]
-    vaccols6x2 = [col for col in vaccols7x3 if " 3 " not in col and "Pregnant" not in col]
-    vaccols5x2 = [col for col in vaccols6x2 if "Volunteer" not in col]
-
-    vaccols_60s = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Over 60"] for d in range(1, 4)]
-    vaccols_disease = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Risk: Disease"] for d in range(1, 4)]
-    vaccols_medical = ["Date", "Province"] + [f"Vac Group {g} {d} Cum" for g in ["Medical Staff"] for d in range(1, 4)]
-
-    alloc2_doses = [
-        "Date",
-        "Province",
-        "Vac Allocated Sinovac 1",
-        "Vac Allocated Sinovac 2",
-        "Vac Allocated AstraZeneca 1",
-        "Vac Allocated AstraZeneca 2",
-        "Vac Allocated Sinovac",
-        "Vac Allocated AstraZeneca",
-    ]
-    alloc2 = [
-        "Date",
-        "Province",
-        "Vac Allocated Sinovac",
-        "Vac Allocated AstraZeneca",
-    ]
-    alloc4 = alloc2 + ["Vac Allocated Sinopharm", "Vac Allocated Pfizer", "Vac Allocated Moderna", ]
-
-    # def add(df, prov, numbers, cols):
-    #     if not df.empty:
-    #         try:
-    #             prev = df[cols].loc[[date, prov]]
-    #         except KeyError:
-    #             prev = None
-    #         msg = f"Vac {date} {prov} repeated: {numbers} != {prev}"
-    #         assert prev in [None, numbers], msg
-    #     row = [date, prov] + numbers
-    #     df = df.combine_first(pd.DataFrame([row], columns=cols).set_index(["Date", "Province"]))
-    #     return df
 
     rows = {}
 
@@ -557,6 +552,9 @@ def vaccination_tables(df, _, page, file):
             elif table == "percent" and len(numbers) in [7, 8]:  # 2022-02 changed to simpler table
                 pop, d1, d1p, d2, d2p, d3, d3p, *total = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
+            elif table == "percent" and len(numbers) in [9]:  # 2022-07 gen pop and 4 doses
+                pop, d1, d1p, d2, d2p, d3, d3p, d4, d4p = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p, d4, d4p, pop], givencols4 + ["Vac Population"])
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
         assert added is None or added > 7
@@ -633,18 +631,18 @@ def vaccination_reports_files2(check=True,
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565)")
-    years = web_links(base1, ext=None, match=hasyear, check=check)
-    months = (link for y in years for link in web_links(y, ext=None, match=hasyear, check=check))
-    links1 = (link for f in months for link in web_links(f, ext=".pdf", check=check) if (
+    years = web_links(base1, ext=None, match=hasyear, check=1, timeout=20)
+    months = (link for link in web_links(*years, ext=None, match=hasyear, check=1, timeout=20))
+    links1 = (link for link in web_links(*months, ext=".pdf", check=1, timeout=20) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
-    folders = [base2.format(m=m) for m in range(3, 12)]
-    links2 = (link for f in folders for link in web_links(f, ext=ext, check=check))
-    links = list(links1) + list(reversed(list(links2)))
+    folders = [base2.format(m=m) for m in range(11, 2, -1)]
+    links2 = (link for f in folders for link in reversed(list(web_links(f, ext=ext, check=False, timeout=20))))
+    links = list(links1) + list(links2)
     count = 0
     for link in links:
-        if "1638863771691.pdf" in link and "Report" in base2:
+        if any_in(link, "1638863771691.pdf", '1639206014644.pdf') and "Report" in base2:
             # it's really slides
             continue
 
@@ -702,9 +700,11 @@ def vaccination_reports():
             # TODO: how to fix this?
             logger.warning("{} Dropping table: missing headers on extra pages", date)
             continue
-        else:
+        elif date < d("2021-08-01") or date in [d("2022-03-27"), d("2022-07-10")]:
             # TODO: 2022-03-27: work out why only 76 prov
-            assert len(table) == 77 or date < d("2021-08-01") or date in [d("2022-03-27")]
+            pass
+        else:
+            assert len(table) == 77
         vac_prov_reports = vac_prov_reports.combine_first(table)
         if date < d("2021-12-11"):
             # TODO: find days where day is yesterdays and fix them, or fix the check

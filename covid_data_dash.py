@@ -1,9 +1,11 @@
 import datetime
 import sys
 import time
+from lib2to3.pgen2.pgen import DFAState
 
 import numpy as np
 import pandas as pd
+import tableauscraper
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 
@@ -12,6 +14,7 @@ from utils_pandas import import_csv
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import workbook_explore
 from utils_scraping_tableau import workbook_flatten
 from utils_scraping_tableau import workbook_iterate
 from utils_thai import get_province
@@ -34,18 +37,22 @@ def todays_data():
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
     while True:
-        get_wb, date = next(workbook_iterate(url, param_date=[today(), today()]))
-        date = next(iter(date))
-        if (wb := get_wb()) is None:
-            continue
-        last_update = wb.getWorksheet("D_UpdateTime").data
+        # dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
+        # get_wb, date = next(workbook_iterate(url, param_date=dates))
+        # date = next(iter(date))
+        # if (wb := get_wb()) is None:
+        #     continue
+        ts = tableauscraper.TableauScraper(verify=False)
+        ts.loads(url)
+        wb = ts.getWorkbook()
+
+        last_update = wb.getWorksheet("D_UpdateTime (2)").data
         if last_update.empty:
             continue
-        else:
-            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
-            if last_update >= today().date():
-                return True
-            # We got todays data too early
+        last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+        if last_update >= today().date():
+            return True
+        # We got todays data too early
         print("z", end="")
         time.sleep(60)
 
@@ -62,8 +69,10 @@ def dash_daily():
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
 
+    all_atk_reg = pd.DataFrame()
+
     allow_na = {
-        "ATK": [[d("2021-07-31")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
+        "ATK": [[d("2021-07-31"), d("2022-07-05")], [d("2021-04-01"), d("2021-07-30"), 0.0, 0.0]],
         "Cases Area Prison": d("2021-05-12"),
         "Positive Rate Dash": (d("2021-07-01"), today() - relativedelta(days=14)),
         "Tests": today(),  # it's no longer there
@@ -79,12 +88,20 @@ def dash_daily():
         'Hospitalized Hospital': (d("2021-01-27"), today(), 1),
         'Recovered': (d('2021-01-01'), today(), 1),
         'Cases Walkin': (d('2021-01-01'), today(), 1),
+        # 'Infections Non-Hospital Cum': (d("2022-04-08"), d("2022-06-12"), 800000),  # Redo older rows because cumsum cal was off
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
     dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
-    for get_wb, date in workbook_iterate(url, param_date=dates):
-        date = next(iter(date))
+    # for get_wb, date in workbook_iterate(url, D_NewTL="DAY(txn_date)"):
+    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
+        if date is None:
+            # initial one which is today
+            date = today()
+        else:
+            date = next(iter(date), None)
+        if type(date) == str:
+            date = d(date)
         if skip_valid(df, date, allow_na):
             continue
         if (wb := get_wb()) is None:
@@ -96,6 +113,7 @@ def dash_daily():
                 "Positive Rate Dash": np.nan,
                 "Hospitalized Severe": np.nan,
                 "Hospitalized Respirator": np.nan,
+                "ATK": np.nan,
                 "": 0.0
             },
             # D_UpdateTime="Last_Update",
@@ -149,17 +167,34 @@ def dash_daily():
 
         if row.empty:
             break
-        last_update = wb.getWorksheet("D_UpdateTime").data
+
+        last_update = wb.getWorksheet("D_UpdateTime (2)").data
         if not last_update.empty:
-            last_update = pd.to_datetime(last_update['max_update_date-alias'], dayfirst=False).iloc[0]
+            last_update = pd.to_datetime(
+                last_update['max_update_date-alias'].str.replace("2565", "2022"), dayfirst=False).iloc[0]
             if last_update.normalize() < row.index.max():
                 # We got todays data too early
                 continue
+        else:
+            last_update = None
+
         # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
         row["Source Cases"] = "https://ddc.moph.go.th/covid19-dashboard/index.php?dashboard=main"
         if date < today() - relativedelta(days=30):  # TODO: should use skip_valid rules to work which are delayed rather than 0?
             row.loc[date] = row.loc[date].fillna(0.0)  # ATK and HICI etc are null to mean 0.0
+
+        # Not date indexed as it's weekly
+        atk_reg = wb.getWorksheet("ATK+WEEK_line_Total (1)").data
+        if not atk_reg.empty:
+            # It's the same value for all dates so only need on first iteration
+            col = "Infections Non-Hospital Cum"  # ATK+?  no real explanation for this number
+            atk_reg = atk_reg.rename(columns={"Week-value": "Week", 'SUM(#SETDATE_WEEK_CNT)-value': col})[["Week", col]]
+            atk_reg['Date'] = (pd.to_numeric(atk_reg['Week']) * 7).apply(lambda x: pd.DateOffset(x) + d("2022-01-01"))
+            atk_reg = atk_reg.set_index("Date")[[col]]
+            # atk_reg = atk_reg.cumsum()
+            all_atk_reg = all_atk_reg.combine_first(atk_reg)
+
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
     # We get negative values for field hospital before April
@@ -168,6 +203,7 @@ def dash_daily():
     # 2022-05-07 and 03 got 0.0 by mistake
     df['Hospitalized Respirator'] = df['Hospitalized Respirator'].replace(0.0, np.nan)
     df["Hospitalized Severe"] = df["Hospitalized Severe"].replace(0.0, np.nan)
+    df = all_atk_reg.cumsum().combine_first(df)
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
 
@@ -195,7 +231,7 @@ def dash_ages():
     def range2eng(range):
         return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
-    for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range"):
+    for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range", verify=False):
         age_group = next(iter(idx_value))
         age_group = range2eng(age_group)
         skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
@@ -229,7 +265,7 @@ def dash_trends_prov():
 
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
-    for get_wb, idx_value in workbook_iterate(url, D4_CHART="province"):
+    for get_wb, idx_value in workbook_iterate(url, D4_CHART="province", verify=False):
         province = get_province(next(iter(idx_value)))
         date = str(today().date())
         try:
@@ -264,7 +300,7 @@ def dash_trends_prov():
 def dash_by_province():
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
-    url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province"
+    url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
@@ -313,8 +349,13 @@ def dash_by_province():
     ]
 
     dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
-    for get_wb, idx_value in workbook_iterate(url, param_date=dates, D2_Province="province"):
+    #dates = [d.strftime('%m/%d/%Y') for d in dates]
+    # Add in None for today as selecting today doesn't give us new data anymore. TODO: fix TableauScraper to remember the last data it had
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province"):
         date, province = idx_value
+        #date = d(date, dayfirst=False)
+        if date is None:
+            date = (today() - relativedelta(hours=7.5))
         if province is None:
             continue
         province = get_province(province)
@@ -363,9 +404,9 @@ def dash_by_province():
         )
         # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
         # Need to work if the data has been updated yet. If it has last deaths should be today.
-        last_update_df = wb.getWorksheet("D2_DeathTL").data
+        last_update_df = wb.getWorksheet("D2_NewTL (2)").data
         last_update = None
-        if last_update_df.empty or date > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()):
+        if last_update_df.empty or date.date() > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()).date():
             # the date we are trying to get isn't the last deaths we know about. No new data yet
             logger.warning("{} MOPH Dashboard {}", date.date(), f"Skipping {province} as data update={last_update}")
             continue
@@ -427,7 +468,9 @@ def skip_valid(df, idx_value, allow_na={}):
             return True
 
         min_val, *max_val = mins
-        if min_val > val:
+        if type(val) == str:
+            return False
+        elif min_val > val:
             return False
         elif max_val and val > max_val[0]:
             return False
@@ -451,11 +494,12 @@ def check_dash_ready():
 
 
 if __name__ == '__main__':
-
     # check_dash_ready()
-    dash_daily_df = dash_daily()
+
     dash_by_province_df = dash_by_province()
-    dash_ages_df = dash_ages()
+    dash_daily_df = dash_daily()
 
     # This doesn't add any more info since severe cases was a mistake
-    dash_trends_prov_df = dash_trends_prov()
+#    dash_trends_prov_df = dash_trends_prov()
+
+    dash_ages_df = dash_ages()

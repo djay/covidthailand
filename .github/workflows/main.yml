@@ -164,7 +164,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip install wheel
-          pip install -r requirements.txt --use-deprecated=html5lib --use-deprecated=legacy-resolver
+          pip install -r requirements.txt
       - name: is dash ready
         id: godash
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}

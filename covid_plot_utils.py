@@ -200,10 +200,10 @@ def plot_area(df: pd.DataFrame,
         unknown_col = f'{unknown_name}{ma_suffix}'
         other_cols = set(cols) - set([unknown_col])
         # TODO: should not be 0 when no unknown_total
-        df[unknown_col] = df[total_col].sub(df[other_cols].sum(axis=1), fill_value=None).clip(lower=0)
+        df[unknown_col] = df[total_col].sub(df[list(other_cols)].sum(axis=1), fill_value=None).clip(lower=0)
         if ma_days:
             # Need to make this without MA for tooltip
-            df[unknown_name] = df[total_col].sub(df[set(orig_cols) - set([unknown_name])
+            df[unknown_name] = df[total_col].sub(df[list(set(orig_cols) - set([unknown_name]))
                                                     ].sum(axis=1), fill_value=None).clip(lower=0)
 
         if unknown_col not in cols:

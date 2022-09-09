@@ -15,6 +15,7 @@ import dateutil
 import pandas as pd
 import pythainlp
 import requests
+import urllib3
 from bs4 import BeautifulSoup
 from loguru import logger
 from pptx import Presentation
@@ -27,7 +28,7 @@ from tika import config
 from tika import parser
 from webdav3.client import Client
 from xlsx2csv import Xlsx2csv
-
+urllib3.disable_warnings()
 
 CHECK_NEWER = bool(os.environ.get("CHECK_NEWER", False))
 USE_CACHE_DATA = os.environ.get('USE_CACHE_DATA', False) == 'True'
@@ -311,19 +312,18 @@ def links_html_namer(url, _):
     return "-".join(url.split("/")[2:]) + ".html"
 
 
-def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True):
+def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=5):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
-    for index_url in index_urls:
-        for file, index, _ in web_files(index_url, dir=dir, check=check, filenamer=filenamer):
-            soup = parse_file(file, html=True, paged=False)
-            links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
-            for link in links:
-                yield link
+    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=5):
+        soup = parse_file(file, html=True, paged=False)
+        links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
+        for link in links:
+            yield link
 
 
 def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=5):
@@ -337,10 +337,12 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         os.makedirs(os.path.dirname(file), exist_ok=True)
         resumable = False
         size = None
+        #verify = "ddc.moph.go.th" not in url
+        verify = True
 
         if check or MAX_DAYS:
             try:
-                r = s.head(url, timeout=timeout)
+                r = s.head(url, timeout=timeout, verify=verify)
                 modified = r.headers.get("Last-Modified")
                 if r.headers.get("content-range"):
                     pre, size = r.headers.get("content-range").split("/")
@@ -365,7 +367,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             try:
                 # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
-                r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True)
+                r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True, verify=verify)
             except (Timeout, ConnectionError) as e:
                 err = str(e)
                 r = None
@@ -396,6 +398,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             logger.opt(raw=True).info("Error downloading: {}: skipping. {}", file, str(e))
                             remove = True
                 logger.opt(raw=True).info("\n")
+                if type(check) == int:
+                    check -= 1  # HACK: using int as Boolean above
             logger.bind(end="\n")
         if remove:
             os.remove(file)  # if we leave it without check it will never get fixed

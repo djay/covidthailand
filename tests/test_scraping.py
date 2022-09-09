@@ -23,6 +23,8 @@ from covid_data_situation import situation_pui_th
 from covid_data_testing import get_test_files
 from covid_data_testing import get_tests_by_area_chart_pptx
 from covid_data_testing import get_tests_by_area_pdf
+from covid_data_testing import get_variant_files
+from covid_data_testing import get_variant_sequenced_table
 from covid_data_vac import vac_manuf_given
 from covid_data_vac import vac_slides_files
 from covid_data_vac import vaccination_daily
@@ -212,6 +214,10 @@ def find_testing_pdf(check):
     return [(file, None, dl) for file, dl in get_test_files(ext=".pdf")]
 
 
+def find_variant_pdf(check):
+    return [(file, None, dl) for file, dl in get_variant_files(ext=".pdf")]
+
+
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pptx", find_testing_pptx))
 def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     data, raw = pd.DataFrame(), pd.DataFrame()
@@ -236,6 +242,7 @@ def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     pages = parse_file(file, html=False, paged=True)
     for page in pages:
         data, raw = get_tests_by_area_pdf(file, page, data, raw)
+
     # write_scrape_data_back_to_test(raw, "testing_moph_pdf", fname)
     if testdf.index.max() >= dateutil.parser.parse("2021-08-08"):
         # plots stopped having numbers for positives so aren't scraped
@@ -393,3 +400,14 @@ def test_situation_cases_new(date, testdf, dl):
 
     # write_scrape_data_back_to_test(df, "situation_cases_new", fname=file, date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("variant", find_variant_pdf))
+def test_get_variant_seq(fname, testdf, dl):
+    assert dl is not None
+    file = dl()
+    assert file is not None
+    pages = parse_file(file, html=False, paged=True)
+    fileseq = get_variant_sequenced_table(file, pages)
+    # write_scrape_data_back_to_test(fileseq, "variant", fname)
+    pd.testing.assert_frame_equal(testdf, fileseq, check_dtype=False)
