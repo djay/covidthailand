@@ -221,6 +221,7 @@ def vaccination_daily(daily, date, file, page):
     d2_num, rest2 = get_next_numbers(gtext,
                                      r"ได้รับ\s*วัคซีน\s+2\s+เข็ม",
                                      r"ไดรับวัคซีน\s+2\s+เข็ม",
+                                     r"วัคซีน 2 เข็ม",
                                      until=r"(?:ดังรูป|โควิด 19|จังหวัดที่|\(Booster\s*dose\))", return_until=True, require_until=True)
     d3_num, rest3 = get_next_numbers(gtext, r"\(Booster dose\)", until="ดังรูป", return_until=True)
     if not len(clean_num(d1_num)) == len(clean_num(d2_num)):
