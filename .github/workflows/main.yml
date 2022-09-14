@@ -183,6 +183,7 @@ jobs:
         if: ${{ steps.gofull.outcome != 'success' && steps.godash.outcome != 'success' && steps.goapi.outcome == 'success' }}
         run: |
             sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
+            # sudo docker run -e  LOCAL_NETWORK=`hostname -I`  -it --rm --name=vpn  -v "/Users/dylanjay/Projects/sandpit/covidthailand/config/Thailand_49.228.232.209_udp.ovpn:/config/config.ovpn" --cap-add=NET_ADMIN --device=/dev/net/tun -p 8080:8080 jonoh/openvpn-proxy
             python covid_data_api.py
         env:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
