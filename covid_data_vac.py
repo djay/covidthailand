@@ -637,7 +637,7 @@ def vaccination_reports_files2(check=True,
         use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
     except requests.exceptions.RequestException:
         use_proxy = True
-    years = web_links(base1, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout)
+    years = web_links(base1, ext="dept=dcd", match=hasyear, check=0, proxy=use_proxy, timeout=timeout)
     months = (link for link in web_links(*years, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
     links1 = (link for link in web_links(*months, ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
@@ -947,6 +947,8 @@ def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
     for link, _, get_file in vac_slides_files():
         file = get_file()
+        if file is None:
+            continue
         for i, page in enumerate(parse_file(file), 1):
             # pass
             df = vac_manuf_given(df, page, file, i, link)

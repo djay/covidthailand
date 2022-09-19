@@ -838,8 +838,8 @@ def get_cases_by_prov_briefings():
             text = page.get_text()
             # Might throw out totals since doesn't include all prov
             # vac_prov = vac_briefing_provs(vac_prov, date, file, page, text)
-            vac = vac_briefing_totals(vac, date, file, page, text)
-            vac = vac_briefing_groups(vac, date, file, page, text)
+            vac = vac_briefing_totals(vac, date, file, page, text, i)
+            vac = vac_briefing_groups(vac, date, file, page, text, i)
 
         if date > d("2022-03-04") and date not in [d("2022-06-22"), d("2022-04-11"), d("2022-03-31")]:
             assert vac.iloc[0]["Vac Group Over 60 1 Cum"] > 0
@@ -906,7 +906,7 @@ def get_cases_by_prov_briefings():
     return date_prov, types
 
 
-def vac_briefing_totals(df, date, url, page, text):
+def vac_briefing_totals(df, date, file, page, text, i):
     if not re.search("(รายงานสถานการณ์|ระลอกใหม่ เมษายน ประเทศไทย ตั้งแต่วันที่)", text):
         return df
     if not re.search("(ผู้รับวัคซีน|ผูรั้บวัคซีน)", text):
@@ -940,7 +940,7 @@ def vac_briefing_totals(df, date, url, page, text):
     assert len(cums) < 5
 
     # We need given totals to ensure we use these over other api given totals
-    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [url]
+    row = [date - datetime.timedelta(days=1), sum(daily), total] + daily + cums + [file]
     columns = ["Date", "Vac Given", "Vac Given Cum"]
     columns += [f"Vac Given {d}" for d in range(1, len(daily) + 1)]
     columns += [f"Vac Given {d} Cum" for d in range(1, len(cums) + 1)]
@@ -953,8 +953,8 @@ def vac_briefing_totals(df, date, url, page, text):
     return df
 
 
-def vac_briefing_groups(df, date, url, page, text):
-    if not re.search("(ที่มีอายุ 60)", text):
+def vac_briefing_groups(df, date, file, page, text, i):
+    if not re.search("(ที่มีอายุ 60|ผู้ทีม่ีอายุ 60|ผู้ที่มีอาย ุ60)", text):  # ผู้ทีม่ีอายุ 60
         return df
     over60x3, studentx3 = [
         [f"Vac Group {g} {d} Cum" for d in range(1, 4)] for g in ["Over 60", "Student"]
@@ -962,11 +962,19 @@ def vac_briefing_groups(df, date, url, page, text):
     date = date - datetime.timedelta(days=1)
 
     # Vaccines
-    pop, d1, d1p, d2, d2p, d3, d3p, * \
-        rest = get_next_numbers(text, "ที่มีอายุ 60", ints=False, return_rest=False)
+    numbers = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
+    if len(numbers) >= 6:
+        pop, sd1, d1p, sd2, d2p, sd3, *rest = numbers
+        pop, d1, d1p, d2, d2p, d3, d3p, * \
+            rest = get_next_numbers(text, "ที่มีอายุ 60", "ผู้ทีม่ีอายุ 60", ints=False, return_rest=False)
+    else:
+        table = camelot_cache(file, i + 2, process_background=True)
+        numbers = get_next_numbers(table.iloc[3][0], "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
+        sd1, sd2, sd3, pop, *rest = numbers
+        numbers = get_next_numbers(table.iloc[1][0], "60", ints=False, return_rest=False, dash_as_zero=True)
+        d1, d2, d3, pop, *rest = numbers
     over60 = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + over60x3).set_index("Date")
-    pop, d1, d1p, d2, d2p, d3, *rest = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
-    student = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + studentx3).set_index("Date")
+    student = pd.DataFrame([[date, sd1, sd2, sd3]], columns=["Date"] + studentx3).set_index("Date")
 
     df = df.combine_first(over60).combine_first(student)
 
