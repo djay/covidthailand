@@ -173,7 +173,7 @@ jobs:
       - name: Run tests
         if:  ${{ github.event_name	!= 'schedule'}}
         run: |
-          sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
+          # sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
           pytest
         env:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
@@ -182,7 +182,7 @@ jobs:
         id: updateapi
         if: ${{ steps.gofull.outcome != 'success' && steps.godash.outcome != 'success' && steps.goapi.outcome == 'success' }}
         run: |
-            sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
+            # sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
             python covid_data_api.py
         env:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
