@@ -363,7 +363,6 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
     s = requests.Session()
     fix_timeouts(s, timeout)
     i = 0
-    proxies = next(proxies_itor, None) if proxy else None
     for url in urls:
         file = filenamer(url, strip_version)
         file = os.path.join(dir, file)
@@ -374,6 +373,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         verify = True
 
         if check or MAX_DAYS:
+            proxies = next(proxies_itor, None) if proxy else None
             try:
                 r = s.head(url, timeout=timeout, verify=verify, proxies=proxies)
                 modified = r.headers.get("Last-Modified")
@@ -397,6 +397,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
 
+            proxies = next(proxies_itor, None) if proxy else None
             try:
                 # handle resuming based on range requests - https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
@@ -405,6 +406,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             except (Timeout, ConnectionError) as e:
                 err = str(e)
                 r = None
+            if type(check) == int and check > 0:
+                check -= 1  # HACK: using int as Boolean above
             if r is None or r.status_code >= 300:
                 err = f"bad response {r.status_code}, {r.content}" if r is not None else err
                 if not os.path.exists(file):
@@ -432,8 +435,6 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             logger.opt(raw=True).info("Error downloading: {}: skipping. {}", file, str(e))
                             remove = True
                 logger.opt(raw=True).info("\n")
-                if type(check) == int:
-                    check -= 1  # HACK: using int as Boolean above
             logger.bind(end="\n")
         if remove:
             os.remove(file)  # if we leave it without check it will never get fixed
@@ -715,13 +716,16 @@ def read_excel(path: str, sheet_name: str = None) -> pd.DataFrame:
 def get_proxy():
     url = "https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data-with-geolocation.json"
     url = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/json/proxies-advanced.json"
-    data = requests.get(url).json()
+    try:
+        data = requests.get(url).json()
+    except requests.exceptions.RequestException:
+        return
     random.shuffle(data)
 
     def to_proxies(d):
         if "http" in [p["type"] for p in d['protocols']]:
             return {
-                p["type"]: f"http://{d['ip']}:{p['port']}" for p in d['protocols']
+                p["type"]: f"http{'s' if p['tls'] else ''}://{d['ip']}:{p['port']}" for p in d['protocols']
             }
         else:
             p = d['protocols'][0]
@@ -730,20 +734,25 @@ def get_proxy():
                 "https": f"{p['type']}://{d['ip']}:{p['port']}",
             }
     proxies = [{
+        "http": "socks4://127.0.0.1:8080",
+        "https": "socks4://127.0.0.1:8080"
+    },
+        {
         "http": "socks4://127.0.0.1:9050",
         "https": "socks4://127.0.0.1:9050"
     }] + [to_proxies(d) for d in data if not d['location']['isocode'] == "TH"]
 
     def test_proxy(proxies):
         try:
-            if requests.head("https://ddc.moph.go.th", proxies=proxies, timeout=15).status_code == 200:
+            if requests.head("https://ddc.moph.go.th", proxies=proxies, timeout=25).status_code < 400:
                 logger.info(f"Pass Test proxy {proxies}")
                 return proxies
         except requests.exceptions.RequestException:
+            print("x", end="")
             pass
         # logger.info(f"Failed Test proxy {proxies}")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
         for future in concurrent.futures.as_completed(executor.submit(test_proxy, p) for p in proxies):
             proxies = future.result()
             if proxies is None:

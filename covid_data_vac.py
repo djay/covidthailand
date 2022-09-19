@@ -40,103 +40,103 @@ from utils_thai import today
 # Vaccination reports
 ################################
 
-def get_vaccination_coldchain(request_json, join_prov=False):
-    logger.info("Requesting coldchain: {}", request_json)
-    if join_prov:
-        df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
-        codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
-        provinces = [
-            prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype
-        ]
-        provinces = [get_province(prov) for prov in provinces]
-    else:
-        provinces = codes = [None]
+# def get_vaccination_coldchain(request_json, join_prov=False):
+#     logger.info("Requesting coldchain: {}", request_json)
+#     if join_prov:
+#         df_codes = pd.read_html("https://en.wikipedia.org/wiki/ISO_3166-2:TH")[0]
+#         codes = [code for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype]
+#         provinces = [
+#             prov.split("(")[0] for code, prov, ptype in df_codes.itertuples(index=False) if "special" not in ptype
+#         ]
+#         provinces = [get_province(prov) for prov in provinces]
+#     else:
+#         provinces = codes = [None]
 
-    url = "https://datastudio.google.com/batchedDataV2?appVersion=20210506_00020034"
-    with open(request_json) as fp:
-        post = json.load(fp)
-    specs = post['dataRequest']
-    post['dataRequest'] = []
+#     url = "https://datastudio.google.com/batchedDataV2?appVersion=20210506_00020034"
+#     with open(request_json) as fp:
+#         post = json.load(fp)
+#     specs = post['dataRequest']
+#     post['dataRequest'] = []
 
-    def set_filter(filters, field, value):
-        for filter in filters:
-            if filter['filterDefinition']['filterExpression']['queryTimeTransformation']['dataTransformation'][
-                    'sourceFieldName'] == field:
-                filter['filterDefinition']['filterExpression']['stringValues'] = value
-        return filters
+#     def set_filter(filters, field, value):
+#         for filter in filters:
+#             if filter['filterDefinition']['filterExpression']['queryTimeTransformation']['dataTransformation'][
+#                     'sourceFieldName'] == field:
+#                 filter['filterDefinition']['filterExpression']['stringValues'] = value
+#         return filters
 
-    def make_request(post, codes):
-        for code in codes:
-            for spec in specs:
-                pspec = copy.deepcopy(spec)
-                if code:
-                    set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
-                post['dataRequest'].append(pspec)
-        try:
-            r = requests.post(url, json=post, timeout=120)
-        except requests.exceptions.ReadTimeout:
-            logger.info("Timeout so using cached {}", request_json)
-            with open(os.path.join("inputs", "json", request_json), ) as fp:
-                data = fp.read()
-        else:
-            _, _, data = r.text.split("\n")
-        data = json.loads(data)
-        if any(resp for resp in data['dataResponse'] if 'errorStatus' in resp):
-            # raise Exception(resp['errorStatus']['reasonStr'])
-            # read from cache if possible
-            with open(os.path.join("inputs", "json", request_json)) as fp:
-                data = json.load(fp)
-        else:
-            with open(os.path.join("inputs", "json", request_json), "w") as fp:
-                fp.write(data)
-        for resp in (resp for resp in data['dataResponse'] if 'errorStatus' in resp):
-            # raise Exception(resp['errorStatus']['reasonStr'])
-            pass
-        for resp in (resp for resp in data['dataResponse'] if 'errorStatus' not in resp):
-            yield resp
-    if join_prov:
-        dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
-    else:
-        dfall = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+#     def make_request(post, codes):
+#         for code in codes:
+#             for spec in specs:
+#                 pspec = copy.deepcopy(spec)
+#                 if code:
+#                     set_filter(pspec['datasetSpec']['filters'], "_hospital_province_code_", [code])
+#                 post['dataRequest'].append(pspec)
+#         try:
+#             r = requests.post(url, json=post, timeout=120)
+#         except requests.exceptions.ReadTimeout:
+#             logger.info("Timeout so using cached {}", request_json)
+#             with open(os.path.join("inputs", "json", request_json), ) as fp:
+#                 data = fp.read()
+#         else:
+#             _, _, data = r.text.split("\n")
+#         data = json.loads(data)
+#         if any(resp for resp in data['dataResponse'] if 'errorStatus' in resp):
+#             # raise Exception(resp['errorStatus']['reasonStr'])
+#             # read from cache if possible
+#             with open(os.path.join("inputs", "json", request_json)) as fp:
+#                 data = json.load(fp)
+#         else:
+#             with open(os.path.join("inputs", "json", request_json), "w") as fp:
+#                 fp.write(data)
+#         for resp in (resp for resp in data['dataResponse'] if 'errorStatus' in resp):
+#             # raise Exception(resp['errorStatus']['reasonStr'])
+#             pass
+#         for resp in (resp for resp in data['dataResponse'] if 'errorStatus' not in resp):
+#             yield resp
+#     if join_prov:
+#         dfall = pd.DataFrame(columns=["Date", "Province", "Vaccine"]).set_index(["Date", "Province", "Vaccine"])
+#     else:
+#         dfall = pd.DataFrame(columns=["Date"]).set_index(["Date"])
 
-    for prov_spec, data in zip([(p, s) for p in provinces for s in specs], make_request(post, codes)):
-        prov, spec = prov_spec
-        fields = [(f['name'], f['dataTransformation']['sourceFieldName']) for f in spec['datasetSpec']['queryFields']]
-        for datasubset in data['dataSubset']:
-            colmuns = datasubset['dataset']['tableDataset']['column']
-            df_cols = {}
-            date_col = None
-            for field, column in zip(fields, colmuns):
-                fieldname = dict(_vaccinated_on_='Date',
-                                 _manuf_name_='Vaccine',
-                                 datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
-                nullIndex = column['nullIndex']
-                del column['nullIndex']
-                if column:
-                    field_type = next(iter(column.keys()))
-                    conv = dict(dateColumn=d, datetimeColumn=d, longColumn=int, doubleColumn=float,
-                                stringColumn=str)[field_type]
-                    values = [conv(i) for i in column[field_type]['values']]
-                    if conv == d:
-                        date_col = fieldname
-                else:
-                    values = []
-                # datastudio_record_count_system_field_id_98323387 = supply?
-                for i in nullIndex:  # TODO check we are doing this right
-                    values.insert(i, None)
-                df_cols[fieldname] = values
-            df = pd.DataFrame(df_cols)
-            if not date_col:
-                df['Date'] = today()
-            else:
-                df['Date'] = df[date_col]
-            if prov:
-                df['Province'] = prov
-                df = df.set_index(["Date", "Province", "Vaccine"])
-            else:
-                df = df.set_index(['Date'])
-            dfall = dfall.combine_first(df)
-    return dfall
+#     for prov_spec, data in zip([(p, s) for p in provinces for s in specs], make_request(post, codes)):
+#         prov, spec = prov_spec
+#         fields = [(f['name'], f['dataTransformation']['sourceFieldName']) for f in spec['datasetSpec']['queryFields']]
+#         for datasubset in data['dataSubset']:
+#             colmuns = datasubset['dataset']['tableDataset']['column']
+#             df_cols = {}
+#             date_col = None
+#             for field, column in zip(fields, colmuns):
+#                 fieldname = dict(_vaccinated_on_='Date',
+#                                  _manuf_name_='Vaccine',
+#                                  datastudio_record_count_system_field_id_98323387='Vac Given').get(field[1], field[1])
+#                 nullIndex = column['nullIndex']
+#                 del column['nullIndex']
+#                 if column:
+#                     field_type = next(iter(column.keys()))
+#                     conv = dict(dateColumn=d, datetimeColumn=d, longColumn=int, doubleColumn=float,
+#                                 stringColumn=str)[field_type]
+#                     values = [conv(i) for i in column[field_type]['values']]
+#                     if conv == d:
+#                         date_col = fieldname
+#                 else:
+#                     values = []
+#                 # datastudio_record_count_system_field_id_98323387 = supply?
+#                 for i in nullIndex:  # TODO check we are doing this right
+#                     values.insert(i, None)
+#                 df_cols[fieldname] = values
+#             df = pd.DataFrame(df_cols)
+#             if not date_col:
+#                 df['Date'] = today()
+#             else:
+#                 df['Date'] = df[date_col]
+#             if prov:
+#                 df['Province'] = prov
+#                 df = df.set_index(["Date", "Province", "Vaccine"])
+#             else:
+#                 df = df.set_index(['Date'])
+#             dfall = dfall.combine_first(df)
+#     return dfall
 
 # vac given table
 # <p>สรุปการฉดีวัคซีนโควิด 19 ตัง้แตว่ันที่ 7 มิถุนายน 2564
@@ -633,14 +633,19 @@ def vaccination_reports_files2(check=True,
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565)")
-    years = web_links(base1, ext=None, match=hasyear, check=1, proxy=True, timeout=timeout)
-    months = (link for link in web_links(*years, ext=None, match=hasyear, check=1, proxy=True, timeout=timeout))
-    links1 = (link for link in web_links(*months, ext=".pdf", check=1, proxy=True, timeout=timeout) if (
+    try:
+        use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
+    except requests.exceptions.RequestException:
+        use_proxy = True
+    years = web_links(base1, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout)
+    months = (link for link in web_links(*years, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
+    links1 = (link for link in web_links(*months, ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(11, 2, -1)]
-    links2 = (link for f in folders for link in reversed(list(web_links(f, ext=ext, check=False, proxy=True, timeout=timeout))))
+    links2 = (link for f in folders for link in reversed(
+        list(web_links(f, ext=ext, check=False, proxy=use_proxy, timeout=timeout))))
     links = list(links1) + list(links2)
     count = 0
     for link in links:
@@ -650,7 +655,7 @@ def vaccination_reports_files2(check=True,
 
         def get_file(link=link):
             try:
-                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations", proxy=True, timeout=timeout)))
+                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations", proxy=use_proxy, timeout=timeout)))
             except StopIteration:
                 return None
             return file
@@ -661,7 +666,6 @@ def vaccination_reports_files2(check=True,
 
 
 def vaccination_reports():
-    start = time.time()
     vac_daily = pd.DataFrame(columns=['Date']).set_index("Date")
     vac_prov_reports = pd.DataFrame(columns=['Date', 'Province']).set_index(["Date", "Province"])
 
@@ -736,47 +740,47 @@ def vaccination_reports():
     return vac_daily, vac_prov_reports
 
 
-def get_vac_coldchain():
-    vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
-    if not vac_import.empty:
-        vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
-        vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
-                                                                                values="_quantity_")
-        vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
-        vac_import = vac_import.fillna(0)
-        vac_import['Vac Imported'] = vac_import.sum(axis=1)
-        vac_import = vac_import.combine_first(daily2cum(vac_import))
+# def get_vac_coldchain():
+#     vac_import = get_vaccination_coldchain("vac_request_imports.json", join_prov=False)
+#     if not vac_import.empty:
+#         vac_import["_vaccine_name_"] = vac_import["_vaccine_name_"].apply(replace_matcher(["Astrazeneca", "Sinovac"]))
+#         vac_import = vac_import.drop(columns=['_arrive_at_transporter_']).pivot(columns="_vaccine_name_",
+#                                                                                 values="_quantity_")
+#         vac_import.columns = [f"Vac Imported {c}" for c in vac_import.columns]
+#         vac_import = vac_import.fillna(0)
+#         vac_import['Vac Imported'] = vac_import.sum(axis=1)
+#         vac_import = vac_import.combine_first(daily2cum(vac_import))
 
-    # Delivered Vac data from coldchain
-    vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
-    vac_delivered = join_provinces(vac_delivered, '_hospital_province_')
-    # TODO: save delivered by prov somewhere. note some hospitals unknown prov
-    vac_delivered = vac_delivered.reset_index()
-    vac_delivered['Date'] = vac_delivered['Date'].dt.floor('d')
-    vac_delivered = vac_delivered[['Date', '_quantity_']].groupby('Date').sum()
-    vac_delivered = vac_delivered.rename(columns=dict(_quantity_='Vac Delivered'))
-    vac_delivered['Vac Delivered Cum'] = vac_delivered['Vac Delivered'].fillna(0).cumsum()
+#     # Delivered Vac data from coldchain
+#     vac_delivered = get_vaccination_coldchain("vac_request_delivery.json", join_prov=False)
+#     vac_delivered = join_provinces(vac_delivered, '_hospital_province_')
+#     # TODO: save delivered by prov somewhere. note some hospitals unknown prov
+#     vac_delivered = vac_delivered.reset_index()
+#     vac_delivered['Date'] = vac_delivered['Date'].dt.floor('d')
+#     vac_delivered = vac_delivered[['Date', '_quantity_']].groupby('Date').sum()
+#     vac_delivered = vac_delivered.rename(columns=dict(_quantity_='Vac Delivered'))
+#     vac_delivered['Vac Delivered Cum'] = vac_delivered['Vac Delivered'].fillna(0).cumsum()
 
-    # per prov given from coldchain
-    vacct = get_vaccination_coldchain("vac_request_givenprov.json", join_prov=True)
-    vacct = vacct.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
-    vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
-    vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
-    vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
-    vacct = vacct.loc[:today() - datetime.timedelta(days=1)]  # Today's data is incomplete
-    vacct = vacct.fillna(0)
-    vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
-    vacct = vacct.combine_first(vaccum)
+#     # per prov given from coldchain
+#     vacct = get_vaccination_coldchain("vac_request_givenprov.json", join_prov=True)
+#     vacct = vacct.reset_index().set_index("Date").loc['2021-02-28':].reset_index().set_index(['Date', 'Province'])
+#     vacct = vacct.reset_index().pivot(index=["Date", "Province"], columns=["Vaccine"]).fillna(0)
+#     vacct.columns = [" ".join(c).replace("Sinovac Life Sciences", "Sinovac") for c in vacct.columns]
+#     vacct['Vac Given'] = vacct.sum(axis=1, skipna=False)
+#     vacct = vacct.loc[:today() - datetime.timedelta(days=1)]  # Today's data is incomplete
+#     vacct = vacct.fillna(0)
+#     vaccum = vacct.groupby(level="Province", as_index=False, group_keys=False).apply(daily2cum)
+#     vacct = vacct.combine_first(vaccum)
 
-    # Their data can have some prov on the last day missing data
-    # Need the last day we have a full set of data since some provinces can come in late in vac tracker data
-    # TODO: could add unknowns
-    counts1 = vacct['Vac Given'].groupby("Date").count()
-    counts2 = vacct['Vac Given Cum'].groupby("Date").count()
-    last_valid = max([counts2[counts1 > 76].last_valid_index(), counts2[counts2 > 76].last_valid_index()])
-    vacct = vacct.loc[:last_valid]
+#     # Their data can have some prov on the last day missing data
+#     # Need the last day we have a full set of data since some provinces can come in late in vac tracker data
+#     # TODO: could add unknowns
+#     counts1 = vacct['Vac Given'].groupby("Date").count()
+#     counts2 = vacct['Vac Given Cum'].groupby("Date").count()
+#     last_valid = max([counts2[counts1 > 76].last_valid_index(), counts2[counts2 > 76].last_valid_index()])
+#     vacct = vacct.loc[:last_valid]
 
-    return vac_import, vac_delivered, vacct
+#     return vac_import, vac_delivered, vacct
 
 
 def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
