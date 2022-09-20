@@ -346,6 +346,7 @@ def get_case_details_api():
         return cases
     pagedata = json.loads(r.content)
     page = pagedata['data']
+    assert page
     last_page = pagedata['meta']['last_page']
     total = pagedata['meta']['total']
     chunk = pagedata['meta']['per_page']
@@ -376,8 +377,9 @@ def get_case_details_api():
                 continue
         pagedata = json.loads(r.content)
         data = pagedata['data'] + data  # TODO: might be bit slow
-        last_date = d(pagedata['data'][0]['txn_date'])
-        last_update = d(pagedata['data'][0]['update_date'])
+        if pagedata['data']:
+            last_date = d(pagedata['data'][0]['txn_date'])
+            last_update = d(pagedata['data'][0]['update_date'])
         # if last_date < target_date and last_update > cases.iloc[-1]["update_date"]:
         #     # data has been updated so keep going back further
         #     target_date = last_date
