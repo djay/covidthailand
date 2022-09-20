@@ -752,7 +752,7 @@ def get_proxy():
 
     def test_proxy(proxies):
         try:
-            if requests.head("https://ddc.moph.go.th", proxies=proxies, timeout=25).status_code < 400:
+            if requests.get("https://ddc.moph.go.th", proxies=proxies, timeout=45).status_code < 400:
                 logger.info(f"Pass Test proxy {proxies}")
                 return proxies
         except requests.exceptions.RequestException:
