@@ -343,7 +343,7 @@ def test_vac_briefing_totals(date, testdf, dl):
 
     for i, soup in enumerate(pages):
         text = soup.get_text()
-        df = vac_briefing_totals(df, date, file, soup, text, i)
+        df = vac_briefing_totals(df, date, "", soup, text, i)
     # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 

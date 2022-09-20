@@ -919,7 +919,7 @@ def vac_briefing_totals(df, date, file, page, text, i):
     # the reason there's no data for 2021-9-24 is that over 1 million doses were
     # given and they couldn't tabulate the data in time for briefing of 2021-9-25:
     # "ข้อมูลการให้บริการวัคซีนวันที่ 24 ก.ย. 64 อยู่ระหว่างตรวจสอบข้อมูล เนื่องจากมีผู้เข้ามารับวัคซีน มากกว่า 1 ล้านโดส"
-    if date >= datetime.datetime(2021, 9, 25):
+    if d("2021-9-25") <= date < d("2021-10-01"):
         # use numpy's Not a Number value to avoid breaking the plots with 0s
         total = np.nan
         cums = daily = [np.nan, np.nan, np.nan]
@@ -973,6 +973,8 @@ def vac_briefing_groups(df, date, file, page, text, i):
         sd1, sd2, sd3, pop, *rest = numbers
         numbers = get_next_numbers(table.iloc[1][0], "60", ints=False, return_rest=False, dash_as_zero=True)
         d1, d2, d3, pop, *rest = numbers
+    assert d1 > d2 > d3
+    assert sd1 > sd2 > sd3
     over60 = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + over60x3).set_index("Date")
     student = pd.DataFrame([[date, sd1, sd2, sd3]], columns=["Date"] + studentx3).set_index("Date")
 

@@ -1,0 +1,64 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 1",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Source Vac Given",
+        "type":"string"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2022-09-18T00:00:00.000Z",
+      "Vac Given":12527,
+      "Vac Given Cum":143147872,
+      "Vac Given 1":1200,
+      "Vac Given 2":1727,
+      "Vac Given 3":9600,
+      "Vac Given 1 Cum":57303277,
+      "Vac Given 2 Cum":53799757,
+      "Vac Given 3 Cum":32044838,
+      "Source Vac Given":""
+    }
+  ]
+}
