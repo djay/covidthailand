@@ -964,17 +964,19 @@ def vac_briefing_groups(df, date, file, page, text, i):
     # Vaccines
     numbers = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
     if len(numbers) >= 6:
-        pop, sd1, d1p, sd2, d2p, sd3, *rest = numbers
-        pop, d1, d1p, d2, d2p, d3, d3p, * \
-            rest = get_next_numbers(text, "ที่มีอายุ 60", "ผู้ทีม่ีอายุ 60", ints=False, return_rest=False)
+        # Sometimes totals are first and sometimes intermixed with percentages
+        spop, sd1, sd2, sd3, *rest = [n for n in numbers if n == 0 or n > 100]
+        numbers = get_next_numbers(text, "ที่มีอายุ 60", "ผู้ทีม่ีอายุ 60", ints=False, return_rest=False)
+        pop, d1, d2, d3, *rest = [n for n in numbers if n == 0 or n > 100]
     else:
         table = camelot_cache(file, i + 2, process_background=True)
         numbers = get_next_numbers(table.iloc[3][0], "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
-        sd1, sd2, sd3, pop, *rest = numbers
+        sd1, sd2, sd3, spop, *rest = numbers
         numbers = get_next_numbers(table.iloc[1][0], "60", ints=False, return_rest=False, dash_as_zero=True)
         d1, d2, d3, pop, *rest = numbers
-    assert d1 > d2 > d3
-    assert sd1 > sd2 > sd3
+    sd2 = 1474129 if date == d("2022-05-24") else sd2
+    assert pop > d1 > d2 > d3
+    assert spop > sd1 > sd2 > sd3
     over60 = pd.DataFrame([[date, d1, d2, d3]], columns=["Date"] + over60x3).set_index("Date")
     student = pd.DataFrame([[date, sd1, sd2, sd3]], columns=["Date"] + studentx3).set_index("Date")
 

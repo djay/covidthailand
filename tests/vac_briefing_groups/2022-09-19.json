@@ -1,0 +1,49 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Group Over 60 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 3 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2022-09-18T00:00:00.000Z",
+      "Vac Group Over 60 1 Cum":10749139.0,
+      "Vac Group Over 60 2 Cum":10251348.0,
+      "Vac Group Over 60 3 Cum":6489385.0,
+      "Vac Group Student 1 Cum":3322709.0,
+      "Vac Group Student 2 Cum":2476364.0,
+      "Vac Group Student 3 Cum":48318.0
+    }
+  ]
+}

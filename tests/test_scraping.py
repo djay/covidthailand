@@ -14,6 +14,7 @@ from covid_data_briefing import briefing_deaths_provinces
 from covid_data_briefing import briefing_deaths_summary
 from covid_data_briefing import briefing_documents
 from covid_data_briefing import briefing_province_cases
+from covid_data_briefing import vac_briefing_groups
 from covid_data_briefing import vac_briefing_totals
 from covid_data_situation import get_english_situation_files
 from covid_data_situation import get_thai_situation_files
@@ -345,6 +346,26 @@ def test_vac_briefing_totals(date, testdf, dl):
         text = soup.get_text()
         df = vac_briefing_totals(df, date, "", soup, text, i)
     # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("vac_briefing_groups", briefing_documents))
+def test_vac_briefing_groups(date, testdf, dl):
+    """
+    """
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+    date = dateutil.parser.parse(date)
+
+    for i, soup in enumerate(pages):
+        text = soup.get_text()
+        df = vac_briefing_groups(df, date, file, soup, text, i)
+    # write_scrape_data_back_to_test(df, "vac_briefing_groups", date=date)
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
