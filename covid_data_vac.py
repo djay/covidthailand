@@ -1,5 +1,6 @@
 import copy
 import datetime
+import functools
 import json
 import os
 import re
@@ -622,6 +623,7 @@ def vac_slides_files(check=True):
                                       )
 
 
+@functools.lru_cache
 def vaccination_reports_files2(check=True,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",

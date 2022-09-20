@@ -723,16 +723,24 @@ def get_proxy():
     random.shuffle(data)
 
     def to_proxies(d):
-        if "http" in [p["type"] for p in d['protocols']]:
-            return {
-                p["type"]: f"http{'s' if p['tls'] else ''}://{d['ip']}:{p['port']}" for p in d['protocols']
+        for p in d['protocols']:
+            _type = "http" if "http" in p['type'] else p['type']
+            yield {
+                "http": f"{_type}://{d['ip']}:{p['port']}",
+                "https": f"{_type}://{d['ip']}:{p['port']}",
             }
-        else:
-            p = d['protocols'][0]
-            return {
-                "http": f"{p['type']}://{d['ip']}:{p['port']}",
-                "https": f"{p['type']}://{d['ip']}:{p['port']}",
-            }
+
+        # if "http" in [p["type"] for p in d['protocols']]:
+        #     return {
+        #         # p["type"]: f"http{'s' if p['tls'] else ''}://{d['ip']}:{p['port']}" for p in d['protocols']
+        #         p["type"]: f"http://{d['ip']}:{p['port']}" for p in d['protocols']
+        #     }
+        # else:
+        #     p = d['protocols'][0]
+        #     return {
+        #         "http": f"{p['type']}://{d['ip']}:{p['port']}",
+        #         "https": f"{p['type']}://{d['ip']}:{p['port']}",
+        #     }
     proxies = [{
         "http": "socks4://127.0.0.1:8080",
         "https": "socks4://127.0.0.1:8080"
@@ -740,7 +748,7 @@ def get_proxy():
         {
         "http": "socks4://127.0.0.1:9050",
         "https": "socks4://127.0.0.1:9050"
-    }] + [to_proxies(d) for d in data if not d['location']['isocode'] == "TH"]
+    }] + [p for d in data if d['location']['isocode'] == "TH" for p in to_proxies(d)]
 
     def test_proxy(proxies):
         try:
