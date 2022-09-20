@@ -451,7 +451,7 @@ def prov_regions_wealth(provinces):
         return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()
 
     url = "https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP"
-    file, _, _ = next(web_files(url, dir="inputs/html", check=False))
+    file, _, _ = next(web_files(url, dir="inputs/html", check=True))
     df = pd.read_html(file)[0]
 
     df.columns = [clean_column_name(x) for x in df.columns]
