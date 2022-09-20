@@ -368,7 +368,8 @@ def get_provinces():
         'Name(in Thai)': 'ProvinceTh', 'Population (2019)[1]': 'Population',
         'Area (km²)[2]': 'Area_km2'}).set_index('Alt_names')
     df4 = prov_mapping_subdistricts(df3)
-    df5 = prov_regions_wealth(df4)
+    # df5 = prov_regions_wealth(df4)  # Working locally but no longer on actions?
+    df5 = df4
 
     return df5
 
