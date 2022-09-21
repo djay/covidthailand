@@ -548,7 +548,8 @@ def ihme_dataset(check=True):
     #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2021.csv',
     #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv']
     # IHME seems to have problem with their latest section and have pointed main site back to archives
-    urls = [u for u in web_links("https://www.healthdata.org/covid/data-downloads", ext="csv") if "file_reference" in u]
+    scenario = "file_best_masks"  # "file_reference" doesn't seem to fit mask use here. they assume its dropped
+    urls = [u for u in web_links("https://www.healthdata.org/covid/data-downloads", ext="csv") if scenario in u]
     for file, _, _ in web_files(*reversed(urls), dir="inputs/IHME", check=check, appending=False):
         data_in_file = pd.read_csv(file)
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
