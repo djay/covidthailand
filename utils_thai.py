@@ -11,7 +11,9 @@ import pandas as pd
 import pythainlp.tokenize
 from dateutil.parser import parse as d
 
+from utils_pandas import export
 from utils_pandas import fuzzy_join
+from utils_pandas import import_csv
 from utils_pandas import rearrange
 from utils_pandas import sensible_precision
 from utils_scraping import logger
@@ -368,8 +370,8 @@ def get_provinces():
         'Name(in Thai)': 'ProvinceTh', 'Population (2019)[1]': 'Population',
         'Area (km²)[2]': 'Area_km2'}).set_index('Alt_names')
     df4 = prov_mapping_subdistricts(df3)
-    df5 = prov_regions_wealth(df4)  # Working locally but no longer on actions?
-
+    regions = prov_regions_wealth()  # Working locally but no longer on actions?
+    df5 = df4.join(regions, on="ProvinceEn")
     return df5
 
 
@@ -443,15 +445,18 @@ def prov_mapping_from_kristw(provinces):
     return provinces
 
 
-def prov_regions_wealth(provinces):
+def prov_regions_wealth():
     # TODO: Use 4 regions + greater bangkok instead
     # https://data.go.th/dataset/proviceandregionthailand - has 4, not 5.
+    df = import_csv("province_regions", dir=".", index=["province"])
+    return df
 
     def clean_column_name(col):
         return (''.join(c for c in col if c not in '?:!/;()%$฿')).strip().replace(' ', '_').replace('-', '_').lower()
 
+    # TODO: seems to have problems now from github actions?
     url = "https://en.wikipedia.org/wiki/List_of_Thai_provinces_by_GPP"
-    file, _, _ = next(web_files(url, dir="inputs/html", check=False))
+    file, _, _ = next(web_files(url, dir="inputs/html", check=False), None)
     df = pd.read_html(file)[0]
 
     df.columns = [clean_column_name(x) for x in df.columns]
@@ -483,11 +488,10 @@ def prov_regions_wealth(provinces):
         'province': 'Unknown',
         'region': 'Other'
     }]))
+    df = df.drop(columns=["id"])
+    export(df, "provinces_regions", dir=".")
 
-    provinces = provinces.join(df.set_index("province"), on="ProvinceEn")
-    provinces = provinces.drop(columns=["id"])
-
-    return provinces
+    return df
 
 
 @functools.lru_cache(maxsize=500, typed=False)

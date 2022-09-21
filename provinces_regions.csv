@@ -1,0 +1,80 @@
+index,gpp_billions_thb,gpp_billions_usd,population_millions,province,region,region_id
+0,,,,Prison,Other,
+1,,,,Unknown,Other,
+2,5022.02,173.76,8.912,Bangkok,Bangkok Metropolitan Region,7.0
+3,717.05,25.69,2.171,Samut Prakan,Bangkok Metropolitan Region,7.0
+4,380.69,13.02,1.729,Pathum Thani,Bangkok Metropolitan Region,7.0
+5,398.1,13.1,1.042,Samut Sakhon,Bangkok Metropolitan Region,7.0
+6,332.63,11.26,1.186,Nakhon Pathom,Bangkok Metropolitan Region,7.0
+7,316.63,10.49,1.722,Nonthaburi,Bangkok Metropolitan Region,7.0
+9,236.64,7.93,0.758,Saraburi,Central,6.0
+10,26.5,0.89,0.19,Sing Buri,Central,6.0
+11,31.85,1.13,0.314,Chai Nat,Central,6.0
+12,27.79,0.99,0.259,Ang Thong,Central,6.0
+13,111.92,3.58,0.777,Lopburi,Central,6.0
+14,403.6,13.31,0.907,Phra Nakhon Si Ayutthaya,Central,6.0
+16,976.46,33.25,1.819,Chonburi,Eastern,4.0
+17,341.12,12.47,0.823,Chachoengsao,Eastern,4.0
+18,984.98,33.73,0.98,Rayong,Eastern,4.0
+19,46.96,1.38,0.274,Trat,Eastern,4.0
+20,138.44,4.08,0.553,Chanthaburi,Eastern,4.0
+21,26.84,0.96,0.278,Nakhon Nayok,Eastern,4.0
+22,297.25,10.29,0.621,Prachinburi,Eastern,4.0
+23,45.25,1.63,0.63,Sa Kaeo,Eastern,4.0
+25,204.12,6.81,1.736,Khon Kaen,Northeastern,1.0
+26,111.26,3.6,1.255,Udon Thani,Northeastern,1.0
+27,52.67,1.78,0.543,Loei,Northeastern,1.0
+28,40.05,1.37,0.456,Nong Khai,Northeastern,1.0
+29,25.8,0.82,0.345,Mukdahan,Northeastern,1.0
+30,42.89,1.43,0.564,Nakhon Phanom,Northeastern,1.0
+31,55.63,1.91,0.925,Sakon Nakhon,Northeastern,1.0
+32,55.84,1.91,0.914,Kalasin,Northeastern,1.0
+33,274.9,9.53,2.515,Nakhon Ratchasima,Northeastern,1.0
+34,60.09,2.12,0.954,Chaiyaphum,Northeastern,1.0
+35,26.04,0.9,0.481,Yasothon,Northeastern,1.0
+36,120.49,4.0,1.738,Ubon Ratchathani,Northeastern,1.0
+37,73.48,2.43,1.069,Roi Et,Northeastern,1.0
+38,84.33,2.66,1.247,Buriram,Northeastern,1.0
+39,72.88,2.44,1.107,Surin,Northeastern,1.0
+40,56.0,1.92,0.826,Maha Sarakham,Northeastern,1.0
+41,69.57,2.33,1.033,Sisaket,Northeastern,1.0
+42,25.19,0.94,0.478,Nong Bua Lamphu,Northeastern,1.0
+43,17.65,0.6,0.282,Amnat Charoen,Northeastern,1.0
+44,27.17,0.8,0.36,Bueng Kan,Northeastern,1.0
+46,231.73,7.99,1.805,Chiang Mai,Northern,2.0
+47,68.2,2.32,0.735,Lampang,Northern,2.0
+48,38.11,1.26,0.433,Uttaradit,Northern,2.0
+49,13.0,0.44,0.235,Mae Hong Son,Northern,2.0
+50,104.44,3.57,1.156,Chiang Rai,Northern,2.0
+51,28.38,0.98,0.423,Phrae,Northern,2.0
+52,77.85,2.72,0.406,Lamphun,Northern,2.0
+53,31.31,1.09,0.445,Nan,Northern,2.0
+54,36.02,1.2,0.41,Phayao,Northern,2.0
+55,107.18,3.74,0.975,Nakhon Sawan,Northern,2.0
+56,93.05,3.23,0.896,Phitsanulok,Northern,2.0
+57,110.25,3.8,0.781,Kamphaeng Phet,Northern,2.0
+58,28.59,0.96,0.292,Uthai Thani,Northern,2.0
+59,45.15,1.62,0.616,Sukhothai,Northern,2.0
+60,47.8,1.69,0.532,Tak,Northern,2.0
+61,45.04,1.56,0.539,Phichit,Northern,2.0
+62,76.8,2.64,0.921,Phetchabun,Northern,2.0
+64,209.01,7.54,0.58,Phuket,Southern,3.0
+65,211.05,6.67,1.134,Surat Thani,Southern,3.0
+66,26.77,0.9,0.269,Ranong,Southern,3.0
+67,71.76,2.53,0.27,Phang Nga,Southern,3.0
+68,89.7,2.79,0.418,Krabi,Southern,3.0
+69,79.4,2.83,0.498,Chumphon,Southern,3.0
+70,153.57,5.3,1.537,Nakhon Si Thammarat,Southern,3.0
+71,241.84,8.01,1.635,Songkhla,Southern,3.0
+72,36.56,1.0,0.29,Satun,Southern,3.0
+73,43.37,1.39,0.468,Yala,Southern,3.0
+74,73.2,2.08,0.63,Trang,Southern,3.0
+75,42.74,1.44,0.721,Narathiwat,Southern,3.0
+76,36.48,1.16,0.512,Phatthalung,Southern,3.0
+77,55.74,1.64,0.641,Pattani,Southern,3.0
+79,172.59,6.12,0.813,Ratchaburi,Western,5.0
+80,97.29,3.46,0.829,Kanchanaburi,Western,5.0
+81,92.11,3.01,0.488,Prachuap Khiri Khan,Western,5.0
+82,68.49,2.32,0.499,Phetchaburi,Western,5.0
+83,86.74,2.95,0.862,Suphan Buri,Western,5.0
+84,21.88,0.84,0.19,Samut Songkhram,Western,5.0
