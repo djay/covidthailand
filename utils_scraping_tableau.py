@@ -127,11 +127,11 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     return res
 
 
-def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
+def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=10, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
     def do_reset():
-        for _ in range(3):
+        for _ in range(2):
             ts = tableauscraper.TableauScraper(verify=verify)
             try:
                 ts.loads(url)
@@ -174,7 +174,9 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_select(wb, value, name=name, values=values):
                 ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
-                return ws.select(values, value)
+                wb = ws.select(values, value)
+                assert wb.worksheets
+                return wb
             set_value.append(do_select)
         else:
             items = ws.getFilters()
@@ -195,9 +197,12 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
     # Get all combinations of the values of params, select or filter
     for next_idx in itertools.product(*selects.values()):
         def get_workbook(wb=wb, next_idx=next_idx):
-            nonlocal last_idx
+            nonlocal last_idx, max_errors
             reset = False
-            for _ in range(3):
+            if max_errors <= 0:
+                logger.warning("MOPH Dashboard Skip {}: Finish iteration due to excess errors", next_idx)
+                return None
+            for _ in range(2):
                 if reset:
                     wb = do_reset()
                     if wb is None:
@@ -218,11 +223,12 @@ def workbook_iterate(url, verify=True, inc_no_param=False, **selects):
                         break
                 if reset:
                     last_idx = (None,) * len(last_idx)  # need to reset filters etc
+                    max_errors -= 1
                     continue
                 last_idx = next_idx
                 return wb
                 # Try again
-            logger.info("MOPH Dashboard Skip: {}. Retries exceeded", next_idx)
+            logger.warning("MOPH Dashboard Skip: {}. Retries exceeded", next_idx)
             return None
         yield get_workbook, next_idx
 

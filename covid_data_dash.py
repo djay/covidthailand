@@ -301,6 +301,8 @@ def dash_by_province():
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
+    url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w?:size=1200,1050&:embed=y&:showVizHome=n&:bootstrapWhenNotified=y&:tabs=n&:toolbar=n&:apiID=host0"
+
     # Fix spelling mistake
     if 'Postitive Rate Dash' in df.columns:
         df = df.drop(columns=['Postitive Rate Dash'])
@@ -351,7 +353,10 @@ def dash_by_province():
     dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
     #dates = [d.strftime('%m/%d/%Y') for d in dates]
     # Add in None for today as selecting today doesn't give us new data anymore. TODO: fix TableauScraper to remember the last data it had
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province"):
+    prov_values = ['อุบลราชธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุดรธานี', 'อำนาจเจริญ', 'อ่างทอง', 'หนองคาย', 'สุรินทร์', 'สุราษฎร์ธานี', 'สุพรรณบุรี', 'สระบุรี', 'สระแก้ว', 'สมุทรสาคร', 'สมุทรสงคราม', 'สมุทรปราการ', 'สตูล', 'สงขลา', 'สกลนคร', 'ศรีสะเกษ', 'เลย', 'ลำพูน', 'ลำปาง', 'ลพบุรี', 'ราชบุรี', 'ระยอง', 'ร้อยเอ็ด', 'ยะลา', 'ยโสธร', 'แม่ฮ่องสอน', 'มหาสารคาม', 'ภูเก็ต', 'แพร่',
+                   'เพชรบูรณ์', 'เพชรบุรี', 'พิษณุโลก', 'พิจิตร', 'ปัตตานี', 'ปราจีนบุรี', 'ประจวบคีรีขันธ์', 'ปทุมธานี', 'บุรีรัมย์', 'นนทบุรี', 'นครสวรรค์', 'นครศรีธรรมราช', 'นครราชสีมา', 'นครพนม', 'นครปฐม', 'นครนายก', 'ตาก', 'ตราด', 'ตรัง', 'เชียงใหม่', 'เชียงราย', 'ชุมพร', 'ชัยภูมิ', 'ชลบุรี', 'ฉะเชิงเทรา', 'จันทบุรี', 'ขอนแก่น', 'กาฬสินธุ์', 'กาญจนบุรี', 'กรุงเทพมหานคร', 'กระบี่']
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_ProvinceBar="province", verify=False):
+        # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), param_province=prov_values, verify=False):
         date, province = idx_value
         #date = d(date, dayfirst=False)
         if date is None:
@@ -360,6 +365,7 @@ def dash_by_province():
             continue
         province = get_province(province)
         if (date, province) in skip or skip_valid(df, (date, province), valid):
+            print("s", end="")
             continue
         if (wb := get_wb()) is None:
             continue
@@ -368,6 +374,7 @@ def dash_by_province():
             date,
             defaults={
                 "Positive Rate Dash": np.nan,
+                "Dealths": 0.0,
                 "": 0.0
             },
             D2_Vac_Stack={
