@@ -448,7 +448,8 @@ def prov_mapping_from_kristw(provinces):
 def prov_regions_wealth():
     # TODO: Use 4 regions + greater bangkok instead
     # https://data.go.th/dataset/proviceandregionthailand - has 4, not 5.
-    df = import_csv("province_regions", dir=".", index=["province"])
+    df = import_csv("provinces_regions", dir=".", index=["province"], date_cols=None)
+    df = df.drop(columns="index")
     return df
 
     def clean_column_name(col):
