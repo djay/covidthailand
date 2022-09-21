@@ -127,7 +127,7 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
     return res
 
 
-def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=10, **selects):
+def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **selects):
     "generates combinations of workbooks from combinations of parameters, selects or filters"
 
     def do_reset():
@@ -196,7 +196,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=10, **sele
     last_idx = [None] * len(selects)  # Outside so we know if we need to change teh params or not
     # Get all combinations of the values of params, select or filter
     for next_idx in itertools.product(*selects.values()):
-        def get_workbook(wb=wb, next_idx=next_idx):
+        def get_workbook(*checks, wb=wb, next_idx=next_idx):
             nonlocal last_idx, max_errors
             reset = False
             if max_errors <= 0:
@@ -217,7 +217,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=10, **sele
                             logger.info("{} MOPH Dashboard Retry: {}={} Error: {}", next_idx, do_set.__name__, value, err)
                             reset = True
                             break
-                    if not wb.worksheets:
+                    if not wb.worksheets or not any_in([ws.name for ws in wb.worksheets], *checks):
                         logger.info("{} MOPH Dashboard Retry: Missing worksheets in {}={}.", next_idx, do_set.__name__, value)
                         reset = True
                         break

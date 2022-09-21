@@ -355,7 +355,7 @@ def dash_by_province():
     # Add in None for today as selecting today doesn't give us new data anymore. TODO: fix TableauScraper to remember the last data it had
     prov_values = ['อุบลราชธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุดรธานี', 'อำนาจเจริญ', 'อ่างทอง', 'หนองคาย', 'สุรินทร์', 'สุราษฎร์ธานี', 'สุพรรณบุรี', 'สระบุรี', 'สระแก้ว', 'สมุทรสาคร', 'สมุทรสงคราม', 'สมุทรปราการ', 'สตูล', 'สงขลา', 'สกลนคร', 'ศรีสะเกษ', 'เลย', 'ลำพูน', 'ลำปาง', 'ลพบุรี', 'ราชบุรี', 'ระยอง', 'ร้อยเอ็ด', 'ยะลา', 'ยโสธร', 'แม่ฮ่องสอน', 'มหาสารคาม', 'ภูเก็ต', 'แพร่',
                    'เพชรบูรณ์', 'เพชรบุรี', 'พิษณุโลก', 'พิจิตร', 'ปัตตานี', 'ปราจีนบุรี', 'ประจวบคีรีขันธ์', 'ปทุมธานี', 'บุรีรัมย์', 'นนทบุรี', 'นครสวรรค์', 'นครศรีธรรมราช', 'นครราชสีมา', 'นครพนม', 'นครปฐม', 'นครนายก', 'ตาก', 'ตราด', 'ตรัง', 'เชียงใหม่', 'เชียงราย', 'ชุมพร', 'ชัยภูมิ', 'ชลบุรี', 'ฉะเชิงเทรา', 'จันทบุรี', 'ขอนแก่น', 'กาฬสินธุ์', 'กาญจนบุรี', 'กรุงเทพมหานคร', 'กระบี่']
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_ProvinceBar="province", verify=False):
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province", verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), param_province=prov_values, verify=False):
         date, province = idx_value
         #date = d(date, dayfirst=False)
@@ -367,7 +367,7 @@ def dash_by_province():
         if (date, province) in skip or skip_valid(df, (date, province), valid):
             print("s", end="")
             continue
-        if (wb := get_wb()) is None:
+        if (wb := get_wb("D2_NewTL (2)")) is None:
             continue
         row = workbook_flatten(
             wb,
