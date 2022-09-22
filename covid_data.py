@@ -205,15 +205,15 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
     jobs = [
+        covid_data_vac.vac_slides,
+        covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
-        covid_data_vac.vaccination_reports,
         covid_data_dash.dash_ages,
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
         covid_data_testing.get_test_reports,
-        covid_data_vac.vac_slides,
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
