@@ -428,8 +428,11 @@ def get_variant_sequenced_table(file, pages):
     elif any_in(file, "20220708", "20220701", "20220627"):
         # BA4/5 are the "Other" in the first table but counted later on
         pass
+    elif any_in(file, '20220916'):
+        # "Other B" doesn't seem to appear in any later tables?
+        pass
     else:
-        assert(others.sum() == 0 or (first_seq_table['Other'] == others).all())
+        assert others.sum() == 0 or (first_seq_table['Other'] == others).all()
     fileseq['Other'] = others
     return fileseq
 
