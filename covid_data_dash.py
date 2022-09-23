@@ -15,8 +15,9 @@ from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
 from utils_scraping_tableau import workbook_explore
-from utils_scraping_tableau import workbook_flatten
 from utils_scraping_tableau import workbook_iterate
+from utils_scraping_tableau import workbook_series
+from utils_scraping_tableau import workbook_value
 from utils_thai import get_province
 from utils_thai import today
 
@@ -106,77 +107,69 @@ def dash_daily():
             continue
         if (wb := get_wb()) is None:
             continue
-        row = workbook_flatten(
-            wb,
-            date,
-            defaults={
-                "Positive Rate Dash": np.nan,
-                "Hospitalized Severe": np.nan,
-                "Hospitalized Respirator": np.nan,
-                "ATK": np.nan,
-                "": 0.0
-            },
-            # D_UpdateTime="Last_Update",
-            D_New="Cases",
-            D_Walkin="Cases Walkin",
-            D_Proact="Cases Proactive",
-            D_NonThai="Cases Imported",
-            D_Prison="Cases Area Prison",
-            D_Hospital="Hospitalized Hospital",
-            D_Severe="Hospitalized Severe",
-            D_SevereTube="Hospitalized Respirator",
-            D_Medic="Hospitalized",
-            D_Recov="Recovered",
-            D_Death="Deaths",
-            D_ATK="ATK",
-            D_Lab2={
-                "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
-                "DAY(txn_date)-value": "Date",
-            },
-            D_Lab={
-                "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
-                "ATTR(txn_date)-alias": "Date",
-            },
-            D_NewTL={
-                "SUM(case_new)-value": "Cases",
-                "DAY(txn_date)-value": "Date"
-            },
-            D_DeathTL={
-                "SUM(death_new)-value": "Deaths",
-                "DAY(txn_date)-value": "Date"
-            },
-            D_Vac_Stack={
-                "DAY(txn_date)-value": "Date",
-                "vaccine_plan_group-alias": {
-                    "1": "1 Cum",
-                    "2": "2 Cum",
-                    "3": "3 Cum",
-                },
-                "SUM(vaccine_total_acm)-value": "Vac Given",
-            },
-            D_HospitalField="Hospitalized Field",
-            D_Hospitel="Hospitalized Field Hospitel",
-            D_HICI="Hospitalized Field HICI",
-            D_HFieldOth="Hospitalized Field Other",
-            D_RecovL={
-                "DAY(txn_date)-value": "Date",
-                "SUM(recovered_new)-value": "Recovered"
-            }
 
-        )
+        row = pd.DataFrame()
+        row = row.combine_first(workbook_series(wb, "D_NewTL", {
+            "SUM(case_new)-value": "Cases",
+            "DAY(txn_date)-value": "Date"
+        }))
 
-        if row.empty:
-            break
-
+        # last_update = workbook_value(wb, None, "D_UpdateTime (2)", "Date", is_date=True)
         last_update = wb.getWorksheet("D_UpdateTime (2)").data
         if not last_update.empty:
             last_update = pd.to_datetime(
                 last_update['max_update_date-alias'].str.replace("2565", "2022"), dayfirst=False).iloc[0]
-            if last_update.normalize() < row.index.max():
+            if last_update.normalize() < row.index.max() or date.date() > row.index.max().date():
                 # We got todays data too early
                 continue
         else:
             last_update = None
+
+        row = row.combine_first(workbook_value(wb, date, "D_New", "Cases"))
+        row = row.combine_first(workbook_value(wb, date, "D_Walkin", "Cases Walkin"))
+        row = row.combine_first(workbook_value(wb, date, "D_Proact", "Cases Proactive"))
+        row = row.combine_first(workbook_value(wb, date, "D_NonThai", "Cases Imported"))
+        row = row.combine_first(workbook_value(wb, date, "D_Prison", "Cases Area Prison"))
+        row = row.combine_first(workbook_value(wb, date, "D_Hospital", "Hospitalized Hospital"))
+        row = row.combine_first(workbook_value(wb, date, "D_Severe", "Hospitalized Severe", np.nan))
+        row = row.combine_first(workbook_value(wb, date, "D_SevereTube", "Hospitalized Respirator", np.nan))
+        row = row.combine_first(workbook_value(wb, date, "D_Medic", "Hospitalized"))
+        row = row.combine_first(workbook_value(wb, date, "D_Recov", "Recovered"))
+        row = row.combine_first(workbook_value(wb, date, "D_Death", "Deaths"))
+        row = row.combine_first(workbook_value(wb, date, "D_ATK", "ATK", np.nan))
+        row = row.combine_first(workbook_value(wb, date, "D_HospitalField", "Hospitalized Field"))
+        row = row.combine_first(workbook_value(wb, date, "D_Hospitel", "Hospitalized Field Hospitel"))
+        row = row.combine_first(workbook_value(wb, date, "D_HICI", "Hospitalized Field HICI"))
+        row = row.combine_first(workbook_value(wb, date, "D_HFieldOth", "Hospitalized Field Other"))
+        row = row.combine_first(workbook_series(wb, "D_Lab2", {
+            "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
+            "DAY(txn_date)-value": "Date",
+        }, np.nan))
+        row = row.combine_first(workbook_series(wb, "D_Lab", {
+            "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
+            "ATTR(txn_date)-alias": "Date",
+        }, np.nan))
+
+        row = row.combine_first(workbook_series(wb, "D_DeathTL", {
+            "SUM(death_new)-value": "Deaths",
+            "DAY(txn_date)-value": "Date"
+        }))
+        row = row.combine_first(workbook_series(wb, "D_Vac_Stack", {
+            "DAY(txn_date)-value": "Date",
+            "vaccine_plan_group-alias": {
+                "1": "1 Cum",
+                "2": "2 Cum",
+                "3": "3 Cum",
+            },
+            "SUM(vaccine_total_acm)-value": "Vac Given",
+        }))
+        row = row.combine_first(workbook_series(wb, "D_RecovL", {
+            "DAY(txn_date)-value": "Date",
+            "SUM(recovered_new)-value": "Recovered"
+        }))
+
+        if row.empty:
+            break
 
         # wb.getWorksheet("D_UpdateTime").data.iloc[0]
         assert date >= row.index.max()  # might be something broken with setParam for date
@@ -276,16 +269,18 @@ def dash_trends_prov():
         if (wb := get_wb()) is None:
             continue
 
-        row = workbook_flatten(
+        row = workbook_series(
             wb,
             None,
-            D4_TREND={
+            'D4_TREND',
+            {
                 "DAY(date)-value": "Date",
                 "AGG(ผู้เสียชีวิต (รวมทุกกลุ่มผู้ป่วย))-value": "Deaths",
                 "AGG(stat_count)-alias": "Cases",
                 "AGG(ผู้ติดเชื้อรายใหม่เชิงรุก)-alias": "Cases Proactive",
             },
         )
+
         if row.empty or province is None:
             continue
         row['Province'] = province
@@ -353,8 +348,8 @@ def dash_by_province():
     dates = reversed(pd.date_range("2021-02-01", today() - relativedelta(hours=7.5)).to_pydatetime())
     #dates = [d.strftime('%m/%d/%Y') for d in dates]
     # Add in None for today as selecting today doesn't give us new data anymore. TODO: fix TableauScraper to remember the last data it had
-    prov_values = ['อุบลราชธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุดรธานี', 'อำนาจเจริญ', 'อ่างทอง', 'หนองคาย', 'สุรินทร์', 'สุราษฎร์ธานี', 'สุพรรณบุรี', 'สระบุรี', 'สระแก้ว', 'สมุทรสาคร', 'สมุทรสงคราม', 'สมุทรปราการ', 'สตูล', 'สงขลา', 'สกลนคร', 'ศรีสะเกษ', 'เลย', 'ลำพูน', 'ลำปาง', 'ลพบุรี', 'ราชบุรี', 'ระยอง', 'ร้อยเอ็ด', 'ยะลา', 'ยโสธร', 'แม่ฮ่องสอน', 'มหาสารคาม', 'ภูเก็ต', 'แพร่',
-                   'เพชรบูรณ์', 'เพชรบุรี', 'พิษณุโลก', 'พิจิตร', 'ปัตตานี', 'ปราจีนบุรี', 'ประจวบคีรีขันธ์', 'ปทุมธานี', 'บุรีรัมย์', 'นนทบุรี', 'นครสวรรค์', 'นครศรีธรรมราช', 'นครราชสีมา', 'นครพนม', 'นครปฐม', 'นครนายก', 'ตาก', 'ตราด', 'ตรัง', 'เชียงใหม่', 'เชียงราย', 'ชุมพร', 'ชัยภูมิ', 'ชลบุรี', 'ฉะเชิงเทรา', 'จันทบุรี', 'ขอนแก่น', 'กาฬสินธุ์', 'กาญจนบุรี', 'กรุงเทพมหานคร', 'กระบี่']
+    # prov_values = ['อุบลราชธานี', 'อุทัยธานี', 'อุตรดิตถ์', 'อุดรธานี', 'อำนาจเจริญ', 'อ่างทอง', 'หนองคาย', 'สุรินทร์', 'สุราษฎร์ธานี', 'สุพรรณบุรี', 'สระบุรี', 'สระแก้ว', 'สมุทรสาคร', 'สมุทรสงคราม', 'สมุทรปราการ', 'สตูล', 'สงขลา', 'สกลนคร', 'ศรีสะเกษ', 'เลย', 'ลำพูน', 'ลำปาง', 'ลพบุรี', 'ราชบุรี', 'ระยอง', 'ร้อยเอ็ด', 'ยะลา', 'ยโสธร', 'แม่ฮ่องสอน', 'มหาสารคาม', 'ภูเก็ต', 'แพร่',
+    #                'เพชรบูรณ์', 'เพชรบุรี', 'พิษณุโลก', 'พิจิตร', 'ปัตตานี', 'ปราจีนบุรี', 'ประจวบคีรีขันธ์', 'ปทุมธานี', 'บุรีรัมย์', 'นนทบุรี', 'นครสวรรค์', 'นครศรีธรรมราช', 'นครราชสีมา', 'นครพนม', 'นครปฐม', 'นครนายก', 'ตาก', 'ตราด', 'ตรัง', 'เชียงใหม่', 'เชียงราย', 'ชุมพร', 'ชัยภูมิ', 'ชลบุรี', 'ฉะเชิงเทรา', 'จันทบุรี', 'ขอนแก่น', 'กาฬสินธุ์', 'กาญจนบุรี', 'กรุงเทพมหานคร', 'กระบี่']
     for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province", verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), param_province=prov_values, verify=False):
         date, province = idx_value
@@ -369,54 +364,46 @@ def dash_by_province():
             continue
         if (wb := get_wb("D2_NewTL (2)")) is None:
             continue
-        row = workbook_flatten(
-            wb,
-            date,
-            defaults={
-                "Positive Rate Dash": np.nan,
-                "Dealths": 0.0,
-                "": 0.0
-            },
-            D2_Vac_Stack={
-                "DAY(txn_date)-value": "Date",
-                "vaccine_plan_group-alias": {
-                    "1": "1 Cum",
-                    "2": "2 Cum",
-                    "3": "3 Cum",
-                },
-                "SUM(vaccine_total_acm)-value": "Vac Given",
-            },
-            D2_Walkin="Cases Walkin",
-            D2_Proact="Cases Proactive",
-            D2_Prison="Cases Area Prison",
-            D2_NonThai="Cases Imported",
-            D2_New="Cases",
-            D2_NewTL={
-                "AGG(stat_count)-alias": "Cases",
-                "DAY(txn_date)-value": "Date"
-            },
-            D2_Lab2={
-                "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
-                "DAY(txn_date)-value": "Date"
-            },
-            D2_Lab={
-                "AGG(% ติดเฉลี่ย)-alias": "Positive Rate Dash",
-                "ATTR(txn_date)-alias": "Date",
-            },
-            D2_Death="Deaths",
-            D2_DeathTL={
-                "AGG(num_death)-value": "Deaths",
-                "DAY(txn_date)-value": "Date"
-            },
-        )
+        row = pd.DataFrame()
+        row = row.combine_first(workbook_series(wb, "D2_NewTL", {
+            "AGG(stat_count)-alias": "Cases",
+            "DAY(txn_date)-value": "Date"
+        }))
+        last_update = row.last_valid_index()
         # TODO: ensure we are looking at the right provice. can't seem to get cur selection from wb.getWorksheet("D2_Province")
         # Need to work if the data has been updated yet. If it has last deaths should be today.
-        last_update_df = wb.getWorksheet("D2_NewTL (2)").data
-        last_update = None
-        if last_update_df.empty or date.date() > (last_update := pd.to_datetime(last_update_df['DAY(txn_date)-value']).max()).date():
+        if date.date() > last_update.date():
             # the date we are trying to get isn't the last deaths we know about. No new data yet
             logger.warning("{} MOPH Dashboard {}", date.date(), f"Skipping {province} as data update={last_update}")
             continue
+
+        row = row.combine_first(workbook_value(wb, date, "D2_Walkin", "Cases Walkin"))
+        row = row.combine_first(workbook_value(wb, date, "D2_Proact", "Cases Proactive"))
+        row = row.combine_first(workbook_value(wb, date, "D2_Prison", "Cases Area Prison"))
+        row = row.combine_first(workbook_value(wb, date, "D2_NonThai", "Cases Imported"))
+        row = row.combine_first(workbook_value(wb, date, "D2_New", "Cases"))
+        row = row.combine_first(workbook_value(wb, date, "D2_Death", "Deaths"))
+        row = row.combine_first(workbook_series(wb, "D2_DeathTL", {
+            "AGG(num_death)-value": "Deaths",
+            "DAY(txn_date)-value": "Date"
+        }, end=date))
+        row = row.combine_first(workbook_series(wb, "D_Lab2", {
+            "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
+            "DAY(txn_date)-value": "Date",
+        }, np.nan))
+        row = row.combine_first(workbook_series(wb, "D_Lab", {
+            "AGG(% ติดเฉลี่ย)-value": "Positive Rate Dash",
+            "DAY(txn_date)-value": "Date",
+        }, np.nan))
+        row = row.combine_first(workbook_series(wb, "D2_Vac_Stack", {
+            "DAY(txn_date)-value": "Date",
+            "vaccine_plan_group-alias": {
+                "1": "1 Cum",
+                "2": "2 Cum",
+                "3": "3 Cum",
+            },
+            "SUM(vaccine_total_acm)-value": "Vac Given",
+        }))
 
         row['Province'] = province
         df = row.reset_index("Date").set_index(["Date", "Province"]).combine_first(df)
