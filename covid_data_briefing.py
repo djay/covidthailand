@@ -726,7 +726,7 @@ def briefing_deaths(file, date, pages):
             cells = [soup.get_text()]
         else:
             # Individual case detail for death
-            orig = camelot_cache(file, i + 2, process_background=True)
+            orig = camelot_cache(file, i + 1, process_background=True)
             if len(orig.columns) != 11:
                 cells = [cell for r in orig.itertuples() for cell in r[1:] if cell]
             else:

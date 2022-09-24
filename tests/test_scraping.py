@@ -10,6 +10,8 @@ from tika import config
 
 from covid_data_briefing import briefing_atk
 from covid_data_briefing import briefing_case_types
+from covid_data_briefing import briefing_deaths
+from covid_data_briefing import briefing_deaths_cells
 from covid_data_briefing import briefing_deaths_provinces
 from covid_data_briefing import briefing_deaths_summary
 from covid_data_briefing import briefing_documents
@@ -286,6 +288,21 @@ def test_briefing_deaths_summary(date, testdf, dl):
     if testdf.empty:
         return
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
+
+
+@pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_cells", briefing_documents))
+def test_briefing_deaths_cells(date, testdf, dl):
+    assert dl is not None
+    file = dl()
+    assert file is not None
+
+    pages = parse_file(file, html=True, paged=True)
+    pages = [BeautifulSoup(page, 'html.parser') for page in pages]
+    each_death, death_sum, death_by_prov = briefing_deaths(file, dateutil.parser.parse(date), pages)
+    # write_scrape_data_back_to_test(each_death, "briefing_deaths_cells", date=dateutil.parser.parse(date))
+    if testdf.empty:
+        return
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), each_death.dropna(axis=1), check_dtype=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))
