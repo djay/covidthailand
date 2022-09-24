@@ -162,14 +162,14 @@ def parse_file(filename, html=False, paged=True, remove_corrupt=True):
         _buffer.write(str(content))
         parsed_content = parser.from_buffer(_buffer.getvalue())
         if parsed_content["content"] is None:
-            continue
-
-        # Add pages
-        text = parsed_content["content"].strip()
-        if html:
-            pages_txt.append(repr(content))
+            pages_txt.append("")
         else:
-            pages_txt.append(text)
+            # Add pages
+            text = parsed_content["content"].strip()
+            if html:
+                pages_txt.append(repr(content))
+            else:
+                pages_txt.append(text)
     if paged:
         return pages_txt
     else:

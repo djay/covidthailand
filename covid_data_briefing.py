@@ -458,6 +458,7 @@ def briefing_deaths_provinces(dtext, date, file):
 
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
+    deaths_title = {d("2022-09-23"): 9}.get(date, deaths_title)
 
     if date in [d("2021-07-20"), d("2021-12-15"), d("2022-01-14"), d("2022-01-21"), d("2022-01-23"), d("2022-01-31"), d("2022-02-26"), d("2022-03-04")]:
         # 2021-12-15 - missing one from eastern
@@ -510,6 +511,7 @@ def briefing_deaths_summary(text, date, file):
 
     title_num, _ = get_next_numbers(text, deaths_title_re)
     day, year, deaths_title, *_ = title_num
+    deaths_title = {d("2022-09-23"): 9}.get(date, deaths_title)
 
     genders = get_next_numbers(text, "(หญิง|ชาย)", return_rest=False)
     if genders and date != d("2021-08-09"):
@@ -961,7 +963,15 @@ def vac_briefing_groups(df, date, file, page, text, i):
     ]
     date = date - datetime.timedelta(days=1)
 
-    # Vaccines
+    # # Order keeps changing so get all numbers and sort them
+    # numbers = get_next_numbers(text.replace("5 – 11", "").replace("อาย ุ60", ""), "โดส", until="Immunization Center", ints=False, return_rest=False, dash_as_zero=True)
+    # assert len(numbers) == 14
+    # # get rid of %
+    # numbers = [n for n in numbers if n > 100]
+    # pop, d1, d2, d3 = sorted(numbers[:4], reverse=True)
+    # spop, sd1, sd2, sd3 = sorted(numbers[4:], reverse=True)
+
+    # # Vaccines
     numbers = get_next_numbers(text, "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
     if len(numbers) >= 6:
         # Sometimes totals are first and sometimes intermixed with percentages
@@ -969,7 +979,7 @@ def vac_briefing_groups(df, date, file, page, text, i):
         numbers = get_next_numbers(text, "ที่มีอายุ 60", "ผู้ทีม่ีอายุ 60", ints=False, return_rest=False)
         pop, d1, d2, d3, *rest = [n for n in numbers if n == 0 or n > 100]
     else:
-        table = camelot_cache(file, i + 2, process_background=True)
+        table = camelot_cache(file, i + 1, process_background=True)
         numbers = get_next_numbers(table.iloc[3][0], "5 – 11", ints=False, return_rest=False, dash_as_zero=True)
         sd1, sd2, sd3, spop, *rest = numbers
         numbers = get_next_numbers(table.iloc[1][0], "60", ints=False, return_rest=False, dash_as_zero=True)
