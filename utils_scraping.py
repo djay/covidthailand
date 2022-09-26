@@ -344,7 +344,7 @@ def links_html_namer(url, _):
     return "-".join(url.split("/")[2:]) + ".html"
 
 
-def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=5, proxy=False):
+def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=None, proxy=False):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
@@ -358,10 +358,13 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
             yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=5, proxy=False):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=None, proxy=False):
     """if check is None, then always download"""
     s = requests.Session()
-    fix_timeouts(s, timeout)
+    if timeout is None:
+        timeout = 10
+        # We only want retries under normal conditions
+        fix_timeouts(s, timeout)
     i = 0
     for url in urls:
         file = filenamer(url, strip_version)
@@ -753,20 +756,21 @@ def get_proxy():
     def test_proxy(proxies):
         try:
             if requests.get("https://ddc.moph.go.th", proxies=proxies, timeout=45).status_code < 400:
-                logger.info(f"Pass Test proxy {proxies}")
                 return proxies
         except requests.exceptions.RequestException:
-            print("x", end="")
+            # print("x", end="")
             pass
         # logger.info(f"Failed Test proxy {proxies}")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         for future in concurrent.futures.as_completed(executor.submit(test_proxy, p) for p in proxies):
             proxies = future.result()
             if proxies is None:
                 continue
+            logger.info(f"Pass Test proxy {proxies}")
             yield proxies
             while test_proxy(proxies):
+                logger.info(f"Pass ReTest proxy {proxies}")
                 yield proxies
 
 

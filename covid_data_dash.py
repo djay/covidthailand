@@ -92,8 +92,10 @@ def dash_daily():
         # 'Infections Non-Hospital Cum': (d("2022-04-08"), d("2022-06-12"), 800000),  # Redo older rows because cumsum cal was off
     }
 
+    atk_days = set([pd.DateOffset(week * 7) + d("2022-01-01") for week in range(14, 30)])
+
     def valid_atk(df, date):
-        if date not in [pd.DateOffset(week * 7) + d("2022-01-01") for week in range(14, 30)]:
+        if date not in atk_days:
             return True
         if df.loc[date]['Infections Non-Hospital Cum'] > 80000:
             return True

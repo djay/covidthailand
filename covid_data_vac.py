@@ -628,7 +628,7 @@ def vaccination_reports_files2(check=True,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
-                               timeout=60,
+                               timeout=300,
                                ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
@@ -639,9 +639,14 @@ def vaccination_reports_files2(check=True,
         use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
     except requests.exceptions.RequestException:
         use_proxy = True
+
+    def avoid_redirect(links):
+        return (url.replace("http://", "https://") for url in links)
+
     years = web_links(base1, ext="dept=dcd", match=hasyear, check=0, proxy=use_proxy, timeout=timeout)
-    months = (link for link in web_links(*years, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
-    links1 = (link for link in web_links(*months, ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
+    months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
+              match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
+    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
