@@ -92,12 +92,12 @@ def dash_daily():
         # 'Infections Non-Hospital Cum': (d("2022-04-08"), d("2022-06-12"), 800000),  # Redo older rows because cumsum cal was off
     }
 
-    atk_days = set([pd.DateOffset(week * 7) + d("2022-01-01") for week in range(14, 30)])
+    atk_days = set([pd.DateOffset(week * 7) + d("2022-01-01") for week in range(14, 40)])
 
     def valid_atk(df, date):
         if date not in atk_days:
             return True
-        if df.loc[date]['Infections Non-Hospital Cum'] > 80000:
+        if 250000 > df.loc[date]['Infections Non-Hospital Cum'] > 50000:
             return True
         return False
 
@@ -206,7 +206,7 @@ def dash_daily():
     # 2022-05-07 and 03 got 0.0 by mistake
     df['Hospitalized Respirator'] = df['Hospitalized Respirator'].replace(0.0, np.nan)
     df["Hospitalized Severe"] = df["Hospitalized Severe"].replace(0.0, np.nan)
-    df = all_atk_reg.cumsum().combine_first(df)
+    df = all_atk_reg.combine_first(df)
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
 

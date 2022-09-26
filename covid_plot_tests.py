@@ -156,7 +156,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     df = df.combine_first(walkins).combine_first(df[['Tests',
                                                      'Pos']].rename(columns=dict(Tests="Tests XLS", Pos="Pos XLS")))
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")
-    df['ATK+'] = dash['Infections Non-Hospital Cum'].interpolate(limit_area="inside").diff()
+    df['ATK+'] = dash['Infections Non-Hospital Cum'].cumsum().interpolate(limit_area="inside").diff()
 
     cols = [
         'Tests XLS',
