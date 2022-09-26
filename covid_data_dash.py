@@ -91,6 +91,14 @@ def dash_daily():
         'Cases Walkin': (d('2021-01-01'), today(), 1),
         # 'Infections Non-Hospital Cum': (d("2022-04-08"), d("2022-06-12"), 800000),  # Redo older rows because cumsum cal was off
     }
+
+    def valid_atk(df, date):
+        if date not in [pd.DateOffset(week * 7) + d("2022-01-01") for week in range(14, 30)]:
+            return True
+        if df.loc[date]['Infections Non-Hospital Cum'] > 80000:
+            return True
+        return False
+
     url = "https://public.tableau.com/views/SATCOVIDDashboard/1-dash-tiles"
     # new day starts with new info comes in
     dates = reversed(pd.date_range("2021-01-24", today() - relativedelta(hours=7.5)).to_pydatetime())
@@ -103,7 +111,7 @@ def dash_daily():
             date = next(iter(date), None)
         if type(date) == str:
             date = d(date)
-        if skip_valid(df, date, allow_na):
+        if skip_valid(df, date, allow_na) and valid_atk(df, date):
             continue
         if (wb := get_wb()) is None:
             continue
@@ -490,9 +498,9 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
+    dash_daily_df = dash_daily()
     dash_ages_df = dash_ages()
     dash_by_province_df = dash_by_province()
-    dash_daily_df = dash_daily()
 
     # This doesn't add any more info since severe cases was a mistake
 #    dash_trends_prov_df = dash_trends_prov()
