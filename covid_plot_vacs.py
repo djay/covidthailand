@@ -33,6 +33,19 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
+    manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
+    man_cols = pd.DataFrame()
+    for m in manuf:
+        man_cols[m] = df[[c for c in df.columns if m in c]].sum(axis=1)
+    man_cols = man_cols.replace(0.0, np.nan).interpolate().diff().replace(0.0, np.nan)
+    plot_area(df=man_cols,
+              title='Covid Vaccinations by Manufacturer - Thailand',
+              cols_subset=list(man_cols.columns),
+              png_prefix='vac_manuf',
+              periods_to_plot=["3", "all"],
+              ma_days=14,
+              kind='line', stacked=False, percent_fig=False,
+              footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
     def clean_vac_leg(label, first="1st Jab", second="2nd Jab"):
         c = label
