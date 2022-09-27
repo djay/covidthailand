@@ -911,7 +911,7 @@ def vac_manuf_given(df, page, file, page_num, url):
 
         def clean_labels(label):
             # Sometimes numbers can get mixed in there
-            return [s for s in re.sub("[,\d]*", "", label).split("\n") if s]
+            return [s for s in re.sub(r"[,\d]*", "", label).split("\n") if s]
         doses = [dict(zip(reversed(clean_labels(table.iloc[dose][labels])),
                           reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
         # for m in manuf:
