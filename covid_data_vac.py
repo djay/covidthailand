@@ -846,6 +846,9 @@ def vac_manuf_given(df, page, file, page_num, url):
         # it's province table in wrong file
         return df
     table = camelot_cache(file, page_num, process_background=True)
+    if table is None:
+        # 1623224536253.pdf. very simple table
+        return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
     manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
@@ -902,7 +905,7 @@ def vac_manuf_given(df, page, file, page_num, url):
         if len(table.columns) == 3:
             table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
         else:
-            table = table[table.columns[table.iloc[2].str.contains("AstraZeneca") | table.iloc[1].str.contains("28 กุมภ")]]
+            table = table[[c for c in table.columns if table[c].str.contains("(28 กุมภ|AstraZeneca)", regex=True).any()]]
             table = table[table.columns[:2]]  # Get rid of totals column in later tables
             # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
 
