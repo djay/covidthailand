@@ -36,7 +36,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
     man_cols = pd.DataFrame()
     for m in manuf:
-        man_cols[m] = df[[c for c in df.columns if m in c]].sum(axis=1)
+        man_cols[m] = df[[c for c in df.columns if m in str(c)]].sum(axis=1)
     man_cols = man_cols.replace(0.0, np.nan).interpolate().diff().replace(0.0, np.nan)
     plot_area(df=man_cols,
               title='Covid Vaccinations by Manufacturer - Thailand',
@@ -616,6 +616,8 @@ if __name__ == "__main__":
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
     # have vac in briefings and dashboard
     df = briefings.combine_first(dash).combine_first(df)
+    vac = import_csv("vac_timeline", ['Date'])
+    df = vac.combine_first(df)
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
