@@ -906,7 +906,7 @@ def vac_manuf_given(df, page, file, page_num, url):
         if len(table.columns) == 3:
             table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
         else:
-            table = table[[c for c in table.columns if table[c].str.contains("(28 กุมภ|AstraZeneca)", regex=True).any()]]
+            table = table[[c for c in table.columns if table[c].str.contains("(?:28 กุมภ|AstraZeneca)", regex=True).any()]]
             table = table[table.columns[:2]]  # Get rid of totals column in later tables
             # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
 
