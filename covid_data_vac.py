@@ -892,8 +892,9 @@ def vac_manuf_given(df, page, file, page_num, url):
                 # vaccinations/1620456296431.pdf # somehow ends up inside brackets
                 total1, sv1, az1, sv2, az2 = numbers
                 total2 = sv2 + az2
-    elif table.empty:
+    elif table.empty or len(table.columns) > 6:
         # 'inputs/vaccinations/Slide 2022-05-02.pdf'
+        # 'inputs/vaccinations/1620105431806.pdf' has astra per province?
         return df
     else:
         assert len(table.columns) >= 3
