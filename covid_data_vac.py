@@ -842,7 +842,7 @@ def vac_manuf_given(df, page, file, page_num, url):
 
     if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
         return df
-    if any_in(page, "คซีนโควิด 19", "รำยจังหวัด"):
+    if any_in(page, "รำยจังหวัด"):
         # it's province table in wrong file
         return df
     table = camelot_cache(file, page_num, process_background=True)
@@ -902,16 +902,23 @@ def vac_manuf_given(df, page, file, page_num, url):
         if len(table.columns) == 3:
             table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
         else:
-            table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
+            table = table[table.columns[table.iloc[2].str.contains("AstraZeneca") | table.iloc[1].str.contains("28 กุมภ")]]
+            table = table[table.columns[:2]]  # Get rid of totals column in later tables
+            # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
+
         labels, vals = table.columns
         table = table[table[labels].str.contains("AstraZeneca")]
-        doses = [dict(zip(reversed(table.iloc[dose][labels].split("\n")),
+
+        def clean_labels(label):
+            # Sometimes numbers can get mixed in there
+            return [s for s in re.sub("[,\d]*", "", label).split("\n") if s]
+        doses = [dict(zip(reversed(clean_labels(table.iloc[dose][labels])),
                           reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
         # for m in manuf:
         #     for d0, d1 in zip(doses[:-1], doses[1:]):
         #         assert d0.get(m, 0) >= d1.get(m, 0)
         # TODO: add asserts
-        row = pd.DataFrame([{f"Vac Given {m} {d} Cum": num for d in range(len(table))
+        row = pd.DataFrame([{f"Vac Given {m} {d + 1} Cum": num for d in range(len(table))
                            for m, num in doses[d].items() if m in manuf} | {"Date": date}]).set_index("Date")
         logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
         return df.combine_first(row)
