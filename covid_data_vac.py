@@ -615,7 +615,7 @@ def vaccination_tables(df, _, page, file):
 #         yield link, None, dl_file
 
 
-def vac_slides_files(check=True):
+def vac_slides_files(check=0):
     return vaccination_reports_files2(check=check,
                                       base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd",
                                       base2="https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m:02}/10/2021",
@@ -624,7 +624,7 @@ def vac_slides_files(check=True):
 
 
 @functools.lru_cache
-def vaccination_reports_files2(check=True,
+def vaccination_reports_files2(check=0,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
@@ -645,8 +645,8 @@ def vaccination_reports_files2(check=True,
 
     years = web_links(base1, ext="dept=dcd", match=hasyear, check=0, proxy=use_proxy, timeout=timeout)
     months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
-              match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
-    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
+              match=hasyear, check=check, proxy=use_proxy, timeout=timeout))
+    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=check, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
@@ -679,7 +679,7 @@ def vaccination_reports():
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
 
-    for link, date, dl in vaccination_reports_files2():
+    for link, date, dl in vaccination_reports_files2(check=1):
         if (file := dl()) is None:
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
@@ -1037,7 +1037,7 @@ def vac_slides_groups(df, page, file, page_num):
 
 def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
-    for link, _, get_file in vac_slides_files():
+    for link, _, get_file in vac_slides_files(check=1):
         file = get_file()
         if file is None:
             continue
