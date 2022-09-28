@@ -80,7 +80,8 @@ def dl_files(target_dir, dl_gen, check=False):
             tests.append((date, testdf, get_file))
     if missing and not check:
         # files not cached yet so try again
-        return dl_files(target_dir, dl_gen, check=True)
+        # return dl_files(target_dir, dl_gen, check=True)
+        return tests
     else:
         return tests
 

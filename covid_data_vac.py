@@ -635,10 +635,13 @@ def vaccination_reports_files2(check=0,
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565)")
-    try:
-        use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
-    except requests.exceptions.RequestException:
-        use_proxy = True
+    if not check:
+        use_proxy = False
+    else:
+        try:
+            use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
+        except requests.exceptions.RequestException:
+            use_proxy = True
 
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
@@ -655,6 +658,7 @@ def vaccination_reports_files2(check=0,
         list(web_links(f, ext=ext, check=False, proxy=use_proxy, timeout=timeout))))
     links = list(links1) + list(links2)
     count = 0
+    res = []
     for link in links:
         if any_in(link, "1638863771691.pdf", '1639206014644.pdf') and "Report" in base2:
             # it's really slides
@@ -669,7 +673,8 @@ def vaccination_reports_files2(check=0,
         count += 1
         if USE_CACHE_DATA and count > MAX_DAYS:
             break
-        yield link, None, get_file
+        res.append((link, None, get_file))
+    return res
 
 
 def vaccination_reports():

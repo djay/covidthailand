@@ -791,6 +791,7 @@ def briefing_documents(check=False):
     # for file, text, briefing_url in web_files(*), dir="briefings"):
 
     check = True
+    res = []
     for link in reversed(list(links)):
         date = file2date(link) if "249764.pdf" not in link else d("2021-07-24")
         if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS):
@@ -804,7 +805,8 @@ def briefing_documents(check=False):
             return file
         check = False  # Only check first one, assume others never get updated
 
-        yield link, date, get_file
+        res.append((link, date, get_file))
+    return res
 
 
 def get_cases_by_prov_briefings():
