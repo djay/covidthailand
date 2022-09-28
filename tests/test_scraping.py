@@ -3,11 +3,13 @@ import functools
 import os
 
 import dateutil
+import numpy as np
 import pandas as pd
 import pytest
 from bs4 import BeautifulSoup
 from tika import config
 
+import covid_data_vac
 from covid_data_briefing import briefing_atk
 from covid_data_briefing import briefing_case_types
 from covid_data_briefing import briefing_deaths
@@ -28,8 +30,6 @@ from covid_data_testing import get_tests_by_area_chart_pptx
 from covid_data_testing import get_tests_by_area_pdf
 from covid_data_testing import get_variant_files
 from covid_data_testing import get_variant_sequenced_table
-from covid_data_vac import vac_manuf_given
-from covid_data_vac import vac_slides_files
 from covid_data_vac import vaccination_daily
 from covid_data_vac import vaccination_reports_files2
 from covid_data_vac import vaccination_tables
@@ -195,14 +195,23 @@ def test_vac_tables(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", vac_slides_files))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", covid_data_vac.vac_slides_files))
 def test_vac_manuf_given(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
     assert file is not None
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    blue, brown = pd.DataFrame(), pd.DataFrame()
     for i, page in enumerate(parse_file(file), 1):
-        df = vac_manuf_given(df, page, file, i, "")
+        # pass
+        brown = brown.combine_first(covid_data_vac.vac_manuf_given_brown(page, file, i, ""))
+        blue = blue.combine_first(covid_data_vac.vac_manuf_given_blue(page, file, i, ""))
+        # df = vac_slides_groups(df, page, file, i)
+    if not blue.empty and not brown.empty:
+        # sometimes we have both tables. cross check them
+        pd.testing.assert_frame_equal(blue.dropna(axis=1), brown.replace(
+            0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
+    df = df.combine_first(blue).combine_first(brown)
     df = df.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df, check_dtype=False, check_like=True)

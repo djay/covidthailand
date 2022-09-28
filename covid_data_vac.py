@@ -835,10 +835,11 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
     return vac_timeline
 
 
-def vac_manuf_given(df, page, file, page_num, url):
+def vac_manuf_given_blue(page, file, page_num, url):
     # if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี|วัคซีนโควิด)", page):  # noqa
     #     return df
     fname = os.path.splitext(os.path.basename(file))[0]
+    df = pd.DataFrame()
 
     if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
         return df
@@ -853,84 +854,113 @@ def vac_manuf_given(df, page, file, page_num, url):
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
     manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
 
-    if len(table.columns) == 1:
-        title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]]
-                                               if cell.strip()]  # + title3, totals + extras
-        date = find_thai_date(title1)
-        # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
-        if len(rest) == 3 and date < d("2021-10-14"):
-            # TODO: need better way to detect this case
-            doses = rest[0]  # Assumes header is doses cell
-
-        # Sometimes there is an extra date thrown in inside brackets on the subheadings
-        # e.g. vaccinations/1624968183817.pdf
-        _, doses = find_thai_date(doses, remove=True)
-
-        numbers = get_next_numbers(doses, return_rest=False)
-        numbers = [n for n in numbers if n not in [1, 2, 3]]  # these are in subtitles and seem to switch positions
-        sp1, sp2, sp3 = [0] * 3
-        pf1, pf2, pf3 = [0] * 3
-        az3, sv3, sp3 = [0] * 3
-        mod1, mod2, mod3 = [0] * 3
-        total3 = 0
-        if "moderna" in doses.lower():
-            total1, sv1, az1, sp1, pf1, mod1, total2, sv2, az2, sp2, pf2, mod2, total3, az3, pf3, mod3 = numbers
-        elif "pfizer" in doses.lower():
-            total1, sv1, az1, sp1, pf1, total2, sv2, az2, sp2, pf2, total3, *dose3 = numbers
-            if len(dose3) == 2:
-                az3, pf3 = dose3
-            elif len(dose3) == 4:
-                sv3, az3, sp3, pf3 = dose3
-            else:
-                assert False, f"wrong number of vac in {file}.{date}\n{page}"
-        elif "Sinopharm" in doses:
-            total1, sv1, az1, sp1, total2, sv2, az2, sp2 = numbers
-        else:
-            if len(numbers) == 6:
-                total1, sv1, az1, total2, sv2, az2 = numbers
-            else:
-                # vaccinations/1620456296431.pdf # somehow ends up inside brackets
-                total1, sv1, az1, sv2, az2 = numbers
-                total2 = sv2 + az2
+    if len(table.columns) < 3:
+        return df
     elif table.empty or len(table.columns) > 5:
         # 'inputs/vaccinations/Slide 2022-05-02.pdf'
         # 'inputs/vaccinations/1620105431806.pdf' has astra per province?
         return df
+    assert len(table.columns) >= 3
+    cols = table.columns
+    #  get biggest date on page
+    date = sorted([find_thai_date(r) for r in table.iloc[0] if find_thai_date(r)] + [find_thai_date(page)], reverse=True)[0]
+    assert date
+    # Throw away daily and manuf totals
+    if len(table.columns) == 3:
+        table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
     else:
-        assert len(table.columns) >= 3
-        cols = table.columns
-        #  get biggest date on page
-        date = sorted([find_thai_date(r) for r in table.iloc[0] if find_thai_date(r)] + [find_thai_date(page)], reverse=True)[0]
-        assert date
-        # Throw away daily and manuf totals
-        if len(table.columns) == 3:
-            table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
+        labels = [c for c in table.columns if table[c].str.contains("AstraZeneca", regex=True).any()][0]
+        vals = [c for c in table.columns if table[c].str.contains("สะสม", regex=True).any()][-1]
+        table = table[[labels, vals]]
+        # if len(table.columns) > 2:
+        #     # We should be getting rid of last col with totals in
+        #     assert table[table.columns[-1]].str.contains("AstraZeneca").any()
+        #     table = table[table.columns[:2]]  # Get rid of totals column in later tables
+        # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
+
+    labels, vals = table.columns
+    table = table[table[labels].str.contains("AstraZeneca")]
+    if table[vals].str.contains("AstraZeneca").any():
+        # Summary col got mixed in. Can't really untangle
+        # Slide 2022-01-02.pdf
+        return df
+
+    def clean_labels(label):
+        # Sometimes numbers can get mixed in there
+        return [s for s in re.sub(r"[,\d]*", "", label).split("\n") if s]
+    doses = [dict(zip(reversed(clean_labels(table.iloc[dose][labels])),
+                      reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
+    for d0, d1 in zip(doses[:-1], doses[1:]):
+        assert sum([v for m, v in d0.items() if m in manuf]) >= sum([v for m, v in d1.items() if m in manuf])
+    # TODO: add asserts
+    row = pd.DataFrame([{f"Vac Given {m} {d + 1} Cum": num for d in range(len(table))
+                        for m, num in doses[d].items() if m in manuf} | {"Date": date}]).set_index("Date")
+    if date > d("2021-11-23"):
+        assert len(row.columns) >= 12
+    logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
+    return row
+
+
+def vac_manuf_given_brown(page, file, page_num, url):
+    # if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี|วัคซีนโควิด)", page):  # noqa
+    #     return df
+    fname = os.path.splitext(os.path.basename(file))[0]
+    df = pd.DataFrame()
+
+    if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
+        return df
+    if any_in(page, "รำยจังหวัด"):
+        # it's province table in wrong file
+        return df
+    table = camelot_cache(file, page_num, process_background=True)
+    if table is None:
+        # 1623224536253.pdf. very simple table
+        return df
+    # should be just one col. sometimes there are extra empty ones. 2021-08-03
+    table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
+    manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
+
+    if len(table.columns) != 1:
+        return df
+
+    title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]]
+                                           if cell.strip()]  # + title3, totals + extras
+    date = find_thai_date(title1)
+    # Sometimes header and cell are split into different rows 'vaccinations/1629345010875.pdf'
+    if len(rest) == 3 and date < d("2021-10-14"):
+        # TODO: need better way to detect this case
+        doses = rest[0]  # Assumes header is doses cell
+
+    # Sometimes there is an extra date thrown in inside brackets on the subheadings
+    # e.g. vaccinations/1624968183817.pdf
+    _, doses = find_thai_date(doses, remove=True)
+
+    numbers = get_next_numbers(doses, return_rest=False)
+    numbers = [n for n in numbers if n not in [1, 2, 3]]  # these are in subtitles and seem to switch positions
+    sp1, sp2, sp3 = [0] * 3
+    pf1, pf2, pf3 = [0] * 3
+    az3, sv3, sp3 = [0] * 3
+    mod1, mod2, mod3 = [0] * 3
+    total3 = 0
+    if "moderna" in doses.lower():
+        total1, sv1, az1, sp1, pf1, mod1, total2, sv2, az2, sp2, pf2, mod2, total3, az3, pf3, mod3 = numbers
+    elif "pfizer" in doses.lower():
+        total1, sv1, az1, sp1, pf1, total2, sv2, az2, sp2, pf2, total3, *dose3 = numbers
+        if len(dose3) == 2:
+            az3, pf3 = dose3
+        elif len(dose3) == 4:
+            sv3, az3, sp3, pf3 = dose3
         else:
-            table = table[[c for c in table.columns if table[c].str.contains("(?:สะสม|AstraZeneca)", regex=True).any()]]
-            table = table[table.columns[:2]]  # Get rid of totals column in later tables
-            # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
-
-        labels, vals = table.columns
-        table = table[table[labels].str.contains("AstraZeneca")]
-        if table[vals].str.contains("AstraZeneca").any():
-            # Summary col got mixed in. Can't really untangle
-            # Slide 2022-01-02.pdf
-            return df
-
-        def clean_labels(label):
-            # Sometimes numbers can get mixed in there
-            return [s for s in re.sub(r"[,\d]*", "", label).split("\n") if s]
-        doses = [dict(zip(reversed(clean_labels(table.iloc[dose][labels])),
-                          reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
-        for d0, d1 in zip(doses[:-1], doses[1:]):
-            assert sum([v for m, v in d0.items() if m in manuf]) >= sum([v for m, v in d1.items() if m in manuf])
-        # TODO: add asserts
-        row = pd.DataFrame([{f"Vac Given {m} {d + 1} Cum": num for d in range(len(table))
-                           for m, num in doses[d].items() if m in manuf} | {"Date": date}]).set_index("Date")
-        if date > d("2021-11-23"):
-            assert len(row.columns) >= 12
-        logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
-        return df.combine_first(row)
+            assert False, f"wrong number of vac in {file}.{date}\n{page}"
+    elif "Sinopharm" in doses:
+        total1, sv1, az1, sp1, total2, sv2, az2, sp2 = numbers
+    else:
+        if len(numbers) == 6:
+            total1, sv1, az1, total2, sv2, az2 = numbers
+        else:
+            # vaccinations/1620456296431.pdf # somehow ends up inside brackets
+            total1, sv1, az1, sv2, az2 = numbers
+            total2 = sv2 + az2
     #assert total2 == sv2 + az2 + sp2 + pf2
     # 1% tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
     if date in [d("2021-05-04")]:
@@ -946,7 +976,7 @@ def vac_manuf_given(df, page, file, page_num, url):
     cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in manuf]
     row = pd.DataFrame([row], columns=['Date'] + cols)
     logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
-    return df.combine_first(row.set_index("Date"))
+    return row.set_index("Date")
 
 
 def vac_slides_groups(df, page, file, page_num):
@@ -1011,10 +1041,17 @@ def vac_slides():
         file = get_file()
         if file is None:
             continue
+        blue, brown = pd.DataFrame(), pd.DataFrame()
         for i, page in enumerate(parse_file(file), 1):
             # pass
-            df = vac_manuf_given(df, page, file, i, link)
+            brown = brown.combine_first(vac_manuf_given_brown(page, file, i, link))
+            blue = blue.combine_first(vac_manuf_given_blue(page, file, i, link))
             # df = vac_slides_groups(df, page, file, i)
+        if not blue.empty and not brown.empty:
+            # sometimes we have both tables. cross check them
+            pd.testing.assert_frame_equal(blue.dropna(axis=1), brown.replace(
+                0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
+        df = df.combine_first(blue).combine_first(brown)
     return df
 
 
