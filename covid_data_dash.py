@@ -92,12 +92,13 @@ def dash_daily():
         # 'Infections Non-Hospital Cum': (d("2022-04-08"), d("2022-06-12"), 800000),  # Redo older rows because cumsum cal was off
     }
 
-    atk_days = set([pd.DateOffset(week * 7) + d("2022-01-01") for week in range(14, 40)])
+    atk_days = set([pd.DateOffset(week * 7) + d("2022-01-01") for week in range(15, 40)])
 
     def valid_atk(df, date):
         if date not in atk_days:
             return True
-        if 250000 > df.loc[date]['Infections Non-Hospital Cum'] > 50000:
+        # Get rid of cumulative values. Just store weekly now. # TODO: change the col name
+        if 800000 > df.loc[date]['Infections Non-Hospital Cum'] > 50000:
             return True
         return False
 

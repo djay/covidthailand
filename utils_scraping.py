@@ -657,7 +657,7 @@ def parse_numbers(lst):
 
 
 def any_in(target, *matches):
-    return any((m in target) if type(m) != re.Pattern else m.search(target) for m in matches)
+    return any((str(m) in target) if type(m) != re.Pattern else m.search(target) for m in matches)
 
 
 def all_in(target, *matches):
@@ -720,7 +720,7 @@ def get_proxy():
     url = "https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data-with-geolocation.json"
     url = "https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/json/proxies-advanced.json"
     try:
-        data = requests.get(url).json()
+        data = requests.get(url, timeout=60).json()
     except requests.exceptions.RequestException:
         return
     random.shuffle(data)
@@ -755,7 +755,7 @@ def get_proxy():
 
     def test_proxy(proxies):
         try:
-            if requests.get("https://ddc.moph.go.th", proxies=proxies, timeout=45).status_code < 400:
+            if requests.head("https://ddc.moph.go.th", proxies=proxies, timeout=45).status_code < 400:
                 return proxies
         except requests.exceptions.RequestException:
             # print("x", end="")

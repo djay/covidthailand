@@ -170,14 +170,6 @@ jobs:
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}
         continue-on-error: true
         run: python -c "import covid_data_dash; covid_data_dash.check_dash_ready()"
-      - name: Run tests
-        if:  ${{ github.event_name	!= 'schedule'}}
-        run: |
-          # sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
-          pytest
-        env:
-           TIKA_VERSION: 1.24 # Prevent delays in upgrades
-           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
       - name: Scrape Covid Data API
         id: updateapi
         if: ${{ steps.gofull.outcome != 'success' && steps.godash.outcome != 'success' && steps.goapi.outcome == 'success' }}
@@ -192,6 +184,14 @@ jobs:
         if: ${{ steps.gofull.outcome == 'success' || steps.godash.outcome == 'success' || github.event_name	!= 'schedule' }}
         run: |
             python covid_plot.py
+        env:
+           TIKA_VERSION: 1.24 # Prevent delays in upgrades
+           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
+      - name: Run tests  # Do after because we don't download new files to make quicker
+        if:  ${{ github.event_name	!= 'schedule'}}
+        run: |
+          # sudo docker run -t -p 8118:8118 -p 9050:9050 -l "TH" -d dperson/torproxy
+          pytest
         env:
            TIKA_VERSION: 1.24 # Prevent delays in upgrades
            DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}

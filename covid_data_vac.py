@@ -615,7 +615,7 @@ def vaccination_tables(df, _, page, file):
 #         yield link, None, dl_file
 
 
-def vac_slides_files(check=True):
+def vac_slides_files(check=0):
     return vaccination_reports_files2(check=check,
                                       base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd",
                                       base2="https://ddc.moph.go.th/vaccine-covid19/diaryPresentMonth/{m:02}/10/2021",
@@ -624,7 +624,7 @@ def vac_slides_files(check=True):
 
 
 @functools.lru_cache
-def vaccination_reports_files2(check=True,
+def vaccination_reports_files2(check=0,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
@@ -635,18 +635,21 @@ def vaccination_reports_files2(check=True,
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565)")
-    try:
-        use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
-    except requests.exceptions.RequestException:
-        use_proxy = True
+    if not check:
+        use_proxy = False
+    else:
+        try:
+            use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
+        except requests.exceptions.RequestException:
+            use_proxy = True
 
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
 
     years = web_links(base1, ext="dept=dcd", match=hasyear, check=0, proxy=use_proxy, timeout=timeout)
     months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
-              match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
-    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
+              match=hasyear, check=check, proxy=use_proxy, timeout=timeout))
+    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=check, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
@@ -655,6 +658,7 @@ def vaccination_reports_files2(check=True,
         list(web_links(f, ext=ext, check=False, proxy=use_proxy, timeout=timeout))))
     links = list(links1) + list(links2)
     count = 0
+    res = []
     for link in links:
         if any_in(link, "1638863771691.pdf", '1639206014644.pdf') and "Report" in base2:
             # it's really slides
@@ -669,7 +673,8 @@ def vaccination_reports_files2(check=True,
         count += 1
         if USE_CACHE_DATA and count > MAX_DAYS:
             break
-        yield link, None, get_file
+        res.append((link, None, get_file))
+    return res
 
 
 def vaccination_reports():
@@ -679,7 +684,7 @@ def vaccination_reports():
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
 
-    for link, date, dl in vaccination_reports_files2():
+    for link, date, dl in vaccination_reports_files2(check=1):
         if (file := dl()) is None:
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
@@ -835,16 +840,97 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
     return vac_timeline
 
 
-def vac_manuf_given(df, page, file, page_num, url):
-    if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี)", page):  # noqa
-        return df
+def vac_manuf_given_blue(page, file, page_num, url):
+    # if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี|วัคซีนโควิด)", page):  # noqa
+    #     return df
     fname = os.path.splitext(os.path.basename(file))[0]
+    df = pd.DataFrame()
 
     if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
         return df
+    if any_in(page, "รำยจังหวัด"):
+        # it's province table in wrong file
+        return df
     table = camelot_cache(file, page_num, process_background=True)
+    if table is None:
+        # 1623224536253.pdf. very simple table
+        return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
+    manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
+
+    if len(table.columns) < 3:
+        return df
+    elif table.empty or len(table.columns) > 5:
+        # 'inputs/vaccinations/Slide 2022-05-02.pdf'
+        # 'inputs/vaccinations/1620105431806.pdf' has astra per province?
+        return df
+    assert len(table.columns) >= 3
+    cols = table.columns
+    #  get biggest date on page
+    date = sorted([find_thai_date(r) for r in table.iloc[0] if find_thai_date(r)] + [find_thai_date(page)], reverse=True)[0]
+    assert date
+    # Throw away daily and manuf totals
+    if len(table.columns) == 3:
+        table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
+    else:
+        labels = [c for c in table.columns if table[c].str.contains("AstraZeneca", regex=True).any()][0]
+        vals = [c for c in table.columns if table[c].str.contains("สะสม", regex=True).any()]
+        if not vals:
+            # probably one of the prov tables
+            return df
+        else:
+            vals = vals[-1]  # get rid of the daily col
+        table = table[[labels, vals]]
+
+    labels, vals = table.columns
+    table = table[table[labels].str.contains("AstraZeneca")]
+    if table[vals].str.contains("AstraZeneca").any():
+        # Summary col got mixed in. Can't really untangle
+        # Slide 2022-01-02.pdf
+        return df
+
+    def clean_labels(label):
+        # Sometimes numbers can get mixed in there
+        return [s for s in re.sub(r"[,\d]*", "", label).split("\n") if s]
+    doses = [dict(zip(reversed(clean_labels(table.iloc[dose][labels])),
+                      reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
+    for d0, d1 in zip(doses[:-1], doses[1:]):
+        assert sum([v for m, v in d0.items() if m in manuf]) >= sum([v for m, v in d1.items() if m in manuf])
+    # TODO: add asserts to compare totals
+
+    def clean_manuf(m):
+        return m.capitalize().replace("zeneca", "Zeneca")
+    row = pd.DataFrame([{f"Vac Given {clean_manuf(m)} {d + 1} Cum": num for d in range(len(table))
+                        for m, num in doses[d].items() if clean_manuf(m) in manuf} | {"Date": date}]).set_index("Date")
+    if date > d("2021-11-23"):
+        assert len(row.columns) >= 12
+    logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
+    return row
+
+
+def vac_manuf_given_brown(page, file, page_num, url):
+    # if not re.search(r"(ผลการฉีดวคัซีนสะสมจ|ผลการฉีดวัคซีนสะสมจ|านวนผู้ได้รับวัคซีน|านวนการได้รับวัคซีนสะสม|านวนผูไ้ดร้บัวคัซนี|วัคซีนโควิด)", page):  # noqa
+    #     return df
+    fname = os.path.splitext(os.path.basename(file))[0]
+    df = pd.DataFrame()
+
+    if "AstraZeneca" not in page or fname.isnumeric() and int(fname) <= 1620104912165:  # 2021-03-21
+        return df
+    if any_in(page, "รำยจังหวัด"):
+        # it's province table in wrong file
+        return df
+    table = camelot_cache(file, page_num, process_background=True)
+    if table is None:
+        # 1623224536253.pdf. very simple table
+        return df
+    # should be just one col. sometimes there are extra empty ones. 2021-08-03
+    table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
+    manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
+
+    if len(table.columns) != 1:
+        return df
+
     title1, daily, title2, doses, *rest = [cell for cell in table[table.columns[0]]
                                            if cell.strip()]  # + title3, totals + extras
     date = find_thai_date(title1)
@@ -883,15 +969,22 @@ def vac_manuf_given(df, page, file, page_num, url):
             # vaccinations/1620456296431.pdf # somehow ends up inside brackets
             total1, sv1, az1, sv2, az2 = numbers
             total2 = sv2 + az2
-    assert total1 == sv1 + az1 + sp1 + pf1 + mod1
     #assert total2 == sv2 + az2 + sp2 + pf2
     # 1% tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
-    assert total3 == 0 or date in [d("2021-08-15")] or 0.99 <= total3 / (sv3 + az3 + sp3 + pf3 + mod3) <= 1.01
+    if date in [d("2021-05-04")]:
+        pass
+    else:
+        assert total1 == sv1 + az1 + sp1 + pf1 + mod1
+
+    if date in [d("2021-08-15")] or total3 == 0:
+        pass
+    else:
+        assert 0.99 <= total3 / (sv3 + az3 + sp3 + pf3 + mod3) <= 1.01
     row = [date, sv1, az1, sp1, pf1, mod1, sv2, az2, sp2, pf2, mod2, sv3, az3, sp3, pf3, mod3]
-    cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]]
+    cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in manuf]
     row = pd.DataFrame([row], columns=['Date'] + cols)
     logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
-    return df.combine_first(row.set_index("Date"))
+    return row.set_index("Date")
 
 
 def vac_slides_groups(df, page, file, page_num):
@@ -952,17 +1045,25 @@ def vac_slides_groups(df, page, file, page_num):
 
 def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
-    for link, _, get_file in vac_slides_files():
+    for link, _, get_file in vac_slides_files(check=1):
         file = get_file()
         if file is None:
             continue
+        blue, brown = pd.DataFrame(), pd.DataFrame()
         for i, page in enumerate(parse_file(file), 1):
             # pass
-            df = vac_manuf_given(df, page, file, i, link)
-            #df = vac_slides_groups(df, page, file, i)
+            brown = brown.combine_first(vac_manuf_given_brown(page, file, i, link))
+            blue = blue.combine_first(vac_manuf_given_blue(page, file, i, link))
+            # df = vac_slides_groups(df, page, file, i)
+        if not blue.empty and not brown.empty:
+            # sometimes we have both tables. cross check them
+            pd.testing.assert_frame_equal(blue.replace(0, np.nan).dropna(axis=1), brown.replace(
+                0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
+        df = df.combine_first(blue).combine_first(brown)
     return df
 
 
 if __name__ == '__main__':
-    reports, provs = vaccination_reports()
     slides = vac_slides()
+    reports, provs = vaccination_reports()
+    vac = export_vaccinations(reports, provs, slides)

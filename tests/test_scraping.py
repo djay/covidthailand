@@ -3,11 +3,13 @@ import functools
 import os
 
 import dateutil
+import numpy as np
 import pandas as pd
 import pytest
 from bs4 import BeautifulSoup
 from tika import config
 
+import covid_data_vac
 from covid_data_briefing import briefing_atk
 from covid_data_briefing import briefing_case_types
 from covid_data_briefing import briefing_deaths
@@ -28,11 +30,6 @@ from covid_data_testing import get_tests_by_area_chart_pptx
 from covid_data_testing import get_tests_by_area_pdf
 from covid_data_testing import get_variant_files
 from covid_data_testing import get_variant_sequenced_table
-from covid_data_vac import vac_manuf_given
-from covid_data_vac import vac_slides_files
-from covid_data_vac import vaccination_daily
-from covid_data_vac import vaccination_reports_files2
-from covid_data_vac import vaccination_tables
 from utils_scraping import parse_file
 from utils_scraping import pptx2chartdata
 from utils_scraping import sanitize_filename
@@ -83,7 +80,8 @@ def dl_files(target_dir, dl_gen, check=False):
             tests.append((date, testdf, get_file))
     if missing and not check:
         # files not cached yet so try again
-        return dl_files(target_dir, dl_gen, check=True)
+        # return dl_files(target_dir, dl_gen, check=True)
+        return tests
     else:
         return tests
 
@@ -126,14 +124,14 @@ def write_scrape_data_back_to_test(df, dir, fname=None, date=None):
 # 2021-07-11          0.0
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", vaccination_reports_files2))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_daily", covid_data_vac.vaccination_reports_files2))
 def test_vac_reports(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
     assert file is not None
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
     for page in parse_file(file):
-        df = vaccination_daily(df, None, file, page)
+        df = covid_data_vac.vaccination_daily(df, None, file, page)
     # write_scrape_data_back_to_test(df, "vaccination_daily", fname)
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
@@ -158,12 +156,12 @@ def parse_vac_tables(*files):
         file = get_file()  # Actually download
         assert file is not None
         for page in parse_file(file):
-            df = vaccination_tables(df, None, page, file)
+            df = covid_data_vac.vaccination_tables(df, None, page, file)
     return df
 
 
 @pytest.mark.skip()
-@pytest.mark.parametrize("link, get_file1, get_file2", pair(vaccination_reports_files2))
+@pytest.mark.parametrize("link, get_file1, get_file2", pair(covid_data_vac.vaccination_reports_files2))
 def test_vac_tables_inc(link, get_file1, get_file2):
 
     if (df1 := parse_vac_tables(get_file1)).empty:
@@ -187,7 +185,7 @@ def test_vac_tables_inc(link, get_file1, get_file2):
     assert (change.max() < 15).all(), f"jump in {get_file1()} {dates} in {change.max()}"
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", vaccination_reports_files2))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vaccination_tables", covid_data_vac.vaccination_reports_files2))
 def test_vac_tables(fname, testdf, get_file):
     df = parse_vac_tables(get_file)
     df = df.dropna(axis=1)  # don't compare empty cols
@@ -195,30 +193,41 @@ def test_vac_tables(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
-@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", vac_slides_files))
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_manuf_given", covid_data_vac.vac_slides_files))
 def test_vac_manuf_given(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
     assert file is not None
     df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    blue, brown = pd.DataFrame(), pd.DataFrame()
     for i, page in enumerate(parse_file(file), 1):
-        df = vac_manuf_given(df, page, file, i, "")
+        # pass
+        brown = brown.combine_first(covid_data_vac.vac_manuf_given_brown(page, file, i, ""))
+        blue = blue.combine_first(covid_data_vac.vac_manuf_given_blue(page, file, i, ""))
+        # df = vac_slides_groups(df, page, file, i)
+    if not blue.empty and not brown.empty:
+        # sometimes we have both tables. cross check them
+        pd.testing.assert_frame_equal(
+            blue.replace(0, np.nan).dropna(axis=1),
+            brown.replace(0, np.nan).dropna(axis=1),
+            check_dtype=False, check_like=True
+        )
+    df = df.combine_first(blue).combine_first(brown)
     df = df.dropna(axis=1)  # don't compare empty cols
-    testdf = testdf.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df, check_dtype=False, check_like=True)
 
 
-def find_testing_pptx(check):
-    return [(file, None, dl) for file, dl in get_test_files(ext=".pptx")]
+def find_testing_pptx(check=False):
+    return [(file, None, dl) for file, dl in get_test_files(ext=".pptx", check=check)]
 
 
-def find_testing_pdf(check):
-    return [(file, None, dl) for file, dl in get_test_files(ext=".pdf")]
+def find_testing_pdf(check=False):
+    return [(file, None, dl) for file, dl in get_test_files(ext=".pdf", check=check)]
 
 
-def find_variant_pdf(check):
-    return [(file, None, dl) for file, dl in get_variant_files(ext=".pdf")]
+def find_variant_pdf(check=False):
+    return [(file, None, dl) for file, dl in get_variant_files(ext=".pdf", check=check)]
 
 
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pptx", find_testing_pptx))

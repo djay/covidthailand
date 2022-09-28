@@ -1,0 +1,39 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given AstraZeneca 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given AstraZeneca 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 2 Cum",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2021-04-25T00:00:00.000Z",
+      "Vac Given AstraZeneca 1 Cum":85711,
+      "Vac Given Sinovac 1 Cum":886493,
+      "Vac Given AstraZeneca 2 Cum":13,
+      "Vac Given Sinovac 2 Cum":177449
+    }
+  ]
+}

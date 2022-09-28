@@ -33,6 +33,19 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     ####################
     # Vaccines
     ####################
+    manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
+    man_cols = pd.DataFrame()
+    for m in manuf:
+        man_cols[m] = df[[c for c in df.columns if f"Given {m}" in str(c)]].sum(axis=1)
+    man_cols = man_cols.replace(0.0, np.nan).interpolate().diff().replace(0.0, np.nan)
+    plot_area(df=man_cols,
+              title='Covid Vaccinations by Manufacturer - Thailand',
+              cols_subset=list(man_cols.columns),
+              png_prefix='vac_manuf',
+              periods_to_plot=["3", "all"],
+              ma_days=7,
+              kind='line', stacked=False, percent_fig=False,
+              footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
     def clean_vac_leg(label, first="1st Jab", second="2nd Jab"):
         c = label
@@ -603,6 +616,8 @@ if __name__ == "__main__":
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
     # have vac in briefings and dashboard
     df = briefings.combine_first(dash).combine_first(df)
+    vac = import_csv("vac_timeline", ['Date'])
+    df = vac.combine_first(df)
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'

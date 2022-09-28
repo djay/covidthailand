@@ -1,4 +1,5 @@
 import datetime
+import functools
 import re
 import time
 from itertools import islice
@@ -780,7 +781,8 @@ def briefing_atk(file, date, pages):
     return df
 
 
-def briefing_documents(check=True):
+@functools.lru_cache
+def briefing_documents(check=False):
     url = "http://media.thaigov.go.th/uploads/public_img/source/"
     start = d("2021-01-13")  # 12th gets a bit messy but could be fixed
     end = today()
@@ -789,6 +791,7 @@ def briefing_documents(check=True):
     # for file, text, briefing_url in web_files(*), dir="briefings"):
 
     check = True
+    res = []
     for link in reversed(list(links)):
         date = file2date(link) if "249764.pdf" not in link else d("2021-07-24")
         if USE_CACHE_DATA and date < today() - datetime.timedelta(days=MAX_DAYS):
@@ -802,7 +805,8 @@ def briefing_documents(check=True):
             return file
         check = False  # Only check first one, assume others never get updated
 
-        yield link, date, get_file
+        res.append((link, date, get_file))
+    return res
 
 
 def get_cases_by_prov_briefings():
@@ -812,7 +816,7 @@ def get_cases_by_prov_briefings():
     # deaths = import_csv("deaths", ["Date", "Province"], not USE_CACHE_DATA)
     deaths = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
     vac_prov = pd.DataFrame(columns=["Date", "Province"]).set_index(['Date', 'Province'])
-    for briefing_url, date, get_file in briefing_documents():
+    for briefing_url, date, get_file in briefing_documents(check=True):
         file = get_file()
         if file is None:
             continue

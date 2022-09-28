@@ -38,9 +38,9 @@ from utils_thai import TEST_COLS
 #     return dav_files(url, username, password, ext, dir)
 
 
-def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph"):
+def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph", check=True):
     key = os.environ.get('DRIVE_API_KEY', None)
-    if key is None:
+    if key is None or not check:
         logger.warning("env DRIVE_API_KEY missing: Using local cached testing data only")
         yield from local_files(ext, dir)
         return
@@ -84,15 +84,15 @@ def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph"):
         return
 
 
-def get_test_files(ext="pdf", dir="inputs/testing_moph"):
+def get_test_files(ext="pdf", dir="inputs/testing_moph", check=True):
     folder_id = "1yUVwstf5CmdvBVtKBs0uReV0BTbjQYlT"
-    yield from get_drive_files(folder_id, ext, dir)
+    yield from get_drive_files(folder_id, ext, dir, check=check)
 
 
-def get_variant_files(ext=".pdf", dir="inputs/variants"):
+def get_variant_files(ext=".pdf", dir="inputs/variants", check=True):
     # https://drive.google.com/drive/folders/13k14Hs61pgrK8raSMS9LFQn83PKswS-b
     folder_id = "13k14Hs61pgrK8raSMS9LFQn83PKswS-b"
-    yield from get_drive_files(folder_id, ext=ext, dir=dir)
+    yield from get_drive_files(folder_id, ext=ext, dir=dir, check=check)
 
 
 def get_tests_by_day():

@@ -190,6 +190,10 @@ Got a question about covid in Thailand? Try asking it in [Q&A discussion](https:
 
 # Vaccinations <a name="vaccinations">
 
+## Vaccinations by Manufacturer
+
+![Manufacturer Vaccinations in Thailand](https://practical-ritchie-cca141.netlify.app/outputs/vac_manuf_3.png)
+
 ## Vaccinations by Priority Groups
 
 ![Daily Vaccinations in Thailand](https://practical-ritchie-cca141.netlify.app/outputs/vac_groups_daily_30d.png)
