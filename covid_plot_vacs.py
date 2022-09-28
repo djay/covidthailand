@@ -36,7 +36,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
     man_cols = pd.DataFrame()
     for m in manuf:
-        man_cols[m] = df[[c for c in df.columns if m in str(c)]].sum(axis=1)
+        man_cols[m] = df[[c for c in df.columns if f"Given {m}" in str(c)]].sum(axis=1)
     man_cols = man_cols.replace(0.0, np.nan).interpolate().diff().replace(0.0, np.nan)
     plot_area(df=man_cols,
               title='Covid Vaccinations by Manufacturer - Thailand',
