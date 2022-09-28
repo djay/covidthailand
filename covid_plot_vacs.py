@@ -43,7 +43,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               cols_subset=list(man_cols.columns),
               png_prefix='vac_manuf',
               periods_to_plot=["3", "all"],
-              ma_days=14,
+              ma_days=7,
               kind='line', stacked=False, percent_fig=False,
               footnote_left=f'{source}Data Source: DDC Daily Vaccination Reports')
 
