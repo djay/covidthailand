@@ -875,13 +875,13 @@ def vac_manuf_given_blue(page, file, page_num, url):
         table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
     else:
         labels = [c for c in table.columns if table[c].str.contains("AstraZeneca", regex=True).any()][0]
-        vals = [c for c in table.columns if table[c].str.contains("สะสม", regex=True).any()][-1]
+        vals = [c for c in table.columns if table[c].str.contains("สะสม", regex=True).any()]
+        if not vals:
+            # probably one of the prov tables
+            return df
+        else:
+            vals = vals[-1]  # get rid of the daily col
         table = table[[labels, vals]]
-        # if len(table.columns) > 2:
-        #     # We should be getting rid of last col with totals in
-        #     assert table[table.columns[-1]].str.contains("AstraZeneca").any()
-        #     table = table[table.columns[:2]]  # Get rid of totals column in later tables
-        # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
 
     labels, vals = table.columns
     table = table[table[labels].str.contains("AstraZeneca")]
