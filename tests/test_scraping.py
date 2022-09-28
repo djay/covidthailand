@@ -207,8 +207,11 @@ def test_vac_manuf_given(fname, testdf, get_file):
         # df = vac_slides_groups(df, page, file, i)
     if not blue.empty and not brown.empty:
         # sometimes we have both tables. cross check them
-        pd.testing.assert_frame_equal(blue.dropna(axis=1), brown.replace(
-            0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
+        pd.testing.assert_frame_equal(
+            blue.replace(0, np.nan).dropna(axis=1),
+            brown.replace(0, np.nan).dropna(axis=1),
+            check_dtype=False, check_like=True
+        )
     df = df.combine_first(blue).combine_first(brown)
     df = df.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)

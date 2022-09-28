@@ -1,0 +1,94 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given AstraZeneca 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given AstraZeneca 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given AstraZeneca 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Moderna 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Moderna 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Moderna 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Pfizer 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Pfizer 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Pfizer 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinopharm 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinopharm 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinopharm 3 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 1 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 2 Cum",
+        "type":"integer"
+      },
+      {
+        "name":"Vac Given Sinovac 3 Cum",
+        "type":"integer"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2021-08-05T00:00:00.000Z",
+      "Vac Given AstraZeneca 1 Cum":8053318,
+      "Vac Given AstraZeneca 2 Cum":554606,
+      "Vac Given AstraZeneca 3 Cum":173768,
+      "Vac Given Moderna 1 Cum":0,
+      "Vac Given Moderna 2 Cum":0,
+      "Vac Given Moderna 3 Cum":0,
+      "Vac Given Pfizer 1 Cum":45,
+      "Vac Given Pfizer 2 Cum":6,
+      "Vac Given Pfizer 3 Cum":1422,
+      "Vac Given Sinopharm 1 Cum":1025534,
+      "Vac Given Sinopharm 2 Cum":292401,
+      "Vac Given Sinopharm 3 Cum":0,
+      "Vac Given Sinovac 1 Cum":6101379,
+      "Vac Given Sinovac 2 Cum":3430058,
+      "Vac Given Sinovac 3 Cum":0
+    }
+  ]
+}

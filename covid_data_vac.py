@@ -897,9 +897,12 @@ def vac_manuf_given_blue(page, file, page_num, url):
                       reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
     for d0, d1 in zip(doses[:-1], doses[1:]):
         assert sum([v for m, v in d0.items() if m in manuf]) >= sum([v for m, v in d1.items() if m in manuf])
-    # TODO: add asserts
-    row = pd.DataFrame([{f"Vac Given {m} {d + 1} Cum": num for d in range(len(table))
-                        for m, num in doses[d].items() if m in manuf} | {"Date": date}]).set_index("Date")
+    # TODO: add asserts to compare totals
+
+    def clean_manuf(m):
+        return m.capitalize().replace("zeneca", "Zeneca")
+    row = pd.DataFrame([{f"Vac Given {clean_manuf(m)} {d + 1} Cum": num for d in range(len(table))
+                        for m, num in doses[d].items() if clean_manuf(m) in manuf} | {"Date": date}]).set_index("Date")
     if date > d("2021-11-23"):
         assert len(row.columns) >= 12
     logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
@@ -1054,7 +1057,7 @@ def vac_slides():
             # df = vac_slides_groups(df, page, file, i)
         if not blue.empty and not brown.empty:
             # sometimes we have both tables. cross check them
-            pd.testing.assert_frame_equal(blue.dropna(axis=1), brown.replace(
+            pd.testing.assert_frame_equal(blue.replace(0, np.nan).dropna(axis=1), brown.replace(
                 0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
         df = df.combine_first(blue).combine_first(brown)
     return df
