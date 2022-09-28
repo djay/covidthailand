@@ -906,35 +906,31 @@ def vac_manuf_given(df, page, file, page_num, url):
         if len(table.columns) == 3:
             table = table.drop(columns=[cols[1]])  # .drop(index=[0, 1, 3, 5, 7])
         else:
-            table = table[[c for c in table.columns if table[c].str.contains("(?:28 กุมภ|AstraZeneca)", regex=True).any()]]
+            table = table[[c for c in table.columns if table[c].str.contains("(?:สะสม|AstraZeneca)", regex=True).any()]]
             table = table[table.columns[:2]]  # Get rid of totals column in later tables
             # table = table.drop(columns=[cols[0], cols[2], cols[4]])  # .drop(index=[0, 1, 3, 5, 7])
 
         labels, vals = table.columns
         table = table[table[labels].str.contains("AstraZeneca")]
+        if table[vals].str.contains("AstraZeneca").any():
+            # Summary col got mixed in. Can't really untangle
+            # Slide 2022-01-02.pdf
+            return df
 
         def clean_labels(label):
             # Sometimes numbers can get mixed in there
             return [s for s in re.sub(r"[,\d]*", "", label).split("\n") if s]
         doses = [dict(zip(reversed(clean_labels(table.iloc[dose][labels])),
                           reversed(get_next_numbers(table.iloc[dose][vals], return_rest=False)))) for dose in range(len(table))]
-        # for m in manuf:
-        #     for d0, d1 in zip(doses[:-1], doses[1:]):
-        #         assert d0.get(m, 0) >= d1.get(m, 0)
+        for d0, d1 in zip(doses[:-1], doses[1:]):
+            assert sum([v for m, v in d0.items() if m in manuf]) >= sum([v for m, v in d1.items() if m in manuf])
         # TODO: add asserts
         row = pd.DataFrame([{f"Vac Given {m} {d + 1} Cum": num for d in range(len(table))
                            for m, num in doses[d].items() if m in manuf} | {"Date": date}]).set_index("Date")
+        if date > d("2021-11-23"):
+            assert len(row.columns) >= 12
         logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
         return df.combine_first(row)
-
-        # total1, sv1, az1, sp1, pf1, *mod1 = get_next_numbers(table.iloc[0][3], return_rest=False)
-        # total2, sv2, az2, sp2, pf2, *mod2 = get_next_numbers(table.iloc[1][3], return_rest=False)
-        # total3, sv3, az3, sp3, pf3, *mod3 = get_next_numbers(table.iloc[2][3], return_rest=False)
-        # if mod1:
-        #     mod1, mod2, mod3 = mod1 + mod2 + mod3
-        # else:
-        #     mod1, mod2, mod3 = [0] * 3
-
     #assert total2 == sv2 + az2 + sp2 + pf2
     # 1% tolerance added for error from vaccinations/1633686565437.pdf on 2021-10-06
     if date in [d("2021-05-04")]:
@@ -1025,3 +1021,4 @@ def vac_slides():
 if __name__ == '__main__':
     slides = vac_slides()
     reports, provs = vaccination_reports()
+    vac = export_vaccinations(reports, provs, slides)
