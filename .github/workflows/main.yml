@@ -8,14 +8,14 @@ on:
       - "releases/**"
   schedule: # can be up to 20min late. So better to have more updates
     # - cron: "*/19 23 * * *" # Quick checks for briefing after 7am
-    - cron: "55 23 * * *" # after midnight is delayed
+    - cron: "55 23 * * MON" # after midnight is delayed
 #    - cron: "*/15 00-02 * * *" # Quick checks for briefing after 7am (but often after 8:30am)
     # - cron: "45 23 * * *" # 07:15 Dashboard
     # - cron: "02 00 * * *" # 08:02 Dashboard
     # - cron: "25 00 * * *" # 08:45 Dashboard
-    - cron: "05 01 * * *" # 09:05 Dashboard
+    # - cron: "05 01 * * MON" # 09:05 Dashboard
 #    - cron: "25 05 * * *" # 12:25 daily briefing - official tweet
-    - cron: "*/45 06-09 * * *" # Quick checks for briefing after 1pm
+    - cron: "*/59 06-09 * * MON" # Quick checks for briefing after 1pm
     # - cron: "00 06 * * *" # 13:00 daily briefing - briefing pdf
     # - cron: "40 06 * * *" # 13:40 daily briefing - briefing pdf
     # - cron: "50 07 * * *" # 14:50 in case briefing was uploaded late - #TODO: currently even later
