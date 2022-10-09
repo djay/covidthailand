@@ -238,7 +238,7 @@ def dash_weekly(file="moph_dash_weekly"):
     # aggregated for week ending on sat
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
 
-    latest = next(dates)
+    latest = next(dates, None)
     for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
         date = next(iter(date), None) if date is not None else latest
         if skip_valid(df, date, allow_na):
@@ -267,7 +267,7 @@ def closest(sub, repl):
     return get_name
 
 
-def dash_by_province_weekly(file="moph_province_weekly"):
+def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
         "Deaths Cum": d("2022-09-01"),
@@ -275,7 +275,7 @@ def dash_by_province_weekly(file="moph_province_weekly"):
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
-    latest = next(dates)
+    latest = next(dates, None)
     for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province", verify=False):
         date, province = idx_value
         if date is None:
@@ -379,7 +379,7 @@ def dash_ages():
         return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
     for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range", verify=False):
-        age_group = next(iter(idx_value))
+        age_group = next(iter(idx_value), None)
         age_group = range2eng(age_group)
         skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
         if skip or (wb := get_wb()) is None:
@@ -413,7 +413,7 @@ def dash_trends_prov():
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
     for get_wb, idx_value in workbook_iterate(url, D4_CHART="province", verify=False):
-        province = get_province(next(iter(idx_value)))
+        province = get_province(next(iter(idx_value), None))
         date = str(today().date())
         try:
             df.loc[(date, province)]
@@ -644,7 +644,7 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_by_province_df = dash_by_province_weekly()
+    dash_by_province_df = dash_province_weekly()
     dash_daily_df = dash_weekly()
     # dash_ages_df = dash_ages()
 
