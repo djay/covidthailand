@@ -320,7 +320,12 @@ def cleanup_cases(cases):
 
 def get_case_details_api():
 
-    cases = import_csv("covid-19", dir="inputs/json", date_cols=["Date", "update_date", "txn_date"])
+    cases = import_csv("covid-19", dir="inputs/json",
+                       date_cols=["Date", "update_date", "txn_date", "update_date2"],
+                       str_cols=["Health District Number", "Job Type", "Nat Main", "Patient Type", "age_range", "gender",
+                                 "nationality", "patient_type", "patient_type2", "risk", "risk_group", "translation", "job"],
+                       # int_cols=["No.", ] # "age", "index", "int", ]
+                       )
     if "risk_group" not in cases.columns or cases["risk_group"].count() < 40000:
         cases = cleanup_cases(cases)
     if cases["Date"].min() > d("2020-02-01"):

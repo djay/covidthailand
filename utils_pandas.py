@@ -70,7 +70,7 @@ def cum2daily(results):
     all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
     cum = cum.reindex(all_days)  # put in missing days with NaN
     # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
-    cum = cum - cum.shift(+1)  # we got cumilitive data
+    cum = cum.interpolate().diff()  # we got cumilitive data
     renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
     cum = cum.rename(columns=renames)
     # cum = cum.reset_index().set_index(inames)
@@ -249,7 +249,7 @@ def export(df, name, csv_only=False, dir="api"):
     )
 
 
-def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="api"):
+def import_csv(name, index=None, return_empty=False, date_cols=['Date'], str_cols=[], int_cols=[], dir="api"):
     path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
         if index:
@@ -258,7 +258,8 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="ap
             return pd.DataFrame()
     logger.info("Importing CSV: {}", path)
     # TODO: set dtypes when we know its all floats so works faster?
-    df = pd.read_csv(path, parse_dates=date_cols)
+    dtypes = {col: "str" for col in str_cols} | {col: "int" for col in int_cols}
+    df = pd.read_csv(path, parse_dates=date_cols, dtype=dtypes)
     if index:
         return df.set_index(index)
     else:

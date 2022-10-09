@@ -42,16 +42,17 @@ def workbook_value(wb, date, name, col, default=0.0, is_date=False):
     data = dict()
     if date is not None:
         data["Date"] = [date]
-    closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
+    # closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
     try:
-        df = wb.getWorksheet(closest).data
+        df = wb.getWorksheet(name).data
     except (KeyError, TypeError, AttributeError):
         # TODO: handle error getting wb properly earlier
         logger.info("Error getting tableau {}/{} {}", name, col, date)
         return pd.DataFrame()
 
     if df.empty:
-        data[col] = [default]
+        if default is not None:
+            data[col] = [default]
     elif is_date:
         data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
     else:
@@ -62,17 +63,20 @@ def workbook_value(wb, date, name, col, default=0.0, is_date=False):
 
     # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
-    if not df.empty:
+    if date is None:
+        return df.iloc[0, 0]
+    if not df.empty and date is not None:
         df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
         res = df.set_index("Date")
     return res
 
 
-def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", end=None):
-    # TODO: generalise what to index by and default value for index
-    closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
+def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", end=None, index_date=True, index_value=None):
+    name = name if type(name) == str else next((n for n in name if n in [s.name for s in wb.worksheets]), None)
+    if name is None:
+        return pd.DataFrame()
     try:
-        df = wb.getWorksheet(closest).data
+        df = wb.getWorksheet(name).data
     except (KeyError, TypeError, AttributeError):
         # TODO: handle error getting wb properly earlier
         logger.info("Error getting tableau {}/{} {}", name, mappings)
@@ -82,18 +86,23 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
         # logger.info("Error getting tableau {}/{} {}", name, col, date)
         return pd.DataFrame()
     # if it's not a single value can pass in mapping of cols
-    df = df[mappings.keys()].rename(columns={k: v for k, v in mappings.items() if type(v) == str})
-    try:
-        df[index_col] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
-    except pd.errors.OutOfBoundsDatetime:
-        # Could be a Thai year. Hack to convert
-        df[index_col] = df[index_col].str.replace("2564", "2021").str.replace("2565", "2022")
-        df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
+    renames = {k: v for k, v in mappings.items() if type(v) == str and k in df.columns}
+    cols = [key for key in mappings.keys() if key in df.columns]
+    df = df[cols].rename(columns=renames)
+    if index_date:
+        try:
+            df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
+        except pd.errors.OutOfBoundsDatetime:
+            # Could be a Thai year. Hack to convert
+            df[index_col] = df[index_col].str.replace("2564", "2021").str.replace("2565", "2022")
+            df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
     # if one mapping is dict then do pivot
     pivot = [(k, v) for k, v in mappings.items() if type(v) != str]
     if pivot:
         pivot_cols, pivot_mapping = pivot[0]  # can only have one
         # Any other mapped cols are what are the values of the pivot
+        if index_col not in df.columns:
+            df[index_col] = index_value
         df = df.pivot(index=index_col, columns=pivot_cols)
         df = df.drop(columns=[c for c in df.columns if not any_in(c, *pivot_mapping.keys())])  # Only keep cols we want
         df = df.rename(columns=pivot_mapping)
@@ -107,24 +116,25 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
         default = [defaults.get(c, defaults.get("")) if defaults else 0.0 for c in df.columns]
     df = df.replace("%null%", default[0])
     # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
-    df = df.apply(pd.to_numeric, errors='coerce', axis=1)
+    df = df.apply(lambda x: x.str.replace(',', '').astype(float) if x.dtype in [str, object] else x, axis=1)
 
-    # Some series have gaps where its assumed missing values are 0. Like deaths
-    # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
-    #start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
-    #start = min([start, df.index.min()])
-    start = df.index.min()
-    # Some data like tests can be a 2 days late
-    # TODO: Should be able to do better than fixed offset?
-    #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
-    #end = max([end, df.index.max()])
-    end = df.index.max() if end is None else end
-    # assert date is None or end <= date, f"getting {date} found {end}"
-    all_days = pd.date_range(start, end, name="Date", normalize=True, inclusive="both")
-    try:
-        df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
-    except ValueError:
-        return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
+    if index_date:
+        # Some series have gaps where its assumed missing values are 0. Like deaths
+        # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
+        #start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
+        #start = min([start, df.index.min()])
+        start = df.index.min()
+        # Some data like tests can be a 2 days late
+        # TODO: Should be able to do better than fixed offset?
+        #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
+        #end = max([end, df.index.max()])
+        end = df.index.max() if end is None else end
+        # assert date is None or end <= date, f"getting {date} found {end}"
+        all_days = pd.date_range(start, end, name="Date", normalize=True, inclusive="both")
+        try:
+            df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
+        except ValueError:
+            return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
 
     return df
 

@@ -17,6 +17,7 @@ import covid_data_testing
 import covid_data_tweets
 import covid_data_vac
 from utils_pandas import add_data
+from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
 from utils_scraping import CHECK_NEWER
@@ -208,13 +209,13 @@ def scrape_and_combine():
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
-        covid_data_dash.dash_by_province,
+        covid_data_dash.dash_province_weekly,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_dash.dash_ages,
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
         covid_data_testing.get_test_reports,
-        covid_data_dash.dash_daily,
+        covid_data_dash.dash_weekly,
         covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
         covid_data_tweets.get_cases_by_prov_tweets,
@@ -260,12 +261,16 @@ def scrape_and_combine():
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
-    export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
+    #export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     # "json" for caching, api so it's downloadable
+    shutil.copy(os.path.join("inputs", "json", "moph_province_weekly.csv"), "api")
+    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_weekly.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_bed.csv"), "api")
+    dash_by_province = import_csv("moph_dashboard_prov", ["Date", "Province"])
+    dash_daily = import_csv("moph_dashboard", ["Date", "Province"])
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
@@ -277,7 +282,8 @@ def scrape_and_combine():
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
-        res['dash_by_province']).combine_first(
+        cum2daily(res['dash_province_weekly'])).combine_first(
+        dash_by_province).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
@@ -304,7 +310,7 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [res['get_test_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], res['dash_daily']]:
+    for f in [res['get_test_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], dash_daily, cum2daily(res['dash_weekly'])]:
         df = df.combine_first(f)
     logger.info(df)
 

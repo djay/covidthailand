@@ -9,6 +9,9 @@ import tableauscraper
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 
+import covid_plot_cases
+import covid_plot_deaths
+from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
 from utils_scraping import any_in
@@ -210,6 +213,146 @@ def dash_daily():
     df = all_atk_reg.combine_first(df)
     export(df, "moph_dashboard", csv_only=True, dir="inputs/json")
     return df
+
+
+def weeks_to_end_date(df, start=d("2022-01-01")):
+    if df.empty:
+        return df
+    df = df.reset_index("Week")
+    df['Date'] = (pd.to_numeric(df['Week']) * 7).apply(lambda x: pd.DateOffset(x) + start)
+    return df.set_index("Date").drop(columns=["Week"])
+
+
+def dash_weekly(file="moph_dash_weekly"):
+    df = import_csv(file, ["Date"], False, dir="inputs/json")  # so we cache it
+
+    allow_na = {
+        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+        'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+        "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=4)),
+        'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
+        'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
+    }
+
+    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
+    # aggregated for week ending on sat
+    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+
+    latest = next(dates)
+    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
+        date = next(iter(date), None) if date is not None else latest
+        if skip_valid(df, date, allow_na):
+            continue
+        if (wb := get_wb()) is None:
+            continue
+
+        end_date = workbook_value(wb, None, "D_UpdateTime (2)", "Date", is_date=True)
+        if end_date.date() != date.date():
+            # we have a problem. not setting the date right
+            continue
+
+        row = extract_basics(wb, date)
+        if row.empty:
+            break
+
+        df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
+        logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
+    export(df, file, csv_only=True, dir="inputs/json")
+    return df
+
+
+def closest(sub, repl):
+    def get_name(wb, name):
+        return {s.name.replace(sub, repl): s.name for s in wb.worksheets}.get(name)
+    return get_name
+
+
+def dash_by_province_weekly(file="moph_province_weekly"):
+    df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+    valid = {
+        "Deaths Cum": d("2022-09-01"),
+        "Cases Cum": d("2022-09-01"),
+    }
+    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
+    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    latest = next(dates)
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), D2_Province="province", verify=False):
+        date, province = idx_value
+        if date is None:
+            date = latest
+        if province is None:
+            continue
+        province = get_province(province)
+        if skip_valid(df, (date, province), valid):
+            print("s", end="")
+            continue
+        if (wb := get_wb()) is None:
+            continue
+        row = extract_basics(wb, date, closest("D2_", "D_"))
+        # if row.empty:
+        #     continue
+        row['Province'] = province
+        row = row.reset_index().set_index(["Date", "Province"])
+        df = row.combine_first(df)
+        logger.info("{} MOPH Dashboard {}", row.index.max(),
+                    row.loc[row.last_valid_index():].to_string(index=False, header=False))
+    export(df, file, csv_only=True, dir="inputs/json")
+    return df
+
+
+def extract_basics(wb, date, closest=lambda wb, name: name):
+
+    row = pd.DataFrame()
+    # D_CaseNew_/7 - daily avg cases
+    # D_DeathNew_/7 - daily avg deaths
+    # D_Death (2)
+
+    def to_cum(cum, periodic):
+        return cum.reindex(periodic.index).bfill().subtract(periodic[::-1].cumsum()[::-1].shift(-1), fill_value=0)
+
+    cases = weeks_to_end_date(workbook_series(wb, closest(wb, "D_NewTL (2)"), {
+        "SUM(case_new)-value": "Cases",
+        "AGG(stat_count)-value": "Cases",
+        "#WEEK_NUMBER-value": "Week"
+    }, index_col="Week", index_date=False))
+    date = cases.index.max()  # We can't get update date always so use lastest cases date
+    row = row.combine_first(workbook_value(wb, date, closest(wb, "D_NewACM (2)"), "Cases Cum"))
+    row = row.combine_first(to_cum(row['Cases Cum'], cases['Cases']).to_frame("Cases Cum"))
+    row = row.combine_first(workbook_value(wb, date, closest(wb, "D_DeathACM (2)"), "Deaths Cum"))
+    deaths = weeks_to_end_date(workbook_series(wb, closest(wb, "D_DeathTL (2)"), {
+        "SUM(death_new)-value": "Deaths",
+        "AGG(num_death)-value": "Deaths",
+        "#WEEK_NUMBER-value": "Week"
+    }, index_col="Week", index_date=False))
+    if not deaths.empty:
+        row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
+
+    row = row.combine_first(workbook_value(wb, date, closest(wb, "D_Severe (2)"), "Hospitalized Severe", None))
+    row = row.combine_first(workbook_value(wb, date, closest(wb, "D_SevereTube (2)"), "Hospitalized Respirator", None))
+
+    vacs = workbook_series(wb, ["D_Vac2Table"], {
+        "vaccine_plan_group-alias": {
+            "1": "1 Cum",
+            "2": "2 Cum",
+            "3": "3 Cum",
+        },
+        "SUM(vaccine_total_acm)-alias": "Vac Given",
+    }, index_date=False, index_col="Date", index_value=date)
+
+    vacs_dates = workbook_series(wb, ["D_Vac_Stack (2)"], {
+        "DAY(txn_date)-value": "Date",
+        "vaccine_plan_group-alias": {
+            "1": "1 Cum",
+            "2": "2 Cum",
+            "3": "3 Cum",
+        },
+        "SUM(vaccine_total_acm)-value": "Vac Given",
+        "SUM(vaccine_total_acm)-alias": "Vac Given",
+    }, index_date=True)
+
+    # TODO: should switch from weekly?
+    row = row.combine_first(vacs).combine_first(vacs_dates)
+    return row
 
 
 def dash_ages():
@@ -501,9 +644,20 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_daily_df = dash_daily()
-    dash_ages_df = dash_ages()
-    dash_by_province_df = dash_by_province()
+    dash_by_province_df = dash_by_province_weekly()
+    dash_daily_df = dash_weekly()
+    # dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
 #    dash_trends_prov_df = dash_trends_prov()
+
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    prov = import_csv("cases_by_province", index=["Date", "Province"], date_cols=["Date"])
+
+    # df = dash.combine(df, lambda s1, s2: s1)
+    # df = briefings.combine(df, lambda s1, s2: s1)
+    df = df.combine_first(cum2daily(dash_daily_df))
+    prov = prov.combine_first(cum2daily(dash_by_province_df))
+
+    covid_plot_deaths.save_deaths_plots(df)
+    covid_plot_cases.save_cases_plots(df)
