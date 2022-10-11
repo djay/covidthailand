@@ -61,19 +61,38 @@ def check_cum(df, results, cols):
         raise Exception(str(next_day - last))
 
 
-def cum2daily(results):
-    cum = results[(c for c in results.columns if " Cum" in c)]
+def cum2daily(results, exclude=[]):
+    def todaily(cum):
+        otherindex = list(set(cum.index.names) - set(["Date"]))
+        cols = cum.columns
+        cum = cum.reset_index(otherindex)
+        othervals = cum[otherindex]
+        cum = cum[[c for c in cols if c not in otherindex]]
+
+        all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
+        cum = cum.reindex(all_days)  # put in missing days with NaN
+        # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
+        cum = cum.interpolate().diff()  # we got cumilitive data
+        renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
+        cum = cum.rename(columns=renames)
+        cum[otherindex] = othervals.iloc[0]  # Should all be the same
+        cum = cum.reset_index().set_index(["Date"] + otherindex)
+        return cum
+
+    cumcols = list(c for c in results.columns if " Cum" in c and c not in exclude)
+    cum = results[cumcols]
     inames = cum.index.names
-    if inames != ["Date"]:
-        #cum = cum.reset_index().set_index("Date")
-        cum = cum.droplevel(list(set(inames) - set(["Date"])))
-    all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
-    cum = cum.reindex(all_days)  # put in missing days with NaN
-    # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
-    cum = cum.interpolate().diff()  # we got cumilitive data
-    renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
-    cum = cum.rename(columns=renames)
+    otherindex = list(set(inames) - set(["Date"]))
+    if otherindex:
+        cum = cum.groupby(otherindex, group_keys=False).apply(todaily)
+    else:
+        cum = todaily(cum)
+    # if inames != ["Date"]:
+    #     #cum = cum.reset_index().set_index("Date")
+    #     cum = cum.droplevel(list(set(inames) - set(["Date"])))
     # cum = cum.reset_index().set_index(inames)
+    restcols = list(c for c in results.columns if c not in cumcols)
+    cum[restcols] = results[restcols]
     return cum
 
 

@@ -38,6 +38,7 @@ def workbook_explore(workbook):
 
 def workbook_value(wb, date, name, col, default=0.0, is_date=False):
     # TODO: generalise what to index by and default value for index
+    name = name if type(name) == str else next((n for n in name if n in [s.name for s in wb.worksheets]), None)
     res = pd.DataFrame()
     data = dict()
     if date is not None:
@@ -115,8 +116,14 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
     else:
         default = [defaults.get(c, defaults.get("")) if defaults else 0.0 for c in df.columns]
     df = df.replace("%null%", default[0])
+
     # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
-    df = df.apply(lambda x: x.str.replace(',', '').astype(float) if x.dtype in [str, object] else x, axis=1)
+    def cleannum(series):
+        try:
+            return series.str.replace(',', '').astype(float)
+        except AttributeError:
+            return series
+    df = df.apply(cleannum, axis=1)
 
     if index_date:
         # Some series have gaps where its assumed missing values are 0. Like deaths
@@ -251,17 +258,28 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
     if wb is None:
         return
     set_value = []
+    product_values = {}
     # match the params to iterate to param, filter or select
     for name, values in selects.items():
         param = next((p for p in wb.getParameters() if p['column'] == name), None)
         ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
-        if param is not None or ws is None:
+        if name == "filters":
+            for fname, fvalues in values.items():
+                product_values[fname] = fvalues
+
+                def do_filter(wb, value, ws_name=fname, filter_name=values):
+                    # return ws.setFilter(fname, value, dashboardFilter=True)
+                    return force_setFilter(wb, None, fname, [value])
+                set_value.append(do_filter)
+            continue
+
+        elif param is not None or ws is None:
             # We will force param if it's not select
             if type(values) == str:
-                selects[name] = param['values']
+                product_values[name] = param['values']
             else:
                 # assume its a list of values to use
-                pass
+                product_values[name] = values
 
             def do_param(wb, value, name=name):
                 value = value if type(value) != datetime.datetime else str(value.date())
@@ -272,7 +290,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
         # TODO: allow a select to be manual list of values
         svalues = ws.getSelectableValues(values)
         if svalues:
-            selects[name] = svalues
+            product_values[name] = svalues
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_select(wb, value, name=name, values=values):
@@ -284,21 +302,21 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
         else:
             items = ws.getFilters()
             # TODO: allow filter to manual list of values
-            selects[name] = next((item['values'] for item in items if item['column'] == values), [])
+            product_values[name] = next((item['values'] for item in items if item['column'] == values), [])
             # TODO: should raise an error if there is no matching filter?
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):
                 ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == ws_name), None)
-                # return ws.setFilter(values, value)
-                return force_setFilter(wb, ws_name, filter_name, [value])
+                return ws.setFilter(values, value, dashboardFilter=True)
+                # return force_setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
     if inc_no_param:
         yield lambda: wb, None
 
     last_idx = [None] * len(selects)  # Outside so we know if we need to change teh params or not
     # Get all combinations of the values of params, select or filter
-    for next_idx in itertools.product(*selects.values()):
+    for next_idx in itertools.product(*product_values.values()):
         def get_workbook(*checks, wb=wb, next_idx=next_idx):
             nonlocal last_idx, max_errors
             reset = False
@@ -381,44 +399,48 @@ def force_setFilter(wb, ws_name, columnName, values):
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
-    ws = next(ws for ws in wb.worksheets if ws.name == ws_name)
+    ws = next((ws for ws in wb.worksheets if ws.name == ws_name), None)
 
-    filter = next(
+    filter = next((
         {
             "globalFieldName": t["globalFieldName"],
         }
-        for t in ws.getFilters()
+        for t in (ws.getFilters() if ws is not None else [])
         if t["column"] == columnName
+    ), None
     )
 
-    payload = (
-        ("dashboard", scraper.dashboard),
-        ("globalFieldName", (None, filter["globalFieldName"])),
-        ("qualifiedFieldCaption", (None, columnName)),
-        ("membershipTarget", (None, "filter")),
-        ("exclude", (None, "false")),
-        ("filterValues", (None, json.dumps(values))),
-        ("filterUpdateType", (None, "filter-replace"))
-    )
     try:
-        r = scraper.session.post(
-            f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/dashboard-categorical-filter',
-            files=payload,
-            verify=scraper.verify
-        )
-        scraper.lastActionTime = time.time()
+        if filter is None:
+            resp = tableauscraper.api.dashboardFilter(scraper, columnName, [values] if not isinstance(values, list) else values)
+        else:
+            payload = (
+                ("dashboard", scraper.dashboard),
+                ("globalFieldName", (None, filter["globalFieldName"])),
+                ("qualifiedFieldCaption", (None, columnName)),
+                ("membershipTarget", (None, "filter")),
+                ("exclude", (None, "false")),
+                ("filterValues", (None, json.dumps(values))),
+                ("filterUpdateType", (None, "filter-replace"))
+            )
+            r = scraper.session.post(
+                f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/dashboard-categorical-filter',
+                files=payload,
+                verify=scraper.verify
+            )
+            scraper.lastActionTime = time.time()
 
-        if r.status_code >= 400:
-            raise requests.exceptions.RequestException(r.content)
-        resp = r.json()
-        errors = [
-            res['commandReturn']['commandValidationPresModel']['errorMessage']
-            for res in resp['vqlCmdResponse']['cmdResultList']
-            if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
-        ]
-        if errors:
-            wb._scraper.logger.error(str(", ".join(errors)))
-            raise tableauscraper.api.APIResponseException(", ".join(errors))
+            if r.status_code >= 400:
+                raise requests.exceptions.RequestException(r.content)
+            resp = r.json()
+            errors = [
+                res['commandReturn']['commandValidationPresModel']['errorMessage']
+                for res in resp['vqlCmdResponse']['cmdResultList']
+                if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
+            ]
+            if errors:
+                wb._scraper.logger.error(str(", ".join(errors)))
+                raise tableauscraper.api.APIResponseException(", ".join(errors))
 
         wb.updateFullData(resp)
         return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
