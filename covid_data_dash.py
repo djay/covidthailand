@@ -459,6 +459,7 @@ def dash_trends_prov():
 
 def dash_by_province():
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+    return df
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w?:size=1200,1050&:embed=y&:showVizHome=n&:bootstrapWhenNotified=y&:tabs=n&:toolbar=n&:apiID=host0"
