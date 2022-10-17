@@ -264,7 +264,7 @@ def scrape_and_combine():
     #export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     # "json" for caching, api so it's downloadable
     shutil.copy(os.path.join("inputs", "json", "moph_province_weekly.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_weekly.csv"), "api")
+    shutil.copy(os.path.join("inputs", "json", "moph_dash_weekly.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
     shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
