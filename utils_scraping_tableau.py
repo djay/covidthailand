@@ -268,7 +268,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
                 product_values[fname] = fvalues
 
                 def do_filter(wb, value, ws_name=fname, filter_name=values):
-                    # return ws.setFilter(fname, value, dashboardFilter=True)
+                    # return wb.worksheets[0].setFilter(fname, value, dashboardFilter=True, check=False)
                     return force_setFilter(wb, None, fname, [value])
                 set_value.append(do_filter)
             continue
@@ -308,7 +308,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):
                 ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == ws_name), None)
-                return ws.setFilter(values, value, dashboardFilter=True)
+                return ws.setFilter(values, value, check=False)  # TODO: untested
                 # return force_setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
     if inc_no_param:
@@ -365,14 +365,22 @@ def force_setParameter(wb, parameterName, value):
     )
     r = scraper.session.post(
         f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
-        # data=dict(fieldCaption=parameterName, valueString=value),
-        files=payload,
+        data=dict(fieldCaption=parameterName, valueString=value),
+        # files=payload,
         verify=scraper.verify
     )
     scraper.lastActionTime = time.time()
     if r.status_code >= 400:
         raise requests.exceptions.RequestException(r.content)
     resp = r.json()
+    errors = [
+        res['commandReturn']['commandValidationPresModel']['errorMessage']
+        for res in resp['vqlCmdResponse']['cmdResultList']
+        if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
+    ]
+    if errors:
+        wb._scraper.logger.error(str(", ".join(errors)))
+        raise tableauscraper.api.APIResponseException(", ".join(errors))
 
     wb.updateFullData(resp)
     return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)

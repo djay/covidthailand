@@ -12,6 +12,7 @@ import mpld3
 import numpy as np
 import pandas as pd
 from cycler import Cycler
+from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 from matplotlib import colors as mcolors
 from matplotlib.colors import LinearSegmentedColormap
@@ -641,3 +642,16 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
                       "fontsize": fontsize,
                       "xfmt": xfmt,
                       "yfmt": yfmt}
+
+
+def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0):
+    if df.empty:
+        return df
+    otherindex = list(set(df.index.names) - set([week_col, year_col, None]))
+    df = df.reset_index()
+    # df['Date'] = (pd.to_numeric(df[week_col]) * 7).apply(lambda x: pd.DateOffset(x) + start)
+    # week numbers don't work out. Weeks start into year before?
+    df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
+        f"{row[year_col] if year_col else 2022}-W{row[week_col]}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
+    df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
+    return df.set_index(["Date"] + otherindex)

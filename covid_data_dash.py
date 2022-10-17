@@ -14,6 +14,7 @@ import covid_plot_deaths
 from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
+from utils_pandas import weeks_to_end_date
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
@@ -215,14 +216,6 @@ def dash_daily():
     return df
 
 
-def weeks_to_end_date(df, start=d("2022-01-01")):
-    if df.empty:
-        return df
-    df = df.reset_index("Week")
-    df['Date'] = (pd.to_numeric(df['Week']) * 7).apply(lambda x: pd.DateOffset(x) + start)
-    return df.set_index("Date").drop(columns=["Week"])
-
-
 def dash_weekly(file="moph_dash_weekly"):
     df = import_csv(file, ["Date"], False, dir="inputs/json")  # so we cache it
 
@@ -267,10 +260,6 @@ def closest(sub, repl):
     return get_name
 
 
-PROV = ['อำนาจเจริญ', 'พัทลุง', 'สมุทรสงคราม', 'บึงกาฬ', 'นราธิวาส', 'ชัยภูมิ', 'สุโขทัย', 'มุกดาหาร', 'อ่างทอง', 'สตูล', 'ระนอง', 'ปัตตานี', 'แม่ฮ่องสอน', 'หนองบัวลำภู', 'พะเยา', 'ศรีสะเกษ', 'หนองคาย', 'ยะลา', 'พิจิตร', 'นครนายก', 'เลย', 'เพชรบูรณ์', 'อุตรดิตถ์', 'มหาสารคาม', 'น่าน', 'สิงห์บุรี', 'ปราจีนบุรี', 'ตรัง', 'เพชรบุรี', 'พระนครศรีอยุธยา', 'นครพนม', 'กระบี่', 'แพร่', 'อุดรธานี', 'ยโสธร', 'สระแก้ว', 'ราชบุรี', 'เชียงใหม่',
-        'สกลนคร', 'ตราด', 'ลพบุรี', 'พิษณุโลก', 'ฉะเชิงเทรา', 'ประจวบคีรีขันธ์', 'สุราษฎร์ธานี', 'นครสวรรค์', 'นครปฐม', 'ระยอง', 'กาฬสินธุ์', 'สระบุรี', 'ลำปาง', 'อุทัยธานี', 'กาญจนบุรี', 'ร้อยเอ็ด', 'นครศรีธรรมราช', 'ปทุมธานี', 'ภูเก็ต', 'จันทบุรี', 'เชียงราย', 'ชุมพร', 'ตาก', 'สุพรรณบุรี', 'สมุทรสาคร', 'สงขลา', 'อุบลราชธานี', 'นครราชสีมา', 'บุรีรัมย์', 'ลำพูน', 'นนทบุรี', 'ขอนแก่น', 'สมุทรปราการ', 'สุรินทร์', 'ชลบุรี', 'กรุงเทพมหานคร']
-
-
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
@@ -279,12 +268,17 @@ def dash_province_weekly(file="moph_province_weekly"):
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), filters=dict(province=PROV), verify=False):
+    ts = tableauscraper.TableauScraper()
+    ts.loads(url)
+    provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
         date, province = idx_value
         if date is None:
             date = latest
+        date = d(date, dayfirst=False)
         if province is None:
             continue
         province = get_province(province)
@@ -320,23 +314,25 @@ def extract_basics(wb, date):
         assert (df > 0).any()
         return df
 
-    cases = weeks_to_end_date(workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
+    cases = workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
         "SUM(case_new)-value": "Cases",
         "AGG(stat_count)-value": "Cases",
         "AGG(STAT_COUNT)-value": "Cases",
         "#WEEK_NUMBER-value": "Week"
-    }, index_col="Week", index_date=False))
+    }, index_col="Week", index_date=False)
+    cases = weeks_to_end_date(cases, year_col=None, week_col="Week", offset=0)
     if date != cases.index.max():
         return row
     date = cases.index.max()  # We can't get update date always so use lastest cases date
     row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum"))
     row = row.combine_first(to_cum(row['Cases Cum'], cases['Cases']).to_frame("Cases Cum"))
     row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum"))
-    deaths = weeks_to_end_date(workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
+    deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
         "AGG(NUM_DEATH)-value": "Deaths",
         "#WEEK_NUMBER-value": "Week"
-    }, index_col="Week", index_date=False))
+    }, index_col="Week", index_date=False)
+    deaths = weeks_to_end_date(deaths, year_col=None, week_col="Week", offset=0)
     if not deaths.empty:
         row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
 

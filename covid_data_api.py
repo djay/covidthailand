@@ -14,6 +14,7 @@ from utils_pandas import cut_ages
 from utils_pandas import export
 from utils_pandas import fuzzy_join
 from utils_pandas import import_csv
+from utils_pandas import weeks_to_end_date
 from utils_scraping import logger
 from utils_scraping import s
 from utils_scraping import web_files
@@ -62,7 +63,7 @@ def get_cases_timelineapi():
     url2 = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all"
     try:
         json1, _, url = next(web_files(url1, dir="inputs/json", check=False), None)
-        json2, _, url = next(web_files(url2, dir="inputs/json", check=True), None)
+        json2, _, url = next(web_files(url2, dir="inputs/json", check=False), None)
     except requests.exceptions.RequestException:
         # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
@@ -74,9 +75,34 @@ def get_cases_timelineapi():
     # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
     cases = cases[~cases.index.duplicated(keep='first')]
     cases["Source Cases"] = url
-    if cases.iloc[-1]['Cases']:
-        # 2022-02-27 dud data
+    return cases
+
+
+def get_cases_timelineapi_weekly():
+    try:
+        json1, _, url = next(web_files("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all",
+                             dir="inputs/json/weekly", check=False), None)
+    except requests.exceptions.RequestException:
+        # I think we have all this data covered by other sources. It's a little unreliable.
         return pd.DataFrame()
+    df2 = pd.read_json(json1)
+    df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/report-round-3-y21-line-lists",
+                          ["year", "weeknum"], [2020, 1], dir="inputs/json/weekly")
+    df4 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all",
+                          ["year", "weeknum"], [2020, 1], dir="inputs/json/weekly")
+    # df = pd.concat([df2, df3, df4])
+    df = df4  # there is overlap and it has different values. Just use this year?
+
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
+    df = df.drop(columns=['update_date', "index"])
+    df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
+
+    # data['Date'] = pd.to_datetime(data['txn_date'])
+    df = df.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
+    cases = df[["Cases", "Deaths", "Recovered"]]
+    # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
+    cases = cases[~cases.index.duplicated(keep='first')]
+    cases["Source Cases"] = url
     return cases
 
 
@@ -318,6 +344,47 @@ def cleanup_cases(cases):
     return cases
 
 
+def get_case_details_api_weekly():
+
+    cases = import_csv("covid-19", dir="inputs/json/weekly",
+                       date_cols=["Date", "update_date", "txn_date", "update_date2"],
+                       str_cols=["Health District Number", "Job Type", "Nat Main", "Patient Type", "age_range", "gender",
+                                 "nationality", "patient_type", "patient_type2", "risk", "risk_group", "translation", "job"],
+                       # int_cols=["No.", ] # "age", "index", "int", ]
+                       )
+    target_date = cases["Date"].max() if not cases.empty else []
+    # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
+    # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
+    df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
+                         ["year", "weeknum"], target_date, dir="inputs/json/weekly")
+    df['age'] = pd.to_numeric(df['age_number'])
+    df = df.rename(columns=dict(province="province_of_onset"))
+
+    # Get rid of last partial day from cases and from the new data
+    cases = cases[cases['Date'] < target_date]
+    df = df[df['Date'] >= target_date]
+
+    assert df.iloc[0]['Date'] >= cases.iloc[-1]["Date"]
+    assert df.iloc[0]['update_date'] >= cases.iloc[-1]["update_date"]
+    # assert total == len(cases) - init_cases_len + len(df)
+    df = cleanup_cases(df)
+    cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
+    # assert total == len(cases) - init_cases_len
+    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
+    export(cases, "covid-19", csv_only=True, dir="inputs/json/weekly")
+
+    # cases = cases.set_index("Date")
+    logger.info("Covid19daily: covid-19 {}", len(cases))
+
+    # # they screwed up the date conversion. d and m switched sometimes
+    # # TODO: bit slow. is there way to do this in pandas?
+    # for record in records:
+    #     record['announce_date'] = to_switching_date(record['announce_date'])
+    #     record['Notified date'] = to_switching_date(record['Notified date'])
+    # cases = pd.DataFrame(records)
+    return cases
+
+
 def get_case_details_api():
 
     cases = import_csv("covid-19", dir="inputs/json",
@@ -326,9 +393,10 @@ def get_case_details_api():
                                  "nationality", "patient_type", "patient_type2", "risk", "risk_group", "translation", "job"],
                        # int_cols=["No.", ] # "age", "index", "int", ]
                        )
-    if "risk_group" not in cases.columns or cases["risk_group"].count() < 40000:
-        cases = cleanup_cases(cases)
-    if cases["Date"].min() > d("2020-02-01"):
+    return cases  # after 2022-10-01 switched same url to have weekly numbers
+    # if "risk_group" not in cases.columns or cases["risk_group"].count() < 40000:
+    #     cases = cleanup_cases(cases)
+    if not cases.empty and cases["Date"].min() > d("2020-02-01"):
         url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists"
         file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False)))
         init_cases = pd.read_csv(file).reset_index()
@@ -339,64 +407,11 @@ def get_case_details_api():
         init_cases = cleanup_cases(init_cases)
         assert len(init_cases) == 28863
         cases = pd.concat([init_cases, cases], ignore_index=True)
-    init_cases_len = 28863
+    # init_cases_len = 28863
     # lastid = cases.last_valid_index() if cases.last_valid_index() else 0
-    data = []
+    target_date = cases["Date"].max()
     url = "https://covid19.ddc.moph.go.th/api/Cases/round-3-line-lists"
-    # First check api is working ok
-    try:
-        r = s.get(url, timeout=25, verify=False)
-    except Exception as e:
-        logger.warning("Covid19daily: Error {}", e)
-        return cases
-    pagedata = json.loads(r.content)
-    page = pagedata['data']
-    assert page
-    last_page = pagedata['meta']['last_page']
-    total = pagedata['meta']['total']
-    chunk = pagedata['meta']['per_page']
-
-    #pagenum = math.floor((len(cases) - init_cases_len) / chunk)
-    #pagenum = max(0, pagenum - 25)  # go back a bit. they change teh data
-    #cases = cases.iloc[:pagenum * chunk + init_cases_len]
-    pagenum = last_page
-    page = []
-    retries = 3
-    # Because there is no unique case number to match up we will work backwards
-    # until we get to the start of the last date we have, or where update date is before our last
-    # update date
-    target_date = cases['Date'].max()
-    last_date = None
-    while last_date is None or last_date >= target_date:
-        # if len(data) >= 500000:
-        #     break
-        try:
-            r = s.get(f"{url}?page={pagenum}", timeout=25, verify=False)
-        except Exception as e:
-            logger.warning("Covid19daily: Error {}", e)
-            if retries == 0:
-                logger.error("Covid19daily: Error: Giving up on pagenum: {}", pagenum)
-                break
-            else:
-                retries -= 1
-                continue
-        pagedata = json.loads(r.content)
-        data = pagedata['data'] + data  # TODO: might be bit slow
-        if pagedata['data']:
-            last_date = d(pagedata['data'][0]['txn_date'])
-            last_update = d(pagedata['data'][0]['update_date'])
-        # if last_date < target_date and last_update > cases.iloc[-1]["update_date"]:
-        #     # data has been updated so keep going back further
-        #     target_date = last_date
-        # going back
-        # page = pagedata['data']
-        # assert last_page >= pagenum
-        print(".", end="")
-        pagenum -= 1
-        if pagenum == 0:
-            break
-
-    df = pd.DataFrame(data)
+    df = load_paged_json(url, "Date", target_date, dir="inputs/json")
     df['Date'] = pd.to_datetime(df['txn_date'])
     df['update_date'] = pd.to_datetime(df['update_date'], errors="coerce")
     df['age'] = pd.to_numeric(df['age_number'])
@@ -413,7 +428,7 @@ def get_case_details_api():
     cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
     # assert total == len(cases) - init_cases_len
     # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
-    export(cases, "covid-19", csv_only=True, dir="inputs/json")
+    export(cases, "covid-19", csv_only=True, dir="inputs/json/weekly")
 
     # cases = cases.set_index("Date")
     logger.info("Covid19daily: covid-19 {}", len(cases))
@@ -427,9 +442,48 @@ def get_case_details_api():
     return cases
 
 
+def load_paged_json(url, index, target_index, dir="inputs/json/weekly", check=True):
+    data = []
+    # First check api is working ok
+    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=40)), None)
+    pagedata = json.loads(content)
+    page = pagedata['data']
+    assert page
+    last_page = pagedata['meta']['last_page']
+    total = pagedata['meta']['total']
+    chunk = pagedata['meta']['per_page']
+
+    df = pd.DataFrame()
+    pagenum = last_page
+    page = []
+    # Because there is no unique case number to match up we will work backwards
+    # until we get to the start of the last date we have, or where update date is before our last
+    # update date
+    last_date = None
+    while last_date is None or (last_date >= target_index).all():
+        # if len(data) >= 500000:
+        #     break
+        purl = f"{url}?page={pagenum}"
+        file, content, _ = next(iter(web_files(purl, dir=dir, check=check, appending=False, timeout=40)), None)
+        pagedata = json.loads(content)
+        data = pagedata['data']
+        if pagedata['data']:
+            dfpage = pd.DataFrame(data)
+            last_date = dfpage[index].iloc[0]
+            df = dfpage.append(df)
+        print(".", end="")
+        pagenum -= 1
+        if pagenum == 0:
+            break
+    return df
+
+
 @functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
     cases = get_case_details_api()
+    # TODO: use latest weekly data
+    # cases_weekly = get_case_details_api_weekly()
+    # cases = cases.combine_first(cases_weekly)
 
     # Age groups
     age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
@@ -466,7 +520,7 @@ def get_cases_by_demographics_api():
 
 def timeline_by_province():
     url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=True, appending=True, timeout=40)), None)
+    file, _, _ = next(iter(web_files(url, dir="inputs/json", check=False, appending=False, timeout=40)), None)
     df = pd.read_json(file)
     df = df.rename(columns={"txn_date": "Date", "province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
@@ -477,9 +531,27 @@ def timeline_by_province():
     return df.set_index(["Date", "Province"])
 
 
+def timeline_by_province_weekly():
+    # url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-by-provinces"
+    # df = load_paged_json(url, ["year", "weeknum"], [2020, 1])
+    url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=True, timeout=40)), None)
+    df = pd.read_json(file)
+    df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
+                   "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
+    df = join_provinces(df, "Province")
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
+    df = df.drop(columns=['update_date'])
+    df = df.groupby("Province").apply(lambda x: x.drop(columns="Province").reindex(
+        pd.date_range(x.index.min(), x.index.max(), name="Date")).interpolate())
+
+    df = df.reset_index().set_index(["Date", "Province"])
+    return df
+
 ########################
 # Excess Deaths
 ########################
+
 
 def excess_deaths():
     url = "https://stat.bora.dopa.go.th/stat/statnew/connectSAPI/stat_forward.php?"
@@ -610,10 +682,16 @@ def get_ifr():
 
 
 if __name__ == '__main__':
-    ihme_dataset()
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
-    timeline = get_cases_timelineapi()
+    timeline_prov_weekly = timeline_by_province_weekly()
     timeline_prov = timeline_by_province()
+    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
+
+    timeline_weekly = get_cases_timelineapi_weekly()
+    timeline = get_cases_timelineapi()
+    timeline = timeline.combine_first(timeline_weekly)
+
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
+    ihme_dataset()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
