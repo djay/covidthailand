@@ -159,7 +159,7 @@ def vac_problem(daily, date, file, page):
     return daily.combine_first(df)
 
 
-def vaccination_daily(daily, date, file, page):
+def vaccination_daily(daily, docdate, file, page):
     if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|วคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
     first_line = page.split("\n\n")[0]
@@ -170,6 +170,12 @@ def vaccination_daily(daily, date, file, page):
         # prior to 2022 we could just get the first date of the page
         date = find_thai_date(page)
     assert date, f"No date found in {file}: {page}"
+    if docdate == d("2022-10-07"):
+        date = docdate
+    # if date in [d("2022-01-20")]:
+    #     pass
+    # else:
+    #     assert docdate == date
 
     # fix numbers with spaces in them
     page = re.sub(r"(\d) (,\d)", r"\1\2", page)
@@ -1064,6 +1070,6 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    slides = vac_slides()
     reports, provs = vaccination_reports()
+    slides = vac_slides()
     vac = export_vaccinations(reports, provs, slides)

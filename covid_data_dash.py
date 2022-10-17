@@ -64,6 +64,7 @@ def todays_data():
 
 def dash_daily():
     df = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    return df
 
     # remove crap from bad pivot
     df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
