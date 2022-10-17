@@ -209,6 +209,7 @@ def scrape_and_combine():
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
+        covid_data_dash.dash_weekly,
         covid_data_dash.dash_province_weekly,
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
@@ -216,7 +217,6 @@ def scrape_and_combine():
         covid_data_situation.get_thai_situation,
         covid_data_situation.get_en_situation,
         covid_data_testing.get_test_reports,
-        covid_data_dash.dash_weekly,
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
@@ -235,25 +235,6 @@ def scrape_and_combine():
         res = dict(pool.imap_unordered(do_work, jobs))
         pool.close()
         pool.join()
-    # get_cases_by_prov_briefings, \
-    #     dash_by_province, \
-    #     get_cases_by_demographics_api, \
-    #     vaccination_reports, \
-    #     dash_ages, \
-    #     get_thai_situation, \
-    #     get_en_situation, \
-    #     get_test_reports, \
-    #     vac_slides, \
-    #     dash_daily, \
-    #     excess_deaths, \
-    #     get_tests_by_day, \
-    #     get_cases_by_prov_tweets, \
-    #     get_cases_timelineapi, \
-    #     variant_reports, \
-    #     ihme_dataset, \
-    #     timeline_by_province \
-    #     = values
-    # res = locals()
     logger.info(f"data={len(res)}")
 
     vac_reports, vac_reports_prov = res['vaccination_reports']

@@ -64,6 +64,8 @@ def check_cum(df, results, cols):
 
 def cum2daily(results, exclude=[]):
     def todaily(cum):
+        if cum.empty:
+            return cum
         otherindex = list(set(cum.index.names) - set(["Date"]))
         cols = cum.columns
         cum = cum.reset_index(otherindex)
