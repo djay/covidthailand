@@ -1,4 +1,5 @@
 import datetime
+import glob
 import json
 import os
 import shutil
@@ -248,12 +249,8 @@ def scrape_and_combine():
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
     #export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     # "json" for caching, api so it's downloadable
-    shutil.copy(os.path.join("inputs", "json", "moph_province_weekly.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dash_weekly.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_bed.csv"), "api")
+    for file in glob.glob('inputs/json/moph*.csv'):
+        shutil.copy(file, "api")
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
