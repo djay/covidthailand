@@ -291,7 +291,20 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [res['get_test_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], res['dash_daily'], cum2daily(res['dash_weekly'])]:
+    for f in [
+        res['get_test_reports'],
+        res['get_tests_by_day'],
+        cases_briefings,
+        res['get_cases_timelineapi'],
+        twcases,
+        cases_demo,
+        cases_by_area,
+        situation,
+        vac,
+        res['dash_ages'],
+        res['dash_daily'],
+        cum2daily(res['dash_weekly'])
+    ]:
         df = df.combine_first(f)
     logger.info(df)
 

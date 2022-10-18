@@ -476,7 +476,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               )
 
     vac_prov_daily = vac.groupby("Province", group_keys=True).apply(cum2daily)
-    vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
+    # vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
     vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
 
     by_region = vac_prov_daily.reset_index()
