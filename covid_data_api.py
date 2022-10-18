@@ -97,13 +97,18 @@ def get_cases_timelineapi_weekly():
     df = df.drop(columns=['update_date', "index"])
     df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
 
-    # data['Date'] = pd.to_datetime(data['txn_date'])
-    df = df.rename(columns=dict(new_case="Cases", new_death="Deaths", new_recovered="Recovered"))
-    cases = df[["Cases", "Deaths", "Recovered"]]
-    # 2021-12-28 had duplicate because cases went up 4610 from 2305. Why? Google says 4610
-    cases = cases[~cases.index.duplicated(keep='first')]
-    cases["Source Cases"] = url
-    return cases
+    df = df.rename(columns=dict(new_case="Cases", total_case="Cases Cum",
+                   new_case_excludeabroad="Cases Local", total_case_excludeabroad="Case Local Cum",
+                   new_death="Deaths", total_death="Deaths Cum",
+                   case_walkin="Cases Walkin", case_foriegn="Cases Imported", case_prison="Cases Prison",
+                   new_recovered="Recovered",
+                                ))
+    df = df.drop(columns=[col for col in df.columns if "_" in col])
+    daily = [col for col in df.columns if "Cum" not in col]
+    df[daily] = (df[daily] / 7).round().astype(int)
+
+    df["Source Cases"] = url
+    return df
 
 
 # def get_case_details_csv():
@@ -539,11 +544,14 @@ def timeline_by_province_weekly():
     df = pd.read_json(file)
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
-    df = join_provinces(df, "Province")
+    df = join_provinces(df, "Province", extra=[])
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
-    df = df.drop(columns=['update_date'])
+    df = df.drop(columns=['update_date', "index"])
     df = df.groupby("Province").apply(lambda x: x.drop(columns="Province").reindex(
         pd.date_range(x.index.min(), x.index.max(), name="Date")).interpolate())
+
+    daily = [col for col in df.columns if "Cum" not in col]
+    df[daily] = (df[daily] / 7).round().astype(int)
 
     df = df.reset_index().set_index(["Date", "Province"])
     return df
@@ -682,13 +690,13 @@ def get_ifr():
 
 
 if __name__ == '__main__':
-    timeline_prov_weekly = timeline_by_province_weekly()
-    timeline_prov = timeline_by_province()
-    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
-
     timeline_weekly = get_cases_timelineapi_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
+
+    timeline_prov = timeline_by_province()
+    timeline_prov_weekly = timeline_by_province_weekly()
+    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     ihme_dataset()
