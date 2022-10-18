@@ -209,8 +209,8 @@ def scrape_and_combine():
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
-        covid_data_dash.dash_weekly,
-        covid_data_dash.dash_province_weekly,
+        # covid_data_dash.dash_weekly,
+        # covid_data_dash.dash_province_weekly,
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_dash.dash_ages,
@@ -222,9 +222,11 @@ def scrape_and_combine():
         covid_data_testing.get_tests_by_day,
         covid_data_tweets.get_cases_by_prov_tweets,
         covid_data_api.get_cases_timelineapi,
+        covid_data_api.get_cases_timelineapi_weekly,
         covid_data_testing.get_variant_reports,
         covid_data_api.ihme_dataset,
         covid_data_api.timeline_by_province,
+        covid_data_api.timeline_by_province_weekly,
         # This doesn't add any more info since severe cases was a mistake
         # covid_data_dash.dash_trends_prov
         # covid_data_bed.get_df
@@ -263,6 +265,7 @@ def scrape_and_combine():
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
+        res['timeline_by_province_weekly']).combine_first(
         #        cum2daily(res['dash_province_weekly'])).combine_first(
         res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
@@ -296,6 +299,7 @@ def scrape_and_combine():
         res['get_tests_by_day'],
         cases_briefings,
         res['get_cases_timelineapi'],
+        res['get_cases_timelineapi_weekly'],
         twcases,
         cases_demo,
         cases_by_area,
