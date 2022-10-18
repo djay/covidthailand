@@ -263,7 +263,7 @@ def scrape_and_combine():
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
-        cum2daily(res['dash_province_weekly'])).combine_first(
+        #        cum2daily(res['dash_province_weekly'])).combine_first(
         res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
@@ -303,7 +303,7 @@ def scrape_and_combine():
         vac,
         res['dash_ages'],
         res['dash_daily'],
-        cum2daily(res['dash_weekly'])
+        #        cum2daily(res['dash_weekly'])
     ]:
         df = df.combine_first(f)
     logger.info(df)
