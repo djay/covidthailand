@@ -210,7 +210,7 @@ def scrape_and_combine():
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
-        # covid_data_dash.dash_weekly,
+        covid_data_dash.dash_weekly,
         # covid_data_dash.dash_province_weekly,
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
@@ -304,7 +304,7 @@ def scrape_and_combine():
         vac,
         res['dash_ages'],
         res['dash_daily'],
-        #        cum2daily(res['dash_weekly'])
+        cum2daily(res['dash_weekly'])
     ]:
         df = df.combine_first(f)
     logger.info(df)

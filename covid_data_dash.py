@@ -240,10 +240,10 @@ def dash_weekly(file="moph_dash_weekly"):
         if (wb := get_wb()) is None:
             continue
 
-        end_date = workbook_value(wb, None, "D_UpdateTime (2)", "Date", is_date=True)
-        if end_date.date() != date.date():
-            # we have a problem. not setting the date right
-            continue
+        # end_date = workbook_value(wb, None, "D_UpdateTime (2)", "Date", is_date=True)
+        # if end_date.date() != date.date():
+        #     # we have a problem. not setting the date right
+        #     continue
 
         row = extract_basics(wb, date)
         if row.empty:
@@ -656,8 +656,8 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_by_province_df = dash_province_weekly()
     dash_daily_df = dash_weekly()
+    dash_by_province_df = dash_province_weekly()
     # dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
@@ -671,7 +671,7 @@ if __name__ == '__main__':
     vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
     prov = prov.combine_first(cum2daily(dash_by_province_df, exclude=vaccols))
     # Write this one as it's imported
-    export("cases_by_province", csv_only=True)
+    export(prov, "cases_by_province", csv_only=True)
 
     df = df.combine_first(cum2daily(dash_daily_df, exclude=vaccols))
 
