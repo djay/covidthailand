@@ -183,15 +183,15 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
-    cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
-    plot_area(df=df,
-              title='Covid Deaths by Health District - Thailand',
-              legends=AREA_LEGEND,
-              png_prefix='deaths_by_area', cols_subset=cols,
-              ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
-              cmap='tab20',
-              footnote_left=f'{source}Data Source: CCSA Daily Briefing')
+    # cols = rearrange([f'Deaths Area {area}' for area in DISTRICT_RANGE], *FIRST_AREAS)
+    # plot_area(df=df,
+    #           title='Covid Deaths by Health District - Thailand',
+    #           legends=AREA_LEGEND,
+    #           png_prefix='deaths_by_area', cols_subset=cols,
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           cmap='tab20',
+    #           footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
     by_region = cases.reset_index()
     by_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Deaths'], aggfunc="sum")

@@ -12,6 +12,7 @@ import mpld3
 import numpy as np
 import pandas as pd
 from cycler import Cycler
+from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 from matplotlib import colors as mcolors
 from matplotlib.colors import LinearSegmentedColormap
@@ -61,19 +62,40 @@ def check_cum(df, results, cols):
         raise Exception(str(next_day - last))
 
 
-def cum2daily(results):
-    cum = results[(c for c in results.columns if " Cum" in c)]
+def cum2daily(results, exclude=[]):
+    def todaily(cum):
+        if cum.empty:
+            return cum
+        otherindex = list(set(cum.index.names) - set(["Date"]))
+        cols = cum.columns
+        cum = cum.reset_index(otherindex)
+        othervals = cum[otherindex]
+        cum = cum[[c for c in cols if c not in otherindex]]
+
+        all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
+        cum = cum.reindex(all_days)  # put in missing days with NaN
+        # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
+        cum = cum.interpolate().diff()  # we got cumilitive data
+        renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
+        cum = cum.rename(columns=renames)
+        cum[otherindex] = othervals.iloc[0]  # Should all be the same
+        cum = cum.reset_index().set_index(["Date"] + otherindex)
+        return cum
+
+    cumcols = list(c for c in results.columns if " Cum" in c and c not in exclude)
+    cum = results[cumcols]
     inames = cum.index.names
-    if inames != ["Date"]:
-        #cum = cum.reset_index().set_index("Date")
-        cum = cum.droplevel(list(set(inames) - set(["Date"])))
-    all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
-    cum = cum.reindex(all_days)  # put in missing days with NaN
-    # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
-    cum = cum - cum.shift(+1)  # we got cumilitive data
-    renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
-    cum = cum.rename(columns=renames)
+    otherindex = list(set(inames) - set(["Date"]))
+    if otherindex:
+        cum = cum.groupby(otherindex, group_keys=False).apply(todaily)
+    else:
+        cum = todaily(cum)
+    # if inames != ["Date"]:
+    #     #cum = cum.reset_index().set_index("Date")
+    #     cum = cum.droplevel(list(set(inames) - set(["Date"])))
     # cum = cum.reset_index().set_index(inames)
+    restcols = list(c for c in results.columns if c not in cumcols)
+    cum[restcols] = results[restcols]
     return cum
 
 
@@ -249,7 +271,7 @@ def export(df, name, csv_only=False, dir="api"):
     )
 
 
-def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="api"):
+def import_csv(name, index=None, return_empty=False, date_cols=['Date'], str_cols=[], int_cols=[], dir="api"):
     path = os.path.join(dir, f"{name}.csv")
     if not os.path.exists(path) or return_empty:
         if index:
@@ -258,7 +280,8 @@ def import_csv(name, index=None, return_empty=False, date_cols=['Date'], dir="ap
             return pd.DataFrame()
     logger.info("Importing CSV: {}", path)
     # TODO: set dtypes when we know its all floats so works faster?
-    df = pd.read_csv(path, parse_dates=date_cols)
+    dtypes = {col: "str" for col in str_cols} | {col: "int" for col in int_cols}
+    df = pd.read_csv(path, parse_dates=date_cols, dtype=dtypes)
     if index:
         return df.set_index(index)
     else:
@@ -621,3 +644,16 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
                       "fontsize": fontsize,
                       "xfmt": xfmt,
                       "yfmt": yfmt}
+
+
+def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0):
+    if df.empty:
+        return df
+    otherindex = list(set(df.index.names) - set([week_col, year_col, None]))
+    df = df.reset_index()
+    # df['Date'] = (pd.to_numeric(df[week_col]) * 7).apply(lambda x: pd.DateOffset(x) + start)
+    # week numbers don't work out. Weeks start into year before?
+    df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
+        f"{row[year_col] if year_col else 2022}-W{row[week_col]}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
+    df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
+    return df.set_index(["Date"] + otherindex)

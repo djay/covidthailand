@@ -9,8 +9,12 @@ import tableauscraper
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 
+import covid_plot_cases
+import covid_plot_deaths
+from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
+from utils_pandas import weeks_to_end_date
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
@@ -60,6 +64,7 @@ def todays_data():
 
 def dash_daily():
     df = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    return df
 
     # remove crap from bad pivot
     df = df.drop(columns=[c for c in df.columns if "Vac Given" in c and not any_in(c, "Cum",)])
@@ -212,8 +217,157 @@ def dash_daily():
     return df
 
 
+def dash_weekly(file="moph_dash_weekly"):
+    df = import_csv(file, ["Date"], False, dir="inputs/json")  # so we cache it
+
+    allow_na = {
+        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+        'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+        "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=4)),
+        'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
+        'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
+    }
+
+    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
+    # aggregated for week ending on sat
+    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+
+    latest = next(dates, None)
+    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
+        date = next(iter(date), None) if date is not None else latest
+        if skip_valid(df, date, allow_na):
+            continue
+        if (wb := get_wb()) is None:
+            continue
+
+        # end_date = workbook_value(wb, None, "D_UpdateTime (2)", "Date", is_date=True)
+        # if end_date.date() != date.date():
+        #     # we have a problem. not setting the date right
+        #     continue
+
+        row = extract_basics(wb, date)
+        if row.empty:
+            break
+
+        df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
+        logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
+    export(df, file, csv_only=True, dir="inputs/json")
+    return df
+
+
+def closest(sub, repl):
+    def get_name(wb, name):
+        return {s.name.replace(sub, repl): s.name for s in wb.worksheets}.get(name)
+    return get_name
+
+
+def dash_province_weekly(file="moph_province_weekly"):
+    df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+    valid = {
+        "Deaths Cum": d("2022-09-01"),
+        "Cases Cum": d("2022-09-01"),
+    }
+    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
+    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    dates = iter([d.strftime("%m/%d/%Y") for d in dates])
+    latest = next(dates, None)
+    ts = tableauscraper.TableauScraper()
+    ts.loads(url)
+    provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), filters=dict(province=provs), verify=False):
+        # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
+        date, province = idx_value
+        if date is None:
+            date = latest
+        date = d(date, dayfirst=False)
+        if province is None:
+            continue
+        province = get_province(province)
+        if skip_valid(df, (date, province), valid):
+            print("s", end="")
+            continue
+        if (wb := get_wb()) is None:
+            continue
+        "D2_Update (2)"
+        row = extract_basics(wb, date)
+        if row.empty:
+            break  # Not getting latest data yet
+        row['Province'] = province
+        row = row.reset_index().set_index(["Date", "Province"])
+        df = row.combine_first(df)
+        logger.info("{} MOPH Dashboard {}", row.index.max(),
+                    row.loc[row.last_valid_index():].to_string(index=False, header=False))
+    export(df, file, csv_only=True, dir="inputs/json")
+    return df
+
+
+def extract_basics(wb, date):
+
+    row = pd.DataFrame()
+    # D_CaseNew_/7 - daily avg cases
+    # D_DeathNew_/7 - daily avg deaths
+    # D_Death (2)
+
+    def to_cum(cum, periodic):
+        combined = periodic.combine_first(cum)  # TODO: this might go back too far. should really be min of periodic?
+        df = cum.reindex(combined.index).bfill().subtract(periodic.reindex(
+            combined.index)[::-1].cumsum()[::-1].shift(-1), fill_value=0)
+        assert (df > 0).any()
+        return df
+
+    cases = workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
+        "SUM(case_new)-value": "Cases",
+        "AGG(stat_count)-value": "Cases",
+        "AGG(STAT_COUNT)-value": "Cases",
+        "#WEEK_NUMBER-value": "Week"
+    }, index_col="Week", index_date=False)
+    cases = weeks_to_end_date(cases, year_col=None, week_col="Week", offset=0)
+    if date != cases.index.max():
+        return row
+    date = cases.index.max()  # We can't get update date always so use lastest cases date
+    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum"))
+    row = row.combine_first(to_cum(row['Cases Cum'], cases['Cases']).to_frame("Cases Cum"))
+    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum"))
+    deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
+        "SUM(death_new)-value": "Deaths",
+        "AGG(NUM_DEATH)-value": "Deaths",
+        "#WEEK_NUMBER-value": "Week"
+    }, index_col="Week", index_date=False)
+    deaths = weeks_to_end_date(deaths, year_col=None, week_col="Week", offset=0)
+    if not deaths.empty:
+        row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
+
+    row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
+    row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
+
+    vacs = workbook_series(wb, ["D_Vac2Table"], {
+        "vaccine_plan_group-alias": {
+            "1": "1 Cum",
+            "2": "2 Cum",
+            "3": "3 Cum",
+        },
+        "SUM(vaccine_total_acm)-alias": "Vac Given",
+    }, index_date=False, index_col="Date", index_value=date)
+
+    vacs_dates = workbook_series(wb, ["D_Vac_Stack (2)", "D2_Vac_Stack (2)"], {
+        "DAY(txn_date)-value": "Date",
+        "vaccine_plan_group-alias": {
+            "1": "1 Cum",
+            "2": "2 Cum",
+            "3": "3 Cum",
+        },
+        "SUM(vaccine_total_acm)-value": "Vac Given",
+        # "SUM(vaccine_total_acm)-alias": "Vac Given",
+    }, index_date=True)
+
+    # TODO: should switch from weekly?
+    row = row.combine_first(vacs).combine_first(vacs_dates)
+    return row
+
+
 def dash_ages():
     df = import_csv("moph_dashboard_ages", ["Date"], False, dir="inputs/json")  # so we cache it
+    return df  # no longer there
 
     # Fix mistake in column name
     df.columns = [c.replace("Hospitalized Severe", "Cases Proactive") for c in df.columns]
@@ -236,7 +390,7 @@ def dash_ages():
         return range.replace(" ปี", "").replace('ไม่ระบุ', "Unknown").replace(">= 70", "70+").replace("< 10", "0-9")
 
     for get_wb, idx_value in workbook_iterate(url, D4_CHART="age_range", verify=False):
-        age_group = next(iter(idx_value))
+        age_group = next(iter(idx_value), None)
         age_group = range2eng(age_group)
         skip = not pd.isna(df[f"Cases Age {age_group}"].get(str(today().date())))
         if skip or (wb := get_wb()) is None:
@@ -270,7 +424,7 @@ def dash_trends_prov():
     url = "https://dvis3.ddc.moph.go.th/t/sat-covid/views/SATCOVIDDashboard/4-dash-trend"
 
     for get_wb, idx_value in workbook_iterate(url, D4_CHART="province", verify=False):
-        province = get_province(next(iter(idx_value)))
+        province = get_province(next(iter(idx_value), None))
         date = str(today().date())
         try:
             df.loc[(date, province)]
@@ -305,6 +459,7 @@ def dash_trends_prov():
 
 def dash_by_province():
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+    return df
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w?:size=1200,1050&:embed=y&:showVizHome=n&:bootstrapWhenNotified=y&:tabs=n&:toolbar=n&:apiID=host0"
@@ -501,9 +656,24 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_daily_df = dash_daily()
-    dash_ages_df = dash_ages()
-    dash_by_province_df = dash_by_province()
+    dash_daily_df = dash_weekly()
+    dash_by_province_df = dash_province_weekly()
+    # dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
 #    dash_trends_prov_df = dash_trends_prov()
+
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    prov = import_csv("cases_by_province", index=["Date", "Province"], date_cols=["Date"])
+
+    # df = dash.combine(df, lambda s1, s2: s1)
+    # df = briefings.combine(df, lambda s1, s2: s1)
+    vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
+    prov = prov.combine_first(cum2daily(dash_by_province_df, exclude=vaccols))
+    # Write this one as it's imported
+    export(prov, "cases_by_province", csv_only=True)
+
+    df = df.combine_first(cum2daily(dash_daily_df, exclude=vaccols))
+
+    covid_plot_deaths.save_deaths_plots(df)
+    covid_plot_cases.save_cases_plots(df)

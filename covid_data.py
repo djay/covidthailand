@@ -1,4 +1,5 @@
 import datetime
+import glob
 import json
 import os
 import shutil
@@ -17,6 +18,7 @@ import covid_data_testing
 import covid_data_tweets
 import covid_data_vac
 from utils_pandas import add_data
+from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
 from utils_scraping import CHECK_NEWER
@@ -208,6 +210,8 @@ def scrape_and_combine():
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
+        covid_data_dash.dash_weekly,
+        # covid_data_dash.dash_province_weekly,
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_dash.dash_ages,
@@ -219,9 +223,11 @@ def scrape_and_combine():
         covid_data_testing.get_tests_by_day,
         covid_data_tweets.get_cases_by_prov_tweets,
         covid_data_api.get_cases_timelineapi,
+        covid_data_api.get_cases_timelineapi_weekly,
         covid_data_testing.get_variant_reports,
         covid_data_api.ihme_dataset,
         covid_data_api.timeline_by_province,
+        covid_data_api.timeline_by_province_weekly,
         # This doesn't add any more info since severe cases was a mistake
         # covid_data_dash.dash_trends_prov
         # covid_data_bed.get_df
@@ -232,25 +238,6 @@ def scrape_and_combine():
         res = dict(pool.imap_unordered(do_work, jobs))
         pool.close()
         pool.join()
-    # get_cases_by_prov_briefings, \
-    #     dash_by_province, \
-    #     get_cases_by_demographics_api, \
-    #     vaccination_reports, \
-    #     dash_ages, \
-    #     get_thai_situation, \
-    #     get_en_situation, \
-    #     get_test_reports, \
-    #     vac_slides, \
-    #     dash_daily, \
-    #     excess_deaths, \
-    #     get_tests_by_day, \
-    #     get_cases_by_prov_tweets, \
-    #     get_cases_timelineapi, \
-    #     variant_reports, \
-    #     ihme_dataset, \
-    #     timeline_by_province \
-    #     = values
-    # res = locals()
     logger.info(f"data={len(res)}")
 
     vac_reports, vac_reports_prov = res['vaccination_reports']
@@ -260,12 +247,10 @@ def scrape_and_combine():
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
-    export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
+    #export(res['dash_by_province'], "moph_dashboard_prov", csv_only=True, dir="inputs/json")
     # "json" for caching, api so it's downloadable
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_prov.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_dashboard_ages.csv"), "api")
-    shutil.copy(os.path.join("inputs", "json", "moph_bed.csv"), "api")
+    for file in glob.glob('inputs/json/moph*.csv'):
+        shutil.copy(file, "api")
 
     # Export briefings
     briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
@@ -277,6 +262,8 @@ def scrape_and_combine():
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
+        res['timeline_by_province_weekly']).combine_first(
+        #        cum2daily(res['dash_province_weekly'])).combine_first(
         res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
@@ -304,7 +291,21 @@ def scrape_and_combine():
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
-    for f in [res['get_test_reports'], res['get_tests_by_day'], cases_briefings, res['get_cases_timelineapi'], twcases, cases_demo, cases_by_area, situation, vac, res['dash_ages'], res['dash_daily']]:
+    for f in [
+        res['get_test_reports'],
+        res['get_tests_by_day'],
+        cases_briefings,
+        res['get_cases_timelineapi'],
+        res['get_cases_timelineapi_weekly'],
+        twcases,
+        cases_demo,
+        cases_by_area,
+        situation,
+        vac,
+        res['dash_ages'],
+        res['dash_daily'],
+        cum2daily(res['dash_weekly'])
+    ]:
         df = df.combine_first(f)
     logger.info(df)
 

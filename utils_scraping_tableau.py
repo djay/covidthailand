@@ -38,20 +38,22 @@ def workbook_explore(workbook):
 
 def workbook_value(wb, date, name, col, default=0.0, is_date=False):
     # TODO: generalise what to index by and default value for index
+    name = name if type(name) == str else next((n for n in name if n in [s.name for s in wb.worksheets]), None)
     res = pd.DataFrame()
     data = dict()
     if date is not None:
         data["Date"] = [date]
-    closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
+    # closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
     try:
-        df = wb.getWorksheet(closest).data
+        df = wb.getWorksheet(name).data
     except (KeyError, TypeError, AttributeError):
         # TODO: handle error getting wb properly earlier
         logger.info("Error getting tableau {}/{} {}", name, col, date)
         return pd.DataFrame()
 
     if df.empty:
-        data[col] = [default]
+        if default is not None:
+            data[col] = [default]
     elif is_date:
         data[col] = [pd.to_datetime(list(df.loc[0])[0], dayfirst=False)]
     else:
@@ -62,17 +64,20 @@ def workbook_value(wb, date, name, col, default=0.0, is_date=False):
 
     # combine all the single values with any subplots from the dashboard
     df = pd.DataFrame(data)
-    if not df.empty:
+    if date is None:
+        return df.iloc[0, 0]
+    if not df.empty and date is not None:
         df['Date'] = df['Date'].dt.normalize()  # Latest has time in it which creates double entries
         res = df.set_index("Date")
     return res
 
 
-def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", end=None):
-    # TODO: generalise what to index by and default value for index
-    closest = {s.name.replace(" (2)", ""): s.name for s in wb.worksheets}.get(name)  # HACK handle renames
+def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", end=None, index_date=True, index_value=None):
+    name = name if type(name) == str else next((n for n in name if n in [s.name for s in wb.worksheets]), None)
+    if name is None:
+        return pd.DataFrame()
     try:
-        df = wb.getWorksheet(closest).data
+        df = wb.getWorksheet(name).data
     except (KeyError, TypeError, AttributeError):
         # TODO: handle error getting wb properly earlier
         logger.info("Error getting tableau {}/{} {}", name, mappings)
@@ -82,18 +87,23 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
         # logger.info("Error getting tableau {}/{} {}", name, col, date)
         return pd.DataFrame()
     # if it's not a single value can pass in mapping of cols
-    df = df[mappings.keys()].rename(columns={k: v for k, v in mappings.items() if type(v) == str})
-    try:
-        df[index_col] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
-    except pd.errors.OutOfBoundsDatetime:
-        # Could be a Thai year. Hack to convert
-        df[index_col] = df[index_col].str.replace("2564", "2021").str.replace("2565", "2022")
-        df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
+    renames = {k: v for k, v in mappings.items() if type(v) == str and k in df.columns}
+    cols = [key for key in mappings.keys() if key in df.columns]
+    df = df[cols].rename(columns=renames)
+    if index_date:
+        try:
+            df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
+        except pd.errors.OutOfBoundsDatetime:
+            # Could be a Thai year. Hack to convert
+            df[index_col] = df[index_col].str.replace("2564", "2021").str.replace("2565", "2022")
+            df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
     # if one mapping is dict then do pivot
     pivot = [(k, v) for k, v in mappings.items() if type(v) != str]
     if pivot:
         pivot_cols, pivot_mapping = pivot[0]  # can only have one
         # Any other mapped cols are what are the values of the pivot
+        if index_col not in df.columns:
+            df[index_col] = index_value
         df = df.pivot(index=index_col, columns=pivot_cols)
         df = df.drop(columns=[c for c in df.columns if not any_in(c, *pivot_mapping.keys())])  # Only keep cols we want
         df = df.rename(columns=pivot_mapping)
@@ -106,25 +116,32 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
     else:
         default = [defaults.get(c, defaults.get("")) if defaults else 0.0 for c in df.columns]
     df = df.replace("%null%", default[0])
-    # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
-    df = df.apply(pd.to_numeric, errors='coerce', axis=1)
 
-    # Some series have gaps where its assumed missing values are 0. Like deaths
-    # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
-    #start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
-    #start = min([start, df.index.min()])
-    start = df.index.min()
-    # Some data like tests can be a 2 days late
-    # TODO: Should be able to do better than fixed offset?
-    #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
-    #end = max([end, df.index.max()])
-    end = df.index.max() if end is None else end
-    # assert date is None or end <= date, f"getting {date} found {end}"
-    all_days = pd.date_range(start, end, name="Date", normalize=True, inclusive="both")
-    try:
-        df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
-    except ValueError:
-        return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
+    # Important we turn all the other data to numberic. Otherwise object causes div by zero errors
+    def cleannum(series):
+        try:
+            return series.str.replace(',', '').astype(float)
+        except AttributeError:
+            return series
+    df = df.apply(cleannum, axis=1)
+
+    if index_date:
+        # Some series have gaps where its assumed missing values are 0. Like deaths
+        # TODO: we don't know how far back to look? Currently 30days for tests and 60 for others?
+        #start = date - datetime.timedelta(days=10) if date is not None else df.index.min()
+        #start = min([start, df.index.min()])
+        start = df.index.min()
+        # Some data like tests can be a 2 days late
+        # TODO: Should be able to do better than fixed offset?
+        #end = date - datetime.timedelta(days=5) if date is not None else df.index.max()
+        #end = max([end, df.index.max()])
+        end = df.index.max() if end is None else end
+        # assert date is None or end <= date, f"getting {date} found {end}"
+        all_days = pd.date_range(start, end, name="Date", normalize=True, inclusive="both")
+        try:
+            df = df.reindex(all_days, fill_value=default[0])  # TODO: work out how to have default for each column
+        except ValueError:
+            return pd.DataFrame()  # Sometimes there are duplicate dates. if so best abort the whole workbook since something is wrong
 
     return df
 
@@ -241,17 +258,28 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
     if wb is None:
         return
     set_value = []
+    product_values = {}
     # match the params to iterate to param, filter or select
     for name, values in selects.items():
         param = next((p for p in wb.getParameters() if p['column'] == name), None)
         ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == name), None)
-        if param is not None or ws is None:
+        if name == "filters":
+            for fname, fvalues in values.items():
+                product_values[fname] = fvalues
+
+                def do_filter(wb, value, ws_name=fname, filter_name=values):
+                    # return wb.worksheets[0].setFilter(fname, value, dashboardFilter=True, check=False)
+                    return force_setFilter(wb, None, fname, [value])
+                set_value.append(do_filter)
+            continue
+
+        elif param is not None or ws is None:
             # We will force param if it's not select
             if type(values) == str:
-                selects[name] = param['values']
+                product_values[name] = param['values']
             else:
                 # assume its a list of values to use
-                pass
+                product_values[name] = values
 
             def do_param(wb, value, name=name):
                 value = value if type(value) != datetime.datetime else str(value.date())
@@ -262,7 +290,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
         # TODO: allow a select to be manual list of values
         svalues = ws.getSelectableValues(values)
         if svalues:
-            selects[name] = svalues
+            product_values[name] = svalues
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_select(wb, value, name=name, values=values):
@@ -274,21 +302,21 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
         else:
             items = ws.getFilters()
             # TODO: allow filter to manual list of values
-            selects[name] = next((item['values'] for item in items if item['column'] == values), [])
+            product_values[name] = next((item['values'] for item in items if item['column'] == values), [])
             # TODO: should raise an error if there is no matching filter?
 
             # weird bug where sometimes .getWorksheet doesn't work or missign data
             def do_filter(wb, value, ws_name=name, filter_name=values):
                 ws = next((ws for ws in wb.worksheets if ws.name.replace(" (2)", "") == ws_name), None)
-                # return ws.setFilter(values, value)
-                return force_setFilter(wb, ws_name, filter_name, [value])
+                return ws.setFilter(values, value, check=False)  # TODO: untested
+                # return force_setFilter(wb, ws_name, filter_name, [value])
             set_value.append(do_filter)
     if inc_no_param:
         yield lambda: wb, None
 
     last_idx = [None] * len(selects)  # Outside so we know if we need to change teh params or not
     # Get all combinations of the values of params, select or filter
-    for next_idx in itertools.product(*selects.values()):
+    for next_idx in itertools.product(*product_values.values()):
         def get_workbook(*checks, wb=wb, next_idx=next_idx):
             nonlocal last_idx, max_errors
             reset = False
@@ -337,14 +365,22 @@ def force_setParameter(wb, parameterName, value):
     )
     r = scraper.session.post(
         f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/set-parameter-value',
-        # data=dict(fieldCaption=parameterName, valueString=value),
-        files=payload,
+        data=dict(fieldCaption=parameterName, valueString=value),
+        # files=payload,
         verify=scraper.verify
     )
     scraper.lastActionTime = time.time()
     if r.status_code >= 400:
         raise requests.exceptions.RequestException(r.content)
     resp = r.json()
+    errors = [
+        res['commandReturn']['commandValidationPresModel']['errorMessage']
+        for res in resp['vqlCmdResponse']['cmdResultList']
+        if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
+    ]
+    if errors:
+        wb._scraper.logger.error(str(", ".join(errors)))
+        raise tableauscraper.api.APIResponseException(", ".join(errors))
 
     wb.updateFullData(resp)
     return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
@@ -371,44 +407,48 @@ def force_setFilter(wb, ws_name, columnName, values):
 
     scraper = wb._scraper
     tableauscraper.api.delayExecution(scraper)
-    ws = next(ws for ws in wb.worksheets if ws.name == ws_name)
+    ws = next((ws for ws in wb.worksheets if ws.name == ws_name), None)
 
-    filter = next(
+    filter = next((
         {
             "globalFieldName": t["globalFieldName"],
         }
-        for t in ws.getFilters()
+        for t in (ws.getFilters() if ws is not None else [])
         if t["column"] == columnName
+    ), None
     )
 
-    payload = (
-        ("dashboard", scraper.dashboard),
-        ("globalFieldName", (None, filter["globalFieldName"])),
-        ("qualifiedFieldCaption", (None, columnName)),
-        ("membershipTarget", (None, "filter")),
-        ("exclude", (None, "false")),
-        ("filterValues", (None, json.dumps(values))),
-        ("filterUpdateType", (None, "filter-replace"))
-    )
     try:
-        r = scraper.session.post(
-            f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/dashboard-categorical-filter',
-            files=payload,
-            verify=scraper.verify
-        )
-        scraper.lastActionTime = time.time()
+        if filter is None:
+            resp = tableauscraper.api.dashboardFilter(scraper, columnName, [values] if not isinstance(values, list) else values)
+        else:
+            payload = (
+                ("dashboard", scraper.dashboard),
+                ("globalFieldName", (None, filter["globalFieldName"])),
+                ("qualifiedFieldCaption", (None, columnName)),
+                ("membershipTarget", (None, "filter")),
+                ("exclude", (None, "false")),
+                ("filterValues", (None, json.dumps(values))),
+                ("filterUpdateType", (None, "filter-replace"))
+            )
+            r = scraper.session.post(
+                f'{scraper.host}{scraper.tableauData["vizql_root"]}/sessions/{scraper.tableauData["sessionid"]}/commands/tabdoc/dashboard-categorical-filter',
+                files=payload,
+                verify=scraper.verify
+            )
+            scraper.lastActionTime = time.time()
 
-        if r.status_code >= 400:
-            raise requests.exceptions.RequestException(r.content)
-        resp = r.json()
-        errors = [
-            res['commandReturn']['commandValidationPresModel']['errorMessage']
-            for res in resp['vqlCmdResponse']['cmdResultList']
-            if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
-        ]
-        if errors:
-            wb._scraper.logger.error(str(", ".join(errors)))
-            raise tableauscraper.api.APIResponseException(", ".join(errors))
+            if r.status_code >= 400:
+                raise requests.exceptions.RequestException(r.content)
+            resp = r.json()
+            errors = [
+                res['commandReturn']['commandValidationPresModel']['errorMessage']
+                for res in resp['vqlCmdResponse']['cmdResultList']
+                if not res['commandReturn'].get('commandValidationPresModel', {}).get('valid', True)
+            ]
+            if errors:
+                wb._scraper.logger.error(str(", ".join(errors)))
+                raise tableauscraper.api.APIResponseException(", ".join(errors))
 
         wb.updateFullData(resp)
         return tableauscraper.dashboard.getWorksheetsCmdResponse(scraper, resp)
