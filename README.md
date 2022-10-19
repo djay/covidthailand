@@ -25,6 +25,11 @@ Links to all data sources are including in [Downloads](downloads.md)
 
 Got a question about covid in Thailand? Try asking it in [Q&A discussion](https://github.com/djay/covidthailand/discussions/categories/q-a)
 
+# Weekly data from Oct 1st
+
+From Oct 1st 2022 all covid data from the DDC has been released in weekly chunks. Data here will be
+displayed as daily averages and updates will be once per week (mondays?). In addition many of the data
+sources have stopped being published so many plots will no longer be change.
 # Trends
 
 ![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)

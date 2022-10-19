@@ -10,6 +10,7 @@ from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 
 from utils_pandas import add_data
+from utils_pandas import cum2daily
 from utils_pandas import cut_ages
 from utils_pandas import export
 from utils_pandas import fuzzy_join
@@ -95,17 +96,18 @@ def get_cases_timelineapi_weekly():
 
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
     df = df.drop(columns=['update_date', "index"])
-    df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
-
     df = df.rename(columns=dict(new_case="Cases", total_case="Cases Cum",
-                   new_case_excludeabroad="Cases Local", total_case_excludeabroad="Case Local Cum",
+                   new_case_excludeabroad="Cases Local", total_case_excludeabroad="Cases Local Cum",
                    new_death="Deaths", total_death="Deaths Cum",
                    case_walkin="Cases Walkin", case_foriegn="Cases Imported", case_prison="Cases Prison",
                    new_recovered="Recovered",
                                 ))
     df = df.drop(columns=[col for col in df.columns if "_" in col])
-    daily = [col for col in df.columns if "Cum" not in col]
-    df[daily] = (df[daily] / 7).round().astype(int)
+    df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
+    df = cum2daily(df[[col for col in df.columns if "Cum" in col]]).combine_first(df)
+
+    # daily = [col for col in df.columns if "Cum" not in col]
+    # df[daily] = (df[daily] / 7)
 
     df["Source Cases"] = url
     return df
@@ -550,8 +552,10 @@ def timeline_by_province_weekly():
     df = df.groupby("Province").apply(lambda x: x.drop(columns="Province").reindex(
         pd.date_range(x.index.min(), x.index.max(), name="Date")).interpolate())
 
-    daily = [col for col in df.columns if "Cum" not in col]
-    df[daily] = (df[daily] / 7).round().astype(int)
+    # daily = [col for col in df.columns if "Cum" not in col]
+    # df[daily] = (df[daily] / 7).round().astype(int)
+
+    df = cum2daily(df[[col for col in df.columns if "Cum" in col]]).combine_first(df)
 
     df = df.reset_index().set_index(["Date", "Province"])
     return df
