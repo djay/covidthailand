@@ -124,7 +124,7 @@ def daily2cum(results):
 def fix_gaps(df):
     # Some gaps in the data so fill them in. df.groupby("Province").apply(fix_gaps)
     df = df.reset_index("Province")
-    all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, closed=None)
+    all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, inclusive="neither")
     df = df.reindex(all_days, fill_value=np.nan)
     df = df.interpolate()
     df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province

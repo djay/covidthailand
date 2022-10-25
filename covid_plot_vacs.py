@@ -283,27 +283,6 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
-    # Top 5 vaccine rollouts
-    vac = import_csv("vaccinations", ['Date', 'Province'])
-
-    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
-    # Let's trust the dashboard more but they could both be different
-    # TODO: dash gives different higher values. Also glitches cause problems
-    # vac = dash_prov.combine_first(vac)
-    #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
-    # Add them all up
-    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
-        axis=1, skipna=False).to_frame("Vac Given Cum"))
-    vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
-
-    # Reset populations to the latest since they changed definitions over time
-    # Bring in vac populations
-    pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
-    # vac = vac.join(pops, rsuffix="2")
-    for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
-        vac = vac.join(vac[pop_col].groupby("Province").last().to_frame(pop_col), lsuffix="1")
-    vac["Vac Population2"] = vac["Vac Population"]
-
     # Do a % of peak chart for death vs cases
     cols = ['Cases', 'Deaths', 'ATK', ]
     peaks = df[cols] / df[cols].rolling(7, 3, center=True).mean().max(axis=0) * 100
@@ -359,6 +338,31 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               footnote='ATK: Covid-19 Rapid Antigen Self Test Kit\n'
               + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
+
+
+def save_vacs_prov_plots(df):
+    # Top 5 vaccine rollouts
+    vac = import_csv("vaccinations", ['Date', 'Province'])
+    df_prov = import_csv("cases_by_province", ['Date', 'Province'])
+    vac = vac.combine_first(df_prov[[c for c in df_prov.columns if "Vac" in c]])
+
+    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
+    # Let's trust the dashboard more but they could both be different
+    # TODO: dash gives different higher values. Also glitches cause problems
+    # vac = dash_prov.combine_first(vac)
+    #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
+    # Add them all up
+    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
+        axis=1, skipna=False).to_frame("Vac Given Cum"))
+    vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
+
+    # Reset populations to the latest since they changed definitions over time
+    # Bring in vac populations
+    pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
+    # vac = vac.join(pops, rsuffix="2")
+    for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
+        vac = vac.join(vac[pop_col].groupby("Province").last().to_frame(pop_col), lsuffix="1")
+    vac["Vac Population2"] = vac["Vac Population"]
 
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
@@ -621,4 +625,5 @@ if __name__ == "__main__":
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
+    save_vacs_prov_plots(df)
     save_vacs_plots(df)

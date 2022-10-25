@@ -5,13 +5,12 @@ import matplotlib.cm
 import matplotlib.pyplot as plt
 import pandas as pd
 
+import covid_plot_active
+import covid_plot_cases
+import covid_plot_deaths
 import covid_plot_tests
+import covid_plot_vacs
 from covid_data import scrape_and_combine
-from covid_plot_active import save_active_plots
-from covid_plot_cases import save_caseprov_plots
-from covid_plot_cases import save_cases_plots
-from covid_plot_deaths import save_deaths_plots
-from covid_plot_vacs import save_vacs_plots
 from utils_scraping import logger
 
 
@@ -28,13 +27,14 @@ def save_plots(df: pd.DataFrame) -> None:
     awaits = []
     with Pool() as pool:
         awaits = [pool.apply_async(f, [df]) for f in [
-            save_caseprov_plots,
-            save_cases_plots,
+            covid_plot_cases.save_caseprov_plots,
+            covid_plot_cases.save_cases_plots,
             covid_plot_tests.save_tests_plots,
             covid_plot_tests.save_area_plots,
-            save_vacs_plots,
-            save_active_plots,
-            save_deaths_plots,
+            covid_plot_vacs.save_vacs_plots,
+            covid_plot_vacs.save_vacs_prov_plots,
+            covid_plot_active.save_active_plots,
+            covid_plot_deaths.save_deaths_plots,
         ]]
         [a.get() for a in awaits]
 

@@ -11,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 
 import covid_plot_cases
 import covid_plot_deaths
+import covid_plot_vacs
 from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
@@ -683,5 +684,7 @@ if __name__ == '__main__':
 
     df = df.combine_first(cum2daily(dash_daily_df, exclude=vaccols))
 
+    covid_plot_vacs.save_vacs_prov_plots(df)
+    covid_plot_vacs.save_vacs_plots(df)
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_cases_plots(df)
