@@ -233,7 +233,7 @@ def dash_weekly(file="moph_dash_weekly"):
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
 
     latest = next(dates, None)
-    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
+    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date_weekend=dates):
         date = next(iter(date), None) if date is not None else latest
         if skip_valid(df, date, allow_na):
             continue
@@ -269,17 +269,17 @@ def dash_province_weekly(file="moph_province_weekly"):
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
-    dates = iter([d.strftime("%m/%d/%Y") for d in dates])
+    # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
     provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), filters=dict(province=provs), verify=False):
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
         date, province = idx_value
         if date is None:
             date = latest
-        date = d(date, dayfirst=False)
+        # date = d(date, dayfirst=False)
         if province is None:
             continue
         province = get_province(province)
@@ -308,12 +308,20 @@ def extract_basics(wb, date):
     # D_DeathNew_/7 - daily avg deaths
     # D_Death (2)
 
-    def to_cum(cum, periodic):
+    def to_cum(cum, periodic, name):
+        """ take a single cum value and daily changes and return a cum series going backwards """
+        cum_name = name + " Cum"
+        if periodic.empty or not cum[cum_name].last_valid_index():
+            return pd.DataFrame()
+        periodic = periodic[name]
+        cum = cum[cum_name]
+
+        assert cum.last_valid_index()
         combined = periodic.combine_first(cum)  # TODO: this might go back too far. should really be min of periodic?
         df = cum.reindex(combined.index).bfill().subtract(periodic.reindex(
             combined.index)[::-1].cumsum()[::-1].shift(-1), fill_value=0)
         assert (df > 0).any()
-        return df
+        return df.to_frame(cum_name)
 
     cases = workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
         "SUM(case_new)-value": "Cases",
@@ -325,17 +333,17 @@ def extract_basics(wb, date):
     if date != cases.index.max():
         return row
     date = cases.index.max()  # We can't get update date always so use lastest cases date
-    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum"))
-    row = row.combine_first(to_cum(row['Cases Cum'], cases['Cases']).to_frame("Cases Cum"))
-    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum"))
+    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
+    row = row.combine_first(to_cum(row, cases, "Cases"))
+    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan))
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
         "AGG(NUM_DEATH)-value": "Deaths",
         "#WEEK_NUMBER-value": "Week"
     }, index_col="Week", index_date=False)
     deaths = weeks_to_end_date(deaths, year_col=None, week_col="Week", offset=0)
-    if not deaths.empty:
-        row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
+    # TODO: why was there a the forward fill before?
+    row = row.combine_first(to_cum(row, deaths, "Deaths"))
 
     row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
     row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))

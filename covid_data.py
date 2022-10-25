@@ -211,7 +211,7 @@ def scrape_and_combine():
         covid_data_vac.vaccination_reports,
         covid_data_briefing.get_cases_by_prov_briefings,
         covid_data_dash.dash_weekly,
-        # covid_data_dash.dash_province_weekly,
+        covid_data_dash.dash_province_weekly,
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_dash.dash_ages,
@@ -263,7 +263,7 @@ def scrape_and_combine():
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
         res['timeline_by_province_weekly']).combine_first(
-        #        cum2daily(res['dash_province_weekly'])).combine_first(
+        cum2daily(res['dash_province_weekly'])).combine_first(
         res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
