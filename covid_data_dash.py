@@ -265,11 +265,12 @@ def closest(sub, repl):
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
-        "Deaths Cum": d("2022-09-01"),
-        "Cases Cum": d("2022-09-01"),
+        "Deaths Cum": (d("2022-08-01"), today(), 0),
+        "Cases Cum": (d("2022-08-01"), today(), 0),
+        "Vac Given 1 Cum": (d("2022-01-01"), today(), 0),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
-    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
     # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
     ts = tableauscraper.TableauScraper()
@@ -292,7 +293,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         "D2_Update (2)"
         row = extract_basics(wb, date)
         if row.empty:
-            break  # Not getting latest data yet
+            continue  # Not getting latest data yet
         row['Province'] = province
         row = row.reset_index().set_index(["Date", "Province"])
         df = row.combine_first(df)

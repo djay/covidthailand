@@ -74,13 +74,15 @@ def cum2daily(results, exclude=[]):
 
         all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
         cum = cum.reindex(all_days)  # put in missing days with NaN
+        smoothed = cum.iloc[::-1].cummin().iloc[::-1]
         # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
-        cum = cum.interpolate().diff()  # we got cumilitive data
-        renames = dict((c, c.rstrip(' Cum')) for c in list(cum.columns) if 'Cum' in c)
-        cum = cum.rename(columns=renames)
-        cum[otherindex] = othervals.iloc[0]  # Should all be the same
-        cum = cum.reset_index().set_index(["Date"] + otherindex)
-        return cum
+        daily = smoothed.interpolate().diff()  # we got cumilitive data
+        renames = dict((c, c.rstrip(' Cum')) for c in list(daily.columns) if 'Cum' in c)
+        daily = daily.rename(columns=renames)
+        assert not (daily < 0).any().any()
+        daily[otherindex] = othervals.iloc[0]  # Should all be the same
+        daily = daily.reset_index().set_index(["Date"] + otherindex)
+        return daily
 
     cumcols = list(c for c in results.columns if " Cum" in c and c not in exclude)
     cum = results[cumcols]
