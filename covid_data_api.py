@@ -449,7 +449,7 @@ def get_case_details_api():
     return cases
 
 
-def load_paged_json(url, index, target_index, dir="inputs/json/weekly", check=True):
+def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True):
     data = []
     # First check api is working ok
     file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=40)), None)
@@ -541,9 +541,11 @@ def timeline_by_province():
 def timeline_by_province_weekly():
     # url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-by-provinces"
     # df = load_paged_json(url, ["year", "weeknum"], [2020, 1])
-    url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=True, timeout=40)), None)
-    df = pd.read_json(file)
+    # url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
+    # file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=True, timeout=40)), None)
+    # df = pd.read_json(file)
+    df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces", dir="inputs/json/weekly")
+
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
     df = join_provinces(df, "Province", extra=[])

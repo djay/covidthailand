@@ -18,6 +18,7 @@ from utils_pandas import increasing
 from utils_pandas import perc_format
 from utils_pandas import rearrange
 from utils_pandas import topprov
+from utils_scraping import any_in
 from utils_scraping import logger
 from utils_thai import join_provinces
 from utils_thai import trend_table
@@ -167,27 +168,28 @@ def save_cases_plots(df: pd.DataFrame) -> None:
 
     ihme = ihme_dataset(check=False)
     col_list = ['Mobility Index', 'mobility_obs']
-    mobility = ihme[col_list]
-    # keep only observed mobility, removing forcasted part
-    mobility = mobility.loc[mobility['mobility_obs'] == 1]
-    # Calculate Reduced Mobility Index
-    mobility_min = mobility['Mobility Index'].min()
-    mobility_max = mobility['Mobility Index'].max()
-    mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
-                                                                  mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
+    if any_in(ihme.columns, *col_list):
+        mobility = ihme[col_list]
+        # keep only observed mobility, removing forcasted part
+        mobility = mobility.loc[mobility['mobility_obs'] == 1]
+        # Calculate Reduced Mobility Index
+        mobility_min = mobility['Mobility Index'].min()
+        mobility_max = mobility['Mobility Index'].max()
+        mobility['Reduced Mobility Index - IHME (% of peak)'] = (1 + (mobility_min -
+                                                                      mobility['Mobility Index']) / (mobility_max - mobility_min)) * 100
 
-    peaks = peaks.combine_first(mobility)
-    cols += ['Reduced Mobility Index - IHME (% of peak)']
-    legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
-    plot_area(df=peaks,
-              title='Social Distancing - Reduced Mobility and Number of New Cases',
-              png_prefix='mobility', cols_subset=cols, legends=legend,
-              ma_days=7,
-              kind='line', stacked=False, percent_fig=False, clean_end=True,
-              periods_to_plot=["all", "3"],
-              cmap='tab10',
-              y_formatter=perc_format,
-              footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
+        peaks = peaks.combine_first(mobility)
+        cols += ['Reduced Mobility Index - IHME (% of peak)']
+        legend = ["Confirmed Cases (% of peak)", "Reduced Mobility Index - IHME (% of peak)"]
+        plot_area(df=peaks,
+                  title='Social Distancing - Reduced Mobility and Number of New Cases',
+                  png_prefix='mobility', cols_subset=cols, legends=legend,
+                  ma_days=7,
+                  kind='line', stacked=False, percent_fig=False, clean_end=True,
+                  periods_to_plot=["all", "3"],
+                  cmap='tab10',
+                  y_formatter=perc_format,
+                  footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
 
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")
     today = df['Cases'].index.max()
