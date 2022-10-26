@@ -267,7 +267,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     valid = {
         "Deaths Cum": (d("2022-08-01"), today(), 0),
         "Cases Cum": (d("2022-08-01"), today(), 0),
-        "Vac Given 1 Cum": (d("2022-01-01"), today(), 0),
+        "Vac Given 1 Cum": (d("2022-06s-12"), today(), 0),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
@@ -668,6 +668,7 @@ if __name__ == '__main__':
 
     dash_daily_df = dash_weekly()
     dash_by_province_df = dash_province_weekly()
+    dash_by_province_daily = dash_by_province()
     # dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
@@ -679,7 +680,7 @@ if __name__ == '__main__':
     # df = dash.combine(df, lambda s1, s2: s1)
     # df = briefings.combine(df, lambda s1, s2: s1)
     vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
-    prov = prov.combine_first(cum2daily(dash_by_province_df, exclude=vaccols))
+    prov = dash_by_province_daily.combine_first(cum2daily(dash_by_province_df, exclude=vaccols)).combine_first(prov)
     # Write this one as it's imported
     export(prov, "cases_by_province", csv_only=True)
 
