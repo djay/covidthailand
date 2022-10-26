@@ -388,7 +388,10 @@ def get_variant_sequenced_table(file, pages):
         df.columns = df.iloc[0]
         df = df.iloc[1:]
         # Convert week number to a date
-        df["Lineage"] = pd.to_numeric(df["Lineage"].astype(str).str.replace("w", ""))
+        # Need to handle when two weeks have ended up in one cell
+        weeks = df["Lineage"].astype(str).str.replace("w", "").str.replace(
+            "W", "").str.split(" ", expand=True).stack().reset_index()[0]
+        df["Lineage"] = list(pd.to_numeric(weeks).dropna())
         df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
         df = df.set_index("End")
         df = df.drop(columns=["Total Sequences", "Lineage"])
@@ -428,8 +431,9 @@ def get_variant_sequenced_table(file, pages):
     elif any_in(file, "20220708", "20220701", "20220627"):
         # BA4/5 are the "Other" in the first table but counted later on
         pass
-    elif any_in(file, '20220916'):
-        # "Other B" doesn't seem to appear in any later tables?
+    elif any_in(file, '20220916', '20221021'):
+        # 20220916: "Other B" doesn't seem to appear in any later tables?
+        # 20221021: TODO: seems like mix between two sets of weeks? 142/143, 143/144
         pass
     else:
         assert others.sum() == 0 or (first_seq_table['Other'] == others).all()
