@@ -215,8 +215,8 @@ def scrape_and_combine():
         covid_data_dash.dash_by_province,
         covid_data_api.get_cases_by_demographics_api,
         covid_data_dash.dash_ages,
-        covid_data_situation.get_thai_situation,
-        covid_data_situation.get_en_situation,
+        # covid_data_situation.get_thai_situation,
+        # covid_data_situation.get_en_situation,
         covid_data_testing.get_test_reports,
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
@@ -258,6 +258,7 @@ def scrape_and_combine():
     export(briefings, "cases_briefings")
 
     # Export per province
+    export(briefings_prov, "cases_briefings_prov", csv_only=True)
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
@@ -285,7 +286,7 @@ def scrape_and_combine():
     export(res['ihme_dataset'], "ihme")
 
     # Export situation
-    situation = covid_data_situation.export_situation(res['get_thai_situation'], res['get_en_situation'])
+    situation = covid_data_situation.export_situation(res.get('get_thai_situation', None), res.get('get_en_situation', None))
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 

@@ -565,9 +565,10 @@ def is_new_pui(today, situation):
 
 
 def export_situation(th_situation, en_situation):
-    start = time.time()
-    situation = import_csv("situation_reports", ["Date"], not USE_CACHE_DATA)
-    situation = situation.combine_first(th_situation).combine_first(en_situation)
+    situation = import_csv("situation_reports", ["Date"])
+    if not th_situation or not en_situation:
+        return situation
+    situation = th_situation.combine_first(en_situation).combine_first(situation)
     situation = situation.combine_first(cum2daily(situation))  # any direct non-cumulative are trusted more
     # TODO: Not sure why but 5 days have 0 PUI. Take them out for now
     # 2020-02-12  2020-02-14 2020-10-13  2020-12-29 2021-05-02
