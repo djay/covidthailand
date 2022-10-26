@@ -267,7 +267,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     valid = {
         "Deaths Cum": (d("2022-08-01"), today(), 0),
         "Cases Cum": (d("2022-08-01"), today(), 0),
-        "Vac Given 1 Cum": (d("2022-06s-12"), today(), 0),
+        "Vac Given 1 Cum": (d("2022-06-12"), today(), 0),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
