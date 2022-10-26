@@ -454,6 +454,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # First check api is working ok
     file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=40)), None)
     pagedata = json.loads(content)
+    if "data" not in pagedata:
+        return pd.DataFrame(pagedata)
     page = pagedata['data']
     assert page
     last_page = pagedata['meta']['last_page']
@@ -548,6 +550,7 @@ def timeline_by_province_weekly():
 
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
+    df = df[df['Province'] != 'ทั้งประเทศ']  # Get rid of whole country rows for now
     df = join_provinces(df, "Province", extra=[])
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
     df = df.drop(columns=['update_date', "index"])
