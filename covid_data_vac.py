@@ -634,7 +634,7 @@ def vaccination_reports_files2(check=0,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
-                               timeout=300,
+                               timeout=45,
                                ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
@@ -645,7 +645,7 @@ def vaccination_reports_files2(check=0,
         use_proxy = False
     else:
         try:
-            use_proxy = requests.head("https://ddc.moph.go.th", timeout=25).status_code >= 400
+            use_proxy = requests.head("https://ddc.moph.go.th", timeout=45).status_code >= 400
         except requests.exceptions.RequestException:
             use_proxy = True
 
