@@ -357,7 +357,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         df[name] = df[name].fillna(other_name)
         # TODO: sum() might have to be configurable?
         # TODO: we only really need to do this for one value not all the individual values
-        df = df.groupby(["Date", name]).sum(min_count=1).reset_index()  # condense all the "other" fields
+        df = df.groupby(["Date", name]).sum(min_count=1, numeric_only=False).reset_index()  # condense all the "other" fields
     # apply the value function to get all the values
     values = df.set_index(["Date", name]).groupby(level=name, group_keys=False).apply(valuefunc).rename(0).reset_index()
     # put the provinces into cols. use max to ensure NA aren't included. Should only be one value anyway?

@@ -479,7 +479,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
         if pagedata['data']:
             dfpage = pd.DataFrame(data)
             last_date = dfpage[index].iloc[0]
-            df = dfpage.append(df)
+            df = pd.concat([dfpage, df])
         print(".", end="")
         pagenum -= 1
         if pagenum == 0:
@@ -686,11 +686,11 @@ def get_ifr():
         var_name='Province',
         value_name='Population'
     ).rename(columns=dict(index="Age"))
-    total_pop = unpop.groupby("Province").sum().rename(
+    total_pop = unpop.groupby("Province").sum(numeric_only=True).rename(
         columns=dict(Population="total_pop"))
     unpop = unpop.join(total_pop, on="Province").join(ifr["risk"], on="Age")
     unpop['ifr'] = unpop['Population'] / unpop['total_pop'] * unpop['risk']
-    provifr = unpop.groupby("Province").sum()
+    provifr = unpop.groupby("Province").sum(numeric_only=True)
     provifr = provifr.drop([p for p in provifr.index if "Region" in p] + ['Whole Kingdom'])
 
     # now normalise the province names
