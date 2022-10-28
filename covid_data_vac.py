@@ -285,7 +285,7 @@ def vaccination_daily(daily, file_date, file, page):
                                        return_rest=False, thainorm=True, asserted=True)
                 student = get_next_numbers(rest, r"ราย อายุ", r"นักเรียน", until="(?:ราย|รำย)",
                                            return_rest=False, thainorm=True, asserted=False)
-                kids = get_next_number(rest, r"อายุ 5 - 11 ปี", until="(?:ราย|รำย)",
+                kids = get_next_number(rest, r"(?:อายุ|เด็กอำยุ) 5 ?- ?11 ปี", until="(?:ราย|รำย)",
                                        return_rest=False, thainorm=True, asserted=False)
 
                 if len(student) == 3:
@@ -303,12 +303,15 @@ def vaccination_daily(daily, file_date, file, page):
                 if date in [d("2021-08-11")] and dose == 2:
                     frontline = None  # Wrong value for dose2
             row = [medical, volunteer, frontline, over60, chronic, pregnant, area, student, kids]
-            if date not in [d("2021-08-11")]:
+            if date in [d("2021-08-11")]:
+                pass
+            else:
                 assert not any_in([None, np.nan], medical or med_all, over60, chronic, area)
                 total_row = [medical or med_all, volunteer, frontline, over60, chronic, pregnant, area, student, kids]
                 total_row = sum(i for i in total_row if i and not pd.isna(i))
-                if date in [d("2022-06-19")]:
+                if date in [d("2022-06-19"), d("2022-10-21")]:
                     # 2022-06-19 - not sure which number is out?
+                    # 2022-10-21 - 3rd dose is 26622061 but doc says adds up to 32326428 ??
                     pass
                 else:
                     assert 0.94 <= (total_row / total) <= 1.01
@@ -733,7 +736,7 @@ def vaccination_reports():
         if date < d("2021-12-11"):
             # TODO: find days where day is yesterdays and fix them, or fix the check
             pass
-        elif date in [d("2022-01-21"), d("2022-01-04"), d("2021-12-11")]:
+        elif date in [d("2022-01-21"), d("2022-01-04"), d("2021-12-11"), d("2022-10-23")]:
             # "2022-01-21": is actually "2022-01-20"
             pass
         else:
