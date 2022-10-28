@@ -62,13 +62,13 @@ def check_cum(df, results, cols):
         raise Exception(str(next_day - last))
 
 
-def cum2daily(results, exclude=[]):
-    def todaily(cum):
-        if cum.empty:
-            return cum
-        otherindex = list(set(cum.index.names) - set(["Date"]))
-        cols = cum.columns
-        cum = cum.reset_index(otherindex)
+def cum2daily(results, exclude=[], drop=True):
+    def todaily(df_cum):
+        if df_cum.empty:
+            return df_cum
+        otherindex = list(set(df_cum.index.names) - set(["Date"]))
+        cols = df_cum.columns
+        cum = df_cum.reset_index(otherindex)
         othervals = cum[otherindex]
         cum = cum[[c for c in cols if c not in otherindex]]
 
@@ -76,12 +76,15 @@ def cum2daily(results, exclude=[]):
         cum = cum.reindex(all_days)  # put in missing days with NaN
         smoothed = cum.iloc[::-1].cummin().iloc[::-1]
         # cum = cum.interpolate(limit_area="inside") # missing dates need to be filled so we don't get jumps
-        daily = smoothed.interpolate().diff()  # we got cumilitive data
+        daily = smoothed.interpolate(limit_area="inside").diff()  # we got cumilitive data
         renames = dict((c, c.rstrip(' Cum')) for c in list(daily.columns) if 'Cum' in c)
         daily = daily.rename(columns=renames)
         assert not (daily < 0).any().any()
         daily[otherindex] = othervals.iloc[0]  # Should all be the same
         daily = daily.reset_index().set_index(["Date"] + otherindex)
+        if not drop:
+            # add back in the cum valuse
+            daily = daily.combine_first(df_cum)
         return daily
 
     cumcols = list(c for c in results.columns if " Cum" in c and c not in exclude)
@@ -128,7 +131,7 @@ def fix_gaps(df):
     df = df.reset_index("Province")
     all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, inclusive="neither")
     df = df.reindex(all_days, fill_value=np.nan)
-    df = df.interpolate()
+    df = df.interpolate(limit_area="inside")
     df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province
     return df.reset_index().set_index(["Date", "Province"])
 

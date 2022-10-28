@@ -264,7 +264,7 @@ def scrape_and_combine():
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
         res['timeline_by_province_weekly']).combine_first(
-        cum2daily(res['dash_province_weekly'])).combine_first(
+        cum2daily(res['dash_province_weekly'], drop=False)).combine_first(
         res['dash_by_province']).combine_first(
         tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
@@ -290,6 +290,8 @@ def scrape_and_combine():
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 
+    dash_weekly = cum2daily(res['dash_weekly'], drop=False)
+
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
     for f in [
@@ -302,10 +304,10 @@ def scrape_and_combine():
         cases_demo,
         cases_by_area,
         situation,
-        vac,
         res['dash_ages'],
         res['dash_daily'],
-        cum2daily(res['dash_weekly'])
+        dash_weekly,
+        vac,
     ]:
         df = df.combine_first(f)
     logger.info(df)

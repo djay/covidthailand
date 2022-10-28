@@ -341,17 +341,20 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
 
-def save_vacs_prov_plots(df):
+def save_vacs_prov_plots(df, df_prov=None):
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
-    df_prov = import_csv("cases_by_province", ['Date', 'Province'])
+    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
+    if df_prov is None:
+        df_prov = import_csv("cases_by_province", ['Date', 'Province'])
+        df_prov = df_prov.groupby("Province", group_keys=False).apply(fix_gaps)
     vac = vac.combine_first(df_prov[[c for c in df_prov.columns if "Vac" in c]])
 
-    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
     # Let's trust the dashboard more but they could both be different
     # TODO: dash gives different higher values. Also glitches cause problems
     # vac = dash_prov.combine_first(vac)
     #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
+
     # Add them all up
     vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
         axis=1, skipna=False).to_frame("Vac Given Cum"))
@@ -380,12 +383,12 @@ def save_vacs_prov_plots(df):
 
     by_region = vac.reset_index()
     pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Given 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Given 1 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_3 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Given 3 Cum'], aggfunc="sum") / pop_region * 100
+    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1 Cum'], aggfunc="sum")
+    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2 Cum'], aggfunc="sum")
+    by_region_3 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 3 Cum'], aggfunc="sum")
+    by_region_1 = by_region_1.replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region_2.replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region_3.replace(0, np.nan) / pop_region * 100
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
@@ -619,10 +622,11 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"], date_cols=["Date"])
     briefings = import_csv("cases_briefings", index=["Date"], date_cols=["Date"])
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    dash_weekly = import_csv("moph_dash_weekly", ["Date"], False, dir="inputs/json")  # so we cache it
     # have vac in briefings and dashboard
-    df = briefings.combine_first(dash).combine_first(df)
+    df = briefings.combine_first(dash).combine_first(cum2daily(dash_weekly, drop=False)).combine_first(df)
     vac = import_csv("vac_timeline", ['Date'])
-    df = vac.combine_first(df)
+    df = df.combine_first(vac)
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
