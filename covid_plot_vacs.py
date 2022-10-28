@@ -382,13 +382,10 @@ def save_vacs_prov_plots(df, df_prov=None):
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     by_region = vac.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1 Cum'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2 Cum'], aggfunc="sum")
-    by_region_3 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 3 Cum'], aggfunc="sum")
-    by_region_1 = by_region_1.replace(0, np.nan) / pop_region * 100
-    by_region_2 = by_region_2.replace(0, np.nan) / pop_region * 100
-    by_region_3 = by_region_3.replace(0, np.nan) / pop_region * 100
+    pop_region = by_region.pivot_table('Vac Population2', 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Given 1 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region.pivot_table('Vac Given 2 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region.pivot_table('Vac Given 3 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
@@ -435,11 +432,13 @@ def save_vacs_prov_plots(df, df_prov=None):
               )
 
     # for over 60s
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region["Vac Population Over 60s"], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Over 60 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Over 60 1 Cum'], aggfunc="sum") / pop_region * 100
+    pop_region = by_region.pivot_table("Vac Population Over 60s", 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Group Over 60 1 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region.pivot_table('Vac Group Over 60 2 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region.pivot_table('Vac Group Over 60 3 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -459,12 +458,14 @@ def save_vacs_prov_plots(df, df_prov=None):
               )
 
     # for risk disease
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'],
-                             values=by_region["Vac Population Risk: Disease"], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Risk: Disease 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Risk: Disease 1 Cum'], aggfunc="sum") / pop_region * 100
+    pop_region = by_region.pivot_table("Vac Population Risk: Disease", 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Group Risk: Disease 1 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region.pivot_table('Vac Group Risk: Disease 2 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region.pivot_table('Vac Group Risk: Disease 3 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -488,9 +489,9 @@ def save_vacs_prov_plots(df, df_prov=None):
     vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
 
     by_region = vac_prov_daily.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2'], aggfunc="sum")
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
+    pop_region = by_region.pivot_table("Vac Population", 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Given 1', 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_2 = by_region.pivot_table('Vac Given 2', 'Date', 'region', "sum").replace(0, np.nan)
     plot_area(df=by_region_2 / pop_region * 100000,
               title='Vacccinatations/100k - 2nd Dose - by Region - Thailand',
               png_prefix='vac_region_daily_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
