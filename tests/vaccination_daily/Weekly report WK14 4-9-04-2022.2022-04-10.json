@@ -39,11 +39,11 @@
       },
       {
         "name":"Vac Group Kids 1 Cum",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Group Kids 2 Cum",
-        "type":"number"
+        "type":"integer"
       },
       {
         "name":"Vac Group Kids 3 Cum",
@@ -149,7 +149,7 @@
     "primaryKey":[
       "Date"
     ],
-    "pandas_version":"0.20.0"
+    "pandas_version":"1.4.0"
   },
   "data":[
     {
@@ -162,8 +162,8 @@
       "Vac Group Health Volunteer 1 Cum":789965,
       "Vac Group Health Volunteer 2 Cum":776755,
       "Vac Group Health Volunteer 3 Cum":592450,
-      "Vac Group Kids 1 Cum":null,
-      "Vac Group Kids 2 Cum":null,
+      "Vac Group Kids 1 Cum":2490533,
+      "Vac Group Kids 2 Cum":156406,
       "Vac Group Kids 3 Cum":null,
       "Vac Group Medical All 1 Cum":1655392,
       "Vac Group Medical All 2 Cum":1626104,
