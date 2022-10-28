@@ -258,7 +258,7 @@ def scrape_and_combine():
     # export(briefings, "cases_briefings")
 
     # Export per province
-    briefings_prov = import_csv("cases_briefings", ["Date"], False)
+    briefings_prov = import_csv("cases_briefings_prov", ["Date"], False)
     # export(briefings_prov, "cases_briefings_prov", csv_only=True)
     # TODO; put tweets_prov into cases_briefings_prov
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
