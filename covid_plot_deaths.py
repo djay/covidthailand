@@ -389,7 +389,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     #  Take avg(2015-2019)/(2021) = p num. (can also correct for population changes?)
 
     def calc_pscore(adf):
-        months = adf.groupby(["Year", "Month"], as_index=False).sum().pivot(columns="Year", values="Deaths", index="Month")
+        months = adf.groupby(["Year", "Month"], as_index=False).sum(
+            numeric_only=True).pivot(columns="Year", values="Deaths", index="Month")
         death3_avg = months[years3].mean(axis=1)
         death3_min = months[years3].min(axis=1)
         death3_max = months[years3].max(axis=1)

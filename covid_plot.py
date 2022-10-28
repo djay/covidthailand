@@ -42,4 +42,5 @@ def save_plots(df: pd.DataFrame) -> None:
 if __name__ == "__main__":
 
     df = scrape_and_combine()
+    df = df.drop(columns=['Source Cases', 'Source Vac Given'])
     save_plots(df)

@@ -209,7 +209,7 @@ def scrape_and_combine():
     jobs = [
         covid_data_vac.vac_slides,
         covid_data_vac.vaccination_reports,
-        covid_data_briefing.get_cases_by_prov_briefings,
+        # covid_data_briefing.get_cases_by_prov_briefings,
         covid_data_dash.dash_weekly,
         # covid_data_dash.dash_province_weekly,
         covid_data_dash.dash_by_province,
@@ -221,7 +221,7 @@ def scrape_and_combine():
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
-        covid_data_tweets.get_cases_by_prov_tweets,
+        # covid_data_tweets.get_cases_by_prov_tweets,
         covid_data_api.get_cases_timelineapi,
         covid_data_api.get_cases_timelineapi_weekly,
         covid_data_testing.get_variant_reports,
@@ -241,9 +241,9 @@ def scrape_and_combine():
     logger.info(f"data={len(res)}")
 
     vac_reports, vac_reports_prov = res['vaccination_reports']
-    briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
+    # briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
     cases_demo, risks_prov, case_api_by_area = res['get_cases_by_demographics_api']
-    tweets_prov, twcases = res['get_cases_by_prov_tweets']
+    # tweets_prov, twcases = res['get_cases_by_prov_tweets']
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
@@ -253,12 +253,14 @@ def scrape_and_combine():
         shutil.copy(file, "api")
 
     # Export briefings
-    briefings = import_csv("cases_briefings", ["Date"], not USE_CACHE_DATA)
-    briefings = briefings.combine_first(cases_briefings).combine_first(twcases)
-    export(briefings, "cases_briefings")
+    briefings = import_csv("cases_briefings", ["Date"], False)
+    # briefings = briefings.combine_first(cases_briefings).combine_first(twcases)
+    # export(briefings, "cases_briefings")
 
     # Export per province
-    export(briefings_prov, "cases_briefings_prov", csv_only=True)
+    briefings_prov = import_csv("cases_briefings_prov", ["Date", "Province"], False)
+    # export(briefings_prov, "cases_briefings_prov", csv_only=True)
+    # TODO; put tweets_prov into cases_briefings_prov
     dfprov = import_csv("cases_by_province", ["Date", "Province"], not USE_CACHE_DATA)
     dfprov = dfprov.combine_first(
         briefings_prov).combine_first(
@@ -266,7 +268,7 @@ def scrape_and_combine():
         res['timeline_by_province_weekly']).combine_first(
         #        cum2daily(res['dash_province_weekly'])).combine_first(
         res['dash_by_province']).combine_first(
-        tweets_prov).combine_first(
+        # tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
     if "Hospitalized Severe" in dfprov.columns:
@@ -295,10 +297,10 @@ def scrape_and_combine():
     for f in [
         res['get_test_reports'],
         res['get_tests_by_day'],
-        cases_briefings,
+        briefings,
         res['get_cases_timelineapi'],
         res['get_cases_timelineapi_weekly'],
-        twcases,
+        # twcases,
         cases_demo,
         cases_by_area,
         situation,
