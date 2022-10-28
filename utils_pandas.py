@@ -124,7 +124,7 @@ def daily2cum(results):
 def fix_gaps(df):
     # Some gaps in the data so fill them in. df.groupby("Province").apply(fix_gaps)
     df = df.reset_index("Province")
-    all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, closed=None)
+    all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, inclusive="both")
     df = df.reindex(all_days, fill_value=np.nan)
     df = df.interpolate()
     df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province
@@ -352,7 +352,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
         df[name] = df[name].fillna(other_name)
         # TODO: sum() might have to be configurable?
         # TODO: we only really need to do this for one value not all the individual values
-        df = df.groupby(["Date", name]).sum(min_count=1).reset_index()  # condense all the "other" fields
+        df = df.groupby(["Date", name]).sum(min_count=1, numeric_only=False).reset_index()  # condense all the "other" fields
     # apply the value function to get all the values
     values = df.set_index(["Date", name]).groupby(level=name, group_keys=False).apply(valuefunc).rename(0).reset_index()
     # put the provinces into cols. use max to ensure NA aren't included. Should only be one value anyway?
