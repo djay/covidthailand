@@ -27,7 +27,7 @@ except:
     TwitterScraper = None
 from requests.adapters import HTTPAdapter
 from requests.adapters import Retry
-from requests.exceptions import ConnectionError
+from requests.exceptions import RequestException
 from requests.exceptions import Timeout
 from tika import config
 from tika import parser
@@ -387,7 +387,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 else:
                     size = int(r.headers.get("content-length", 0))
                 resumable = r.headers.get('accept-ranges') == 'bytes' and check and size > 0
-            except (Timeout, ConnectionError):
+            except (Timeout, RequestException):
                 modified = None
         else:
             modified = None
@@ -406,7 +406,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 # Speed up covid-19 download a lot, but might have to jump back to make sure we don't miss data.
                 r = s.get(url, timeout=timeout, stream=True, headers=resume_header, allow_redirects=True,
                           verify=verify, proxies=proxies)
-            except (Timeout, ConnectionError) as e:
+            except (Timeout, RequestException) as e:
                 err = str(e)
                 r = None
             if type(check) == int and check > 0:
@@ -429,7 +429,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                             if chunk:  # filter out keep-alive new chunks
                                 f.write(chunk)
                                 logger.bind(end="").opt(raw=True).info(".")
-                    except (Timeout, ConnectionError) as e:
+                    except (Timeout, RequestException) as e:
                         if resumable:
                             # TODO: should we revert to last version instead?
                             logger.opt(raw=True).info("Error downloading: {}: resumable file incomplete {}", file, str(e))
