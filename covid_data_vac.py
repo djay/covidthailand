@@ -563,8 +563,8 @@ def vaccination_tables(df, _, page, file):
             elif table == "percent" and len(numbers) in [7, 8]:  # 2022-02 changed to simpler table
                 pop, d1, d1p, d2, d2p, d3, d3p, *total = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, pop], givencols3 + ["Vac Population"])
-            elif table == "percent" and len(numbers) in [9]:  # 2022-07 gen pop and 4 doses
-                pop, d1, d1p, d2, d2p, d3, d3p, d4, d4p = numbers
+            elif table == "percent" and len(numbers) in [9, 10]:  # 2022-07 gen pop and 4 doses
+                pop, d1, d1p, d2, d2p, d3, d3p, d4, d4p, *total = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, d4, d4p, pop], givencols4 + ["Vac Population"])
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
@@ -736,8 +736,9 @@ def vaccination_reports():
         if date < d("2021-12-11"):
             # TODO: find days where day is yesterdays and fix them, or fix the check
             pass
-        elif date in [d("2022-01-21"), d("2022-01-04"), d("2021-12-11"), d("2022-10-23")]:
+        elif date in [d("2022-01-21"), d("2022-01-04"), d("2021-12-11"), d("2022-10-23"), d("2022-11-27")]:
             # "2022-01-21": is actually "2022-01-20"
+            # TODO: maybe just stop trusting the date at the top of the doc?
             pass
         else:
             assert date in vac_daily.index
