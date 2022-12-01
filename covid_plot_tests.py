@@ -90,11 +90,12 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     variants = import_csv("variants", index=["End"], date_cols=["End"])
     variants = variants.fillna(0)
-    variants = variants.rename(columns={'B.1.1.529 (Omicron)': 'BA.1 (Omicron)', 'Other (Omincron)': 'Other'})
+    variants = variants.rename(columns={'B.1.1.529 (Omicron)': 'BA.1 (Omicron)'})
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
 
     # seq is all omicron variants
     seq = seq.multiply(variants["BA.1 (Omicron)"], axis=0)
+    seq = seq.rename(columns={'Other (Omicron)': 'Other'})  # Now includes BQ.X
 
     # TODO: missing seq data results in all BA.1. so either need a other omicron or nan data after date we are sure its not all BA1
     variants.loc["2021-12-24":, 'BA.1 (Omicron)'] = np.nan
@@ -106,14 +107,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     area = import_csv("variants_by_area", index=["Start", "End"], date_cols=["Start", "End"])
     area = area.groupby(["Start", "End"]).sum()
     area = area.reset_index().drop(columns=["Health Area", "Start"]).set_index(
-        "End").rename(columns={"B.1.1.529 (Omicron)": "Other (Omicron)"})
+        "End").rename(columns={"B.1.1.529 (Omicron)": "Other"})
     area = area.apply(lambda x: x / x.sum(), axis=1)
     # Omicron didn't get spit out until 2022-06-24 so get rid of the rest
     # TODO: should we prefer seq data or pcr data?
     variants = variants.combine_first(area["2022-06-24":])
     last_data = variants['BA.2 (Omicron)'].last_valid_index()
 
-    cols = variants.columns.to_list()
+    cols = rearrange(variants.columns.to_list(), "BA.2.75 (Omicron)", "Other", first=False)
     variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0))

@@ -172,16 +172,21 @@ def perc_format(num: float, pos: int) -> str:
     return f'{sensible_number}%'
 
 
-def rearrange(lst, *first):
+def rearrange(lst, *to_move, first=True):
     "reorder a list by moving first items to the front. Can be index or value"
     lst = list(lst)
     result = []
-    for f in first:
+    for f in to_move:
         if type(f) != int:
+            if f not in lst:
+                continue
             f = lst.index(f) + 1
         result.append(lst[f - 1])
         lst[f - 1] = None
-    return result + [i for i in lst if i is not None]
+    if first:
+        return result + [i for i in lst if i is not None]
+    else:
+        return [i for i in lst if i is not None] + result
 
 
 def cut_ages_labels(ages=[10, 20, 30, 40, 50, 60, 70], prefix=None):
