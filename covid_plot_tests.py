@@ -66,8 +66,10 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         "BA.2": "BA.2",
         "BA.4": "BA.4/BA.5",
         "BA.5": "BA.4/BA.5",
-        "BA.2.76": "Other",
-        "Other": "Other"
+        "BA.2.75": "BA.2.75",
+        "BA.2.76": "BA.2.75",
+        "BQ.X": "Other",
+        "Other": "Other",
     }
 
     def group(variant):
@@ -88,7 +90,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 
     variants = import_csv("variants", index=["End"], date_cols=["End"])
     variants = variants.fillna(0)
-    variants = variants.rename(columns={'B.1.1.529 (Omicron)': 'BA.1 (Omicron)'})
+    variants = variants.rename(columns={'B.1.1.529 (Omicron)': 'BA.1 (Omicron)', 'Other (Omincron)': 'Other'})
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
 
     # seq is all omicron variants
