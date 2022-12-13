@@ -740,8 +740,11 @@ def vaccination_reports():
             # "2022-01-21": is actually "2022-01-20"
             # TODO: maybe just stop trusting the date at the top of the doc?
             pass
+        elif date in [d("2022-12-02")]:
+            # Report weekly 48  28-11-2-12-2022.pdf" - no longer has the groups
+            pass
         else:
-            assert date in vac_daily.index
+            assert date in vac_daily.index, "either missing daily data or got wrong date"
 
     # Do cross check we got the same number of allocations to vaccination
     # if not vac_prov_reports.empty:
