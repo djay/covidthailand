@@ -1003,7 +1003,7 @@ def vac_manuf_given_brown(page, file, page_num, url):
 def vac_slides_groups(page, file, page_num):
     # if "กลุ่มเปา้หมาย" not in page:
     #     return pd.DataFrame()
-    if not any_in(page, "ในกลุ่มเป้", "ในกลุ่มเป"):
+    if not any_in(page, "ในกลุ่มเป้", "ในกลุ่มเป", "ของประเทศไทย"):
         return pd.DataFrame()
     # does fairly good jobs
     # table = camelot_cache(file, page_num, process_background=False)
@@ -1035,6 +1035,10 @@ def vac_slides_groups(page, file, page_num):
         ("Student", [r"12 – 17 ปี\s*"]),
         ("kids", [r"5 – 11 ปี\s*"]),
         ("Infant", [r"– 4 ปี\s*"]),
+        ("Risk: Disease", [r"7 กลุ่มโรค\s*"]),
+        ("General", [r"ประชำชนทั่วไป\s*"]),
+        ("Health Volunteer", [r"อาสาสมัครสาธารณสุขประจ\s*"]),
+        ("Medical Staff", [r"บคุลากรทางก\s*"]),
     ]:
         row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True)
         for dose, num in enumerate(row[1::2], 1):
@@ -1084,12 +1088,15 @@ def vac_slides():
         file = get_file()
         if file is None:
             continue
+        date = file2date(file)
         blue, brown, groups = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
         for i, page in enumerate(parse_file(file), 1):
             # pass
             brown = brown.combine_first(vac_manuf_given_brown(page, file, i, link))
             blue = blue.combine_first(vac_manuf_given_blue(page, file, i, link))
-            groups = groups.combine_first(vac_slides_groups(page, file, i))
+            if date and date <= d("2022-03-07"):
+                # numbers goes weird # TODO
+                groups = groups.combine_first(vac_slides_groups(page, file, i))
 
         if not blue.empty and not brown.empty:
             # sometimes we have both tables. cross check them
@@ -1101,8 +1108,7 @@ def vac_slides():
         #     pass
         # else:
         #     assert not manuf.empty
-
-        if groups.index[0] in [d("2022-06-25"), d("2022-05-05"), d("2022-04-23"), d("2022-04-09")]:
+        if groups.empty or groups.index[0] in [d("2022-06-25"), d("2022-05-05"), d("2022-04-23"), d("2022-04-09")]:
             # table is a image
             pass
         elif groups.index[0] <= d("2022-04-08"):
