@@ -312,6 +312,7 @@ def get_variants_by_area_pdf(file, page, page_num):
     elif len(df.columns) == 19:  # 2022-08-18 add BA.2.75
         # TODO: inc BA.2.75/BA2.76
         totals = df[[1, 2, 3, 5, 8, 11, 14, 17]]
+    # TODO: get totals from previous week also since report is sometimes missing
 
     else:
         assert False, "Unknown Area Variant table"

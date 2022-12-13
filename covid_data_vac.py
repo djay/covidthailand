@@ -1000,34 +1000,56 @@ def vac_manuf_given_brown(page, file, page_num, url):
     return row.set_index("Date")
 
 
-def vac_slides_groups(df, page, file, page_num):
-    if "กลุ่มเปา้หมาย" not in page:
-        return
-    # does fairly good job
-    table = camelot_cache(file, page_num, process_background=False)
-    table = table[2:]
-    for i in range(1, 7):
-        table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))
-    table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
-    table.loc[:, "group"] = [
-        "Vac Group Medical Staff",
-        "Vac Group Health Volunteer",
-        "Vac Group Other Frontline Staff",
-        "Vac Group Over 60",
-        "Vac Group Risk: Disease",
-        "Vac Group Risk: Pregnant",
-        "Vac Group Risk: Location",
-        "Vac Group Student"
-        "Total"
-    ]
-    table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
+def vac_slides_groups(page, file, page_num):
+    # if "กลุ่มเปา้หมาย" not in page:
+    #     return pd.DataFrame()
+    if not any_in(page, "ในกลุ่มเป้", "ในกลุ่มเป"):
+        return pd.DataFrame()
+    # does fairly good jobs
+    # table = camelot_cache(file, page_num, process_background=False)
+    # table = table[2:]
+    # for i in range(1, 7):
+    #     table[i] = pd.to_numeric(table[i].str.replace(",", "").replace("-", "0"))
+    # table.columns = ["group", "1 Cum", "1", "2 Cum", "2", "3 Cum", "3"]
+    # table.loc[:, "group"] = [
+    #     "Vac Group Medical Staff",
+    #     "Vac Group Health Volunteer",
+    #     "Vac Group Other Frontline Staff",
+    #     "Vac Group Over 60",
+    #     "Vac Group Risk: Disease",
+    #     "Vac Group Risk: Pregnant",
+    #     "Vac Group Risk: Location",
+    #     "Vac Group Student"
+    #     "Total"
+    # ]
+    # table.pivot(columns="group", values=["1 Cum", "2 Cum", "3 Cum"])
+
+    # # TODO:
+    # return pd.DataFrame()
+    # assert any_in(page, "4 สะสม", "เข็มที่ 4")  # for the number of cols
+    date = find_thai_date(page)
+    data = {"Date": date}
+    page = page.replace("ป ี", "ปี")
+    for group, pats in [
+        ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
+        ("Student", [r"12 – 17 ปี\s*"]),
+        ("kids", [r"5 – 11 ปี\s*"]),
+        ("Infant", [r"– 4 ปี\s*"]),
+    ]:
+        row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True)
+        for dose, num in enumerate(row[1::2], 1):
+            data[f"Vac Group {group} {dose} Cum"] = num
+    row = pd.DataFrame([data]).set_index("Date")
+    logger.info("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
+    return row
 
     # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
-    # village, rest = get_next_numbers(rest, "เจา้หน้าทีด่", until="\n")
-    # disease, rest = get_next_numbers(rest, "ผู้มีโรคเรือ้รัง 7", until="\n")
-    # public, rest = get_next_numbers(rest, "ประชาชนทัว่ไป", until="\n")
-    # over60, rest = get_next_numbers(rest, "ผู้มีอาย ุ60", until="\n")
-    # pregnant, rest = get_next_numbers(rest, "หญิงตัง้ครรภ์", until="\n")
+    # village, rest = get_next_numbers(page, "เจา้หน้าทีด่", until="\n")
+    # disease, rest = get_next_numbers(page, "ผู้มีโรคเรือ้รัง 7", until="\n")
+    # public, rest = get_next_numbers(page, "ประชาชนทัว่ไป", until="\n")
+    # over60, rest = get_next_numbers(page, "ผู้มีอาย ุ60", "ผู้ที่มอีาย ุ60", until="\n")
+
+    # pregnant, rest = get_next_numbers(page, "หญิงตัง้ครรภ์", until="\n")
     # total, rest = get_next_numbers(rest, "รวม", until="\n")
 
 # จ านวนการได้รับวัคซีนโควิด 19 ของประเทศไทย แยกตามกลุ่มเป้าหมาย
@@ -1062,21 +1084,39 @@ def vac_slides():
         file = get_file()
         if file is None:
             continue
-        blue, brown = pd.DataFrame(), pd.DataFrame()
+        blue, brown, groups = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
         for i, page in enumerate(parse_file(file), 1):
             # pass
             brown = brown.combine_first(vac_manuf_given_brown(page, file, i, link))
             blue = blue.combine_first(vac_manuf_given_blue(page, file, i, link))
-            # df = vac_slides_groups(df, page, file, i)
+            groups = groups.combine_first(vac_slides_groups(page, file, i))
+
         if not blue.empty and not brown.empty:
             # sometimes we have both tables. cross check them
             pd.testing.assert_frame_equal(blue.replace(0, np.nan).dropna(axis=1), brown.replace(
                 0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
-        df = df.combine_first(blue).combine_first(brown)
+        manuf = blue.combine_first(brown)
+        # if any_in(file, "2022-11-25", "2022-10-21"):
+        #     # Table is an image. Lots and lots of them
+        #     pass
+        # else:
+        #     assert not manuf.empty
+
+        if groups.index[0] in [d("2022-06-25"), d("2022-05-05"), d("2022-04-23"), d("2022-04-09")]:
+            # table is a image
+            pass
+        elif groups.index[0] <= d("2022-04-08"):
+            # TODO: check if it can go back further
+            pass
+        else:
+            assert 'Vac Group Over 60 1 Cum' in groups.columns
+            assert len(groups.columns) >= 6
+
+        df = df.combine_first(manuf).combine_first(groups)
     return df
 
 
 if __name__ == '__main__':
-    reports, provs = vaccination_reports()
     slides = vac_slides()
+    reports, provs = vaccination_reports()
     vac = export_vaccinations(reports, provs, slides)
