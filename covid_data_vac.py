@@ -808,7 +808,7 @@ def vaccination_reports():
 #     return vac_import, vac_delivered, vacct
 
 
-def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data, export=not USE_CACHE_DATA):
+def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data, do_export=not USE_CACHE_DATA):
     # TODO: replace the vacct per prov data with the dashboard data
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
@@ -820,7 +820,7 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data, export=n
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
     vac_prov = vac_prov.combine_first(vac_reports_prov)  # .combine_first(vacct)
-    if export:
+    if do_export:
         export(vac_prov, "vaccinations", csv_only=True)
 
     # vac_prov = vac_prov.combine_first(vacct)
@@ -1127,4 +1127,4 @@ def vac_slides():
 if __name__ == '__main__':
     slides = vac_slides()
     reports, provs = vaccination_reports()
-    vac = export_vaccinations(reports, provs, slides, export=True)
+    vac = export_vaccinations(reports, provs, slides, do_export=True)
