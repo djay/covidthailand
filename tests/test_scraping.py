@@ -218,6 +218,20 @@ def test_vac_manuf_given(fname, testdf, get_file):
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df, check_dtype=False, check_like=True)
 
 
+@pytest.mark.parametrize("fname, testdf, get_file", dl_files("vac_slides_groups", covid_data_vac.vac_slides_files))
+def test_vac_slides_groups(fname, testdf, get_file):
+    assert get_file is not None
+    file = get_file()  # Actually download
+    assert file is not None
+    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
+    for i, page in enumerate(parse_file(file), 1):
+        # pass
+        df = df.combine_first(covid_data_vac.vac_slides_groups(page, file, i))
+    df = df.dropna(axis=1)  # don't compare empty cols
+    # write_scrape_data_back_to_test(df, "vac_slides_groups", fname)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df, check_dtype=False, check_like=True)
+
+
 def find_testing_pptx(check=False):
     return [(file, None, dl) for file, dl in get_test_files(ext=".pptx", check=check)]
 

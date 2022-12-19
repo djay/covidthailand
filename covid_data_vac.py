@@ -808,7 +808,7 @@ def vaccination_reports():
 #     return vac_import, vac_delivered, vacct
 
 
-def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
+def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data, export=not USE_CACHE_DATA):
     # TODO: replace the vacct per prov data with the dashboard data
     # TODO: replace the import/delivered data with?
     # vac_import, vac_delivered, vacct = get_vac_coldchain()
@@ -820,7 +820,7 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
 
     vac_prov = import_csv("vaccinations", ["Date", "Province"], not USE_CACHE_DATA)
     vac_prov = vac_prov.combine_first(vac_reports_prov)  # .combine_first(vacct)
-    if not USE_CACHE_DATA:
+    if export:
         export(vac_prov, "vaccinations", csv_only=True)
 
     # vac_prov = vac_prov.combine_first(vacct)
@@ -847,7 +847,7 @@ def export_vaccinations(vac_reports, vac_reports_prov, vac_slides_data):
         given_by_area_1).combine_first(
         given_by_area_2).combine_first(
         given_by_area_both)
-    if not USE_CACHE_DATA:
+    if export:
         export(vac_timeline, "vac_timeline")
 
     return vac_timeline
@@ -1040,9 +1040,11 @@ def vac_slides_groups(page, file, page_num):
         ("Health Volunteer", [r"อาสาสมัครสาธารณสุขประจ\s*"]),
         ("Medical Staff", [r"บคุลากรทางก\s*"]),
     ]:
-        row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True)
+        row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True, ints=False)
         for dose, num in enumerate(row[1::2], 1):
             data[f"Vac Group {group} {dose} Cum"] = num
+            if dose <= 2:
+                assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
     logger.info("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
@@ -1125,4 +1127,4 @@ def vac_slides():
 if __name__ == '__main__':
     slides = vac_slides()
     reports, provs = vaccination_reports()
-    vac = export_vaccinations(reports, provs, slides)
+    vac = export_vaccinations(reports, provs, slides, export=True)
