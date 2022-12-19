@@ -257,15 +257,15 @@ def save_caseprov_plots(df=None):
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     cases_region['Cases'] = df['Cases']
-    plot_area(df=cases_region,
-              title='Cases - by Region - Thailand',
-              png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
-              ma_days=7,
-              kind='area', stacked=True, percent_fig=True, mini_map=True,
-              unknown_name="Imported/Prisons", unknown_total="Cases",
-              periods_to_plot=['3', 'all'],
-              cmap=utils_thai.REG_COLOURS,
-              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
+    # plot_area(df=cases_region,
+    #           title='Cases - by Region - Thailand',
+    #           png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True, mini_map=True,
+    #           unknown_name="Imported/Prisons", unknown_total="Cases",
+    #           periods_to_plot=['3', 'all'],
+    #           cmap=utils_thai.REG_COLOURS,
+    #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
     # plot_area(df=df,
