@@ -46,23 +46,23 @@ def save_cases_plots(df: pd.DataFrame) -> None:
         'Proactive Tests in Prison',
         # "Rapid Testing (Antigen/ATK)"
     ]
-    plot_area(df=df,
-              title='Covid Cases by Where Tested - Thailand',
-              legends=legends,
-              png_prefix='cases_types', cols_subset=cols,
-              unknown_name='Cases Unknown', unknown_total='Cases',
-              ma_days=7,
-              kind='area', stacked=True, percent_fig=True,
-              actuals=["Cases"],
-              periods_to_plot=['3', 'all'],
-              cmap="tab10",
-              footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
-                       + 'Contact tracing counts as a Walk-in.\n'
-                       + 'PCR: Polymerase Chain Reaction\n'
-                       + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
-                       + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
-                       + 'Proactive: Testing done at high risk locations, rather than random sampling.',
-              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
+    # plot_area(df=df,
+    #           title='Covid Cases by Where Tested - Thailand',
+    #           legends=legends,
+    #           png_prefix='cases_types', cols_subset=cols,
+    #           unknown_name='Cases Unknown', unknown_total='Cases',
+    #           ma_days=7,
+    #           kind='area', stacked=True, percent_fig=True,
+    #           actuals=["Cases"],
+    #           periods_to_plot=['3', 'all'],
+    #           cmap="tab10",
+    #           footnote="Rapid test positives (ATK) aren't included in Confirmed Cases without PCR Test.\n"
+    #                    + 'Contact tracing counts as a Walk-in.\n'
+    #                    + 'PCR: Polymerase Chain Reaction\n'
+    #                    + 'ATK: Covid-19 Rapid Antigen Self Test Kit\n'
+    #                    + 'Walk-in: Testing done at hospital or test lab (PCR test).\n'
+    #                    + 'Proactive: Testing done at high risk locations, rather than random sampling.',
+    #           footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     cols = [
         'Cases Symptomatic',
@@ -72,15 +72,15 @@ def save_cases_plots(df: pd.DataFrame) -> None:
         'Symptomatic Cases',
         'Asymptomatic Cases',
     ]
-    plot_area(df=df,
-              title='Covid Cases by Symptoms - Thailand',
-              legends=legends,
-              png_prefix='cases_sym', cols_subset=cols,
-              unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
-              ma_days=None,
-              kind='area', stacked=True, percent_fig=False, clean_end=True,
-              cmap='tab10',
-              footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
+    # plot_area(df=df,
+    #           title='Covid Cases by Symptoms - Thailand',
+    #           legends=legends,
+    #           png_prefix='cases_sym', cols_subset=cols,
+    #           unknown_name='Cases Symptomatic Unknown', unknown_total='Cases',
+    #           ma_days=None,
+    #           kind='area', stacked=True, percent_fig=False, clean_end=True,
+    #           cmap='tab10',
+    #           footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
     # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
     # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
