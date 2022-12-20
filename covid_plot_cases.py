@@ -82,9 +82,9 @@ def save_cases_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  MOPH Daily Situation Report')
 
-    # cols = ['Cases Imported','Cases Walkin', 'Cases Proactive', 'Cases Unknown']
-    # plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
-    #           kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
+    cols = ['Cases Imported', 'Cases Walkin', 'Cases Proactive', 'Cases Unknown']
+    plot_area(df=df, png_prefix='cases_types_all', cols_subset=cols, title='Thailand Covid Cases by Test Type',
+              kind='area', stacked=True, percent_fig=False, ma_days=None, cmap='tab10')
 
     # Thailand Covid Cases by Age
     # cols = ["Age 0-9", "Age 20-29", "Age 30-39", "Age 40-49", "Age 50-65", "Age 66-"]
@@ -257,15 +257,15 @@ def save_caseprov_plots(df=None):
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     cases_region['Cases'] = df['Cases']
-    # plot_area(df=cases_region,
-    #           title='Cases - by Region - Thailand',
-    #           png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
-    #           ma_days=7,
-    #           kind='area', stacked=True, percent_fig=True, mini_map=True,
-    #           unknown_name="Imported/Prisons", unknown_total="Cases",
-    #           periods_to_plot=['3', 'all'],
-    #           cmap=utils_thai.REG_COLOURS,
-    #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
+    plot_area(df=cases_region,
+              title='Cases - by Region - Thailand',
+              png_prefix='cases_region_stacked', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True, mini_map=True,
+              unknown_name="Imported/Prisons", unknown_total="Cases",
+              periods_to_plot=['3', 'all'],
+              cmap=utils_thai.REG_COLOURS,
+              footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard, CCSA Daily Briefing')
 
     # cols = rearrange([f'Cases Area {area}' for area in DISTRICT_RANGE] + ['Cases Imported'], *FIRST_AREAS)
     # plot_area(df=df,

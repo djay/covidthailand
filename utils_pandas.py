@@ -99,6 +99,13 @@ def cum2daily(results, exclude=[]):
     return cum
 
 
+def weekly2daily(weekly):
+    # This one doesn't have the right area under the curve
+    # weekly.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate() / 7
+    # This one is flat. TODO: how to get more of a curve?
+    return weekly.reindex(pd.date_range(weekly.index.min(), weekly.index.max(), name="Date")).cumsum().interpolate().diff()
+
+
 def daily2cum(results):
     cols = [c for c in results.columns if " Cum" not in c]
     daily = results[cols]
