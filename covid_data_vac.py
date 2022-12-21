@@ -1036,7 +1036,7 @@ def vac_slides_groups(page, file, page_num):
         ("kids", [r"5 – 11 ปี\s*"]),
         ("Infant", [r"– 4 ปี\s*"]),
         ("Risk: Disease", [r"7 กลุ่มโรค\s*"]),
-        ("General", [r"ประชำชนทั่วไป\s*"]),
+        ("Risk: Location", [r"ประชำชนทั่วไป\s*"]),
         ("Health Volunteer", [r"อาสาสมัครสาธารณสุขประจ\s*"]),
         ("Medical Staff", [r"บคุลากรทางก\s*"]),
     ]:
