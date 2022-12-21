@@ -1033,7 +1033,7 @@ def vac_slides_groups(page, file, page_num):
     for group, pats in [
         ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
         ("Student", [r"12 – 17 ปี\s*"]),
-        ("kids", [r"5 – 11 ปี\s*"]),
+        ("Kids", [r"5 – 11 ปี\s*"]),
         ("Infant", [r"– 4 ปี\s*"]),
         ("Risk: Disease", [r"7 กลุ่มโรค\s*"]),
         ("Risk: Location", [r"ประชำชนทั่วไป\s*"]),
