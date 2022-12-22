@@ -354,6 +354,12 @@ givencols4 = givencols3 + [
     "Vac Given 4 Cum",
     "Vac Given 4 %",
 ]
+givencols6 = givencols4 + [
+    "Vac Given 5 Cum",
+    "Vac Given 5 %",
+    "Vac Given 6 Cum",
+    "Vac Given 6 %",
+]
 vaccols8x3 = givencols3 + [
     f"Vac Group {g} {d} Cum" for g in [
         "Medical Staff", "Health Volunteer", "Other Frontline Staff", "Over 60", "Risk: Disease", "Risk: Pregnant",
@@ -416,7 +422,10 @@ def vaccination_tables(df, _, page, file):
     for headings, lines in pairwise(rest):
         shot_count = in_heading(shots)
         table = {12: "new_given", 10: "given", 6: "alloc", 14: "july", 16: "july"}.get(shot_count)
-        if not table and in_heading(oldhead):
+        shot_nums = [int(t.strip()[-1]) for t in re.findall(r"(เข็(?:ม|ม)\s?(?:ที|ที่|ท่ี|ท่ี)\s.?[1-6]\s*)", page)]
+        if max(shot_nums) == 6:
+            table = "shot6"
+        elif not table and in_heading(oldhead):
             table = "old_given"
         elif not table and in_heading(july) and in_heading(re.compile(r"(?:ร้อยละ|รอ้ยละ)")) and date > d("2021-08-01"):  # new % table
             table = "percent"
@@ -566,6 +575,9 @@ def vaccination_tables(df, _, page, file):
             elif table == "percent" and len(numbers) in [9, 10]:  # 2022-07 gen pop and 4 doses
                 pop, d1, d1p, d2, d2p, d3, d3p, d4, d4p, *total = numbers
                 add(prov, [d1, d1p, d2, d2p, d3, d3p, d4, d4p, pop], givencols4 + ["Vac Population"])
+            elif table == "shot6":
+                pop, d1, d1p, d2, d2p, d3, d3p, d4, d4p, d5, d5p, d6, d6p, *total = numbers
+                add(prov, [d1, d1p, d2, d2p, d3, d3p, d4, d4p, d5, d5p, d6, d6p, pop], givencols6 + ["Vac Population"])
             else:
                 assert False, f"No vac table format match for {len(numbers)} cols in {file} {str(date)}"
         assert added is None or added > 7
@@ -1125,6 +1137,6 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    slides = vac_slides()
     reports, provs = vaccination_reports()
+    slides = vac_slides()
     vac = export_vaccinations(reports, provs, slides, do_export=True)
