@@ -214,7 +214,7 @@ def get_tests_by_area_pdf(file, page, data, raw):
     # TODO: should really find and parse X axis labels which contains 'เขต' and count
     tests_start = 13 if "total" not in page else 14
     pos = list(map(int, numbers[0:13]))
-    assert all([p < 500000 for p in pos])
+    # assert all([p < 500000 for p in pos])
     tests = numbers[tests_start:tests_start + 13]
     assert tests == list(map(int, tests))  # last number sometimes is joined to next %
     tests = list(map(int, tests))
