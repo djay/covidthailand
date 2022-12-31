@@ -10,6 +10,7 @@ python-dateutil
 wheel
 # pytwitterscraper
 camelot-py[cv,plot]
+PyPDF2<3.0  # until this is fixed - https://github.com/camelot-dev/camelot/issues/339
 pandas > 1.4.0  # < 1.3.0 # div bt zero?
 numpy < 1.24.0
 matplotlib == 3.3.4
