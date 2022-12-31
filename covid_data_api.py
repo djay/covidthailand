@@ -15,6 +15,7 @@ from utils_pandas import cut_ages
 from utils_pandas import export
 from utils_pandas import fuzzy_join
 from utils_pandas import import_csv
+from utils_pandas import weekly2daily
 from utils_pandas import weeks_to_end_date
 from utils_scraping import logger
 from utils_scraping import s
@@ -100,11 +101,13 @@ def get_cases_timelineapi_weekly():
                    new_case_excludeabroad="Cases Local", total_case_excludeabroad="Cases Local Cum",
                    new_death="Deaths", total_death="Deaths Cum",
                    case_walkin="Cases Walkin", case_foriegn="Cases Imported", case_prison="Cases Prison",
-                   new_recovered="Recovered",
+                   new_recovered="Recovered", total_recovered="Recovered Cum",
                                 ))
     df = df.drop(columns=[col for col in df.columns if "_" in col])
-    df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
-    df = cum2daily(df[[col for col in df.columns if "Cum" in col]]).combine_first(df)
+    daily = weekly2daily(df[[col for col in df.columns if " Cum" not in col]])
+    cum = df[[col for col in df.columns if "Cum" in col]].reindex(
+        pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
+    df = cum2daily(cum).combine_first(daily)
 
     # daily = [col for col in df.columns if "Cum" not in col]
     # df[daily] = (df[daily] / 7)

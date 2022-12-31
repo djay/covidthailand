@@ -140,7 +140,10 @@ def file2date(file):
         date = m.group(0)
         if len(date) == 8:
             # assume non-thai year for 8 digits?
-            return pd.to_datetime(date)
+            try:
+                return pd.to_datetime(date)
+            except:
+                return None
         else:
             day, month, year = date[0:2], date[2:4], date[4:6]
         # Try year at the end. thai year

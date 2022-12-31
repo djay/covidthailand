@@ -214,7 +214,7 @@ def get_tests_by_area_pdf(file, page, data, raw):
     # TODO: should really find and parse X axis labels which contains 'เขต' and count
     tests_start = 13 if "total" not in page else 14
     pos = list(map(int, numbers[0:13]))
-    assert all([p < 500000 for p in pos])
+    # assert all([p < 500000 for p in pos])
     tests = numbers[tests_start:tests_start + 13]
     assert tests == list(map(int, tests))  # last number sometimes is joined to next %
     tests = list(map(int, tests))
@@ -312,6 +312,7 @@ def get_variants_by_area_pdf(file, page, page_num):
     elif len(df.columns) == 19:  # 2022-08-18 add BA.2.75
         # TODO: inc BA.2.75/BA2.76
         totals = df[[1, 2, 3, 5, 8, 11, 14, 17]]
+    # TODO: get totals from previous week also since report is sometimes missing
 
     else:
         assert False, "Unknown Area Variant table"
@@ -400,6 +401,7 @@ def get_variant_sequenced_table(file, pages):
         df = df.apply(pd.to_numeric)
         # get rid of mistake duplicate columns - 14_20220610_DMSc_Variant.pdf
         df = df.loc[:, ~df.columns.duplicated()].copy()
+        df.columns = [c.strip("*") for c in df.columns]
         # match = re.search("Thailand with (.*)sequence data", page)
         # if match and match.group(1) in ["", "Omicron"]:
         #     # first table. Ignore others so no double counted
@@ -431,9 +433,10 @@ def get_variant_sequenced_table(file, pages):
     elif any_in(file, "20220708", "20220701", "20220627"):
         # BA4/5 are the "Other" in the first table but counted later on
         pass
-    elif any_in(file, '20220916', '20221021'):
+    elif any_in(file, '20220916', '20221021', '20221125'):
         # 20220916: "Other B" doesn't seem to appear in any later tables?
         # 20221021: TODO: seems like mix between two sets of weeks? 142/143, 143/144
+        # 20221125: BQ.X should be combined with Other to make 7?
         pass
     else:
         assert others.sum() == 0 or (first_seq_table['Other'] == others).all()
@@ -499,6 +502,6 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    df_daily = get_tests_by_day()
     variants = get_variant_reports()
+    df_daily = get_tests_by_day()
     df = get_test_reports()

@@ -152,7 +152,7 @@ jobs:
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9.10
+          python-version: 3.9.15
           cache: 'pip'
       - uses: actions/setup-java@v1
         if: ${{ steps.goscrape.outcome == 'success' }}
