@@ -344,11 +344,11 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 def save_vacs_prov_plots(df, df_prov=None):
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
-    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
+    vac = vac.groupby("Province", group_keys=False)
     if df_prov is None:
         df_prov = import_csv("cases_by_province", ['Date', 'Province'])
-        df_prov = df_prov.groupby("Province", group_keys=False).apply(fix_gaps)
-    vac = vac.combine_first(df_prov[[c for c in df_prov.columns if "Vac" in c]])
+        df_prov = df_prov.groupby("Province", group_keys=False)
+    vac = vac.combine_first(df_prov[[c for c in df_prov.columns if "Vac" in c]]).apply(fix_gaps)
 
     # Let's trust the dashboard more but they could both be different
     # TODO: dash gives different higher values. Also glitches cause problems
