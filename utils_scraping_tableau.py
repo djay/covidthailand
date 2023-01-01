@@ -95,7 +95,7 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
             df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
         except pd.errors.OutOfBoundsDatetime:
             # Could be a Thai year. Hack to convert
-            df[index_col] = df[index_col].str.replace("2564", "2021").str.replace("2565", "2022")
+            df[index_col] = df[index_col].str.replace("2564", "2021").str.replace("2565", "2022").str.replace("2566", "2023")
             df[index_col] = pd.to_datetime(df[index_col], dayfirst=False).dt.normalize()
     # if one mapping is dict then do pivot
     pivot = [(k, v) for k, v in mappings.items() if type(v) != str]
@@ -181,7 +181,7 @@ def workbook_flatten(wb, date=None, defaults={"": 0.0}, **mappings):
                 df['Date'] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
             except pd.errors.OutOfBoundsDatetime:
                 # Could be a Thai year. Hack to convert
-                df['Date'] = df['Date'].str.replace("2564", "2021").str.replace("2565", "2022")
+                df['Date'] = df['Date'].str.replace("2564", "2021").str.replace("2565", "2022").str.replace("2566", "2023")
                 df['Date'] = pd.to_datetime(df['Date'], dayfirst=False).dt.normalize()
             # if one mapping is dict then do pivot
             pivot = [(k, v) for k, v in col.items() if type(v) != str]
