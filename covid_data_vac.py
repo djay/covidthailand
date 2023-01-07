@@ -655,7 +655,7 @@ def vaccination_reports_files2(check=0,
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
-    hasyear = re.compile("(2564|2565)")
+    hasyear = re.compile("(2564|2565|2066)")
     if not check:
         use_proxy = False
     else:
