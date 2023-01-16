@@ -335,6 +335,10 @@ def get_variants_by_area_pdf(file, page, page_num):
     if pd.isnull(start):
         # Start includes the month
         start = pd.to_datetime(f"{start_txt} {end.year}", dayfirst=True, errors="coerce")
+    elif "20230106" in file:
+        # Someone put in the wrong dates
+        start, end = d("2022-12-31"), d("2023-01-06")
+
     assert not pd.isnull(start)
 
     totals["Start"] = start

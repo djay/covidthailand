@@ -78,6 +78,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
+    seq = seq[seq.sum(axis=1) > 20]  # If not enough samples we won't use it
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
 
     # add in manual values
