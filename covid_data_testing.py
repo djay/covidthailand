@@ -350,6 +350,7 @@ def get_variants_by_area_pdf(file, page, page_num):
 
 def get_variants_plot_pdf(file, page, page_num):
     if "National prevalence" not in page:
+        # and "variants surveillance" not in page or "N =" in page:
         return pd.DataFrame()
     # national = camelot_cache(file, page_num + 1, process_background=False, table=2)
     # none of the other tables work with camelot
@@ -395,7 +396,7 @@ def get_variant_sequenced_table(file, pages):
         df["Lineage"] = list(pd.to_numeric(weeks).dropna())
         df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
         df = df.set_index("End")
-        df = df.drop(columns=["Total Sequences", "Lineage"])
+        df = df.drop(columns=["Total Sequences", "Total Sequence", "Lineage"], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
         df = df.apply(pd.to_numeric)
@@ -437,6 +438,9 @@ def get_variant_sequenced_table(file, pages):
         # 20220916: "Other B" doesn't seem to appear in any later tables?
         # 20221021: TODO: seems like mix between two sets of weeks? 142/143, 143/144
         # 20221125: BQ.X should be combined with Other to make 7?
+        pass
+    elif any_in(file, '20230106'):
+        # XBB is counted as other in first table but not in 2nd. Deal with XBB later if needed?
         pass
     else:
         assert others.sum() == 0 or (first_seq_table['Other'] == others).all()
