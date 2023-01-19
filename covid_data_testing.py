@@ -200,7 +200,9 @@ def get_tests_by_area_pdf(file, page, data, raw):
         "988114.3", "9881 14.3").replace(
         "2061119828", "2061 119828").replace(
         "9881 14.3", "98811 4.3").replace(
-        "2061 119828", "20611 19828")
+        "2061 119828", "20611 19828").replace(
+        "445270", "445 270"
+    )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
@@ -447,7 +449,8 @@ def get_variant_sequenced_table(file, pages):
         # XBB is counted as other in first table but not in 2nd. Deal with XBB later if needed?
         pass
     else:
-        assert others.sum() == 0 or (first_seq_table['Other'] == others).all()
+        latest_week = first_seq_table.index.max()
+        assert others.sum() == 0 or (first_seq_table['Other'][latest_week] == others[latest_week]).all()
     fileseq['Other'] = others
     return fileseq
 
