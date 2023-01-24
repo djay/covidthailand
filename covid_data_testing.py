@@ -102,6 +102,9 @@ def get_tests_by_day():
         files = ""
         missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
         for file, dl in list(get_test_files(ext="xlsx")) + list(get_test_files(ext=missing)):
+            if not any_in(file, "ATK", "testing_data"):
+                continue
+            # TODO: work out how to process 2023.01.21_แยกประเภทของผล-รายจังหวัด.xlsx. Tests of different types per province
             dl()
             tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
             if "ATK" in file:
@@ -201,7 +204,8 @@ def get_tests_by_area_pdf(file, page, data, raw):
         "2061119828", "2061 119828").replace(
         "9881 14.3", "98811 4.3").replace(
         "2061 119828", "20611 19828").replace(
-        "445270", "445 270"
+        "445270", "445 270").replace(
+        "237193", "237 193"
     )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
