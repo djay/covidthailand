@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 from dateutil.parser import parse as d
 
+import covid_plot_tests
 from utils_pandas import daterange
 from utils_pandas import export
 from utils_pandas import import_csv
@@ -101,12 +102,12 @@ def get_tests_by_day():
         df = pd.DataFrame()
         files = ""
         missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
-        for file, dl in list(get_test_files(ext="xlsx")) + list(get_test_files(ext=missing)):
+        for file, dl in list(get_test_files(ext=missing)) + list(get_test_files(ext="xlsx")):
             if not any_in(file, "ATK", "testing_data"):
                 continue
             # TODO: work out how to process 2023.01.21_แยกประเภทของผล-รายจังหวัด.xlsx. Tests of different types per province
             dl()
-            tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+            tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2, 3])
             if "ATK" in file:
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
             else:
@@ -114,6 +115,7 @@ def get_tests_by_day():
                 tests["Tests ATK"] = np.nan
                 tests["Pos ATK"] = np.nan
             tests = tests.drop(tests[tests['Date'].isna()].index)  # get rid of totals row
+            tests = tests.drop(columns="Week") if "Week" in tests.columns else tests
             tests = tests.iloc[1:]  # Get rid of first row with unspecified data
             tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
             tests = tests.set_index("Date")
@@ -520,3 +522,8 @@ if __name__ == '__main__':
     variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
+    old = import_csv("combined", index=["Date"])
+    df = old.combine_first(df).combine_first(df_daily)
+
+    covid_plot_tests.save_tests_plots(df)
+    covid_plot_tests.save_area_plots(df)
