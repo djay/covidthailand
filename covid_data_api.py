@@ -621,7 +621,7 @@ def deaths_by_province_weekly():
     df['age'] = pd.to_numeric(df['age'])
     timeline = df.reset_index().groupby("Date")['age'].max().to_frame("Deaths Age Max")
     timeline["Deaths Age Min"] = df.reset_index().groupby("Date")['age'].min()
-    timeline["Deaths Age Med"] = df.reset_index().groupby("Date")['age'].median()
+    timeline["Deaths Age Median"] = df.reset_index().groupby("Date")['age'].median()
     age_groups = cut_ages(df, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group").reset_index()
     ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
     ages.columns = [f"Deaths Age {a}" for a in ages.columns.tolist()]
