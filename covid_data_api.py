@@ -568,10 +568,9 @@ def timeline_by_province():
 def timeline_by_province_weekly():
     # url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-by-provinces"
     # df = load_paged_json(url, ["year", "weeknum"], [2020, 1])
-    # url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    # file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=True, timeout=40)), None)
-    # df = pd.read_json(file)
-    df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces", dir="inputs/json/weekly")
+    url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=False, timeout=80)), None)
+    df = pd.read_json(file)
 
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
@@ -628,6 +627,11 @@ def deaths_by_province_weekly():
     ages.columns = [f"Deaths Age {a}" for a in ages.columns.tolist()]
     ages = weekly2daily(ages)
     timeline = timeline.combine_first(ages)
+
+    # type is either 'confirmed patient', 'probable patient'
+    # dealth_cluster can say if family, friend etc
+    # df['Deaths Risk Family']
+    # occupation
 
     return timeline, deaths_daily
 
