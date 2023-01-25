@@ -795,8 +795,8 @@ if __name__ == '__main__':
     excess_deaths()
 
     import covid_plot_cases
-    covid_plot_cases.save_caseprov_plots(df)
-    covid_plot_cases.save_cases_plots(df)
     import covid_plot_deaths
     covid_plot_deaths.save_deaths_plots(df)
+    covid_plot_cases.save_caseprov_plots(df)
+    covid_plot_cases.save_cases_plots(df)
     # covid_plot_cases.save_infections_estimate(df)
