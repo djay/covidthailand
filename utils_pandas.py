@@ -258,7 +258,6 @@ def fuzzy_join(a,
 
 
 def export(df, name, csv_only=False, dir="api"):
-    logger.info("Exporting: {}", name)
     try:
         df = df.reset_index()
     except:
@@ -270,17 +269,21 @@ def export(df, name, csv_only=False, dir="api"):
     # TODO: save space by dropping nan
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
     if not csv_only:
+        path = os.path.join(dir, name)
         df.to_json(
-            os.path.join(dir, name),
+            path,
             date_format="iso",
             indent=3,
             orient="records",
         )
+        logger.info("Exporting: {}", path)
+    path = os.path.join(dir, f"{name}.csv")
     df.to_csv(
-        os.path.join(dir, f"{name}.csv"),
+        path,
         index=False,
         date_format='%Y-%m-%d'
     )
+    logger.info("Exporting: {}", path)
 
 
 def import_csv(name, index=None, return_empty=False, date_cols=['Date'], str_cols=[], int_cols=[], dir="api"):

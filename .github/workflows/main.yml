@@ -144,9 +144,13 @@ jobs:
       - name: Apt update
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
         id: dep_apt
-        run: |
-          sudo apt-get update -y --ignore-missing | true
-          sudo apt-get install -y ghostscript python3-tk
+        # run: |
+        #   sudo apt-get update -y --ignore-missing || true
+        #   sudo apt-get install -y ghostscript python3-tk
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ghostscript python3-tk
+          version: 1.0
       - name: Set up Python
         id: goscrape
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
@@ -290,7 +294,7 @@ jobs:
         run: |
            tar -czvf briefings.tar.gz -T <(\ls -1 inputs/briefings/*)
            tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" -czvf inputs.tar.gz inputs
-           tar -czvf datasets.tar.gz api inputs/json/*.csv
+           find api inputs/json   -path "api/*" -o -name "*.csv" | tar -czvf datasets.tar.gz -T -
       - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
