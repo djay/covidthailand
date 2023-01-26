@@ -173,8 +173,9 @@ def cleanup_cases(cases):
 
     # Fix typos in Nationality columns
     # This won't include every possible misspellings and need some further improvement
-    cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
-    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
+    if "nationality" in cases.columns:
+        cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
+        cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
 
     cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
     # TODO: reduce down to smaller list or just show top 5?
@@ -360,34 +361,20 @@ def cleanup_cases(cases):
 
 def get_case_details_api_weekly():
 
-    # cases = import_csv("covid-19", dir="inputs/json/weekly",
-    #                    date_cols=["Date", "update_date", "txn_date", "update_date2"],
-    #                    str_cols=["Health District Number", "Job Type", "Nat Main", "Patient Type", "age_range", "gender",
-    #                              "nationality", "patient_type", "patient_type2", "risk", "risk_group", "translation", "job"],
-    #                    # int_cols=["No.", ] # "age", "index", "int", ]
-    #                    )
-    # target_date = cases["Date"].max() if not cases.empty else None
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
                          ["year", "weeknum"], None, dir="inputs/json/weekly/cases")
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0).reset_index()
+    df = df.drop(columns=['update_date', "index"])
 
-    df = cleanup_cases(df)
-    cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
+    cases = cleanup_cases(df)
     # assert total == len(cases) - init_cases_len
-    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
+    cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
 
-    # cases = cases.set_index("Date")
-    logger.info("Covid19daily: covid-19 {}", len(cases))
-
-    # # they screwed up the date conversion. d and m switched sometimes
-    # # TODO: bit slow. is there way to do this in pandas?
-    # for record in records:
-    #     record['announce_date'] = to_switching_date(record['announce_date'])
-    #     record['Notified date'] = to_switching_date(record['Notified date'])
-    # cases = pd.DataFrame(records)
+    logger.info("Covid19weekly: covid-19 {}", len(cases))
     return cases
 
 
@@ -473,7 +460,6 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
         return cached
 
     df = pd.DataFrame()
-    pagenum = last_page
     page = []
     # Because there is no unique case number to match up we will work backwards
     # until we get to the start of the last date we have, or where update date is before our last
@@ -482,21 +468,37 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # data is so old that it won't change so continuing based on page numbers is ok. This allows us to
     # build up the cache over time even if we get failures making us stop
     last_date = None
+    backwards = cached is None or len(cached) / total > 0.9
+    if backwards:
+        pagenum = last_page
+    else:
+        pagenum = int(len(cached) / chunk)  # Assumes we didn't get a partial page before? but we shouldn't?
+        target_index = None
+        df = cached
+    pages_got = 0
     while last_date is None or target_index is None or (last_date >= target_index).all():
         # if len(data) >= 500000:
         #     break
         purl = f"{url}?page={pagenum}"
-        file, content, _ = next(iter(web_files(purl, dir=dir, check=check, appending=False, timeout=80)), None)
+        file, content, _ = next(iter(web_files(purl, dir=dir, check=check, appending=False, timeout=80)), (None, None, None))
+        if file is None:
+            if backwards:
+                df = pd.Dataframe()  # Can't join it. have eto give up
+            break
         os.remove(file)
         pagedata = json.loads(content)
         data = pagedata['data']
         if pagedata['data']:
             dfpage = pd.DataFrame(data)
             last_date = dfpage[index].iloc[0]
-            df = pd.concat([dfpage, df])
+            df = pd.concat([dfpage, df] if backwards else [df, dfpage])
         print(".", end="")
-        pagenum -= 1
-        if pagenum == 0:
+        pagenum += -1 if backwards else +1
+        pages_got += 1
+        if pagenum == 0 and backwards or not backwards and pagenum == last_page:
+            break
+        if not backwards and pages_got == 100:
+            # Cut our loses here so we don't take so much time. Get more later
             break
 
     if cached is not None:
@@ -517,42 +519,54 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
-    cases = get_case_details_api()
+
+    def process(cases):
+        # Age groups
+        age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
+        case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
+        case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
+
+        #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+        #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
+        age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
+        case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
+        case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
+
+        case_risks_daily = pd.crosstab(cases['Date'], cases["risk_group"])
+        case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
+
+        # Prov data based on this api file
+        cases['Province'] = cases['province_of_onset']
+        # risks_prov = join_provinces(cases, 'Province')
+        risks_prov = cases.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
+        risks_prov = risks_prov.reset_index()
+        risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
+                                 columns=risks_prov["risk_group"],
+                                 values=risks_prov['Cases'],
+                                 aggfunc="sum")
+        risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
+
+        cases = cases.reset_index(drop=True)
+        case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
+        case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
+
+        cases_daily = case_risks_daily.combine_first(case_ages).combine_first(case_ages2)
+        return cases_daily, risks_prov, case_areas
+
+    cases = get_case_details_api()  # until oct 2022
     # TODO: use latest weekly data
-    # cases_weekly = get_case_details_api_weekly()
+    cases_weekly = get_case_details_api_weekly()  # 2022 onwards
     # cases = cases.combine_first(cases_weekly)
 
-    # Age groups
-    age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
-    case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
-    case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
+    cases_daily, risks_prov, case_areas = process(cases)
+    cases_daily_w, risks_prov_w, case_areas_w = process(cases_weekly)
+    risks_prov_w = risks_prov_w.reset_index("Province").groupby("Province", group_keys=True).apply(weekly2daily)
 
-    #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
-    #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
-    age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
-    case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
-    case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
-
-    case_risks_daily = pd.crosstab(cases['Date'], cases["risk_group"])
-    case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
-
-    # Prov data based on this api file
-    cases['Province'] = cases['province_of_onset']
-    # risks_prov = join_provinces(cases, 'Province')
-    risks_prov = cases.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
-    risks_prov = risks_prov.reset_index()
-    risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
-                             columns=risks_prov["risk_group"],
-                             values=risks_prov['Cases'],
-                             aggfunc="sum")
-    risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
-
-    cases = cases.reset_index(drop=True)
-    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
-    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
-
-    cases_daily = case_risks_daily.combine_first(case_ages).combine_first(case_ages2)
-    return cases_daily, risks_prov, case_areas
+    return (
+        cases_daily.combine_first(weekly2daily(cases_daily_w)),
+        risks_prov.combine_first(risks_prov_w),
+        case_areas.combine_first(weekly2daily(case_areas_w))
+    )
 
 
 def timeline_by_province():
@@ -776,6 +790,7 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline_weekly = get_cases_timelineapi_weekly()
     timeline = get_cases_timelineapi()
@@ -785,7 +800,6 @@ if __name__ == '__main__':
     timeline_prov_weekly = timeline_by_province_weekly()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     ihme_dataset()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
