@@ -161,11 +161,13 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
-    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').mean()
+    df['Deaths Age Median (MA)'] = df['Deaths Age Median'].rolling('7d').median().shift(-6)
+    df['Deaths Age Min (MA)'] = df['Deaths Age Min'].rolling('7d').min().shift(-6)
+    df['Deaths Age Max (MA)'] = df['Deaths Age Max'].rolling('7d').max().shift(-6)
     cols = [
         'Deaths Age Median (MA)',
-        'Deaths Age Max',
-        'Deaths Age Min',
+        'Deaths Age Max (MA)',
+        'Deaths Age Min (MA)',
     ]
     legends = [
         'Median Age of Deaths',
