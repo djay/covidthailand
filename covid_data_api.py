@@ -478,6 +478,9 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # Because there is no unique case number to match up we will work backwards
     # until we get to the start of the last date we have, or where update date is before our last
     # update date
+    # TODO: Unless the cache is not up to date enough. In that case we go forward and assume the
+    # data is so old that it won't change so continuing based on page numbers is ok. This allows us to
+    # build up the cache over time even if we get failures making us stop
     last_date = None
     while last_date is None or target_index is None or (last_date >= target_index).all():
         # if len(data) >= 500000:
@@ -598,6 +601,9 @@ def deaths_by_province_weekly():
         "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
     ]
     data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
+    csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # isn't that supposed to be round 5?
+    file, _, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=True), None)
+    data += [pd.read_csv(file)]
     df = pd.concat(data)
     # "age":"57","age_range":"50-59 \u0e1b\u0e35","occupation":"\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38","type":"\u0e1c\u0e39\u0e49\u0e1b\u0e48\u0e27\u0e22\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19","death_cluster":null
     # TODO: counts per province per age range, total deaths,
