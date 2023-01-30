@@ -456,8 +456,11 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     last_page = pagedata['meta']['last_page']
     total = pagedata['meta']['total']
     chunk = pagedata['meta']['per_page']
-    if cached is not None and len(cached) == total:
-        return cached
+    if cached is not None:
+        if len(cached) == total:
+            return cached
+        togo = (total - len(cached)) / chunk
+        logger.info("getting {} more pages".format(togo))
 
     df = pd.DataFrame()
     page = []
@@ -467,18 +470,18 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # TODO: Unless the cache is not up to date enough. In that case we go forward and assume the
     # data is so old that it won't change so continuing based on page numbers is ok. This allows us to
     # build up the cache over time even if we get failures making us stop
-    last_date = None
+    if today().date() == d("2023-01-30").date():
+        cached = pd.DataFrame()  # Fix mistake where first page was doubled
     backwards = cached is None or len(cached) / total > 0.9
     if backwards:
         pagenum = last_page
     else:
-        pagenum = int(len(cached) / chunk)  # Assumes we didn't get a partial page before? but we shouldn't?
+        pagenum = int(len(cached) / chunk) + 1  # Assumes we didn't get a partial page before? but we shouldn't?
         target_index = None
         df = cached
     pages_got = 0
-    while last_date is None or target_index is None or (last_date >= target_index).all():
-        # if len(data) >= 500000:
-        #     break
+    is_first = False
+    while True:
         purl = f"{url}?page={pagenum}"
         file, content, _ = next(iter(web_files(purl, dir=dir, check=check, appending=False, timeout=80)), (None, None, None))
         if file is None:
@@ -488,31 +491,41 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
         os.remove(file)
         pagedata = json.loads(content)
         data = pagedata['data']
-        if pagedata['data']:
-            dfpage = pd.DataFrame(data)
-            last_date = dfpage[index].iloc[0]
-            df = pd.concat([dfpage, df] if backwards else [df, dfpage])
-        print(".", end="")
-        pagenum += -1 if backwards else +1
-        pages_got += 1
-        if pagenum == 0 and backwards or not backwards and pagenum == last_page:
+        if not pagedata['data']:
             break
-        if not backwards and pages_got == 100:
+        pages_got += 1
+        dfpage = pd.DataFrame(data)
+        df = pd.concat([dfpage, df] if backwards else [df, dfpage])
+        if pagenum == 1 and backwards or not backwards and pagenum == last_page:
+            break
+        elif target_index is not None and backwards:
+            # we want the page with our target on but not at the top
+            on_page = (dfpage[index] == target_index).all(axis=1).any()
+            if not on_page and is_first:
+                # Join at page boundries
+                df = pd.concat([cached, df])
+                assert len(df) == total
+                break
+            is_first = (dfpage[index].iloc[0] == target_index).all()
+            if on_page and not is_first:
+                # Assume that last couple of pages might change so join where the nearest change in index happened
+                # first place we get our target
+                # get rid of additional data in case it changed
+                cache_before = cached[(cached[index] == target_index).all(axis=1)].index[0]
+                # get last part of latest pages
+                df_after = df[(df[index] == target_index).all(axis=1)].index[0]
+                cached = cached.iloc[:cache_before]
+                df = df[df_after:]
+                # stick togeather
+                df = pd.concat([cached, df])
+                assert len(df) == total
+                break
+        elif not backwards and pages_got == 100:
             # Cut our loses here so we don't take so much time. Get more later
             break
+        pagenum += -1 if backwards else +1
 
-    if cached is not None:
-        if target_index is not None:
-            # Assume that last couple of pages might change so join where the nearest change in index happened
-            # first place we get our target
-            split_index = cached[(cached[index] == target_index).all(axis=1)].index[0]
-            # get rid of additional data in case it changed
-            cached = cached.iloc[:split_index]
-            # get last part of latest pages
-            df = df[df[(df[index] == target_index).all(axis=1)].index[0]:]
-            # stick togeather
-            df = pd.concat([cached, df])
-            assert len(df) == total
+    if not df.empty:
         export(df.set_index(index), basename, csv_only=True, dir=dir)  # Ensure we don't include default index in the export
     return df
 
