@@ -56,7 +56,7 @@ jobs:
           sudo apt-get install openvpn unzip
           sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
           sudo unzip configurations
-          (echo -e "${{ secrets.OVPN_USERNAME }}\${{ secrets.OVPN_PASSWORD }}") > userpass.txt
+          (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
           sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --auth-user-pass userpass.txt
           rm userpass.txt
       - name: Check briefing doc available
