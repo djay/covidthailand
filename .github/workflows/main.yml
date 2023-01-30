@@ -165,12 +165,14 @@ jobs:
       - name: Install dependencies
         if: ${{ steps.goscrape.outcome == 'success' }}
         id: dep
+        env:
+           TIKA_VERSION: 2.5.0
         run: |
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install -r requirements.txt
           # Prep tika so gets a new version outside of VPN
-          tika-python config mime-types
+          tika-python config mime-types || true
       - name: Setup VPN
         id: setup-vpn
         run: |
