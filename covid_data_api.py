@@ -364,7 +364,7 @@ def get_case_details_api_weekly():
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
-                         ["year", "weeknum"], None, dir="inputs/json/weekly/cases")
+                         ["year", "weeknum"], None, dir="inputs/json/weekly/cases", timeout=140)
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0).reset_index()
@@ -435,7 +435,7 @@ def get_case_details_api():
     return cases
 
 
-def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True):
+def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, timeout=80):
     basename = url2filename(url)
     if not target_index:
         # Then we will cache it ourselves and return the data
@@ -446,7 +446,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
 
     data = []
     # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=40)), None)
+    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=timeout)), None)
     os.remove(file)
     pagedata = json.loads(content)
     if "data" not in pagedata:
@@ -470,8 +470,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # TODO: Unless the cache is not up to date enough. In that case we go forward and assume the
     # data is so old that it won't change so continuing based on page numbers is ok. This allows us to
     # build up the cache over time even if we get failures making us stop
-    if today().date() == d("2023-01-30").date():
-        cached = pd.DataFrame()  # Fix mistake where first page was doubled
+    # if today().date() == d("2023-01-30").date():
+    #     cached = pd.DataFrame()  # Fix mistake where first page was doubled
     backwards = cached is None or len(cached) / total > 0.9
     if backwards:
         pagenum = last_page
@@ -483,7 +483,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     is_first = False
     while True:
         purl = f"{url}?page={pagenum}"
-        file, content, _ = next(iter(web_files(purl, dir=dir, check=check, appending=False, timeout=80)), (None, None, None))
+        file, content, _ = next(iter(web_files(purl, dir=dir, check=check,
+                                appending=False, timeout=timeout)), (None, None, None))
         if file is None:
             if backwards:
                 df = pd.Dataframe()  # Can't join it. have eto give up
