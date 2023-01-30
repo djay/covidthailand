@@ -655,7 +655,7 @@ def vaccination_reports_files2(check=0,
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
-    hasyear = re.compile("(2564|2565|2066)")
+    hasyear = re.compile("(2564|2565|2566|2567)")
     if not check:
         use_proxy = False
     else:
@@ -667,7 +667,7 @@ def vaccination_reports_files2(check=0,
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
 
-    years = web_links(base1, ext="dept=dcd", match=hasyear, check=0, proxy=use_proxy, timeout=timeout)
+    years = web_links(base1, ext="dept=dcd", match=hasyear, check=True, proxy=use_proxy, timeout=timeout)
     months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
               match=hasyear, check=check, proxy=use_proxy, timeout=timeout))
     links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=check, proxy=use_proxy, timeout=timeout) if (
@@ -879,6 +879,7 @@ def vac_manuf_given_blue(page, file, page_num, url):
     table = camelot_cache(file, page_num, process_background=True)
     if table is None:
         # 1623224536253.pdf. very simple table
+        # Slide weekly 2023-01-20.pdf
         return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
@@ -948,6 +949,7 @@ def vac_manuf_given_brown(page, file, page_num, url):
     table = camelot_cache(file, page_num, process_background=True)
     if table is None:
         # 1623224536253.pdf. very simple table
+        # get with Slide weekly 2023-01-20.pdf
         return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
@@ -1137,6 +1139,6 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    reports, provs = vaccination_reports()
     slides = vac_slides()
+    reports, provs = vaccination_reports()
     vac = export_vaccinations(reports, provs, slides, do_export=True)
