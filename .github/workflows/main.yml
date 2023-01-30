@@ -169,6 +169,8 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install -r requirements.txt
+          # Prep tika so gets a new version outside of VPN
+          python3 -c "import tika; tika.initVM()"
       - name: Setup VPN
         id: setup-vpn
         run: |
