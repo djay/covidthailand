@@ -50,6 +50,12 @@ jobs:
           echo "::set-output name=time::$(TZ=Asia/Bangkok date +'%H:%M')"
           echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/$(TZ=Asia/Bangkok date +'%d%m')$(($(TZ=Asia/Bangkok date +'%Y')-1957)).pdf"
           echo "::set-output name=briefingfile::inputs/briefings/$(TZ=Asia/Bangkok date +'%d%m')$(($(TZ=Asia/Bangkok date +'%Y')-1957)).pdf"
+      - name: Setup VPN
+        run: |
+          sudo apt-get install openvpn unzip
+          sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
+          sudo unzip configurations
+          sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn --auth-user-pass <(echo -e "${{ OVPN_USERNAME }}\${{ OVPN_PASSWORD }}")
       - name: Check briefing doc available
         id: briefing
         continue-on-error: true
