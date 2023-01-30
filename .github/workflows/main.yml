@@ -149,8 +149,8 @@ jobs:
         #   sudo apt-get install -y ghostscript python3-tk
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: ghostscript python3-tk openvpn unzip
-          version: 1.0
+          packages: openvpn unzip ghostscript python3-tk
+          version: 1.1
       - name: Set up Python
         id: goscrape
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
