@@ -215,7 +215,7 @@ jobs:
       - name: Stop VPN
         id: stop-vpn
         run: |
-          pkill -f "openvpn"
+          sudo pkill -f "openvpn"
       - id: can-deploy
         env:
             MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
