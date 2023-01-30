@@ -50,15 +50,6 @@ jobs:
           echo "::set-output name=time::$(TZ=Asia/Bangkok date +'%H:%M')"
           echo "::set-output name=briefingurl::http://media.thaigov.go.th/uploads/public_img/source/$(TZ=Asia/Bangkok date +'%d%m')$(($(TZ=Asia/Bangkok date +'%Y')-1957)).pdf"
           echo "::set-output name=briefingfile::inputs/briefings/$(TZ=Asia/Bangkok date +'%d%m')$(($(TZ=Asia/Bangkok date +'%Y')-1957)).pdf"
-      - name: Setup VPN
-        id: setup-vpn
-        run: |
-          sudo apt-get install openvpn unzip
-          sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
-          sudo unzip configurations
-          (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
-          sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
-          rm userpass.txt
       - name: Check briefing doc available
         id: briefing
         continue-on-error: true
@@ -158,7 +149,7 @@ jobs:
         #   sudo apt-get install -y ghostscript python3-tk
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: ghostscript python3-tk
+          packages: ghostscript python3-tk openvpn unzip
           version: 1.0
       - name: Set up Python
         id: goscrape
@@ -178,6 +169,15 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install -r requirements.txt
+      - name: Setup VPN
+        id: setup-vpn
+        run: |
+          sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
+          sudo unzip configurations
+          (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
+          sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
+          rm userpass.txt
+          pkill -f "openvpn
       - name: is dash ready
         id: godash
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}
@@ -213,6 +213,10 @@ jobs:
         continue-on-error: true
         run:
           du inputs | tee outputfiles.txt
+      - name: Stop VPN
+        id: stop-vpn
+        run: |
+          pkill -f "openvpn"
       - id: can-deploy
         env:
             MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
