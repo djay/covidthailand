@@ -360,7 +360,7 @@ def extract_basics(wb, date):
     }, index_col="Week", index_date=False)
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, year=date.year)
     if not deaths.empty:
-        row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
+        row = row.combine_first(to_cum(row, deaths, "Deaths")).ffill()
 
     row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
     row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
