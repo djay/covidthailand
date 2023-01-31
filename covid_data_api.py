@@ -521,7 +521,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
                 df = pd.concat([cached, df])
                 assert len(df) == total
                 break
-        elif not backwards and pages_got == 5:
+        elif not backwards and pages_got == 500:
             # Cut our loses here so we don't take so much time. Get more later
             break
         pagenum += -1 if backwards else +1
