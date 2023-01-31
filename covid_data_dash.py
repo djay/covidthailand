@@ -18,6 +18,7 @@ from utils_pandas import weeks_to_end_date
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import force_setParameter
 from utils_scraping_tableau import workbook_explore
 from utils_scraping_tableau import workbook_iterate
 from utils_scraping_tableau import workbook_series
@@ -233,8 +234,10 @@ def dash_weekly(file="moph_dash_weekly"):
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
 
     latest = next(dates, None)
-    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
-        date = next(iter(date), None) if date is not None else latest
+    for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates)):
+        # date, wave = this_index
+        date = this_index[0]
+        date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
             continue
         if (wb := get_wb()) is None:
@@ -245,9 +248,15 @@ def dash_weekly(file="moph_dash_weekly"):
         #     # we have a problem. not setting the date right
         #     continue
 
-        row = extract_basics(wb, date)
-        if row.empty:
+        # TODO: should be part of workbook_iterate so its done once.
+        row_since2023 = row = extract_basics(wb, date)
+        if row_since2023.empty:
             break
+
+        wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
+        # We miss data not effected by wave
+        row_update = extract_basics(wb, date)
+        row = row_update.combine_first(row_since2023)
 
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
@@ -264,8 +273,9 @@ def closest(sub, repl):
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
-        "Deaths Cum": d("2022-09-01"),
-        "Cases Cum": d("2022-09-01"),
+        "Deaths Cum": (d("2022-09-01"), today(), 0),
+        "Cases Cum": (d("2022-09-01"), today(), 0),
+        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
@@ -274,7 +284,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
     provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), filters=dict(province=provs), verify=False):
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
         date, province = idx_value
         if date is None:
@@ -292,6 +302,12 @@ def dash_province_weekly(file="moph_province_weekly"):
         row = extract_basics(wb, date)
         if row.empty:
             break  # Not getting latest data yet
+
+        wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
+        # We miss data not effected by wave
+        row_update = extract_basics(wb, date)
+        row = row_update.combine_first(row)
+
         row['Province'] = province
         row = row.reset_index().set_index(["Date", "Province"])
         df = row.combine_first(df)
@@ -319,9 +335,9 @@ def extract_basics(wb, date):
         "SUM(case_new)-value": "Cases",
         "AGG(stat_count)-value": "Cases",
         "AGG(STAT_COUNT)-value": "Cases",
-        "#WEEK_NUMBER-value": "Week"
+        "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    cases = weeks_to_end_date(cases, year_col=None, week_col="Week", offset=0)
+    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, year=date.year)
     if date != cases.index.max():
         return row
     date = cases.index.max()  # We can't get update date always so use lastest cases date
@@ -331,9 +347,9 @@ def extract_basics(wb, date):
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
         "AGG(NUM_DEATH)-value": "Deaths",
-        "#WEEK_NUMBER-value": "Week"
+        "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    deaths = weeks_to_end_date(deaths, year_col=None, week_col="Week", offset=0)
+    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, year=date.year)
     if not deaths.empty:
         row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
 

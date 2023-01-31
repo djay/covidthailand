@@ -879,7 +879,7 @@ def vac_manuf_given_blue(page, file, page_num, url):
     table = camelot_cache(file, page_num, process_background=True)
     if table is None:
         # 1623224536253.pdf. very simple table
-        # Slide weekly 2023-01-20.pdf
+        # Slide weekly 2023-01-20.pdf and Slide wk 1 2023-01-06.pdf'
         return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
     table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
@@ -1139,6 +1139,6 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    slides = vac_slides()
     reports, provs = vaccination_reports()
+    slides = vac_slides()
     vac = export_vaccinations(reports, provs, slides, do_export=True)

@@ -661,14 +661,17 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
                       "yfmt": yfmt}
 
 
-def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0):
+def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, year=2023):
     if df.empty:
         return df
     otherindex = list(set(df.index.names) - set([week_col, year_col, None]))
     df = df.reset_index()
     # df['Date'] = (pd.to_numeric(df[week_col]) * 7).apply(lambda x: pd.DateOffset(x) + start)
-    # week numbers don't work out. Weeks start into year before?
+    if year_col not in df.columns and year:
+        last_week = df[week_col].iloc[-1]
+        # assumes not more than one year
+        df[year_col] = df.apply(lambda row: year - 1 if row[week_col] > last_week else year, axis=1)
     df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
-        f"{row[year_col] if year_col else 2022}-W{row[week_col]}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
+        f"{row[year_col] if year_col else year}-W{row[week_col]}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
     df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
     return df.set_index(["Date"] + otherindex)
