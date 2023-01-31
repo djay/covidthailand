@@ -18,6 +18,7 @@ from utils_pandas import weeks_to_end_date
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
+from utils_scraping_tableau import force_setParameter
 from utils_scraping_tableau import workbook_explore
 from utils_scraping_tableau import workbook_iterate
 from utils_scraping_tableau import workbook_series
@@ -233,8 +234,9 @@ def dash_weekly(file="moph_dash_weekly"):
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
 
     latest = next(dates, None)
-    for get_wb, date in workbook_iterate(url, inc_no_param=True, param_date=dates):
-        date = next(iter(date), None) if date is not None else latest
+    for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), param_wave=["ตั้งแต่เริ่มระบาด"]):
+        date, wave = this_index
+        date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
             continue
         if (wb := get_wb()) is None:
@@ -244,6 +246,9 @@ def dash_weekly(file="moph_dash_weekly"):
         # if end_date.date() != date.date():
         #     # we have a problem. not setting the date right
         #     continue
+
+        # TODO: should be part of workbook_iterate so its done once.
+        # wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
 
         row = extract_basics(wb, date)
         if row.empty:
@@ -274,9 +279,9 @@ def dash_province_weekly(file="moph_province_weekly"):
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
     provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=[None] + list(dates), filters=dict(province=provs), verify=False):
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), param_wave=["ตั้งแต่เริ่มระบาด"], filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
-        date, province = idx_value
+        date, wave, province = idx_value
         if date is None:
             date = latest
         date = d(date, dayfirst=False)
@@ -319,9 +324,9 @@ def extract_basics(wb, date):
         "SUM(case_new)-value": "Cases",
         "AGG(stat_count)-value": "Cases",
         "AGG(STAT_COUNT)-value": "Cases",
-        "#WEEK_NUMBER-value": "Week"
+        "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    cases = weeks_to_end_date(cases, year_col=None, week_col="Week", offset=0)
+    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, year=date.year)
     if date != cases.index.max():
         return row
     date = cases.index.max()  # We can't get update date always so use lastest cases date
@@ -331,9 +336,9 @@ def extract_basics(wb, date):
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
         "AGG(NUM_DEATH)-value": "Deaths",
-        "#WEEK_NUMBER-value": "Week"
+        "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    deaths = weeks_to_end_date(deaths, year_col=None, week_col="Week", offset=0)
+    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, year=date.year)
     if not deaths.empty:
         row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
 
