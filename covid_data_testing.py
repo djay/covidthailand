@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 from dateutil.parser import parse as d
 
+import covid_plot_tests
 from utils_pandas import daterange
 from utils_pandas import export
 from utils_pandas import import_csv
@@ -101,9 +102,12 @@ def get_tests_by_day():
         df = pd.DataFrame()
         files = ""
         missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
-        for file, dl in list(get_test_files(ext="xlsx")) + list(get_test_files(ext=missing)):
+        for file, dl in list(get_test_files(ext=missing)) + list(get_test_files(ext="xlsx")):
+            if not any_in(file, "ATK", "testing_data"):
+                continue
+            # TODO: work out how to process 2023.01.21_แยกประเภทของผล-รายจังหวัด.xlsx. Tests of different types per province
             dl()
-            tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2])
+            tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2, 3])
             if "ATK" in file:
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
             else:
@@ -111,6 +115,7 @@ def get_tests_by_day():
                 tests["Tests ATK"] = np.nan
                 tests["Pos ATK"] = np.nan
             tests = tests.drop(tests[tests['Date'].isna()].index)  # get rid of totals row
+            tests = tests.drop(columns="Week") if "Week" in tests.columns else tests
             tests = tests.iloc[1:]  # Get rid of first row with unspecified data
             tests['Date'] = pd.to_datetime(tests['Date'], dayfirst=True)
             tests = tests.set_index("Date")
@@ -200,7 +205,10 @@ def get_tests_by_area_pdf(file, page, data, raw):
         "988114.3", "9881 14.3").replace(
         "2061119828", "2061 119828").replace(
         "9881 14.3", "98811 4.3").replace(
-        "2061 119828", "20611 19828")
+        "2061 119828", "20611 19828").replace(
+        "445270", "445 270").replace(
+        "237193", "237 193"
+    )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
@@ -335,6 +343,10 @@ def get_variants_by_area_pdf(file, page, page_num):
     if pd.isnull(start):
         # Start includes the month
         start = pd.to_datetime(f"{start_txt} {end.year}", dayfirst=True, errors="coerce")
+    elif "20230106" in file:
+        # Someone put in the wrong dates
+        start, end = d("2022-12-31"), d("2023-01-06")
+
     assert not pd.isnull(start)
 
     totals["Start"] = start
@@ -350,6 +362,7 @@ def get_variants_by_area_pdf(file, page, page_num):
 
 def get_variants_plot_pdf(file, page, page_num):
     if "National prevalence" not in page:
+        # and "variants surveillance" not in page or "N =" in page:
         return pd.DataFrame()
     # national = camelot_cache(file, page_num + 1, process_background=False, table=2)
     # none of the other tables work with camelot
@@ -395,7 +408,7 @@ def get_variant_sequenced_table(file, pages):
         df["Lineage"] = list(pd.to_numeric(weeks).dropna())
         df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
         df = df.set_index("End")
-        df = df.drop(columns=["Total Sequences", "Lineage"])
+        df = df.drop(columns=["Total Sequences", "Total Sequence", "Lineage"], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
         df = df.apply(pd.to_numeric)
@@ -438,8 +451,12 @@ def get_variant_sequenced_table(file, pages):
         # 20221021: TODO: seems like mix between two sets of weeks? 142/143, 143/144
         # 20221125: BQ.X should be combined with Other to make 7?
         pass
+    elif any_in(file, '20230106'):
+        # XBB is counted as other in first table but not in 2nd. Deal with XBB later if needed?
+        pass
     else:
-        assert others.sum() == 0 or (first_seq_table['Other'] == others).all()
+        latest_week = first_seq_table.index.max()
+        assert others.sum() == 0 or (first_seq_table['Other'][latest_week] == others[latest_week]).all()
     fileseq['Other'] = others
     return fileseq
 
@@ -505,3 +522,8 @@ if __name__ == '__main__':
     variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
+    old = import_csv("combined", index=["Date"])
+    df = old.combine_first(df).combine_first(df_daily)
+
+    covid_plot_tests.save_tests_plots(df)
+    covid_plot_tests.save_area_plots(df)

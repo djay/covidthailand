@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 
+import numpy as np
 import pandas as pd
 import requests
 from dateutil.parser import parse as d
@@ -19,6 +20,7 @@ from utils_pandas import weekly2daily
 from utils_pandas import weeks_to_end_date
 from utils_scraping import logger
 from utils_scraping import s
+from utils_scraping import url2filename
 from utils_scraping import web_files
 from utils_scraping import web_links
 from utils_thai import DISTRICT_RANGE
@@ -95,7 +97,9 @@ def get_cases_timelineapi_weekly():
     # df = pd.concat([df2, df3, df4])
     df = df4  # there is overlap and it has different values. Just use this year?
 
-    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
+    # week 44 2022 (29 oct) has wrong value of 25146? 10x before or after it? Earlier dates too? 2022-09-03, 2022-07-30
+
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0)
     df = df.drop(columns=['update_date', "index"])
     df = df.rename(columns=dict(new_case="Cases", total_case="Cases Cum",
                    new_case_excludeabroad="Cases Local", total_case_excludeabroad="Cases Local Cum",
@@ -169,8 +173,9 @@ def cleanup_cases(cases):
 
     # Fix typos in Nationality columns
     # This won't include every possible misspellings and need some further improvement
-    cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
-    cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
+    if "nationality" in cases.columns:
+        cases = fuzzy_join(cases, import_csv("mapping_nationality", 'Nat Alt', date_cols=[], dir="."), 'nationality')
+        cases['nationality'] = cases['Nat Main'].fillna(cases['nationality'])
 
     cases = fuzzy_join(cases, import_csv("mapping_patient_type", 'alt', date_cols=[], dir="."), 'patient_type')
     # TODO: reduce down to smaller list or just show top 5?
@@ -356,42 +361,20 @@ def cleanup_cases(cases):
 
 def get_case_details_api_weekly():
 
-    cases = import_csv("covid-19", dir="inputs/json/weekly",
-                       date_cols=["Date", "update_date", "txn_date", "update_date2"],
-                       str_cols=["Health District Number", "Job Type", "Nat Main", "Patient Type", "age_range", "gender",
-                                 "nationality", "patient_type", "patient_type2", "risk", "risk_group", "translation", "job"],
-                       # int_cols=["No.", ] # "age", "index", "int", ]
-                       )
-    target_date = cases["Date"].max() if not cases.empty else []
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
-                         ["year", "weeknum"], target_date, dir="inputs/json/weekly")
+                         ["year", "weeknum"], None, dir="inputs/json/weekly/cases", timeout=140)
     df['age'] = pd.to_numeric(df['age_number'])
     df = df.rename(columns=dict(province="province_of_onset"))
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0).reset_index()
+    df = df.drop(columns=['update_date', "index"])
 
-    # Get rid of last partial day from cases and from the new data
-    cases = cases[cases['Date'] < target_date]
-    df = df[df['Date'] >= target_date]
-
-    assert df.iloc[0]['Date'] >= cases.iloc[-1]["Date"]
-    assert df.iloc[0]['update_date'] >= cases.iloc[-1]["update_date"]
-    # assert total == len(cases) - init_cases_len + len(df)
-    df = cleanup_cases(df)
-    cases = pd.concat([cases, df], ignore_index=True)  # TODO: this is slow. faster way?
+    cases = cleanup_cases(df)
     # assert total == len(cases) - init_cases_len
-    # cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
-    export(cases, "covid-19", csv_only=True, dir="inputs/json/weekly")
+    cases = cases.astype(dict(gender=str, risk=str, job=str, province_of_onset=str))
 
-    # cases = cases.set_index("Date")
-    logger.info("Covid19daily: covid-19 {}", len(cases))
-
-    # # they screwed up the date conversion. d and m switched sometimes
-    # # TODO: bit slow. is there way to do this in pandas?
-    # for record in records:
-    #     record['announce_date'] = to_switching_date(record['announce_date'])
-    #     record['Notified date'] = to_switching_date(record['Notified date'])
-    # cases = pd.DataFrame(records)
+    logger.info("Covid19weekly: covid-19 {}", len(cases))
     return cases
 
 
@@ -452,10 +435,19 @@ def get_case_details_api():
     return cases
 
 
-def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True):
+def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, timeout=80):
+    basename = url2filename(url)
+    if not target_index:
+        # Then we will cache it ourselves and return the data
+        cached = import_csv(basename, dir=dir, date_cols=[], return_empty=False)
+        target_index = cached[index].max() if not cached.empty else None
+    else:
+        cached = None
+
     data = []
     # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=40)), None)
+    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=timeout)), None)
+    os.remove(file)
     pagedata = json.loads(content)
     if "data" not in pagedata:
         return pd.DataFrame(pagedata)
@@ -464,70 +456,131 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     last_page = pagedata['meta']['last_page']
     total = pagedata['meta']['total']
     chunk = pagedata['meta']['per_page']
+    if cached is not None:
+        if len(cached) == total:
+            return cached
+        togo = (total - len(cached)) / chunk
+        logger.info("getting {} more pages".format(togo))
 
     df = pd.DataFrame()
-    pagenum = last_page
     page = []
     # Because there is no unique case number to match up we will work backwards
     # until we get to the start of the last date we have, or where update date is before our last
     # update date
-    last_date = None
-    while last_date is None or (last_date >= target_index).all():
-        # if len(data) >= 500000:
-        #     break
+    # TODO: Unless the cache is not up to date enough. In that case we go forward and assume the
+    # data is so old that it won't change so continuing based on page numbers is ok. This allows us to
+    # build up the cache over time even if we get failures making us stop
+    # if today().date() == d("2023-01-30").date():
+    #     cached = pd.DataFrame()  # Fix mistake where first page was doubled
+    backwards = cached is None or len(cached) / total > 0.9
+    if backwards:
+        pagenum = last_page
+    else:
+        pagenum = int(len(cached) / chunk) + 1  # Assumes we didn't get a partial page before? but we shouldn't?
+        target_index = None
+        df = cached
+    pages_got = 0
+    is_first = False
+    while True:
         purl = f"{url}?page={pagenum}"
-        file, content, _ = next(iter(web_files(purl, dir=dir, check=check, appending=False, timeout=40)), None)
+        file, content, _ = next(iter(web_files(purl, dir=dir, check=check,
+                                appending=False, timeout=timeout)), (None, None, None))
+        if file is None:
+            if backwards:
+                df = pd.Dataframe()  # Can't join it. have eto give up
+            break
+        os.remove(file)
         pagedata = json.loads(content)
         data = pagedata['data']
-        if pagedata['data']:
-            dfpage = pd.DataFrame(data)
-            last_date = dfpage[index].iloc[0]
-            df = pd.concat([dfpage, df])
-        print(".", end="")
-        pagenum -= 1
-        if pagenum == 0:
+        if not pagedata['data']:
             break
+        pages_got += 1
+        dfpage = pd.DataFrame(data)
+        df = pd.concat([dfpage, df] if backwards else [df, dfpage])
+        if pagenum == 1 and backwards or not backwards and pagenum == last_page:
+            break
+        elif target_index is not None and backwards:
+            # we want the page with our target on but not at the top
+            on_page = (dfpage[index] == target_index).all(axis=1).any()
+            if not on_page and is_first:
+                # Join at page boundries
+                df = pd.concat([cached, df])
+                assert len(df) == total
+                break
+            is_first = (dfpage[index].iloc[0] == target_index).all()
+            if on_page and not is_first:
+                # Assume that last couple of pages might change so join where the nearest change in index happened
+                # first place we get our target
+                # get rid of additional data in case it changed
+                cache_before = cached[(cached[index] == target_index).all(axis=1)].index[0]
+                # get last part of latest pages
+                df_after = df[(df[index] == target_index).all(axis=1)].index[0]
+                cached = cached.iloc[:cache_before]
+                df = df[df_after:]
+                # stick togeather
+                df = pd.concat([cached, df])
+                assert len(df) == total
+                break
+        elif not backwards and pages_got == 500:
+            # Cut our loses here so we don't take so much time. Get more later
+            break
+        pagenum += -1 if backwards else +1
+
+    if not df.empty:
+        export(df.set_index(index), basename, csv_only=True, dir=dir)  # Ensure we don't include default index in the export
     return df
 
 
 @functools.lru_cache(maxsize=100, typed=False)
 def get_cases_by_demographics_api():
-    cases = get_case_details_api()
+
+    def process(cases):
+        # Age groups
+        age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
+        case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
+        case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
+
+        #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
+        #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
+        age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
+        case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
+        case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
+
+        case_risks_daily = pd.crosstab(cases['Date'], cases["risk_group"])
+        case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
+
+        # Prov data based on this api file
+        cases['Province'] = cases['province_of_onset']
+        # risks_prov = join_provinces(cases, 'Province')
+        risks_prov = cases.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
+        risks_prov = risks_prov.reset_index()
+        risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
+                                 columns=risks_prov["risk_group"],
+                                 values=risks_prov['Cases'],
+                                 aggfunc="sum")
+        risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
+
+        cases = cases.reset_index(drop=True)
+        case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
+        case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
+
+        cases_daily = case_risks_daily.combine_first(case_ages).combine_first(case_ages2)
+        return cases_daily, risks_prov, case_areas
+
+    cases = get_case_details_api()  # until oct 2022
     # TODO: use latest weekly data
-    # cases_weekly = get_case_details_api_weekly()
+    cases_weekly = get_case_details_api_weekly()  # 2022 onwards
     # cases = cases.combine_first(cases_weekly)
 
-    # Age groups
-    age_groups = cut_ages(cases, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group")
-    case_ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
-    case_ages.columns = [f"Cases Age {a}" for a in case_ages.columns.tolist()]
+    cases_daily, risks_prov, case_areas = process(cases)
+    cases_daily_w, risks_prov_w, case_areas_w = process(cases_weekly)
+    risks_prov_w = risks_prov_w.reset_index("Province").groupby("Province", group_keys=True).apply(weekly2daily)
 
-    #labels2 = ["Age 0-14", "Age 15-39", "Age 40-59", "Age 60-"]
-    #age_groups2 = pd.cut(cases['age'], bins=[0, 14, 39, 59, np.inf], right=True, labels=labels2)
-    age_groups2 = cut_ages(cases, ages=[15, 40, 60], age_col="age", group_col="Age Group")
-    case_ages2 = pd.crosstab(age_groups2['Date'], age_groups2['Age Group'])
-    case_ages2.columns = [f"Cases Age {a}" for a in case_ages2.columns.tolist()]
-
-    case_risks_daily = pd.crosstab(cases['Date'], cases["risk_group"])
-    case_risks_daily.columns = [f"Risk: {x}" for x in case_risks_daily.columns]
-
-    # Prov data based on this api file
-    cases['Province'] = cases['province_of_onset']
-    # risks_prov = join_provinces(cases, 'Province')
-    risks_prov = cases.value_counts(['Date', "Province", "risk_group"]).to_frame("Cases")
-    risks_prov = risks_prov.reset_index()
-    risks_prov = pd.crosstab(index=[risks_prov['Date'], risks_prov['Province']],
-                             columns=risks_prov["risk_group"],
-                             values=risks_prov['Cases'],
-                             aggfunc="sum")
-    risks_prov.columns = [f"Cases Risk: {c}" for c in risks_prov.columns]
-
-    cases = cases.reset_index(drop=True)
-    case_areas = pd.crosstab(cases['Date'], cases['Health District Number'])
-    case_areas = case_areas.rename(columns=dict((i, f"Cases Area {i}") for i in DISTRICT_RANGE))
-
-    cases_daily = case_risks_daily.combine_first(case_ages).combine_first(case_ages2)
-    return cases_daily, risks_prov, case_areas
+    return (
+        cases_daily.combine_first(weekly2daily(cases_daily_w)),
+        risks_prov.combine_first(risks_prov_w),
+        case_areas.combine_first(weekly2daily(case_areas_w))
+    )
 
 
 def timeline_by_province():
@@ -546,16 +599,15 @@ def timeline_by_province():
 def timeline_by_province_weekly():
     # url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-by-provinces"
     # df = load_paged_json(url, ["year", "weeknum"], [2020, 1])
-    # url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    # file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=True, timeout=40)), None)
-    # df = pd.read_json(file)
-    df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces", dir="inputs/json/weekly")
+    url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
+    file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=False, timeout=80)), None)
+    df = pd.read_json(file)
 
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
     df = df[df['Province'] != 'ทั้งประเทศ']  # Get rid of whole country rows for now
     df = join_provinces(df, "Province", extra=[])
-    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=7)
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0)
     df = df.drop(columns=['update_date', "index"])
     df = df.groupby("Province").apply(lambda x: x.drop(columns="Province").reindex(
         pd.date_range(x.index.min(), x.index.max(), name="Date")).interpolate())
@@ -567,6 +619,56 @@ def timeline_by_province_weekly():
 
     df = df.reset_index().set_index(["Date", "Province"])
     return df
+
+
+def deaths_by_province_weekly():
+    # https://covid19.ddc.moph.go.th/api/Deaths/weekly-deaths-line-lists - current week only
+    years = [
+        "https://covid19.ddc.moph.go.th/api/Deaths/round-1to2-line-list",  # - 2020-2021
+        "https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list",  # = 2021-2021
+        "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
+    ]
+    data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
+    csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # isn't that supposed to be round 5?
+    file, _, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=True), None)
+    data += [pd.read_csv(file)]
+    df = pd.concat(data)
+    # "age":"57","age_range":"50-59 \u0e1b\u0e35","occupation":"\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38","type":"\u0e1c\u0e39\u0e49\u0e1b\u0e48\u0e27\u0e22\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19","death_cluster":null
+    # TODO: counts per province per age range, total deaths,
+    # TODO classify occupation or type? is type reason for death?
+    df = df.rename(columns={"province": "Province", })
+    df = df[df['Province'] != 'ทั้งประเทศ']  # Get rid of whole country rows for now
+    df = join_provinces(df, "Province", extra=[])
+    df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0)
+    df = df.drop(columns=['update_date', "index"])
+    # Get the deaths
+    deaths_by_province = df.reset_index().groupby(["Date", "Province"]).size().to_frame("Deaths")
+    # Ensure we have all days and all provinces
+    dindex = deaths_by_province.reset_index("Province").index.unique()
+    pindex = deaths_by_province.reset_index("Date").index.unique()
+    deaths_by_province = deaths_by_province.reindex(pd.MultiIndex.from_product([dindex, pindex])).replace(np.nan, 0)
+    # TODO: turn into daily averages
+    deaths_daily = deaths_by_province.reset_index("Province").groupby("Province", group_keys=True).apply(weekly2daily)
+    # deaths_daily = deaths_by_province.reset_index("Province").groupby("Province", group_keys=False, as_index=True).resample('d').bfill().reset_index().set_index(["Date", "Province"]).div(7)
+
+    # TODO: get min, max, mean ages per day (per provnince and combined)
+    df['age'] = pd.to_numeric(df['age'])
+    timeline = df.reset_index().groupby("Date")['age'].max().to_frame("Deaths Age Max")
+    timeline["Deaths Age Min"] = df.reset_index().groupby("Date")['age'].min()
+    timeline["Deaths Age Median"] = df.reset_index().groupby("Date")['age'].median()
+    age_groups = cut_ages(df, ages=[10, 20, 30, 40, 50, 60, 70], age_col="age", group_col="Age Group").reset_index()
+    ages = pd.crosstab(age_groups['Date'], age_groups['Age Group'])
+    ages.columns = [f"Deaths Age {a}" for a in ages.columns.tolist()]
+    ages = weekly2daily(ages)
+    timeline = timeline.combine_first(ages)
+
+    # type is either 'confirmed patient', 'probable patient'
+    # dealth_cluster can say if family, friend etc
+    # df['Deaths Risk Family']
+    # occupation
+
+    return timeline, deaths_daily
+
 
 ########################
 # Excess Deaths
@@ -702,6 +804,8 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
+    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline_weekly = get_cases_timelineapi_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
@@ -710,24 +814,23 @@ if __name__ == '__main__':
     timeline_prov_weekly = timeline_by_province_weekly()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     ihme_dataset()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
-    dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov)
+    dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov).combine_first(deaths_prov_weekly)
 
     dfprov = join_provinces(dfprov, on="Province")
     export(dfprov, "cases_by_province")
 
     old = import_csv("combined", index=["Date"])
-    df = timeline.combine_first(cases_demo).combine_first(old)
+    df = timeline.combine_first(cases_demo).combine_first(deaths_weekly).combine_first(old)
     export(df, "combined", csv_only=True)
 
     excess_deaths()
 
     import covid_plot_cases
-    covid_plot_cases.save_caseprov_plots(df)
-    covid_plot_cases.save_cases_plots(df)
     import covid_plot_deaths
     covid_plot_deaths.save_deaths_plots(df)
+    covid_plot_cases.save_caseprov_plots(df)
+    covid_plot_cases.save_cases_plots(df)
     # covid_plot_cases.save_infections_estimate(df)

@@ -263,7 +263,6 @@ def fuzzy_join(a,
 
 
 def export(df, name, csv_only=False, dir="api"):
-    logger.info("Exporting: {}", name)
     try:
         df = df.reset_index()
     except:
@@ -275,17 +274,21 @@ def export(df, name, csv_only=False, dir="api"):
     # TODO: save space by dropping nan
     # json.dumps([row.dropna().to_dict() for index,row in df.iterrows()])
     if not csv_only:
+        path = os.path.join(dir, name)
         df.to_json(
-            os.path.join(dir, name),
+            path,
             date_format="iso",
             indent=3,
             orient="records",
         )
+        logger.info("Exporting: {}", path)
+    path = os.path.join(dir, f"{name}.csv")
     df.to_csv(
-        os.path.join(dir, f"{name}.csv"),
+        path,
         index=False,
         date_format='%Y-%m-%d'
     )
+    logger.info("Exporting: {}", path)
 
 
 def import_csv(name, index=None, return_empty=False, date_cols=['Date'], str_cols=[], int_cols=[], dir="api"):
@@ -663,14 +666,17 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
                       "yfmt": yfmt}
 
 
-def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0):
+def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, year=2023):
     if df.empty:
         return df
     otherindex = list(set(df.index.names) - set([week_col, year_col, None]))
     df = df.reset_index()
     # df['Date'] = (pd.to_numeric(df[week_col]) * 7).apply(lambda x: pd.DateOffset(x) + start)
-    # week numbers don't work out. Weeks start into year before?
+    if year_col not in df.columns and year:
+        last_week = df[week_col].iloc[-1]
+        # assumes not more than one year
+        df[year_col] = df.apply(lambda row: year - 1 if row[week_col] > last_week else year, axis=1)
     df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
-        f"{row[year_col] if year_col else 2022}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
+        f"{row[year_col] if year_col else year}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
     df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
     return df.set_index(["Date"] + otherindex)

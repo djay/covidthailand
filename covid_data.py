@@ -228,6 +228,7 @@ def scrape_and_combine():
         covid_data_api.ihme_dataset,
         covid_data_api.timeline_by_province,
         covid_data_api.timeline_by_province_weekly,
+        covid_data_api.deaths_by_province_weekly,
         # This doesn't add any more info since severe cases was a mistake
         # covid_data_dash.dash_trends_prov
         # covid_data_bed.get_df
@@ -244,6 +245,8 @@ def scrape_and_combine():
     # briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
     cases_demo, risks_prov, case_api_by_area = res['get_cases_by_demographics_api']
     # tweets_prov, twcases = res['get_cases_by_prov_tweets']
+
+    deaths_weekly, deaths_prov_weekly = res['deaths_by_province_weekly']
 
     # Combine dashboard data
     # dash_by_province = dash_trends_prov.combine_first(dash_by_province)
@@ -266,8 +269,9 @@ def scrape_and_combine():
         briefings_prov).combine_first(
         res['timeline_by_province']).combine_first(
         res['timeline_by_province_weekly']).combine_first(
-        cum2daily(res['dash_province_weekly'], drop=False)).combine_first(
+        deaths_prov_weekly).combine_first(
         res['dash_by_province']).combine_first(
+        cum2daily(res['dash_province_weekly'], drop=False)).combine_first(
         # tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
@@ -302,6 +306,7 @@ def scrape_and_combine():
         briefings,
         res['get_cases_timelineapi'],
         res['get_cases_timelineapi_weekly'],
+        deaths_weekly,
         # twcases,
         cases_demo,
         cases_by_area,

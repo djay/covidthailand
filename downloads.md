@@ -3,8 +3,11 @@
 
 ## Combined <a name="dl-combined">
 
+Note: from 2022-10-01 most data is weekly so daily numbers are an estimate only
+
 ### Daily combined
 #### [combined.csv](https://practical-ritchie-cca141.netlify.app/api/combined.csv)
+
 
 - Source:
   -  Many of the daily sources combined
@@ -45,7 +48,6 @@ Schema cases_by_province:
 | Vac Given 1 Cum | null |
 | Vac Given 2 Cum | null |
 | Vac Given 3 Cum | null |
-| Health District Number | 13 |
 | The following comes from moph_dashboad_prov |
 | Cases Walkin |  Confirmed cases found those requesting tests or asked to from contact tracing or the media. Paid or having met the PUI criteria.  |
 | Cases Proactive |  Confirmed cases found government has gone to specific areas to mass test due to high risk of COVID-19. |
@@ -82,7 +84,7 @@ Schema cases_by_area:
 ## Daily CCSA Briefings <a name="dl-briefings">
 
 - Sources
- - [CCSA Daily Briefing](https://www.facebook.com/ThaigovSpokesman) - Uploaded ~1-2pm each day
+ - [CCSA Daily Briefing](https://www.facebook.com/ThaigovSpokesman) - No longer updated
 
 ### [cases_briefings.json](https://practical-ritchie-cca141.netlify.app/api/cases_briefings) | [cases_briefings.csv](https://practical-ritchie-cca141.netlify.app/api/cases_briefings.csv)
 
@@ -112,6 +114,11 @@ Schema:
 | Deaths Risk {risk} | Risks that are the likely cause of catching the virus e.g. Family |
 | Tests ATK Proactive | Number of ATK free tests taken (likely NHSO provided) |
 | Pos ATK Proactive | Number of ATK free test positive results (likely NHSO provided) |
+| Infections Non-Hospital Cum | Unexplained: ATK + something else? |
+| Vac Given | |
+| Vac Given {1-3} | Daily vaccinations |
+| Vac Given {1-3} Cum | |
+| Vac Given {group} {1-3} Cum | |
 | Source Cases |  Tweet, api or briefing the primary information came from |
 | Fields no longer updated |
 | Cases (Asymptomatic,Symptomatic) | - No longer reported in briefing reports |
@@ -144,9 +151,48 @@ Schema
 ## MOPH Covid-19 Dashboard <a name="dl-moph-dashboard">
 - Sources [MOPH Covid-19 Dashboard](https://ddc.moph.go.th/covid19-dashboard/?dashboard=main)
 
+### Dashboard by Week
+
+From 2022-10-01 daily dashboard was replaced with a weekly summary
+
+#### [moph_dash_weekly.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dash_weekly.csv)
+source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
+
+
+Schema
+
+| Column | |
+| -- | -- |
+| Date | |
+| Cases Cum | Seems to be only hospitalised cases |
+| Deaths Cum | |
+| Hospitalized Respirator | Presumably means currently on ventilation |
+| Hospitalized Severe | Unclear if this is just condition or signifies a different bed type |
+| Vac Given {1-3} Cum | |
+
+
+### Dashboard by Province by Week
+#### [moph_prov_weekly.csv](https://practical-ritchie-cca141.netlify.app/api/moph_prov_weekly.csv)
+
+Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
+
+Schema
+
+| Column | |
+| -- | -- |
+| Date | |
+| Province | |
+| Cases Cum | |
+| Deaths Cum | |
+| Vac Given {1-3} Cum | |
+
 ### Dasboard by day
+
+From 2022-10-01 no longer updated. see weekly
+
 #### [moph_dashboard.csv](https://practical-ritchie-cca141.netlify.app/api/moph_dashboard.csv)
 source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=main
+
 
 Schema
 
@@ -212,6 +258,8 @@ Age groups are {'0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70
 
 ## Daily Situation Reports <a name="dl-situation-reports">
 Case Types and PUI counts
+
+Note: no longer updated as of 2022-07-01
 
 #### [situation_reports.json](https://practical-ritchie-cca141.netlify.app/api/situation_reports) | [situation_reports.csv](https://practical-ritchie-cca141.netlify.app/api/situation_reports.csv)
 
@@ -357,36 +405,41 @@ Schema
 
 
 ## Vaccination Downloads <a name="dl-vac">
+
+Vaccination data is also available from the [Dashboard](#dl-moph-dashboard), [Briefing Reports](#dl-briefings) and this is all combined in the [Combined CSV](#dl-combined)
+
 ### Daily DDC Vaccination Reports
 #### [vac_timeline.csv](https://practical-ritchie-cca141.netlify.app/api/vac_timeline.csv)
 
-- Source: [DDC Daily Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+- Source: [DDC Daily/Weekly Vaccination Reports](https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd)
+          [DDC Daily/Weekly Vaccination Slides](https://ddc.moph.go.th/dcd/pagecontent.php?page=648&dept=dcd)
 
 Schema
 
-| Column | |
-| -- | -- |
-| Date | 2021-04-25 |
-| Vac Allocated Sinovac {dose} | 3840.0 |
-| Vac Allocated AstraZeneca {dose} | 0.0 |
-| Vac Delivered |  200.00 |
-| Vac Given {dose} Cum | 3189.0 |
-| Vac Given {dose} % | 83.0 |
-| Vac Group Medical Staff {dose} Cum | 1939.0 |
-| Vac Group Other Frontline Staff {dose} Cum | 1081.0 |
-| Vac Group Over 60 {dose} Cum | 0.0 |
-| Vac Group Risk: Disease {dose} Cum | 54.0 |
-| Vac Group Risk | Location {dose} Cum | 115.0 |
+| Column | | Notes |
+| -- | -- | -- |
+| Date | 2021-04-25 | |
+| Vac Allocated {Sinovac/AstraZeneca} {dose} | 3840.0 | No longer updated |
+| Vac Delivered |  200.00 | No longer updated |
+| Vac Given {dose} Cum | 3189.0 | |
+| Vac Given {dose} % | 83.0 | |
+| Vac Group Medical Staff {dose} Cum | 1939.0 | |
+| Vac Group Other Frontline Staff {dose} Cum | 1081.0 | |
+| Vac Group Over 60 {dose} Cum | 0.0 | ผู้ที่มีอายุ 60 ปีขึ้นไป |
+| Vac Group Risk: Disease {dose} Cum | 54.0 | 7 at risk Diseases |
+| Vac Group Risk: Location {dose} Cum | 115.0 | General population |
+| Vac Group Students {dose} Cum | 115.0 | 12-17yo ผู้ที่มีอายุ12 177ปี |
+| Vac Group Kids {dose} Cum | 115.0 | 5-11yo ผู้ที่มีอายุ 5 11 ปี|
+| Vac Group Infant {dose} Cum | 115.0 | 0.5-4yo - ผู้ที่มีอายุ 6 เดือน 44ปี |
+| Vac Given {Sinovac/AstraZeneca/Sinopharm/Pfizer/Moderna} {dose} Cum | 3189.0 | |
 
 
 - Note
- - The previous data per province is no longer updated in the reports so this download has been removed.
  - "Vaccinations Given 1/2 %" refers to the % of allocation, not against population.
- - dose is 1-4 currently
+ - dose is 1-6 currently
  - Some days some tables are images so there is missing data.
  - Summary vaccination data included in the combine download
- - Delivered Vaccines comes from [Track and Traceability Platform]((https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC) - no longer updated
- - #TODO: put in thai group explanations.
+ - Delivered Vaccines comes from [Track and Traceability Platform](https://datastudio.google.com/u/0/reporting/731713b6-a3c4-4766-ab9d-a6502a4e7dd6/page/SpZGC) - no longer updated
 
 ### COVID-19 Vaccines by Province <a name="dl-vac-prov">
 #### [vaccinations.csv](https://practical-ritchie-cca141.netlify.app/api/vaccinations.csv)
@@ -394,16 +447,16 @@ Schema
 
 Schema
 
-| Column | |
-| -- | -- |
-| Date | 2021-04-25" |
-| Province |  "Bangkok" |
-| Vac Given Cum | 3189.0 |
-| Vac Given  | 83.0 |
-| Vac Given {vaccine} Cum | 3189.0 |
-| Vac Given {vaccine} | 83.0 |
-| Vac Allocated {vaccine} {dose| | |
-| Vac Group {group} {dose| Cum | Cumulative vaccines given to particular risk group (dose 1 and 2) |
+| Column | |  Notes |
+| -- | -- | -- |
+| Date | 2021-04-25" | |
+| Province |  "Bangkok" | |
+| Vac Given {dose} Cum | 3189.0 |
+| Vac Given {dose} % | 83.0 |
+| Vac Allocated {vaccine} {dose} | | no longer updated |
+| Vac Group {group} {dose} Cum | | See above for risk groups. No longer updated |
+| Vac Population | | The estimated population for this province |
+| Vac Population {group} | | The estimated group population for this province |
 
 
 ## BORA Monthly Deaths (Excess Deaths) <a name="dl-deaths-all">
