@@ -344,12 +344,14 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 def save_vacs_prov_plots(df, df_prov=None):
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
+    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
     # vac = vac.groupby("Province", group_keys=False)
     if df_prov is None:
         df_prov = import_csv("cases_by_province", ['Date', 'Province'])
         # df_prov = df_prov.groupby("Province", group_keys=False)
-    vac = vac.combine_first(df_prov[[c for c in df_prov.columns if "Vac" in c]])
-    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
+    vac_df_prov = df_prov[[c for c in df_prov.columns if "Vac" in c]]
+    vac_df_prov = vac_df_prov.groupby("Province", group_keys=False).apply(fix_gaps)
+    vac = vac.combine_first(vac_df_prov)
 
     # Let's trust the dashboard more but they could both be different
     # TODO: dash gives different higher values. Also glitches cause problems
@@ -387,6 +389,10 @@ def save_vacs_prov_plots(df, df_prov=None):
     by_region_1 = by_region.pivot_table('Vac Given 1 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
     by_region_2 = by_region.pivot_table('Vac Given 2 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
     by_region_3 = by_region.pivot_table('Vac Given 3 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
+    # if we miss some provinces we get dips
+    by_region_1 = by_region_1.cummax()
+    by_region_2 = by_region_2.cummax()
+    by_region_3 = by_region_3.cummax()
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(90), axis=1)  # no more than 100% unless already over

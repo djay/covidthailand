@@ -138,6 +138,9 @@ def fix_gaps(df):
     df = df.reset_index("Province")
     all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, inclusive="neither")
     df = df.reindex(all_days, fill_value=np.nan)
+    cum = df[[c for c in df.columns if " Cum" in c]]
+    smoothed = cum.iloc[::-1].cummin().iloc[::-1].cummax()
+    df = smoothed.combine_first(df)
     df = df.interpolate(limit_area="inside")
     df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province
     return df.reset_index().set_index(["Date", "Province"])
