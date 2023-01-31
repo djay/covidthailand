@@ -234,8 +234,9 @@ def dash_weekly(file="moph_dash_weekly"):
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
 
     latest = next(dates, None)
-    for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), param_wave=["ตั้งแต่เริ่มระบาด"]):
-        date, wave = this_index
+    for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates)):
+        # date, wave = this_index
+        date = this_index[0]
         date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
             continue
@@ -248,11 +249,14 @@ def dash_weekly(file="moph_dash_weekly"):
         #     continue
 
         # TODO: should be part of workbook_iterate so its done once.
-        # wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
-
-        row = extract_basics(wb, date)
-        if row.empty:
+        row_since2023 = row = extract_basics(wb, date)
+        if row_since2023.empty:
             break
+
+        wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
+        # We miss data not effected by wave
+        row_update = extract_basics(wb, date)
+        row = row_update.combine_first(row_since2023)
 
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
@@ -269,8 +273,9 @@ def closest(sub, repl):
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
-        "Deaths Cum": d("2022-09-01"),
-        "Cases Cum": d("2022-09-01"),
+        "Deaths Cum": (d("2022-09-01"), today(), 0),
+        "Cases Cum": (d("2022-09-01"), today(), 0),
+        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
@@ -279,9 +284,9 @@ def dash_province_weekly(file="moph_province_weekly"):
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
     provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), param_wave=["ตั้งแต่เริ่มระบาด"], filters=dict(province=provs), verify=False):
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
-        date, wave, province = idx_value
+        date, province = idx_value
         if date is None:
             date = latest
         date = d(date, dayfirst=False)
@@ -297,6 +302,12 @@ def dash_province_weekly(file="moph_province_weekly"):
         row = extract_basics(wb, date)
         if row.empty:
             break  # Not getting latest data yet
+
+        wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
+        # We miss data not effected by wave
+        row_update = extract_basics(wb, date)
+        row = row_update.combine_first(row)
+
         row['Province'] = province
         row = row.reset_index().set_index(["Date", "Province"])
         df = row.combine_first(df)
