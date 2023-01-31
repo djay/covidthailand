@@ -274,9 +274,9 @@ def closest(sub, repl):
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
-        "Deaths Cum": (d("2022-09-01"), today(), 0),
-        "Cases Cum": (d("2022-09-01"), today(), 0),
-        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+        "Deaths Cum": (d("2022-12-21"), today(), 0),
+        "Cases Cum": (d("2022-12-21"), today(), 0),
+        'Vac Given 1 Cum': (d("2022-12-21"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
