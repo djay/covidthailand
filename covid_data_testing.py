@@ -385,14 +385,15 @@ def get_variant_sequenced_table(file, pages):
         if "Prevalence of Pangolin lineages" not in page:
             continue
         df = camelot_cache(file, page_num + 1, process_background=False)
-        if "Total" in df[0].iloc[-1]:
-            # Vertical
+        if "Total" in df[0].iloc[-1] or df[0].str.contains("Other").any():
+            # Vertical. TODO: probably need a better test
             df = df.transpose()
         # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
         df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
         df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
         # Some columns get combined. e.g.
-        df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
+        df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(
+            " Other ", "| Other ").str.replace(" w", "| w").str.split("|").tolist(), []) if c]
         if "20220715" in file and df.iloc[0, 3] == "Other BA.2":
             # Other BA.2 is there twice. One is wrong
             df.iloc[0, 3] = "Other BA.2.9"
