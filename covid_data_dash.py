@@ -346,7 +346,7 @@ def extract_basics(wb, date):
         "AGG(STAT_COUNT)-value": "Cases",
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, year=date.year)
+    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
     if date != cases.index.max():
         return row
     date = cases.index.max()  # We can't get update date always so use lastest cases date
@@ -358,7 +358,7 @@ def extract_basics(wb, date):
         "AGG(NUM_DEATH)-value": "Deaths",
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, year=date.year)
+    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
     if not deaths.empty:
         row = row.combine_first(to_cum(row, deaths, "Deaths")).ffill()
 

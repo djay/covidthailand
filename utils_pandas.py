@@ -139,11 +139,13 @@ def fix_gaps(df):
     all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, inclusive="neither")
     df = df.reindex(all_days, fill_value=np.nan)
     cum = df[[c for c in df.columns if " Cum" in c]]
-    smoothed = cum.iloc[::-1].cummin().iloc[::-1].cummax()
+    smoothed = cum.iloc[::-1].cummin().iloc[::-1]
     df = smoothed.combine_first(df)
     df = df.interpolate(limit_area="inside")
     df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province
-    return df.reset_index().set_index(["Date", "Province"])
+    df = df.reset_index().set_index(["Date", "Province"])
+    df = df.dropna(how="all", axis=0)  # get rid of extra data at the end we don't need. helps with trend table
+    return df
 
 
 def normalise_to_total(df, cols, total_col):
@@ -669,15 +671,18 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
                       "yfmt": yfmt}
 
 
-def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, year=2023):
+def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None):
     if df.empty:
         return df
     otherindex = list(set(df.index.names) - set([week_col, year_col, None]))
     df = df.reset_index()
     # df['Date'] = (pd.to_numeric(df[week_col]) * 7).apply(lambda x: pd.DateOffset(x) + start)
-    if year_col not in df.columns and year:
-        last_week = df[week_col].iloc[-1]
-        # assumes not more than one year
+    if year_col not in df.columns and date:
+        # TODO: do we need to offset to the sat? (date - datetime.timedelta(days=6))
+        last_week = date.isocalendar().week
+        year = date.year
+        # any week past the last date we expect is assumed to be last year
+        # assumes not more than one year and no future data
         df[year_col] = df.apply(lambda row: year - 1 if row[week_col] > last_week else year, axis=1)
     df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
         f"{row[year_col] if year_col else year}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
