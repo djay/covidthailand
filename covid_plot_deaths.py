@@ -336,6 +336,7 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     by_region = cases[['Cases', 'Deaths', "region"]].groupby(["Date", "region"]).sum()
     cfr_region = by_region.groupby("region", group_keys=False).apply(cfr_est).to_frame("CFR Est").reset_index()
     cfr_region = pd.crosstab(cfr_region['Date'], cfr_region['region'], values=cfr_region["CFR Est"], aggfunc="sum")
+    cfr_region = cfr_region.replace(float("inf"), np.nan)
     plot_area(df=cfr_region,
               title='Case Fatality Rate (CFR) - Last 90 days - by Region - Thailand',
               png_prefix='cfr_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,

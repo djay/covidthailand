@@ -283,32 +283,12 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               cmap='tab20',
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
-    # Top 5 vaccine rollouts
-    vac = import_csv("vaccinations", ['Date', 'Province'])
-
-    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
-    # Let's trust the dashboard more but they could both be different
-    # TODO: dash gives different higher values. Also glitches cause problems
-    # vac = dash_prov.combine_first(vac)
-    #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
-    # Add them all up
-    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
-        axis=1, skipna=False).to_frame("Vac Given Cum"))
-    vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
-
-    # Reset populations to the latest since they changed definitions over time
-    # Bring in vac populations
-    pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
-    # vac = vac.join(pops, rsuffix="2")
-    for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
-        vac = vac.join(vac[pop_col].groupby("Province").last().to_frame(pop_col), lsuffix="1")
-    vac["Vac Population2"] = vac["Vac Population"]
-
     # Do a % of peak chart for death vs cases
     cols = ['Cases', 'Deaths', 'ATK', ]
     peaks = df[cols] / df[cols].rolling(7, 3, center=True).mean().max(axis=0) * 100
-    peaks["Vaccinated"] = df['Vac Given 2 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
-    peaks["Boosted"] = df['Vac Given 3 Cum'] / pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
+    peaks["Vaccinated"] = df['Vac Given 2 Cum'] / 72034815.0 * 100  # pops['Vac Population'].sum() * 100  # pops.sum() is
+    # pops['Vac Population'].sum() * 100  # pops.sum() is 72034815.0
+    peaks["Boosted"] = df['Vac Given 3 Cum'] / 72034815.0 * 100
     peaks["Positive Rate"] = (df["Pos XLS"] / df["Tests XLS"] * 100)
     cols = [
         'Cases',
@@ -360,6 +340,37 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               + 'PCR: Polymerase Chain Reaction',
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard,  CCSA Daily Briefing')
 
+
+def save_vacs_prov_plots(df, df_prov=None):
+    # Top 5 vaccine rollouts
+    vac = import_csv("vaccinations", ['Date', 'Province'])
+    vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
+    # vac = vac.groupby("Province", group_keys=False)
+    if df_prov is None:
+        df_prov = import_csv("cases_by_province", ['Date', 'Province'])
+        # df_prov = df_prov.groupby("Province", group_keys=False)
+    vac_df_prov = df_prov[[c for c in df_prov.columns if "Vac" in c]]
+    vac_df_prov = vac_df_prov.groupby("Province", group_keys=False).apply(fix_gaps)
+    vac = vac.combine_first(vac_df_prov)
+
+    # Let's trust the dashboard more but they could both be different
+    # TODO: dash gives different higher values. Also glitches cause problems
+    # vac = dash_prov.combine_first(vac)
+    #vac = vac.combine_first(vac_dash[[f"Vac Given {d} Cum" for d in range(1, 4)]])
+
+    # Add them all up
+    vac = vac.combine_first(vac[[f"Vac Given {d} Cum" for d in range(1, 4)]].sum(
+        axis=1, skipna=False).to_frame("Vac Given Cum"))
+    vac = vac.join(get_provinces()[['Population', 'region']], on='Province')
+
+    # Reset populations to the latest since they changed definitions over time
+    # Bring in vac populations
+    pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
+    # vac = vac.join(pops, rsuffix="2")
+    for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
+        vac = vac.join(vac[pop_col].groupby("Province").last().to_frame(pop_col), lsuffix="1")
+    vac["Vac Population2"] = vac["Vac Population"]
+
     # top5 = vac.pipe(topprov, lambda df: df['Vac Given Cum'] / df['Vac Population2'] * 100)
     # cols = top5.columns.to_list()
     # pred = pred_vac(top5)
@@ -374,13 +385,14 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
     by_region = vac.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population2'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Given 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Given 1 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_3 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Given 3 Cum'], aggfunc="sum") / pop_region * 100
+    pop_region = by_region.pivot_table('Vac Population2', 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Given 1 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region.pivot_table('Vac Given 2 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region.pivot_table('Vac Given 3 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
+    # if we miss some provinces we get dips
+    by_region_1 = by_region_1.cummax()
+    by_region_2 = by_region_2.cummax()
+    by_region_3 = by_region_3.cummax()
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(90), axis=1)  # no more than 100% unless already over
@@ -427,11 +439,13 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               )
 
     # for over 60s
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region["Vac Population Over 60s"], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Over 60 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Over 60 1 Cum'], aggfunc="sum") / pop_region * 100
+    pop_region = by_region.pivot_table("Vac Population Over 60s", 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Group Over 60 1 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region.pivot_table('Vac Group Over 60 2 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region.pivot_table('Vac Group Over 60 3 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -451,12 +465,14 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
               )
 
     # for risk disease
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'],
-                             values=by_region["Vac Population Risk: Disease"], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Risk: Disease 2 Cum'], aggfunc="sum") / pop_region * 100
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'],
-                              values=by_region['Vac Group Risk: Disease 1 Cum'], aggfunc="sum") / pop_region * 100
+    pop_region = by_region.pivot_table("Vac Population Risk: Disease", 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Group Risk: Disease 1 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_2 = by_region.pivot_table('Vac Group Risk: Disease 2 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+    by_region_3 = by_region.pivot_table('Vac Group Risk: Disease 3 Cum', 'Date', 'region',
+                                        "sum").replace(0, np.nan) / pop_region * 100
+
     pred_1, pred_2 = pred_vac(by_region_1, by_region_2)
     pred_2 = pred_2.clip(upper=pred_2.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
     pred_1 = pred_1.clip(upper=pred_1.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -480,9 +496,9 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
     vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
 
     by_region = vac_prov_daily.reset_index()
-    pop_region = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Population'], aggfunc="sum")
-    by_region_2 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 2'], aggfunc="sum")
-    by_region_1 = pd.crosstab(by_region['Date'], by_region['region'], values=by_region['Vac Given 1'], aggfunc="sum")
+    pop_region = by_region.pivot_table("Vac Population", 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_1 = by_region.pivot_table('Vac Given 1', 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_2 = by_region.pivot_table('Vac Given 2', 'Date', 'region', "sum").replace(0, np.nan)
     plot_area(df=by_region_2 / pop_region * 100000,
               title='Vacccinatations/100k - 2nd Dose - by Region - Thailand',
               png_prefix='vac_region_daily_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
@@ -614,11 +630,13 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"], date_cols=["Date"])
     briefings = import_csv("cases_briefings", index=["Date"], date_cols=["Date"])
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    dash_weekly = import_csv("moph_dash_weekly", ["Date"], False, dir="inputs/json")  # so we cache it
     # have vac in briefings and dashboard
-    df = briefings.combine_first(dash).combine_first(df)
+    df = briefings.combine_first(dash).combine_first(cum2daily(dash_weekly, drop=False)).combine_first(df)
     vac = import_csv("vac_timeline", ['Date'])
-    df = vac.combine_first(df)
+    df = df.combine_first(vac)
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
+    save_vacs_prov_plots(df)
     save_vacs_plots(df)
