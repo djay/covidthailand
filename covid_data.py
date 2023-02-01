@@ -221,6 +221,7 @@ def scrape_and_combine():
         covid_data_dash.dash_daily,
         covid_data_api.excess_deaths,
         covid_data_testing.get_tests_by_day,
+        covid_data_testing.get_tests_per_province,
         # covid_data_tweets.get_cases_by_prov_tweets,
         covid_data_api.get_cases_timelineapi,
         covid_data_api.get_cases_timelineapi_weekly,

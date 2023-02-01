@@ -23,6 +23,7 @@ from utils_scraping import pptx2chartdata
 from utils_scraping import USE_CACHE_DATA
 from utils_scraping import web_files
 from utils_thai import find_date_range
+from utils_thai import join_provinces
 from utils_thai import POS_COLS
 from utils_thai import TEST_COLS
 
@@ -159,6 +160,30 @@ def get_tests_by_day():
     logger.info("{} {}", file, len(tests))
 
     return tests
+
+
+def get_tests_per_province():
+    df = pd.DataFrame()
+    for file, dl in list(get_test_files(ext="รายจังหวัด.xlsx")):
+        dl()  # Cache everything just in case
+    # Now get everything inc those no longer there
+    for file, dl in list(get_test_files(ext="รายจังหวัด.xlsx", check=False)):
+        # TODO: work out how to process 2023.01.21_แยกประเภทของผล-รายจังหวัด.xlsx. Tests of different types per province
+        tests = pd.read_excel(file, header=None)
+        tests.iloc[0] = tests.iloc[0].ffill()  # Fill in the dates
+        tests.iloc[1] = tests.iloc[1].ffill()  # fill in the type of test
+        tests = tests.drop(columns=tests.columns[0:1])  # get rid of province number
+        # TODO: unpivot the days down and then join the columns names then match the province names
+        cols = tests.iloc[0:3].transpose()
+        cols.columns = ["Date", "Tested", "Type"]
+        cols = pd.MultiIndex.from_frame(cols.iloc[1:])
+        tests = tests.iloc[3:-2]  # Get rid of headrings and empty and totals
+        tests = tests.rename(columns={1: "Province"})
+        tests = tests.set_index("Province")
+        tests = join_provinces(tests, "Province", extra=[])
+        tests.columns = cols
+        tests = tests.unstack().to_frame("Tests").reset_index(["Tested", "Type"]).pivot(columns=["Tested", "Type"])
+    return df
 
 
 def get_tests_by_area_chart_pptx(file, title, series, data, raw):
@@ -522,6 +547,7 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    test_prov = get_tests_per_province()
     variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
