@@ -103,10 +103,10 @@ def get_tests_by_day():
         files = ""
         missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
         for file, dl in list(get_test_files(ext=missing)) + list(get_test_files(ext="xlsx")):
+            dl()  # Cache everything just in case
             if not any_in(file, "ATK", "testing_data"):
                 continue
             # TODO: work out how to process 2023.01.21_แยกประเภทของผล-รายจังหวัด.xlsx. Tests of different types per province
-            dl()
             tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2, 3])
             if "ATK" in file:
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
@@ -185,7 +185,7 @@ def get_tests_by_area_chart_pptx(file, title, series, data, raw):
     return data, raw
 
 
-def get_tests_by_area_pdf(file, page, data, raw):
+def get_tests_by_area_pdf(file, page, data, raw, page_num=None):
     if not any_in(page, "เขตสุขภาพ", "เขตสุขภำพ"):
         return data, raw
     elif any_in(page, "เริ่มเปิดบริการ", "90%"):
@@ -207,7 +207,9 @@ def get_tests_by_area_pdf(file, page, data, raw):
         "9881 14.3", "98811 4.3").replace(
         "2061 119828", "20611 19828").replace(
         "445270", "445 270").replace(
-        "237193", "237 193"
+        "237193", "237 193").replace(
+        # Missing district 13 number in 2023.01.28. #TODO. Number is the % plot, 2 pages later
+        "2107.7", "210 12966 7.7"
     )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
@@ -283,8 +285,8 @@ def get_test_reports():
     for file, dl in get_test_files(ext=".pdf"):
         dl()
         pages = parse_file(file, html=False, paged=True)
-        for page in pages:
-            data, raw_pdf = get_tests_by_area_pdf(file, page, data, raw_pdf)
+        for page_num, page in enumerate(pages, start=1):
+            data, raw_pdf = get_tests_by_area_pdf(file, page, data, raw_pdf, page_num)
 
     # pptx less prone to scraping issues so should be trusted more
     raw_ppt = pd.DataFrame()
@@ -385,14 +387,15 @@ def get_variant_sequenced_table(file, pages):
         if "Prevalence of Pangolin lineages" not in page:
             continue
         df = camelot_cache(file, page_num + 1, process_background=False)
-        if "Total" in df[0].iloc[-1]:
-            # Vertical
+        if "Total" in df[0].iloc[-1] or df[0].str.contains("Other").any():
+            # Vertical. TODO: probably need a better test
             df = df.transpose()
         # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
         df.iloc[0] = df.iloc[0].str.replace(r" \(.*\)", "", regex=True)
         df.iloc[0] = df.iloc[0].str.replace(r"(.*2022\n|\n.*2022)", r"", regex=True)
         # Some columns get combined. e.g.
-        df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(" Other ", "| Other ").str.split("|").tolist(), []) if c]
+        df.iloc[0] = [c for c in sum(df.iloc[0].str.replace(
+            " Other ", "| Other ").str.replace(" w", "| w").str.split("|").tolist(), []) if c]
         if "20220715" in file and df.iloc[0, 3] == "Other BA.2":
             # Other BA.2 is there twice. One is wrong
             df.iloc[0, 3] = "Other BA.2.9"

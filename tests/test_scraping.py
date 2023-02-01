@@ -463,12 +463,12 @@ def test_situation_cases_new(date, testdf, dl):
     pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
 
 
-@pytest.mark.parametrize("fname, testdf, dl", dl_files("variant", find_variant_pdf))
+@pytest.mark.parametrize("fname, testdf, dl", dl_files("variants", find_variant_pdf))
 def test_get_variant_seq(fname, testdf, dl):
     assert dl is not None
     file = dl()
     assert file is not None
     pages = parse_file(file, html=False, paged=True)
     fileseq = get_variant_sequenced_table(file, pages)
-    # write_scrape_data_back_to_test(fileseq, "variant", fname)
+    # write_scrape_data_back_to_test(fileseq, "variants", fname)
     pd.testing.assert_frame_equal(testdf, fileseq, check_dtype=False)
