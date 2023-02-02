@@ -358,7 +358,7 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
             yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=None, proxy=False, threads=1):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=None, proxy=False, threads=5):
     """if check is None, then always download"""
     s = requests.Session()
     if timeout is None:
@@ -448,9 +448,10 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         return file, content, url
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-        if type(check) != int:
-            check = len(urls)
-        checks = [True] * check + [False] * (len(urls) - check)
+        if type(check) == int:
+            checks = [True] * check + [False] * (len(urls) - check)
+        else:
+            checks = [check] * len(urls)
         yield from executor.map(get_file, urls, range(len(urls)), checks)
 
 
