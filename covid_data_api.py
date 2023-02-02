@@ -440,13 +440,13 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     if not target_index:
         # Then we will cache it ourselves and return the data
         cached = import_csv(basename, dir=dir, date_cols=[], return_empty=False)
-        target_index = cached[index].max() if not cached.empty else None
+        target_index = cached[index].iloc[-1] if not cached.empty else None
     else:
         cached = None
 
     data = []
     # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=timeout)), None)
+    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=timeout, threads=4)), None)
     os.remove(file)
     pagedata = json.loads(content)
     if "data" not in pagedata:
@@ -475,16 +475,16 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     backwards = cached is None or len(cached) / total > 0.9
     if backwards:
         pagenum = last_page
+        pages = range(last_page, 1, -1)
     else:
         pagenum = int(len(cached) / chunk) + 1  # Assumes we didn't get a partial page before? but we shouldn't?
         target_index = None
         df = cached
+        pages = range(pagenum, last_page, 1)
     pages_got = 0
     is_first = False
-    while True:
-        purl = f"{url}?page={pagenum}"
-        file, content, _ = next(iter(web_files(purl, dir=dir, check=check,
-                                appending=False, timeout=timeout)), (None, None, None))
+    urls = [f"{url}?page={p}" for p in pages]
+    for file, content, _ in web_files(*urls, dir=dir, check=check, appending=False, timeout=timeout, threads=6):
         if file is None:
             if backwards:
                 df = pd.Dataframe()  # Can't join it. have eto give up
@@ -521,7 +521,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
                 df = pd.concat([cached, df])
                 assert len(df) == total
                 break
-        elif not backwards and pages_got == 5:
+        elif not backwards and pages_got == 1000:
             # Cut our loses here so we don't take so much time. Get more later
             break
         pagenum += -1 if backwards else +1
