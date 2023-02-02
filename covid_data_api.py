@@ -484,7 +484,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     pages_got = 0
     is_first = False
     urls = [f"{url}?page={p}" for p in pages]
-    for file, content, _ in web_files(*urls, dir=dir, check=check, appending=False, timeout=timeout, threads=10):
+    for file, content, _ in web_files(*urls, dir=dir, check=check, appending=False, timeout=timeout, threads=6):
         if file is None:
             if backwards:
                 df = pd.Dataframe()  # Can't join it. have eto give up
@@ -521,7 +521,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
                 df = pd.concat([cached, df])
                 assert len(df) == total
                 break
-        elif not backwards and pages_got == 100:
+        elif not backwards and pages_got == 1000:
             # Cut our loses here so we don't take so much time. Get more later
             break
         pagenum += -1 if backwards else +1
