@@ -358,15 +358,15 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
             yield link
 
 
-def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=None, proxy=False):
+def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, appending=False, filenamer=url2filename, timeout=None, proxy=False, threads=5):
     """if check is None, then always download"""
     s = requests.Session()
     if timeout is None:
         timeout = 10
         # We only want retries under normal conditions
         fix_timeouts(s, timeout)
-    i = 0
-    for url in urls:
+
+    def get_file(url, i, check):
         file = filenamer(url, strip_version)
         file = os.path.join(dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
@@ -392,7 +392,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         else:
             modified = None
         if i > 0 and is_cutshort(file, modified, check):
-            break
+            return None, None, url
         remove = False
         err = ""
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
@@ -409,13 +409,13 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             except (Timeout, RequestException) as e:
                 err = str(e)
                 r = None
-            if type(check) == int and check > 0:
-                check -= 1  # HACK: using int as Boolean above
+            #if type(check) == int and check > 0:
+            #    check -= 1  # HACK: using int as Boolean above
             if r is None or r.status_code >= 300:
                 err = f"bad response {r.status_code}, {r.content}" if r is not None else err
                 if not os.path.exists(file):
                     logger.info("Error downloading: {}: skipping. {}", file, err)
-                    continue
+                    return None, None, url
                 logger.info("Error downloading: {}: using cache. {}", file, err)
             else:
                 logger.bind(end="").opt(raw=True).info("Download: {} {}", file, modified)
@@ -433,7 +433,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                         if resumable:
                             # TODO: should we revert to last version instead?
                             logger.opt(raw=True).info("Error downloading: {}: resumable file incomplete {}", file, str(e))
-                            continue
+                            return None, None, url
                         else:
                             logger.opt(raw=True).info("Error downloading: {}: skipping. {}", file, str(e))
                             remove = True
@@ -441,11 +441,18 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             logger.bind(end="\n")
         if remove:
             os.remove(file)  # if we leave it without check it will never get fixed
-            continue
+            return None, None, url
         with open(file, "rb") as f:
             content = f.read()
-        i += 1
-        yield file, content, url
+        # i += 1
+        return file, content, url
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+        if type(check) == int:
+            checks = [True] * check + [False] * (len(urls) - check)
+        else:
+            checks = [check] * len(urls)
+        yield from executor.map(get_file, urls, range(len(urls)), checks)
 
 
 def sanitize_filename(filename):

@@ -11,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 
 import covid_plot_cases
 import covid_plot_deaths
+import covid_plot_vacs
 from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
@@ -273,13 +274,13 @@ def closest(sub, repl):
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
-        "Deaths Cum": (d("2022-09-01"), today(), 0),
-        "Cases Cum": (d("2022-09-01"), today(), 0),
-        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
+        "Deaths Cum": (d("2022-12-11"), today(), 0),
+        "Cases Cum": (d("2022-12-11"), today(), 0),
+        'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
-    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
-    dates = iter([d.strftime("%m/%d/%Y") for d in dates])
+    dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
     ts = tableauscraper.TableauScraper()
     ts.loads(url)
@@ -289,7 +290,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         date, province = idx_value
         if date is None:
             date = latest
-        date = d(date, dayfirst=False)
+        # date = d(date, dayfirst=False)
         if province is None:
             continue
         province = get_province(province)
@@ -301,7 +302,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         "D2_Update (2)"
         row = extract_basics(wb, date)
         if row.empty:
-            break  # Not getting latest data yet
+            continue  # Not getting latest data yet
 
         wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
@@ -324,12 +325,20 @@ def extract_basics(wb, date):
     # D_DeathNew_/7 - daily avg deaths
     # D_Death (2)
 
-    def to_cum(cum, periodic):
+    def to_cum(cum, periodic, name):
+        """ take a single cum value and daily changes and return a cum series going backwards """
+        cum_name = name + " Cum"
+        if periodic.empty or not cum[cum_name].last_valid_index():
+            return pd.DataFrame()
+        periodic = periodic[name]
+        cum = cum[cum_name]
+
+        assert cum.last_valid_index()
         combined = periodic.combine_first(cum)  # TODO: this might go back too far. should really be min of periodic?
         df = cum.reindex(combined.index).bfill().subtract(periodic.reindex(
             combined.index)[::-1].cumsum()[::-1].shift(-1), fill_value=0)
         assert (df > 0).any()
-        return df
+        return df.to_frame(cum_name)
 
     cases = workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
         "SUM(case_new)-value": "Cases",
@@ -337,21 +346,21 @@ def extract_basics(wb, date):
         "AGG(STAT_COUNT)-value": "Cases",
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, year=date.year)
+    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
     if date != cases.index.max():
         return row
     date = cases.index.max()  # We can't get update date always so use lastest cases date
-    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum"))
-    row = row.combine_first(to_cum(row['Cases Cum'], cases['Cases']).to_frame("Cases Cum"))
-    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum"))
+    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
+    row = row.combine_first(to_cum(row, cases, "Cases"))
+    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan))
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
         "AGG(NUM_DEATH)-value": "Deaths",
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
-    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, year=date.year)
+    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
     if not deaths.empty:
-        row = row.combine_first(to_cum(row['Deaths Cum'], deaths['Deaths']).to_frame("Deaths Cum")).ffill()
+        row = row.combine_first(to_cum(row, deaths, "Deaths")).ffill()
 
     row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
     row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
@@ -674,6 +683,7 @@ if __name__ == '__main__':
 
     dash_daily_df = dash_weekly()
     dash_by_province_df = dash_province_weekly()
+    dash_by_province_daily = dash_by_province()
     # dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
@@ -685,11 +695,13 @@ if __name__ == '__main__':
     # df = dash.combine(df, lambda s1, s2: s1)
     # df = briefings.combine(df, lambda s1, s2: s1)
     vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
-    prov = prov.combine_first(cum2daily(dash_by_province_df, exclude=vaccols))
+    prov = dash_by_province_daily.combine_first(cum2daily(dash_by_province_df, exclude=vaccols)).combine_first(prov)
     # Write this one as it's imported
     export(prov, "cases_by_province", csv_only=True)
 
     df = df.combine_first(cum2daily(dash_daily_df, exclude=vaccols))
 
+    covid_plot_vacs.save_vacs_prov_plots(df)
+    covid_plot_vacs.save_vacs_plots(df)
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_cases_plots(df)

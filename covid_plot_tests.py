@@ -66,8 +66,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         "BA.2": "BA.2",
         "BA.4": "BA.4/BA.5",
         "BA.5": "BA.4/BA.5",
-        "BA.2.75": "BA.2.75",
-        "BA.2.76": "BA.2.75",
+        "BA.2.75": "BA.2.75/BN.1",
+        "BA.2.76": "BA.2.75/BN.1",
+        "BN.1.": "BA.2.75/BN.1",
         "BQ.X": "Other",
         "Other": "Other",
     }
@@ -108,14 +109,14 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     area = import_csv("variants_by_area", index=["Start", "End"], date_cols=["Start", "End"])
     area = area.groupby(["Start", "End"]).sum()
     area = area.reset_index().drop(columns=["Health Area", "Start"]).set_index(
-        "End").rename(columns={"B.1.1.529 (Omicron)": "Other"})
+        "End").rename(columns={"B.1.1.529 (Omicron)": "Other", "BA.2.75 (Omicron)": "BA.2.75/BN.1 (Omicron)"})
     area = area.apply(lambda x: x / x.sum(), axis=1)
     # Omicron didn't get spit out until 2022-06-24 so get rid of the rest
     # TODO: should we prefer seq data or pcr data?
     variants = variants.combine_first(area["2022-06-24":])
     last_data = variants['BA.2 (Omicron)'].last_valid_index()
 
-    cols = rearrange(variants.columns.to_list(), "BA.2.75 (Omicron)", "Other", first=False)
+    cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1 (Omicron)", "Other", first=False)
     variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0))
