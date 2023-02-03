@@ -446,9 +446,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
 
     data = []
     # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=dir, check=check, appending=False, timeout=timeout, threads=4)), None)
-    os.remove(file)
-    pagedata = json.loads(content)
+    file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False, timeout=timeout, threads=4)), None)
+    pagedata = json.loads(content) if content is not None else {}
     if "data" not in pagedata:
         return pd.DataFrame(pagedata)
     page = pagedata['data']
@@ -484,12 +483,11 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     pages_got = 0
     is_first = False
     urls = [f"{url}?page={p}" for p in pages]
-    for file, content, _ in web_files(*urls, dir=dir, check=check, appending=False, timeout=timeout, threads=6):
+    for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, threads=6):
         if file is None:
             if backwards:
                 df = pd.Dataframe()  # Can't join it. have eto give up
             break
-        os.remove(file)
         pagedata = json.loads(content)
         data = pagedata['data']
         if not pagedata['data']:
