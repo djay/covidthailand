@@ -6,6 +6,7 @@ import pickle
 import random
 import re
 import sys
+import tempfile
 import urllib.parse
 from io import StringIO
 from itertools import compress
@@ -368,13 +369,14 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
 
     def get_file(url, i, check):
         file = filenamer(url, strip_version)
-        file = os.path.join(dir, file)
+        file = os.path.join(tempfile.gettempdir() if dir is None else dir, file)
         os.makedirs(os.path.dirname(file), exist_ok=True)
         resumable = False
         size = None
         #verify = "ddc.moph.go.th" not in url
         verify = True
 
+        remove = False
         if check or MAX_DAYS:
             proxies = next(proxies_itor, None) if proxy else None
             try:
@@ -393,7 +395,6 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             modified = None
         if i > 0 and is_cutshort(file, modified, check):
             return None, None, url
-        remove = False
         err = ""
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
             # go back 10% in case end of data changed (e.g csv)
@@ -444,6 +445,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             return None, None, url
         with open(file, "rb") as f:
             content = f.read()
+        if dir is None:
+            os.remove(file)
         # i += 1
         return file, content, url
 
