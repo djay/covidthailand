@@ -165,7 +165,8 @@ def get_tests_by_day():
 
 
 def get_tests_per_province():
-    df = pd.DataFrame(index=pd.MultiIndex.from_tuples([], names=['Date', 'Province']))
+    # df = pd.DataFrame(index=pd.MultiIndex.from_tuples([], names=['Date', 'Province']))
+    df = pd.DataFrame(columns=['Date', 'Province']).set_index(['Date', 'Province'])
     for file, dl in list(get_test_files(ext="รายจังหวัด.xlsx")):
         dl()  # Cache everything just in case
     # Now get everything inc those no longer there
@@ -194,6 +195,7 @@ def get_tests_per_province():
         tests.columns = cols
 
         tests = tests.unstack().to_frame("Tests").reset_index(["Metric"]).pivot(columns=["Metric"])
+        tests.columns = tests.columns.droplevel(0)
         df = df.combine_first(tests)
     export(df, "tests_by_province", csv_only=True)
     return df
