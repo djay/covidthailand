@@ -121,14 +121,18 @@ def file2date(file):
     """
     return date of either
 
-    #>>> file2date('files/10-02-21.json')
-    #datetime.datetime(2021, 2, 10, 0, 0)
-
-    >>> file2date('files/report-100264.pdf')
-    datetime.datetime(2021, 2, 10, 0, 0)
+    >>> str(file2date('files/report-100264.pdf'))
+    '2021-02-10 00:00:00'
 
     >>> str(file2date('Daily Report 20220118'))
     '2022-01-18 00:00:00'
+
+    >>> str(file2date('inputs/testing_moph/2023.01.28_แยกประเภทของผล-รายจังหวัด.xlsx'))
+    '2023-01-28 00:00:00'
+
+    # >>> file2date('files/10-02-21.json')
+    # datetime.datetime(2021, 2, 10, 0, 0)
+
 
     """
 
@@ -136,7 +140,9 @@ def file2date(file):
     file, *_ = file.rsplit(".", 1)
     if m := re.search(r"\d{4}-\d{1,2}-\d{1,2}", file):
         return d(m.group(0))
-    if m := re.search(r"(?:\d{8}|\d{6})", file):
+    elif m := re.search(r"\d{4}\.\d{1,2}\.\d{1,2}", file):
+        return d(m.group(0).replace(".", "-"))
+    elif m := re.search(r"(?:\d{8}|\d{6})", file):
         date = m.group(0)
         if len(date) == 8:
             # assume non-thai year for 8 digits?
