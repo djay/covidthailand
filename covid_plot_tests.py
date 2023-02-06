@@ -252,7 +252,18 @@ def save_tests_plots(df: pd.DataFrame) -> None:
     ###############
     df["Positivity PUI"] = df["Cases"].divide(df["Tested PUI"]) * 100
     df["Positivity Public"] = df["Pos Public"] / df["Tests Public"] * 100
-    df["Positivity Cases/Tests"] = df["Cases"] / df["Tests XLS"] * 100
+    # there is some weird spikes in tests and pos that throw out this measure. seems like they dumped extra data on certain
+    # days. can avg it to try and remove it but better to just remove the outliers
+    # roll = df["Tests XLS"].rolling(7)
+    # devs = (df["Tests XLS"] - roll.mean()) / roll.std()
+    # tests_cleaned = df["Tests XLS"][devs < 1.9]
+
+    # Fix spikes in cases that didn't use to be there
+    cleaned_cases = df.loc[:, 'Cases']
+    cleaned_cases.loc["2022-10-02":"2022-10-08"] = np.nan
+    cleaned_cases.loc["2022-10-30":"2022-11-05"] = np.nan
+
+    df["Positivity Cases/Tests"] = (cleaned_cases / df["Tests XLS"]) * 100
     df["Positivity Public+Private"] = (df["Pos XLS"] / df["Tests XLS"] * 100)
     df['Positivity Walkins/PUI3'] = df['Cases Walkin'].divide(df['Tested PUI']) / 3.0 * 100
     df['Positive Rate Private'] = (df['Pos Private'] / df['Tests Private']) * 100
