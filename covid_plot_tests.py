@@ -146,6 +146,16 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections. Not all infections are tested. IHME infections is an estimate from modeling",
               footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
 
+    death_variants = (variants[cols].multiply(df['Deaths'], axis=0))
+    plot_area(df=death_variants,
+              title='Deaths by Major Variant - Interpolated from Sampling - Thailand',
+              png_prefix='deaths_by_variants', cols_subset=cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              footnote="Cases are tests for variants not Deaths so this is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections.",
+              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
+
     # # matplotlib global settings
     # matplotlib.use('AGG')
     # plt.style.use('dark_background')

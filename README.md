@@ -32,11 +32,51 @@ displayed as daily averages and updates will be once per week (mondays?). In add
 sources have stopped being published so many plots will no longer be change.
 # Trends
 
-![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
 ![Hospitalisation as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/active_peak_3.png)
+![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
   [MOPH daily situation report](downloads.md#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing)
+
+
+# Deaths <a name="deaths">
+
+## Deaths by Major Variant (Extrapolated from Surviellance)
+
+![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/deaths_by_variants_3.png)
+- source: [DMSc Variant Report](downloads.md#dl-variant), [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+
+
+## COVID-19 Deaths
+
+![Thailand Covid Deaths by Reason](https://practical-ritchie-cca141.netlify.app/outputs/deaths_reason_3.png)
+
+![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_4.png)
+
+![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_stacked_3.png)
+
+![Deaths Top Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_top_4.png)
+
+![Deaths Trending up Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_increasing_4.png)
+
+- source: [CCSA Daily Briefing](downloads.md#dl-briefings)
+
+## COVID-19 Deaths Age Range
+
+![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_3.png)
+
+- Source: [CCSA Daily Briefing](downloads.md#dl-briefings)
+
+![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_dash_3.png)
+
+## COVID-19 Death Comorbidities and Risks
+
+![Thailand Covid Deaths Comorbidies](https://practical-ritchie-cca141.netlify.app/outputs/deaths_comorbidities_3.png)
+- [The existance of Comorbidities still means the cause of death was Covid](https://github.com/djay/covidthailand/discussions/251) and doesn't imply that these conditions were likely to cause death in that individual in the near future.
+
+![Thailand Covid Deaths Risk](https://practical-ritchie-cca141.netlify.app/outputs/deaths_risk_3.png)
+
+- Source: [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard)
 
 # Cases <a name="cases">
 
@@ -146,38 +186,6 @@ sources have stopped being published so many plots will no longer be change.
 ![Cases by non-Thai nationality](https://practical-ritchie-cca141.netlify.app/outputs/cases_nation_3.png)
 - Source: [API: Daily reports of COVID-19 infections](https://data.go.th/dataset/covid-19-daily)
 
-# Deaths <a name="deaths">
-
-## COVID-19 Deaths
-
-![Thailand Covid Deaths by Reason](https://practical-ritchie-cca141.netlify.app/outputs/deaths_reason_3.png)
-
-![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_4.png)
-
-![Thailand Covid Deaths by Region](https://practical-ritchie-cca141.netlify.app/outputs/deaths_region_stacked_3.png)
-
-![Deaths Top Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_top_4.png)
-
-![Deaths Trending up Provinces](https://practical-ritchie-cca141.netlify.app/outputs/deaths_prov_increasing_4.png)
-
-- source: [CCSA Daily Briefing](downloads.md#dl-briefings)
-
-## COVID-19 Deaths Age Range
-
-![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_3.png)
-
-- Source: [CCSA Daily Briefing](downloads.md#dl-briefings)
-
-![Thailand Covid Death Age Range](https://practical-ritchie-cca141.netlify.app/outputs/deaths_age_dash_3.png)
-
-## COVID-19 Death Comorbidities and Risks
-
-![Thailand Covid Deaths Comorbidies](https://practical-ritchie-cca141.netlify.app/outputs/deaths_comorbidities_3.png)
-- [The existance of Comorbidities still means the cause of death was Covid](https://github.com/djay/covidthailand/discussions/251) and doesn't imply that these conditions were likely to cause death in that individual in the near future.
-
-![Thailand Covid Deaths Risk](https://practical-ritchie-cca141.netlify.app/outputs/deaths_risk_3.png)
-
-- Source: [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard)
 
 ## Case Fatality Rate
 
