@@ -641,7 +641,14 @@ def save_area_plots(df):
     pos_areas = join_provinces(dash_prov, "Province", ["Health District Number", "region"]).reset_index()
     pos_areas = pd.crosstab(pos_areas['Date'], pos_areas['region'],
                             values=pos_areas["Positive Rate Dash"], aggfunc="mean") * 100
-    plot_area(df=pos_areas,
+    tests_by_province = import_csv("tests_by_province", index=["Date", "Province"])
+    pos_prov = tests_by_province[[c for c in tests_by_province.columns if ' Pos' in c]].sum(
+        axis=1) / tests_by_province[[c for c in tests_by_province.columns if ' Tests' in c]].sum(axis=1)
+    pos_prov = pos_prov.to_frame("Positive Rate")
+    pos_prov = join_provinces(pos_prov, "Province", ["Health District Number", "region"]).reset_index()
+    pos_prov = pd.crosstab(pos_prov['Date'], pos_prov['region'],
+                           values=pos_prov["Positive Rate"], aggfunc="mean") * 100
+    plot_area(df=pos_areas.combine_first(pos_prov),
               title='PCR Positive Rate - Mean per Region - Thailand',
               png_prefix='positivity_region', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
               ma_days=21,
@@ -724,5 +731,5 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_tests_plots(df)
     save_area_plots(df)
+    save_tests_plots(df)
