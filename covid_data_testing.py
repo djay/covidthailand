@@ -368,7 +368,7 @@ def get_variants_by_area_pdf(file, page, page_num):
 
     else:
         assert False, "Unknown Area Variant table"
-    cols = [v.replace("Potentially ", "").replace("\n", "") for v in df.iloc[1] if v]
+    cols = [v.replace("\n", "").replace("Potentially ", "") for v in df.iloc[1] if v]
     totals.columns = cols
 
     assert len(df) == 17

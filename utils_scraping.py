@@ -352,7 +352,7 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
     def is_match(a):
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
-    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=timeout, proxy=proxy):
+    for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=timeout, proxy=proxy, threads=1):
         soup = parse_file(file, html=True, paged=False)
         links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
         for link in links:
