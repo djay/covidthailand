@@ -168,7 +168,7 @@ def vaccination_daily(daily, file_date, file, page):
         date = date[-1]
     else:
         # prior to 2022 we could just get the first date of the page
-        date = find_thai_date(page)
+        date = max(find_thai_date(page, all=True))
     assert date, f"No date found in {file}: {page}"
     # if date in [d("2022-01-20")]:
     #     pass
@@ -205,7 +205,7 @@ def vaccination_daily(daily, file_date, file, page):
 
     if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย|กรทำงกำรแพทย์)", page):
         logger.info("{} Vac Sum (Missing groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
-        assert date < d("2021-07-12")
+        assert not d("2021-07-12") < date < d("2022-12-02")
         return daily
 
     def clean_num(numbers):
@@ -714,7 +714,7 @@ def vaccination_reports():
                 *rest, with_date = page.split("ข้อมูล", 2)
                 if rest:
                     # could be 2 dates on teh front page
-                    date = find_thai_date(with_date)
+                    date = max(find_thai_date(with_date, all=True))
                 else:
                     date = find_thai_date(page)
             table = vaccination_tables(table, date, page, file)

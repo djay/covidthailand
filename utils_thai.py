@@ -225,11 +225,22 @@ def find_thai_date(content, remove=False, all=False):
     you can get all dates
     >>> print(find_thai_date("สะสมตั้งแต่วันที่ 28 กุมภำพันธ์ 2564 – 10 มกรำคม 2565", all=True)[1])
     2022-01-10 00:00:00
+
+    >>> print(find_thai_date("27 มกราคม 2566", all=True)[0])
+    2023-01-27 00:00:00
+
+    >>> print(find_thai_date("nวนัที่ 23 - 27 มกราคม 2566"))
+    2023-01-27 00:00:00
+
+    >>> [str(d) for d in find_thai_date("28 กุมภำพันธ์ 2564 ผลกำรให้บริกำรวัคซีน ณ วันที่ 27 มกรำคม 2566 เวลำ 16.00", all=True)]
+    ['2021-02-28 00:00:00', '2023-01-27 00:00:00']
     """
     # TODO: prevent it finding numbers for the month name? finds too many
     results = []
     for m3 in re.finditer(r"([0-9]+)(?=\s*([^ ]+)\s*((?:25)?[0-9][0-9]))", content):
         d2, month, year = m3.groups()
+        if int(d2) > 31:
+            continue
         if len(year) == 2:
             year = "25" + year
         closest = difflib.get_close_matches(month, THAI_FULL_MONTHS + THAI_ABBR_MONTHS, 1, cutoff=0.60)
