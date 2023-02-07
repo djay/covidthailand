@@ -705,7 +705,7 @@ def vaccination_reports():
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
 
-    for link, date, dl in vaccination_reports_files2(check=1):
+    for link, date, dl in vaccination_reports_files2(check=6):
         if (file := dl()) is None:
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
