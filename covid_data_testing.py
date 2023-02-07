@@ -182,8 +182,9 @@ def get_tests_per_province():
         cols.columns = ["Date", "Tested", "Type"]
         day = cols['Date'].iloc[-1]
         # TODO: will need better method when it changes month?
-        cols['Date'] = cols['Date'].apply(lambda d: datetime.datetime(
-            date.year, date.month, int(d)) if not pd.isna(d) else np.nan)
+        cols['Date'] = cols['Date'].apply(
+            lambda d: np.nan if pd.isna(d) else datetime.datetime(date.year, date.month, int(d)) if int(d) <= date.day else datetime.datetime(date.year, date.month - 1, int(d)))
+        dates = cols['Date']
         cols['Metric'] = cols.apply(lambda row: row['Tested'] + ' ' + ('Pos' if row['Type'] ==
                                     'detected' else 'Tests') if not pd.isna(row['Type']) else np.nan, axis=1)
         cols = cols.drop(columns=['Tested', 'Type'])
@@ -197,6 +198,7 @@ def get_tests_per_province():
         tests = tests.unstack().to_frame("Tests").reset_index(["Metric"]).pivot(columns=["Metric"])
         tests.columns = tests.columns.droplevel(0)
         df = df.combine_first(tests)
+        logger.info("Tests by Prov {} - {} {}", dates.min(), dates.max(), file)
     export(df, "tests_by_province", csv_only=True)
     return df
 
@@ -399,6 +401,7 @@ def get_variants_by_area_pdf(file, page, page_num):
         # TODO: return these seperate and work out diffs in case any were added
         totals[["B.1.1.7 (Alpha)", "B.1.351 (Beta)", "B.1.617.2 (Delta)"]] = 0
 
+    logger.info("Variants by PCR: {} - {} {}", totals['Start'].max(), totals['End'].max(), file)
     return totals.set_index("End")
 
 
@@ -501,6 +504,7 @@ def get_variant_sequenced_table(file, pages):
         latest_week = first_seq_table.index.max()
         assert others.sum() == 0 or (first_seq_table['Other'][latest_week] == others[latest_week]).all()
     fileseq['Other'] = others
+    logger.info("Variants by Seq {} - {} {}", fileseq.index.min(), fileseq.index.max(), file)
     return fileseq
 
 
