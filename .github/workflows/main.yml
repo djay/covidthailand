@@ -183,6 +183,17 @@ jobs:
           (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
           sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
           rm userpass.txt
+          # Wait for OpenVPN to connect
+          while ! sudo pgrep openvpn > /dev/null; do
+            sleep 1
+          done
+
+          while ! sudo grep -q "Initialization Sequence Completed" /var/log/syslog; do
+            sleep 1
+          done
+
+          # Do something after OpenVPN connects
+          echo "OpenVPN connected"
       - name: is dash ready
         id: godash
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}
