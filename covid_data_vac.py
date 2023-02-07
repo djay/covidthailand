@@ -162,13 +162,16 @@ def vac_problem(daily, date, file, page):
 def vaccination_daily(daily, file_date, file, page):
     if not re.search(r"(ให้หน่วยบริกำร|ใหห้นว่ยบริกำร|วคัซนีโควดิ 19|ริการวัคซีนโควิด 19|ผู้ได้รับวัคซีนเข็มที่ 1)", page):  # noqa
         return daily
-    first_line = page.split("\n\n")[0]
-    date = find_thai_date(first_line, all=True)  # 2021-01-11 has date range
+    elif "ายหลังได้รับวัคซีน" in page:
+        return daily
+    first_line, *_, last_line = page.split("\n\n")
+    date = find_thai_date(first_line, all=True) or find_thai_date(last_line, all=True)  # 2021-01-11 has date range
     if date:
         date = date[-1]
     else:
         # prior to 2022 we could just get the first date of the page
         date = max(find_thai_date(page, all=True))
+        # page.split("ณ วันที่")[-1]
     assert date, f"No date found in {file}: {page}"
     # if date in [d("2022-01-20")]:
     #     pass
@@ -667,17 +670,17 @@ def vaccination_reports_files2(check=0,
 
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
-
-    years = web_links(base1, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout)
+    link_check = 1 if check else 0
+    years = web_links(base1, ext="dept=dcd", match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout)
     months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
-              match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
-    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
+              match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout))
+    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=link_check, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(11, 2, -1)]
     links2 = (link for f in folders for link in reversed(
-        list(web_links(f, ext=ext, check=False, proxy=use_proxy, timeout=timeout))))
+        list(web_links(f, ext=ext, check=link_check, proxy=use_proxy, timeout=timeout))))
     links = list(links1) + list(links2)
     count = 0
     res = []
