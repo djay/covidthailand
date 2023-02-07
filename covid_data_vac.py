@@ -668,10 +668,10 @@ def vaccination_reports_files2(check=0,
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
 
-    years = web_links(base1, ext="dept=dcd", match=hasyear, check=True, proxy=use_proxy, timeout=timeout)
+    years = web_links(base1, ext="dept=dcd", match=hasyear, check=1, proxy=use_proxy, timeout=timeout)
     months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
-              match=hasyear, check=check, proxy=use_proxy, timeout=timeout))
-    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=check, proxy=use_proxy, timeout=timeout) if (
+              match=hasyear, check=1, proxy=use_proxy, timeout=timeout))
+    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=1, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
     # this set was more reliable for awhile. Need to match tests
