@@ -680,14 +680,16 @@ def vaccination_reports_files2(check=0,
     links = list(links1) + list(links2)
     count = 0
     res = []
-    for link in links:
+    checks = [True] * check + [False] * (len(links) - check)
+    for link, check in zip(links, checks):
         if any_in(link, "1638863771691.pdf", '1639206014644.pdf') and "Report" in base2:
             # it's really slides
             continue
 
-        def get_file(link=link):
+        def get_file(link=link, check=check):
             try:
-                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations", proxy=use_proxy, timeout=timeout)))
+                file, _, _ = next(iter(web_files(link, dir="inputs/vaccinations",
+                                  proxy=use_proxy, timeout=timeout, check=check)))
             except StopIteration:
                 return None
             return file
