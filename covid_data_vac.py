@@ -656,13 +656,14 @@ def vaccination_reports_files2(check=0,
 
     # more reliable from dec 2021 and updated quicker
     hasyear = re.compile("(2564|2565|2566|2567)")
-    if not check:
-        use_proxy = False
-    else:
-        try:
-            use_proxy = requests.head("https://ddc.moph.go.th", timeout=45).status_code >= 400
-        except requests.exceptions.RequestException:
-            use_proxy = True
+    # if not check:
+    #     use_proxy = False
+    # else:
+    #     try:
+    #         use_proxy = requests.head("https://ddc.moph.go.th", timeout=80).status_code >= 400
+    #     except requests.exceptions.RequestException:
+    #         use_proxy = True
+    use_proxy = False
 
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
