@@ -396,7 +396,10 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         if i > 0 and is_cutshort(file, modified, check):
             return None, None, url
         err = ""
-        if (resume_byte_pos := resume_from(file, modified, check, size, appending)) >= 0:
+        if (resume_byte_pos := resume_from(file, modified, check, size, appending)) < 0:
+            if check:
+                logger.info("Unmodified: {}: using cache. {} {}", file, modified, size)
+        else:
             # go back 10% in case end of data changed (e.g csv)
             resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
