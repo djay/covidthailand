@@ -302,6 +302,7 @@ def resume_from(file, remote_date, check=True, size=0, appending=False):
         return 0  # TODO: should we always keep cached?
     elif size and size == resume_pos and remote_date <= fdate:
         # it's the same, don't redownload
+        logger.info("Cached Unmodified: {} <= {} {}b: {}", remote_date, fdate, size, file)
         return -1
     elif appending and size:
         if resume_pos < size:
@@ -398,7 +399,8 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         err = ""
         if (resume_byte_pos := resume_from(file, modified, check, size, appending)) < 0:
             if check:
-                logger.info("Unmodified: {}: using cache. {} {}", file, modified, size)
+                # logger.info("Unmodified: {}: using cache. {} {}", file, modified, size)
+                pass
         else:
             # go back 10% in case end of data changed (e.g csv)
             resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0
