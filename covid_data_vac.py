@@ -680,7 +680,7 @@ def vaccination_reports_files2(check=0,
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(11, 2, -1)]
     links2 = (link for f in folders for link in reversed(
-        list(web_links(f, ext=ext, check=0, proxy=use_proxy, timeout=timeout))))
+        list(web_links(f, ext=ext, check=0, proxy=use_proxy, timeout=timeout, ignore_errors=True))))
     links = list(links1) + list(links2)
     count = 0
     res = []

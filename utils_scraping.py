@@ -346,7 +346,7 @@ def links_html_namer(url, _):
     return "-".join(url.split("/")[2:]) + ".html"
 
 
-def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=None, proxy=False):
+def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=links_html_namer, check=True, timeout=None, proxy=False, ignore_errors=False):
     def is_ext(a):
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
@@ -354,6 +354,9 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
         return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
 
     for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=timeout, proxy=proxy, threads=1):
+        if ignore_errors and file is None:
+            continue
+        assert file is not None, f"Problem accessing {index_url}"
         soup = parse_file(file, html=True, paged=False)
         links = (urllib.parse.urljoin(index_url, a.get('href')) for a in soup.find_all('a') if is_match(a))
         for link in links:
