@@ -45,7 +45,9 @@ from utils_thai import TEST_COLS
 def get_drive_files(folder_id, ext="pdf", dir="inputs/testing_moph", check=True):
     key = os.environ.get('DRIVE_API_KEY', None)
     if key is None or not check:
-        logger.warning("env DRIVE_API_KEY missing: Using local cached testing data only")
+        if key is None:
+            logger.warning("env DRIVE_API_KEY missing")
+        logger.warning(f"Using local cached data only for {folder_id} {dir}")
         yield from local_files(ext, dir)
         return
     url = f"https://www.googleapis.com/drive/v3/files?q=%27{folder_id}%27+in+parents&key={key}"
