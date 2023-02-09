@@ -365,10 +365,10 @@ def get_case_details_api_weekly():
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
                          ["year", "weeknum"], None, dir="inputs/json/weekly/cases", timeout=140)
-    df['age'] = pd.to_numeric(df['age_number'])
+    df['age'] = pd.to_numeric(df['age_number'], errors="coerce")
     df = df.rename(columns=dict(province="province_of_onset"))
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0).reset_index()
-    df = df.drop(columns=['update_date', "index"])
+    df = df.drop(columns=['update_date', "index", 'age_number'])
 
     cases = cleanup_cases(df)
     # assert total == len(cases) - init_cases_len
