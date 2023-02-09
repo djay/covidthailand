@@ -184,6 +184,8 @@ jobs:
           sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
           rm userpass.txt
           # Wait for OpenVPN to connect
+          sleep 5
+          tail -200 /var/log/syslog
           while ! sudo pgrep openvpn > /dev/null; do
             sleep 1
           done
