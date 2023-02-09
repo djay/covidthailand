@@ -652,7 +652,7 @@ def vaccination_reports_files2(check=0,
                                base1="https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd",
                                base2="https://ddc.moph.go.th/vaccine-covid19/diaryReportMonth/{m:02}/9/2021",
                                ext=".pdf",
-                               timeout=45,
+                               timeout=90,
                                ):
     # https://ddc.moph.go.th/vaccine-covid19/diaryReport
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd

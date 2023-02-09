@@ -369,7 +369,7 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
     if timeout is None:
         timeout = 10
         # We only want retries under normal conditions
-        fix_timeouts(s, timeout)
+    fix_timeouts(s, timeout)
 
     def get_file(url, i, check):
         file = filenamer(url, strip_version)
