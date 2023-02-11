@@ -91,15 +91,17 @@ def get_cases_timelineapi_weekly():
         return pd.DataFrame()
     df2 = pd.read_json(json1)
     df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/report-round-3-y21-line-lists",
-                          ["year", "weeknum"], [2020, 1], dir="inputs/json/weekly")
+                          ["year", "weeknum"], dir="inputs/json/weekly")
     df4 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all",
-                          ["year", "weeknum"], [2020, 1], dir="inputs/json/weekly")
+                          ["year", "weeknum"], dir="inputs/json/weekly")
     # df = pd.concat([df2, df3, df4])
     df = df4  # there is overlap and it has different values. Just use this year?
 
     # week 44 2022 (29 oct) has wrong value of 25146? 10x before or after it? Earlier dates too? 2022-09-03, 2022-07-30
 
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0)
+    if df.empty:
+        return df
     df = df.drop(columns=['update_date', "index"])
     df = df.rename(columns=dict(new_case="Cases", total_case="Cases Cum",
                    new_case_excludeabroad="Cases Local", total_case_excludeabroad="Cases Local Cum",
@@ -802,9 +804,9 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    timeline_weekly = get_cases_timelineapi_weekly()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
-    timeline_weekly = get_cases_timelineapi_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
 
