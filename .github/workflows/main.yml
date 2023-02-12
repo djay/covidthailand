@@ -185,7 +185,7 @@ jobs:
           rm userpass.txt
           # Wait for OpenVPN to connect
           sleep 5
-          tail -200 /var/log/syslog
+          tail -30 /var/log/syslog
           while ! sudo pgrep openvpn > /dev/null; do
             sleep 1
           done
