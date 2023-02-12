@@ -365,7 +365,7 @@ def get_case_details_api_weekly():
 
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
-    df = load_paged_json("https://covid19.ddc.mpeoph.go.th/api/Cases/round-4-line-lists",
+    df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
                          ["year", "weeknum"], None, dir="inputs/json/weekly/cases", timeout=140)
     df['age'] = pd.to_numeric(df['age_number'], errors="coerce")
     df = df.rename(columns=dict(province="province_of_onset"))
