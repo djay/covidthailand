@@ -16,6 +16,15 @@ from covid_data import scrape_and_combine
 from utils_scraping import logger
 
 
+def do_work(job):
+    global job_data
+    start = time.time()
+    logger.info(f"==== Plot: {job.__name__} Start ====")
+    data = job()
+    logger.info(f"==== Plot: {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
+    return (job.__name__, data)
+
+
 def save_plots(df: pd.DataFrame) -> None:
     logger.info('======== Generating Plots ==========')
 
@@ -25,14 +34,6 @@ def save_plots(df: pd.DataFrame) -> None:
 
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
-
-    def do_work(job):
-        global job_data
-        start = time.time()
-        logger.info(f"==== Plot: {job.__name__} Start ====")
-        data = job()
-        logger.info(f"==== Plot: {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
-        return (job.__name__, data)
 
     jobs = [
         covid_plot_cases.save_caseprov_plots,

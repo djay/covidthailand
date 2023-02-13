@@ -344,18 +344,19 @@ def save_tests_plots(df: pd.DataFrame) -> None:
         'PUI*3 per Case',
         'PUI per Walk-in Case',
     ]
-    plot_area(df=df,
-              title='Tests per Confirmed Covid Cases - Thailand',
-              legends=legends,
-              png_prefix='tests_per_case', cols_subset=cols,
-              ma_days=7,
-              kind='line', stacked=False, percent_fig=False,
-              cmap='tab10',
-              footnote='\nPUI: Person Under Investigation\n'
-                       'PCR: Polymerase Chain Reaction\n'
-                       'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
-                       'so it is included for when testing data is delayed. It is not the actual positive rate.',
-              footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
+    # # Gets too big. takes forever
+    # plot_area(df=df,
+    #           title='Tests per Confirmed Covid Cases - Thailand',
+    #           legends=legends,
+    #           png_prefix='tests_per_case', cols_subset=cols,
+    #           ma_days=7,
+    #           kind='line', stacked=False, percent_fig=False,
+    #           cmap='tab10',
+    #           footnote='\nPUI: Person Under Investigation\n'
+    #                    'PCR: Polymerase Chain Reaction\n'
+    #                    'Note: Walkin Cases/3xPUI seems to give an estimate of positive rate (when cases are high),\n'
+    #                    'so it is included for when testing data is delayed. It is not the actual positive rate.',
+    #           footnote_left=f'\n{source}Data Sources: Daily Situation Reports\n  DMSC: Thailand Laboratory Testing Data')
 
     cols = [
         'Positivity Cases/Tests',
