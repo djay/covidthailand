@@ -228,6 +228,7 @@ def dash_weekly(file="moph_dash_weekly"):
         "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=4)),
         'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
+        'Cases Cum': (d("2022-09-17"), today(), 4625384),
     }
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
@@ -252,11 +253,13 @@ def dash_weekly(file="moph_dash_weekly"):
         # TODO: should be part of workbook_iterate so its done once.
         row_since2023 = row = extract_basics(wb, date)
         if row_since2023.empty:
+            logger.warning("{} MOPH Dashboard: wrong date: skip {}", date)
             break
 
         wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
-        row_update = extract_basics(wb, date)
+        row_update = extract_basics(wb, date, check_date=False)
+        assert not row_update.empty
         row = row_update.combine_first(row_since2023)
 
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
@@ -274,8 +277,8 @@ def closest(sub, repl):
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
     valid = {
-        "Deaths Cum": (d("2022-12-11"), today(), 0),
-        "Cases Cum": (d("2022-12-11"), today(), 0),
+        "Deaths Cum": (d("2022-12-11"), today(), 5),
+        "Cases Cum": (d("2022-12-11"), today(), 100),
         'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
@@ -302,11 +305,13 @@ def dash_province_weekly(file="moph_province_weekly"):
         "D2_Update (2)"
         row = extract_basics(wb, date)
         if row.empty:
+            logger.warning("{} MOPH Dashboard: wrong date: skip {}", date, province)
             continue  # Not getting latest data yet
 
         wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
-        row_update = extract_basics(wb, date)
+        row_update = extract_basics(wb, date, check_date=False)
+        assert not row_update.empty
         row = row_update.combine_first(row)
 
         row['Province'] = province
@@ -318,7 +323,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     return df
 
 
-def extract_basics(wb, date):
+def extract_basics(wb, date, check_date=True):
 
     row = pd.DataFrame()
     # D_CaseNew_/7 - daily avg cases
@@ -340,31 +345,6 @@ def extract_basics(wb, date):
         assert (df > 0).any()
         return df.to_frame(cum_name)
 
-    cases = workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
-        "SUM(case_new)-value": "Cases",
-        "AGG(stat_count)-value": "Cases",
-        "AGG(STAT_COUNT)-value": "Cases",
-        "ATTR(week)-alias": "Week"
-    }, index_col="Week", index_date=False)
-    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
-    if date != cases.index.max():
-        return row
-    date = cases.index.max()  # We can't get update date always so use lastest cases date
-    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
-    row = row.combine_first(to_cum(row, cases, "Cases"))
-    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan))
-    deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
-        "SUM(death_new)-value": "Deaths",
-        "AGG(NUM_DEATH)-value": "Deaths",
-        "ATTR(week)-alias": "Week"
-    }, index_col="Week", index_date=False)
-    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
-    if not deaths.empty:
-        row = row.combine_first(to_cum(row, deaths, "Deaths")).ffill()
-
-    row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
-    row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
-
     vacs = workbook_series(wb, ["D_Vac2Table"], {
         "vaccine_plan_group-alias": {
             "1": "1 Cum",
@@ -384,6 +364,31 @@ def extract_basics(wb, date):
         "SUM(vaccine_total_acm)-value": "Vac Given",
         # "SUM(vaccine_total_acm)-alias": "Vac Given",
     }, index_date=True)
+
+    cases = workbook_series(wb, ["D_NewTL (2)", "D2_NewTL (2)"], {
+        "SUM(case_new)-value": "Cases",
+        "AGG(stat_count)-value": "Cases",
+        "AGG(STAT_COUNT)-value": "Cases",
+        "ATTR(week)-alias": "Week"
+    }, index_col="Week", index_date=False)
+    cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
+    if check_date and date != vacs.index.max():
+        return row
+    # date = cases.index.max()  # We can't get update date always so use lastest cases date
+    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
+    row = row.combine_first(to_cum(row, cases, "Cases"))
+    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan))
+    deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
+        "SUM(death_new)-value": "Deaths",
+        "AGG(NUM_DEATH)-value": "Deaths",
+        "ATTR(week)-alias": "Week"
+    }, index_col="Week", index_date=False)
+    deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
+    if not deaths.empty:
+        row = row.combine_first(to_cum(row, deaths, "Deaths")).ffill()
+
+    row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
+    row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
 
     # TODO: should switch from weekly?
     row = row.combine_first(vacs).combine_first(vacs_dates)
