@@ -18,6 +18,7 @@ from matplotlib import colors as mcolors
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import ListedColormap
 from matplotlib.pyplot import cycler
+from pandas.tseries.offsets import DateOffset
 
 from utils_scraping import logger
 
@@ -672,6 +673,30 @@ class MousePositionDatePlugin(mpld3.plugins.PluginBase):
 
 
 def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None):
+    """
+    Converts pd with Year=2023, week=2 into an end date "Date"
+    >>> df = pd.DataFrame({'year': [2022, 2023], 'Week': [52, 1], 'Cases': [1, 2]}).set_index(['year', 'Week'])
+    >>> weeks_to_end_date(df)
+                Cases
+    Date
+    2022-12-31      1
+    2023-01-07      2
+
+    >>> weeks_to_end_date(df, offset=4)
+                Cases
+    Date
+    2022-12-27      1
+    2023-01-03      2
+
+    And if we have no year col we will work backwards from current date
+    >>> df = pd.DataFrame({'Week': [52, 1], 'Cases': [1, 2]}).set_index(['Week'])
+    >>> weeks_to_end_date(df, year_col='Year', date=datetime.datetime(2023, 1, 10))
+                Cases
+    Date
+    2022-12-31      1
+    2023-01-07      2
+
+    """
     if df.empty:
         return df
     otherindex = list(set(df.index.names) - set([week_col, year_col, None]))
@@ -683,8 +708,13 @@ def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None)
         year = date.year
         # any week past the last date we expect is assumed to be last year
         # assumes not more than one year and no future data
-        df[year_col] = df.apply(lambda row: year - 1 if row[week_col] > last_week else year, axis=1)
-    df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
-        f"{row[year_col] if year_col else year}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
+        # df[year_col] = df.apply(lambda row: year - 1 if row[week_col] > last_week else year, axis=1)
+        df.loc[df[week_col] > last_week, year_col] = year - 1
+        df.loc[df[week_col] <= last_week, year_col] = year
+        df[year_col] = df[year_col].astype(int)
+    # df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
+    #     f"{row[year_col] if year_col else year}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
+    df["Date"] = pd.to_datetime(df[year_col].astype(str) + df[week_col].astype(str) +
+                                "-6", format='%G%V-%w') - DateOffset(days=offset)
     df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
     return df.set_index(["Date"] + otherindex)
