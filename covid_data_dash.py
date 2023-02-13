@@ -253,7 +253,7 @@ def dash_weekly(file="moph_dash_weekly"):
         # TODO: should be part of workbook_iterate so its done once.
         row_since2023 = row = extract_basics(wb, date)
         if row_since2023.empty:
-            logger.warning("{} MOPH Dashboard: wrong date: skip {}", date)
+            logger.warning("{} MOPH Dashboard: wrong date: skip", date)
             break
 
         wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
@@ -700,11 +700,13 @@ if __name__ == '__main__':
     # df = dash.combine(df, lambda s1, s2: s1)
     # df = briefings.combine(df, lambda s1, s2: s1)
     vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
-    prov = dash_by_province_daily.combine_first(cum2daily(dash_by_province_df, exclude=vaccols)).combine_first(prov)
+    daily_prov = cum2daily(dash_by_province_df, exclude=vaccols)
+    prov = dash_by_province_daily.combine_first(daily_prov).combine_first(prov)
     # Write this one as it's imported
     export(prov, "cases_by_province", csv_only=True)
 
-    df = df.combine_first(cum2daily(dash_daily_df, exclude=vaccols))
+    daily = cum2daily(dash_daily_df, exclude=vaccols)
+    df = daily.combine_first(df)
 
     covid_plot_vacs.save_vacs_prov_plots(df)
     covid_plot_vacs.save_vacs_plots(df)
