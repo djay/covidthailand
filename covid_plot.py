@@ -1,6 +1,7 @@
 import datetime
 import pathlib
 import time
+from functools import partial
 from multiprocessing import Pool
 
 import matplotlib.cm
@@ -49,7 +50,7 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
 
     with Pool() as pool:
-        res = dict(pool.imap_unordered(do_work, zip(jobs, [df])))
+        res = dict(pool.imap_unordered(partial(do_work, df=df), jobs, [df]))
         pool.close()
         pool.join()
     logger.info(f"data={len(res)}")
