@@ -342,6 +342,7 @@ def save_vacs_plots(df: pd.DataFrame) -> None:
 
 
 def save_vacs_prov_plots(df, df_prov=None):
+    logger.info('======== Generating Vaccinations Prov Plots ==========')
     # Top 5 vaccine rollouts
     vac = import_csv("vaccinations", ['Date', 'Province'])
     vac = vac.groupby("Province", group_keys=False).apply(fix_gaps)
@@ -622,7 +623,7 @@ def save_vacs_prov_plots(df, df_prov=None):
               y_formatter=perc_format,
               footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports',
               footnote='Percentage include ages 0-18')
-    logger.info('======== Finish Vaccinations Plots ==========')
+    logger.info('======== Finish Vaccinations Prov Plots ==========')
 
 
 if __name__ == "__main__":

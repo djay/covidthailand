@@ -521,6 +521,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 # Tests by area
 ##########################
 def save_area_plots(df):
+    logger.info('======== Generating Tests Area Plots ==========')
     plt.rc('legend', **{'fontsize': 12})
 
     # by_area = import_csv("tests_by_area", index=["Start"], date_cols=["Start", "End"]).drop(columns=["End"])
@@ -745,7 +746,7 @@ def save_area_plots(df):
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
-    logger.info('======== Finish Tests Plots ==========')
+    logger.info('======== Finish Tests Area Plots ==========')
 
 
 if __name__ == "__main__":
