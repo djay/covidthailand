@@ -372,7 +372,7 @@ def extract_basics(wb, date, check_date=True):
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
-    if check_date and date != vacs.index.max():
+    if check_date and date != vacs.index.max() and date != cases.index.max():
         return row
     # date = cases.index.max()  # We can't get update date always so use lastest cases date
     row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
