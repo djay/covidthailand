@@ -50,7 +50,7 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
 
     with Pool() as pool:
-        res = dict(pool.imap_unordered(partial(do_work, df=df), jobs, [df]))
+        res = dict(pool.imap_unordered(partial(do_work, df=df), jobs))
         pool.close()
         pool.join()
     logger.info(f"data={len(res)}")
