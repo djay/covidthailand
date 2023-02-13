@@ -676,13 +676,13 @@ def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None)
     """
     Converts pd with Year=2023, week=2 into an end date "Date"
     >>> df = pd.DataFrame({'year': [2022, 2023], 'Week': [52, 1], 'Cases': [1, 2]}).set_index(['year', 'Week'])
-    >>> weeks_to_end_date(df)
+    >>> weeks_to_end_date(df) # doctest: +NORMALIZE_WHITESPACE
                 Cases
     Date
     2022-12-31      1
     2023-01-07      2
 
-    >>> weeks_to_end_date(df, offset=4)
+    >>> weeks_to_end_date(df, offset=4) # doctest: +NORMALIZE_WHITESPACE
                 Cases
     Date
     2022-12-27      1
@@ -690,7 +690,7 @@ def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None)
 
     And if we have no year col we will work backwards from current date
     >>> df = pd.DataFrame({'Week': [52, 1], 'Cases': [1, 2]}).set_index(['Week'])
-    >>> weeks_to_end_date(df, year_col='Year', date=datetime.datetime(2023, 1, 10))
+    >>> weeks_to_end_date(df, year_col='Year', date=datetime.datetime(2023, 1, 10)) # doctest: +NORMALIZE_WHITESPACE
                 Cases
     Date
     2022-12-31      1
