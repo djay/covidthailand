@@ -1,4 +1,6 @@
+import datetime
 import pathlib
+import time
 from multiprocessing import Pool
 
 import matplotlib.cm
@@ -24,19 +26,32 @@ def save_plots(df: pd.DataFrame) -> None:
     # create directory if it does not exists
     pathlib.Path('./outputs').mkdir(parents=True, exist_ok=True)
 
-    awaits = []
+    def do_work(job):
+        global job_data
+        start = time.time()
+        logger.info(f"==== Plot: {job.__name__} Start ====")
+        data = job()
+        logger.info(f"==== Plot: {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
+        return (job.__name__, data)
+
+    jobs = [
+        covid_plot_cases.save_caseprov_plots,
+        covid_plot_cases.save_cases_plots,
+        covid_plot_tests.save_test_area_plots,
+        covid_plot_tests.save_variant_plots,
+        covid_plot_vacs.save_vacs_plots,
+        covid_plot_vacs.save_vacs_prov_plots,
+        covid_plot_active.save_active_plots,
+        covid_plot_deaths.save_deaths_plots,
+        covid_plot_deaths.save_excess_death_plots,
+        covid_plot_tests.save_tests_plots,
+    ]
+
     with Pool() as pool:
-        awaits = [pool.apply_async(f, [df]) for f in [
-            covid_plot_cases.save_caseprov_plots,
-            covid_plot_cases.save_cases_plots,
-            covid_plot_tests.save_tests_plots,
-            covid_plot_tests.save_area_plots,
-            covid_plot_vacs.save_vacs_plots,
-            covid_plot_vacs.save_vacs_prov_plots,
-            covid_plot_active.save_active_plots,
-            covid_plot_deaths.save_deaths_plots,
-        ]]
-        [a.get() for a in awaits]
+        res = dict(pool.imap_unordered(do_work, jobs))
+        pool.close()
+        pool.join()
+    logger.info(f"data={len(res)}")
 
 
 if __name__ == "__main__":

@@ -53,9 +53,7 @@ week,BA.1 (Omicron),BA.2 (Omicron)
 """
 
 
-def save_tests_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Tests Plots ==========')
-
+def save_variant_plots(df: pd.DataFrame) -> None:
     # Vartiants
     # sequence data have less of but more detail
     seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
@@ -155,6 +153,9 @@ def save_tests_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote="Cases are tests for variants not Deaths so this is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections.",
               footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
+
+
+def save_tests_plots(df: pd.DataFrame) -> None:
 
     # # matplotlib global settings
     # matplotlib.use('AGG')
@@ -520,8 +521,7 @@ def save_tests_plots(df: pd.DataFrame) -> None:
 ##########################
 # Tests by area
 ##########################
-def save_area_plots(df):
-    logger.info('======== Generating Tests Area Plots ==========')
+def save_test_area_plots(df):
     plt.rc('legend', **{'fontsize': 12})
 
     # by_area = import_csv("tests_by_area", index=["Start"], date_cols=["Start", "End"]).drop(columns=["End"])
@@ -746,12 +746,11 @@ def save_area_plots(df):
               cmap='tab20',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing')
 
-    logger.info('======== Finish Tests Area Plots ==========')
-
 
 if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_area_plots(df)
+    save_test_area_plots(df)
     save_tests_plots(df)
+    save_variant_plots(df)
