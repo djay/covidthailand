@@ -276,9 +276,13 @@ def closest(sub, repl):
 
 def dash_province_weekly(file="moph_province_weekly"):
     df = import_csv(file, ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+
+    # Remove any dips in cumualtive values. can be caused by getting daily instead#
+    # lambda mydf: mydf.loc[mydf['Cases Cum'].ffill() < mydf['Cases Cum'].cummax().ffill(), 'Cases Cum'] = np.nan
+
     valid = {
         "Deaths Cum": (d("2022-12-11"), today(), 5),
-        "Cases Cum": (d("2022-12-11"), today(), 100),
+        "Cases Cum": (d("2022-12-11"), today(), 1000),
         'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
