@@ -10,7 +10,6 @@ from utils_scraping import logger
 
 
 def save_active_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Active Plots ==========')
 
     #######################
     # Hospital plots
@@ -162,8 +161,6 @@ def save_active_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               y_formatter=perc_format,
               footnote_left='Data Source: MOPH Covid-19 Dashboard')
-
-    logger.info('======== Finish Active Plots ==========')
 
 
 if __name__ == "__main__":

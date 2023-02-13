@@ -83,6 +83,7 @@ sources have stopped being published so many plots will no longer be change.
 ## Estimated Daily Infections
 
 ![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
+- IHME: stopped updating predictions from 2022-12-16 so estimates become less reliable the further past that date.
 - Note: no country tests everyone so modelling is needed to estimate the real number
   of infections in the community including asymtematic infections. Modelling includes
   many factors such as the estimated deaths, immunity and fatality rate of the variants for a given demographic.

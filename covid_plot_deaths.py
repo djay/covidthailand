@@ -31,14 +31,11 @@ from utils_thai import trend_table
 
 AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
 
+DEATH_COLS = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']
+DEATH_COLS = [f"Deaths Age {age}" for age in DEATH_COLS]
 
-def save_deaths_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Deaths Plots ==========')
 
-    #######################
-    # Cases by provinces
-    #######################
-
+def get_by_prov():
     cases = import_csv("cases_by_province")
     # fill in missing provinces
     cases_pivot = cases.fillna(0).pivot_table(index="Date", columns="Province", values="Cases")
@@ -50,6 +47,14 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     # cases = cases.fillna(0)  # all the other values
     ifr = get_ifr()
     cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
+    return cases
+
+
+def save_deaths_plots(df: pd.DataFrame) -> None:
+    #######################
+    # Cases by provinces
+    #######################
+    cases = get_by_prov()
     ihme = ihme_dataset(check=False)
 
     cases_region = cases.reset_index()
@@ -314,15 +319,13 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
     #           cmap=get_cycle('summer_r', len(cols) + 1))
 
     # Plot death ages from dashboard data
-    death_cols = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']
-    death_cols = [f"Deaths Age {age}" for age in death_cols]
     plot_area(df=df,
               title='Covid Deaths Age Distribution - Thailand',
-              png_prefix='deaths_age_dash', cols_subset=death_cols,
+              png_prefix='deaths_age_dash', cols_subset=DEATH_COLS,
               unknown_name='Deaths Unknown Age', unknown_total='Deaths', unknown_percent=False,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True, clean_end=True,
-              cmap=get_cycle('summer_r', len(death_cols), extras=["gainsboro"]),
+              cmap=get_cycle('summer_r', len(DEATH_COLS), extras=["gainsboro"]),
               footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
     # Do CFR for all regions. show vaccine effectiveness
@@ -378,7 +381,9 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               footnote=cfr_warning,
               footnote_left=f'{source}Data Source: CCSA Daily Briefing, IHME')
 
-    logger.info('======== Generating Excess Deaths Plots ==========')
+
+def save_excess_death_plots(df):
+    cases = get_by_prov()
 
     # Excess Deaths
 
@@ -550,9 +555,9 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
 
     by_age = excess.pipe(cut_ages, [10, 20, 30, 40, 50, 60, 70])
     # by_age = excess.pipe(cut_ages, [15, 65, 75, 85])
-    new_cols = dict({a: remove_prefix(a, "Deaths Age ") for a in death_cols}, **{"Deaths Age 60-": "60+"})
+    new_cols = dict({a: remove_prefix(a, "Deaths Age ") for a in DEATH_COLS}, **{"Deaths Age 60-": "60+"})
     # Get the deaths ages and unstack so can be matched with excess deaths
-    covid_age = df[death_cols].rename(
+    covid_age = df[DEATH_COLS].rename(
         columns=new_cols).unstack().to_frame("Deaths").rename_axis(["Age Group", "Date"]).reset_index("Age Group")
     by_age, ages = group_deaths(by_age, "Age Group", covid_age)
 
@@ -689,12 +694,11 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote='All cause mortality compared to average for same period in 2015-2019 inc known Covid deaths.',
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
-    logger.info('======== Finish Deaths Plots ==========')
-
 
 if __name__ == "__main__":
 
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
+    save_excess_death_plots(df)
     save_deaths_plots(df)

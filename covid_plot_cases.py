@@ -28,8 +28,6 @@ AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
 
 
 def save_cases_plots(df: pd.DataFrame) -> None:
-    logger.info('======== Generating Cases Plots ==========')
-
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive']  # .sub(df['Cases Area Prison'], fill_value=0)
     # df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
@@ -191,38 +189,8 @@ def save_cases_plots(df: pd.DataFrame) -> None:
                   y_formatter=perc_format,
                   footnote_left=f'{source}Data Source: Institute for Health Metrics and Evaluation')
 
-    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")
-    today = df['Cases'].index.max()
-    est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
-    # est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
-    # est_cases['Estimated Report Cases (IHME)'] = ihme['cases_mean'].loc[:today]
-    est_cases['Reported Cases (PCR)'] = df['Cases']
-    est_cases['Reported Cases (PCR) + Non-Hospital Infections (DDC ATK+)'] = dash['Infections Non-Hospital Cum'].cumsum(
-    ).interpolate(limit_area="inside").diff() + df['Cases']
-    est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
-    pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
-    # pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
-    pred_cases["Forecast Reported Cases (IHME)"] = ihme["cases_mean"].loc[today:]
-    pred_cases = pred_cases.loc[:today + datetime.timedelta(days=60)]
-
-    plot_area(df=est_cases.combine_first(pred_cases),
-              title='Estimated Daily Infections - IHME Model - Thailand',
-              png_prefix='cases_est_ihme', cols_subset=list(est_cases.columns),
-              legends=list(est_cases.columns),
-              ma_days=7,
-              clean_end=False,
-              actuals=list(pred_cases.columns),
-              kind='line', stacked=False, percent_fig=False,
-              periods_to_plot=["4", "3"],
-              cmap='tab10',
-              footnote="DDC ATK+ is interpolated from weekly and is unknown what it measures.\nIHME infections is an estimate from modeling",
-              footnote_left=f'{source}Data Source: IHME and Evaluation, CCSA Briefing, DDC Dashboard')
-
-    logger.info('======== Finish Cases Plots ==========')
-
 
 def save_caseprov_plots(df=None):
-    logger.info('======== Generating Case Prov Plots ==========')
 
     #######################
     # Cases by provinces
@@ -461,11 +429,14 @@ def save_caseprov_plots(df=None):
     #         cmap='tab10',
     #         footnote='Note: Per 100,000 people.',
     #         footnote_left=f'{source}Data Source: CCSA Daily Briefing')
-    logger.info('======== Finish Cases Prov Plots ==========')
 
 
-def save_infections_estimate(cases):
+def save_infections_estimate(df):
     # TODO: work out based on districts of deaths / IFR for that district
+    cases = import_csv("cases_by_province")
+    ifr = get_ifr()
+    cases = cases.join(ifr[['ifr', 'Population', 'total_pop']], on="Province")
+
     cases['Deaths'] = cases['Deaths'].fillna(0)
     cases = cases.groupby("Province").apply(lambda df: df.assign(deaths_ma=df[
         "Deaths"].rolling(7, min_periods=1).mean()))
@@ -477,6 +448,7 @@ def save_infections_estimate(cases):
     # TODO: work out unknown deaths and use whole thailand IFR for them
     # cases_est['Deaths Unknown'] = (df['Deaths'] - cases_est['Deaths']) / ifr['ifr']['Whole Kingdom'] * 100
 
+    # TODO: IFR doesn't factor in immunity from vaccinations and infections over time so over time infections should be much higher
     # 11 days was median days to death reported in situation reports I think
     cases_est["Infections Estimate"] = cases_est["Infections Estimate"].shift(-11)
     # cases_est["Infections Estimate (MA)"] = cases_est["Infections Estimate (MA)"].shift(-14)
@@ -505,6 +477,35 @@ def save_infections_estimate(cases):
                        + 'DISCLAIMER: See website for the assumptions of this simple estimate.',
               footnote_left=f'{source}Data Sources: CCSA Daily Briefing\n  Covid IFR Analysis, Thailand Population by Age')
 
+    ihme = ihme_dataset(check=False)
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")
+    today = df['Cases'].index.max()
+    est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
+    # est_cases['Estimated Unvaccinated Infections (IHME)'] = ihme['inf_mean_unvax'].loc[:today]
+    # est_cases['Estimated Report Cases (IHME)'] = ihme['cases_mean'].loc[:today]
+    est_cases['Reported Cases (PCR)'] = df['Cases']
+    est_cases['Reported Cases (PCR) + Non-Hospital Infections (DDC ATK+)'] = dash['Infections Non-Hospital Cum'].cumsum(
+    ).interpolate(limit_area="inside").diff() + df['Cases']
+    est_cases['Reported Cases (PCR) + ATK Home Isolation (Probable Cases)'] = df['Cases'] + df['ATK']
+    est_cases['Infections Est based on Deaths'] = cases_est["Infections Estimate"]
+    pred_cases = ihme["inf_mean"].loc[today:].to_frame("Forecast Daily Infections (IHME)")
+    # pred_cases["Forecast Unvaccinated Infections (IHME)"] = ihme["inf_mean_unvax"].loc[today:]
+    pred_cases["Forecast Reported Cases (IHME)"] = ihme["cases_mean"].loc[today:]
+    pred_cases = pred_cases.loc[:today + datetime.timedelta(days=60)]
+
+    plot_area(df=est_cases.combine_first(pred_cases),
+              title='Estimated Daily Infections - IHME Model - Thailand',
+              png_prefix='cases_est_ihme', cols_subset=list(est_cases.columns),
+              legends=list(est_cases.columns),
+              ma_days=7,
+              clean_end=False,
+              actuals=list(pred_cases.columns),
+              kind='line', stacked=False, percent_fig=False,
+              periods_to_plot=["4", "3"],
+              cmap='tab10',
+              footnote="DDC ATK+ is interpolated from weekly and is unknown what it measures.\nIHME infections is an estimate from modeling",
+              footnote_left=f'{source}Data Source: IHME and Evaluation, CCSA Briefing, DDC Dashboard')
+
 
 if __name__ == "__main__":
     df = import_csv("combined", index=["Date"], date_cols=["Date"])
@@ -515,6 +516,6 @@ if __name__ == "__main__":
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
+    save_infections_estimate(df)
     save_cases_plots(df)
     save_caseprov_plots(df)
-    # save_infections_estimate(cases)
