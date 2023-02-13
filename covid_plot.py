@@ -16,11 +16,11 @@ from covid_data import scrape_and_combine
 from utils_scraping import logger
 
 
-def do_work(job):
+def do_work(job, df):
     global job_data
     start = time.time()
     logger.info(f"==== Plot: {job.__name__} Start ====")
-    data = job()
+    data = job(df)
     logger.info(f"==== Plot: {job.__name__} in {datetime.timedelta(seconds=time.time() - start)} ====")
     return (job.__name__, data)
 
@@ -49,7 +49,7 @@ def save_plots(df: pd.DataFrame) -> None:
     ]
 
     with Pool() as pool:
-        res = dict(pool.imap_unordered(do_work, jobs))
+        res = dict(pool.imap_unordered(do_work, jobs, [df]))
         pool.close()
         pool.join()
     logger.info(f"data={len(res)}")
