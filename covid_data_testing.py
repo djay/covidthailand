@@ -575,5 +575,6 @@ if __name__ == '__main__':
     old = import_csv("combined", index=["Date"])
     df = old.combine_first(df).combine_first(df_daily)
 
+    covid_plot_tests.save_test_area_plots(df)
     covid_plot_tests.save_tests_plots(df)
-    covid_plot_tests.save_area_plots(df)
+    covid_plot_tests.save_variant_plots(df)
