@@ -473,7 +473,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # build up the cache over time even if we get failures making us stop
     # if today().date() == d("2023-01-30").date():
     #     cached = pd.DataFrame()  # Fix mistake where first page was doubled
-    backwards = cached is None or len(cached) / total > 0.9
+    backwards = cached is None or len(cached) / total > 0.96
     if backwards:
         pagenum = last_page
         pages = range(last_page, 1, -1)
@@ -488,7 +488,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, threads=1):
         if file is None:
             if backwards:
-                df = pd.Dataframe()  # Can't join it. have eto give up
+                df = pd.DataFrame()  # Can't join it. have eto give up
+                # TODO: join it first (going backwards) then go forward
             break
         pagedata = json.loads(content)
         data = pagedata['data']
