@@ -365,7 +365,7 @@ def get_provinces():
             if type(altnames) is not list or len(altnames) <= 0:  # Is a list and has entries, therefore add them:
                 break
             for name in altnames:
-                if type(name) is not str or len(name) <= 1:  #
+                if type(name) is not str or len(name) < 1:  #
                     raise ValueError(
                         f"Error in alt name: '{name}'. Unexpected error while iterating over "
                         f"mappings: {name}<-{altnames} for Province: {prov_en}"
