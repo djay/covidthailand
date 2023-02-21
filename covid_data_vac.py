@@ -207,7 +207,7 @@ def vaccination_daily(daily, file_date, file, page):
     daily = daily.combine_first(df)
 
     if not re.search(r"(ากรทางการแพท|บุคคลที่มีโรคประจ|ากรทางการแพทย|กรทำงกำรแพทย์)", page):
-        logger.info("{} Vac Sum (Missing groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
+        # logger.info("{} Vac Sum (Missing groups) {} {}", date.date(), df.to_string(header=False, index=False), file)
         assert not d("2021-07-12") < date < d("2022-12-02")
         return daily
 
@@ -337,7 +337,7 @@ def vaccination_daily(daily, file_date, file, page):
             continue
         daily = daily.combine_first(df)
     daily = daily.fillna(value=np.nan)
-    logger.info("{} Vac Sum {} {}", date.date(), daily.loc[date:date].to_string(header=False, index=False), file)
+    # logger.info("{} Vac Sum {} {}", date.date(), daily.loc[date:date].to_string(header=False, index=False), file)
     return daily
 
 
@@ -727,7 +727,12 @@ def vaccination_reports():
 
             vac_daily = vaccination_daily(vac_daily, date, file, page)
             vac_daily = vac_problem(vac_daily, date, file, page)
-        logger.info("{} Vac Tables {} {} {}", date, len(table), "Provinces parsed", file)
+        gcount = len([c for c in table.columns if 'Population' in c]) - 1
+        dcount = int(len([c for c in table.columns if 'Vac Given' in c]) / 2)
+        sumdoses = len([c for c in vac_daily.columns if 'Vac Given' in c])
+        sumgroups = int(len([c for c in vac_daily.columns if 'Vac Group' in c]) / sumdoses) if sumdoses else 0
+        logger.info("{} Vac Report prov={} pdose={} pgroups={} dose={} groups={}: {}",
+                    date, len(table), dcount, gcount, sumdoses, sumgroups, file)
         # TODO: move this into vaccination_tables so can be tested
         if date in [d("2021-12-11"), d("2022-01-06")] and table.empty:
             logger.info("{} doc has slides instead of report", date)
@@ -940,7 +945,7 @@ def vac_manuf_given_blue(page, file, page_num, url):
                         for m, num in doses[d].items() if clean_manuf(m) in manuf} | {"Date": date}]).set_index("Date")
     if date > d("2021-11-23"):
         assert len(row.columns) >= 12
-    logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
+    # logger.debug("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
     return row
 
 
@@ -1019,7 +1024,7 @@ def vac_manuf_given_brown(page, file, page_num, url):
     row = [date, sv1, az1, sp1, pf1, mod1, sv2, az2, sp2, pf2, mod2, sv3, az3, sp3, pf3, mod3]
     cols = [f"Vac Given {m} {d} Cum" for d in [1, 2, 3] for m in manuf]
     row = pd.DataFrame([row], columns=['Date'] + cols)
-    logger.info("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
+    # logger.debug("{} Vac slides {} {}", date.date(), file, row.to_string(header=False, index=False))
     return row.set_index("Date")
 
 
@@ -1069,7 +1074,7 @@ def vac_slides_groups(page, file, page_num):
             if dose <= 2:
                 assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
-    logger.info("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
+    logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
 
     # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
@@ -1142,12 +1147,18 @@ def vac_slides():
         else:
             assert 'Vac Group Over 60 1 Cum' in groups.columns
             assert len(groups.columns) >= 6
-
+        mdoses = int(manuf.columns.max().split()[3]) if not manuf.empty else 0
+        mtypes = int(len(manuf.columns) / mdoses) if mdoses else 0
+        sumdoses = len([c for c in groups.columns if 'Vac Given' in c])
+        sumgroups = int(len([c for c in vac_slides_groups.columns if 'Vac Group' in c]) / sumdoses) if sumdoses else 0
+        mdate = manuf.index.max() if mdoses else groups.index.max() if sumdoses else date
+        logger.info("Vac slides {} mdoses={} mtypes={} doses={} groups={}: {}",
+                    mdate.date(), mtypes, mdoses, sumdoses, sumgroups, file)
         df = df.combine_first(manuf).combine_first(groups)
     return df
 
 
 if __name__ == '__main__':
-    reports, provs = vaccination_reports()
     slides = vac_slides()
+    reports, provs = vaccination_reports()
     vac = export_vaccinations(reports, provs, slides, do_export=True)
