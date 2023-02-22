@@ -520,15 +520,20 @@ def get_variant_reports():
     # Get national numbers. Also gives us date ranges
     for file, dl in get_variant_files(ext=".xlsx"):
         file = dl()
-        nat = pd.read_excel(file)
+        nat = pd.read_excel(file, sheet_name="National prevalence")
         nat.iloc[0, 0] = "End"
         nat.columns = list(nat.iloc[0])
         nat = nat.iloc[1:-1]  # Get rid of header and totals at the bottom
         # nat = nat[[c for c in nat.columns if not pd.isna(c)]]  # get rid of empty cols
         dates = nat["End"].str.split("-", expand=True)
-        a = pd.to_datetime(dates[1], errors="coerce", format="%d %b") + pd.offsets.DateOffset(years=121)
-        b = pd.to_datetime(dates[1], errors="coerce", format="%d%b") + pd.offsets.DateOffset(years=121)
-        c = pd.to_datetime(dates[1], errors="coerce")
+        if len(dates.columns) == 1:
+            # Dealing with weeks since pandemic start.
+            pd.to_numeric(dates[0].str.replace("wk", ""), errors="coerce")
+        else:
+            # e.g. 21JAN-27JAN2023
+            a = pd.to_datetime(dates[1], errors="coerce", format="%d %b") + pd.offsets.DateOffset(years=121)
+            b = pd.to_datetime(dates[1], errors="coerce", format="%d%b") + pd.offsets.DateOffset(years=121)
+            c = pd.to_datetime(dates[1], errors="coerce")
         ends = a.combine_first(b).combine_first(c)
         nat["End"] = ends
         nat = nat.set_index("End")
