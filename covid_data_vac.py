@@ -1093,6 +1093,8 @@ def vac_slides_groups(page, file, page_num):
     todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น)", page))
     assert todays <= doses
     extra_cols = percentages >= doses or todays > 0
+    groupsrows = len(re.findall("(ปี)", page))
+    groups = {}
     for group, pats in [
         ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
         ("Student", [r"12 – 17 ปี\s*"]),
@@ -1107,11 +1109,13 @@ def vac_slides_groups(page, file, page_num):
         row = row[1::2] if extra_cols else row[1:]
         for dose, num in enumerate(row, 1):
             data[f"Vac Group {group} {dose} Cum"] = num
-            assert dose <= doses
+            groups[group] = dose
+            assert dose <= doses, f"too many doses in {file}"
             if dose <= 2:
                 assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
-    assert row.empty or doses >= 1
+    assert row.empty or doses >= 1, f"not enough doses in {file}"
+    # assert len(groups) == groupsrows
     # logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
 
