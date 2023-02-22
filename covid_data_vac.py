@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 from dateutil.parser import parse as d
 
+import covid_plot_vacs
 from utils_pandas import daily2cum
 from utils_pandas import export
 from utils_pandas import import_csv
@@ -1235,3 +1236,9 @@ if __name__ == '__main__':
     slides = vac_slides()
     reports, provs = vaccination_reports()
     vac = export_vaccinations(reports, provs, slides, do_export=True)
+
+    df = import_csv("combined", index=["Date"], date_cols=["Date"])
+    vac = import_csv("vac_timeline", ['Date'])
+    df = df.combine_first(vac)
+    covid_plot_vacs.save_vacs_prov_plots(df)
+    covid_plot_vacs.save_vacs_plots(df)
