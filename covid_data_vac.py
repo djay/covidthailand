@@ -1208,11 +1208,11 @@ def vac_slides():
             assert len(groups.columns) >= 6
         mdoses = int(manuf.columns.max().split()[3]) if not manuf.empty else 0
         mtypes = int(len(manuf.columns) / mdoses) if mdoses else 0
-        sumdoses = len([c for c in groups.columns if 'Vac Given' in c])
-        sumgroups = int(len([c for c in vac_slides_groups.columns if 'Vac Group' in c]) / sumdoses) if sumdoses else 0
-        mdate = manuf.index.max().date() if mdoses else groups.index.max().date() if sumdoses else date.date() if date else None
+        gdoses = int(groups.columns.max().split()[3]) if not manuf.empty else 0
+        ggroups = int(len([c for c in vac_slides_groups.columns if 'Vac Group' in c]) / gdoses) if gdoses else 0
+        mdate = manuf.index.max().date() if mdoses else groups.index.max().date() if gdoses else date.date() if date else None
         logger.info("Vac slides {} mdoses={} mtypes={} doses={} groups={}: {}",
-                    mdate, mtypes, mdoses, sumdoses, sumgroups, file)
+                    mdate, mtypes, mdoses, gdoses, ggroups, file)
         df = df.combine_first(manuf).combine_first(groups)
     return df
 
