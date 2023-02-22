@@ -1,0 +1,99 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Group Over 60 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Student 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Infant 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Infant 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Infant 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Infant 4 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2023-02-17T00:00:00.000",
+      "Vac Group Over 60 1 Cum":10761847.0,
+      "Vac Group Over 60 2 Cum":10264541.0,
+      "Vac Group Over 60 3 Cum":5634698.0,
+      "Vac Group Over 60 4 Cum":1480081.0,
+      "Vac Group Student 1 Cum":3879628.0,
+      "Vac Group Student 2 Cum":3863725.0,
+      "Vac Group Student 3 Cum":1181751.0,
+      "Vac Group Student 4 Cum":39204.0,
+      "Vac Group Kids 1 Cum":3394046.0,
+      "Vac Group Kids 2 Cum":2611301.0,
+      "Vac Group Kids 3 Cum":189238.0,
+      "Vac Group Kids 4 Cum":4788.0,
+      "Vac Group Infant 1 Cum":72409.0,
+      "Vac Group Infant 2 Cum":47246.0,
+      "Vac Group Infant 3 Cum":11124.0,
+      "Vac Group Infant 4 Cum":0.0
+    }
+  ]
+}

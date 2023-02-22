@@ -908,7 +908,8 @@ def vac_manuf_given_blue(page, file, page_num, url):
     assert len(table.columns) >= 3
     cols = table.columns
     #  get biggest date on page
-    date = sorted([find_thai_date(r) for r in table.iloc[0] if find_thai_date(r)] + [find_thai_date(page)], reverse=True)[0]
+    header_dates = [find_thai_date(r) for r in table.iloc[0] if find_thai_date(r)]
+    date = min(max(header_dates), find_thai_date(page)) if header_dates else find_thai_date(page)
     assert date
     # Throw away daily and manuf totals
     if len(table.columns) == 3:
@@ -1028,6 +1029,35 @@ def vac_manuf_given_brown(page, file, page_num, url):
     return row.set_index("Date")
 
 
+def vac_manuf_given_text(page, file, page_num, url):
+    df = pd.DataFrame(columns=["Date"]).set_index("Date")
+    # if "จำแนกตำมบริษัทผู้ผลิต" not in page:
+    #     return df
+    if "7 มิถุนายน 2564" in page or "7 มิ ถุนายน 2564" in page:
+        # Has 3 columns so can't get 3rd col
+        return df
+
+    date = find_thai_date(page)
+    manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
+    missing = []  # Keep track of missing sections
+    last_dose = 1
+    dose_heading = re.compile("เข็มท่ี ([1-9]) (?:รำยใหม่|รายใหม่|ข้ึนไป)")
+    max_dose = len(dose_heading.findall(page))
+    for start_dose, section in pairwise(dose_heading.split(page)[1:]):
+        start_dose = int(start_dose)
+        missing += list(range(last_dose + 1, start_dose))
+        last_dose = start_dose
+        for m in manuf:
+            lines = re.findall(f"{m} [0-9,]+ [0-9,]+", section)
+            cums = [get_next_numbers(line, ints=True, return_rest=False)[1] for line in lines]
+            # if we are at the end then count remainer as extra rows put outside the table
+            for dose, cum in zip(list(range(start_dose, max_dose + 1)) + missing, cums):
+                df.loc[date, f"Vac Given {m} {dose} Cum"] = cum
+    # counts = [df.columns.str.contains(m).sum() for m in manuf]
+    # assert all(counts[0] == count for count in counts), "Every manuf doses should be the same"
+    return df
+
+
 def vac_slides_groups(page, file, page_num):
     # if "กลุ่มเปา้หมาย" not in page:
     #     return pd.DataFrame()
@@ -1058,6 +1088,9 @@ def vac_slides_groups(page, file, page_num):
     date = find_thai_date(page)
     data = {"Date": date}
     page = page.replace("ป ี", "ปี")
+    doses = len(re.findall("สะสม", page))
+    percentages = len(re.findall("(ร้อยละ)", page))
+    todays = len(re.findall("(เพิ่มขึ้นวันนี้|เพิ่มขึน้วนันี้)", page))
     for group, pats in [
         ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
         ("Student", [r"12 – 17 ปี\s*"]),
@@ -1069,12 +1102,13 @@ def vac_slides_groups(page, file, page_num):
         ("Medical Staff", [r"บคุลากรทางก\s*"]),
     ]:
         row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True, ints=False)
-        for dose, num in enumerate(row[1::2], 1):
+        row = row[1:] if percentages < doses and doses > todays else row[1::2]
+        for dose, num in enumerate(row, 1):
             data[f"Vac Group {group} {dose} Cum"] = num
             if dose <= 2:
                 assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
-    logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
+    # logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
 
     # medical, rest = get_next_numbers(page, "บคุลากรทางการแพ", until="\n")
@@ -1112,6 +1146,38 @@ def vac_slides_groups(page, file, page_num):
 # จ านวนผู้ที่ไดร้ับวคัซีน
 
 
+def vac_slides_manuf(file, link):
+    fname = os.path.splitext(os.path.basename(file))[0]
+    # if fname.isnumeric() and int(fname) <= 1620104912165: # 2021-03-21
+    #     return pd.DataFrame()
+    blue, brown, text = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    for i, page in enumerate(parse_file(file), 1):
+        # pass
+        if "AstraZeneca" not in page:
+            continue
+        elif any_in(page, "รำยจังหวัด"):
+            # it's province table in wrong file
+            continue
+        brown = brown.combine_first(vac_manuf_given_brown(page, file, i, link))
+        blue = blue.combine_first(vac_manuf_given_blue(page, file, i, link))
+        text = text.combine_first(vac_manuf_given_text(page, file, i, link))
+
+        if not blue.empty and not brown.empty:
+            # sometimes we have both tables. cross check them
+            pd.testing.assert_frame_equal(blue.replace(0, np.nan).dropna(axis=1), brown.replace(
+                0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
+        if not blue.empty and not text.empty:
+            # sometimes we have both tables. cross check them
+            pd.testing.assert_frame_equal(blue.replace(0, np.nan).dropna(axis=1), text.replace(
+                0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
+    manuf = blue.combine_first(brown).combine_first(text)
+    mdoses = int(manuf.columns.max().split()[3]) if not manuf.empty else 0
+    mtypes = int(len(manuf.columns) / mdoses) if mdoses else 0
+    mdate = manuf.index.max().date() if mdoses else None
+    # logger.info("Vac slides {} mdoses={} mtypes={}: {}", mdate, mtypes, mdoses, file)
+    return manuf
+
+
 def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
     for link, _, get_file in vac_slides_files(check=1):
@@ -1119,20 +1185,13 @@ def vac_slides():
         if file is None:
             continue
         date = file2date(file)
-        blue, brown, groups = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        groups = pd.DataFrame()
         for i, page in enumerate(parse_file(file), 1):
-            # pass
-            brown = brown.combine_first(vac_manuf_given_brown(page, file, i, link))
-            blue = blue.combine_first(vac_manuf_given_blue(page, file, i, link))
-            if date and date <= d("2022-03-07"):
-                # numbers goes weird # TODO
-                groups = groups.combine_first(vac_slides_groups(page, file, i))
+            #if date and date <= d("2022-03-07"):
+            #    # numbers goes weird # TODO
+            groups = groups.combine_first(vac_slides_groups(page, file, i))
 
-        if not blue.empty and not brown.empty:
-            # sometimes we have both tables. cross check them
-            pd.testing.assert_frame_equal(blue.replace(0, np.nan).dropna(axis=1), brown.replace(
-                0, np.nan).dropna(axis=1), check_dtype=False, check_like=True)
-        manuf = blue.combine_first(brown)
+        manuf = vac_slides_manuf(file, link)
         # if any_in(file, "2022-11-25", "2022-10-21"):
         #     # Table is an image. Lots and lots of them
         #     pass
@@ -1151,9 +1210,9 @@ def vac_slides():
         mtypes = int(len(manuf.columns) / mdoses) if mdoses else 0
         sumdoses = len([c for c in groups.columns if 'Vac Given' in c])
         sumgroups = int(len([c for c in vac_slides_groups.columns if 'Vac Group' in c]) / sumdoses) if sumdoses else 0
-        mdate = manuf.index.max() if mdoses else groups.index.max() if sumdoses else date
+        mdate = manuf.index.max().date() if mdoses else groups.index.max().date() if sumdoses else date.date() if date else None
         logger.info("Vac slides {} mdoses={} mtypes={} doses={} groups={}: {}",
-                    mdate.date(), mtypes, mdoses, sumdoses, sumgroups, file)
+                    mdate, mtypes, mdoses, sumdoses, sumgroups, file)
         df = df.combine_first(manuf).combine_first(groups)
     return df
 

@@ -198,21 +198,7 @@ def test_vac_manuf_given(fname, testdf, get_file):
     assert get_file is not None
     file = get_file()  # Actually download
     assert file is not None
-    df = pd.DataFrame(columns=["Date"]).set_index(["Date"])
-    blue, brown = pd.DataFrame(), pd.DataFrame()
-    for i, page in enumerate(parse_file(file), 1):
-        # pass
-        brown = brown.combine_first(covid_data_vac.vac_manuf_given_brown(page, file, i, ""))
-        blue = blue.combine_first(covid_data_vac.vac_manuf_given_blue(page, file, i, ""))
-        # df = vac_slides_groups(df, page, file, i)
-    if not blue.empty and not brown.empty:
-        # sometimes we have both tables. cross check them
-        pd.testing.assert_frame_equal(
-            blue.replace(0, np.nan).dropna(axis=1),
-            brown.replace(0, np.nan).dropna(axis=1),
-            check_dtype=False, check_like=True
-        )
-    df = df.combine_first(blue).combine_first(brown)
+    df = covid_data_vac.vac_slides_manuf(file, None)
     df = df.dropna(axis=1)  # don't compare empty cols
     # write_scrape_data_back_to_test(df, "vac_manuf_given", fname)
     pd.testing.assert_frame_equal(testdf.dropna(axis=1), df, check_dtype=False, check_like=True)
