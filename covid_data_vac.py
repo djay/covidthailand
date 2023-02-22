@@ -1088,9 +1088,10 @@ def vac_slides_groups(page, file, page_num):
     date = find_thai_date(page)
     data = {"Date": date}
     page = page.replace("ป ี", "ปี")
-    doses = len(re.findall("(สะสม|เข็มที่|เข็มที)", page))
+    doses = len(re.findall("(เข็มที่|เข็มที)", page))
     percentages = len(re.findall("(ร้อยละ)", page))
     todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น)", page))
+    assert todays <= doses
     extra_cols = percentages >= doses or todays > 0
     for group, pats in [
         ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
@@ -1110,7 +1111,7 @@ def vac_slides_groups(page, file, page_num):
             if dose <= 2:
                 assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
-    assert row.empty or doses > 2
+    assert row.empty or doses >= 1
     # logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
 
