@@ -1088,9 +1088,10 @@ def vac_slides_groups(page, file, page_num):
     date = find_thai_date(page)
     data = {"Date": date}
     page = page.replace("ป ี", "ปี")
-    doses = len(re.findall("สะสม", page))
+    doses = len(re.findall("(สะสม|เข็มที่)", page))
     percentages = len(re.findall("(ร้อยละ)", page))
-    todays = len(re.findall("(เพิ่มขึ้นวันนี้|เพิ่มขึน้วนันี้)", page))
+    todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น)", page))
+    extra_cols = percentages >= doses or todays > 0
     for group, pats in [
         ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
         ("Student", [r"12 – 17 ปี\s*"]),
@@ -1102,12 +1103,14 @@ def vac_slides_groups(page, file, page_num):
         ("Medical Staff", [r"บคุลากรทางก\s*"]),
     ]:
         row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True, ints=False)
-        row = row[1:] if percentages < doses and doses > todays else row[1::2]
+        row = row[1::2] if extra_cols else row[1:]
         for dose, num in enumerate(row, 1):
             data[f"Vac Group {group} {dose} Cum"] = num
+            assert dose <= doses
             if dose <= 2:
                 assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
+    assert row.empty or doses > 2
     # logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
 
@@ -1208,7 +1211,7 @@ def vac_slides():
             assert len(groups.columns) >= 6
         mdoses = int(manuf.columns.max().split()[3]) if not manuf.empty else 0
         mtypes = int(len(manuf.columns) / mdoses) if mdoses else 0
-        gdoses = int(groups.columns.max().split()[3]) if not groups.empty else 0
+        gdoses = int(groups.columns.max().split()[-2]) if not groups.empty else 0
         ggroups = int(len([c for c in groups.columns if 'Vac Group' in c]) / gdoses) if gdoses else 0
         mdate = manuf.index.max().date() if mdoses else groups.index.max().date() if gdoses else date.date() if date else None
         logger.info("Vac slides {} mdoses={} mtypes={} doses={} groups={}: {}",
