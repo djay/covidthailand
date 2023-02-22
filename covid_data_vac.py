@@ -1087,14 +1087,16 @@ def vac_slides_groups(page, file, page_num):
     # assert any_in(page, "4 สะสม", "เข็มที่ 4")  # for the number of cols
     date = find_thai_date(page)
     data = {"Date": date}
-    page = page.replace("ป ี", "ปี")
+    page = page.replace("ป ี", "ปี").replace("จ ำ", "จำ")
     doses = len(re.findall("(เข็มที่|เข็มที|เข็มท่ี|เขม็ที่)", page))
     percentages = len(re.findall("(ร้อยละ|รอยละ)", page))
     todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น|เพ่ิมขึน้|เพ่ิมข้ึน)", page))
     assert todays <= doses
     extra_cols = percentages >= doses or todays > 0
     groupsrows = len(re.findall("(ปี)", page))
-    start_col = 1 if len(re.findall("(จำนวนเป้ำหมำย|จ ำนวนเป้ำหมำย|จํานวนเปาหมาย|จ านวน\s*เป้าหมาย)", page)) > 0 else 0
+    start_col = 1 if len(re.findall(
+        "(จำนวน\s*เป้ำหมำย|จ ำนวนเป้ำหมำย|จํานวนเปาหมาย|จ านวน\s*เป้าหมาย|จ\s*านวนเปา้หมาย)", page)) > 0 else 0
+
     groups = {}
     for group, pats in [
         ("Over 60", [r"60\sปี\s*(:?ขึ้นไป|ข้ึนไป)\s*"]),
@@ -1108,6 +1110,8 @@ def vac_slides_groups(page, file, page_num):
     ]:
         row = get_next_numbers(page, *pats, until="\n", return_rest=False, dash_as_zero=True, ints=False)
         row = row[start_col::2] if extra_cols else row[start_col:]
+        assert [int(n) for n in row] == row, f"got some % in row {file}"
+        assert not row or (pd.Series(row).diff() <= 0)[1:].all(), f"vac should be decreasing {file}"
         for dose, num in enumerate(row, 1):
             data[f"Vac Group {group} {dose} Cum"] = num
             groups[group] = dose
@@ -1196,9 +1200,9 @@ def vac_slides():
             continue
         date = file2date(file)
         groups = pd.DataFrame()
+        if '1625816003470' in file:
+            break  # TODO: can keep fixing asserts in groups before this but why?
         for i, page in enumerate(parse_file(file), 1):
-            #if date and date <= d("2022-03-07"):
-            #    # numbers goes weird # TODO
             groups = groups.combine_first(vac_slides_groups(page, file, i))
 
         manuf = vac_slides_manuf(file, link)
