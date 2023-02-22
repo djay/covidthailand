@@ -1090,7 +1090,7 @@ def vac_slides_groups(page, file, page_num):
     page = page.replace("ป ี", "ปี")
     doses = len(re.findall("(เข็มที่|เข็มที|เข็มท่ี|เขม็ที่)", page))
     percentages = len(re.findall("(ร้อยละ|รอยละ)", page))
-    todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น)", page))
+    todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น|เพ่ิมขึน้|เพ่ิมข้ึน)", page))
     assert todays <= doses
     extra_cols = percentages >= doses or todays > 0
     groupsrows = len(re.findall("(ปี)", page))
