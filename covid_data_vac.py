@@ -1088,7 +1088,7 @@ def vac_slides_groups(page, file, page_num):
     date = find_thai_date(page)
     data = {"Date": date}
     page = page.replace("ป ี", "ปี")
-    doses = len(re.findall("(เข็มที่|เข็มที)", page))
+    doses = len(re.findall("(เข็มที่|เข็มที|เข็มท่ี)", page))
     percentages = len(re.findall("(ร้อยละ)", page))
     todays = len(re.findall("(เพิ่มขึน้|เพิ่มขึ้น)", page))
     assert todays <= doses
@@ -1115,6 +1115,7 @@ def vac_slides_groups(page, file, page_num):
                 assert num > 50
     row = pd.DataFrame([data]).set_index("Date")
     assert row.empty or doses >= 1, f"not enough doses in {file}"
+    # assert max(groups.values()) == doses
     # assert len(groups) == groupsrows
     # logger.debug("{} Vac slides {} groups: {}  ", data["Date"].date(), file, row.to_string(header=False, index=False))
     return row
