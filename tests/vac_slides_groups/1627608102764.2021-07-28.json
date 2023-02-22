@@ -1,0 +1,39 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Group Health Volunteer 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Health Volunteer 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Medical Staff 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Medical Staff 2 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2021-07-28T00:00:00.000",
+      "Vac Group Health Volunteer 1 Cum":449397.0,
+      "Vac Group Health Volunteer 2 Cum":206852.0,
+      "Vac Group Medical Staff 1 Cum":811120.0,
+      "Vac Group Medical Staff 2 Cum":702598.0
+    }
+  ]
+}

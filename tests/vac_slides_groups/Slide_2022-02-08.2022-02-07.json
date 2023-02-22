@@ -1,0 +1,49 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Group Over 60 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Risk: Disease 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Risk: Disease 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Risk: Disease 3 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2022-02-07T00:00:00.000",
+      "Vac Group Over 60 1 Cum":8399581.0,
+      "Vac Group Over 60 2 Cum":7882439.0,
+      "Vac Group Over 60 3 Cum":2436087.0,
+      "Vac Group Risk: Disease 1 Cum":4997368.0,
+      "Vac Group Risk: Disease 2 Cum":4763700.0,
+      "Vac Group Risk: Disease 3 Cum":1637207.0
+    }
+  ]
+}

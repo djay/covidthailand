@@ -1,0 +1,29 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Group Over 60 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 1 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2022-02-11T00:00:00.000",
+      "Vac Group Over 60 1 Cum":10490801.0,
+      "Vac Group Kids 1 Cum":172073.0
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Group Over 60 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Over 60 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Group Kids 4 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2022-09-27T00:00:00.000",
+      "Vac Group Over 60 1 Cum":10749834.0,
+      "Vac Group Over 60 2 Cum":10252481.0,
+      "Vac Group Over 60 3 Cum":5513577.0,
+      "Vac Group Over 60 4 Cum":997420.0,
+      "Vac Group Kids 1 Cum":3329043.0,
+      "Vac Group Kids 2 Cum":2496035.0,
+      "Vac Group Kids 3 Cum":58571.0,
+      "Vac Group Kids 4 Cum":0.0
+    }
+  ]
+}

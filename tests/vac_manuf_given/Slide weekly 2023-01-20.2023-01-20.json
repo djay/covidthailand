@@ -1,0 +1,169 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given AstraZeneca 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 6 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2023-01-20T00:00:00.000",
+      "Vac Given AstraZeneca 1 Cum":14100623.0,
+      "Vac Given AstraZeneca 2 Cum":28683615.0,
+      "Vac Given AstraZeneca 3 Cum":5677630.0,
+      "Vac Given AstraZeneca 4 Cum":248969.0,
+      "Vac Given AstraZeneca 5 Cum":2900.0,
+      "Vac Given AstraZeneca 6 Cum":107.0,
+      "Vac Given Moderna 1 Cum":834067.0,
+      "Vac Given Moderna 2 Cum":964698.0,
+      "Vac Given Moderna 3 Cum":3681584.0,
+      "Vac Given Moderna 4 Cum":1845000.0,
+      "Vac Given Moderna 5 Cum":344073.0,
+      "Vac Given Moderna 6 Cum":8704.0,
+      "Vac Given Pfizer 1 Cum":12109253.0,
+      "Vac Given Pfizer 2 Cum":13533038.0,
+      "Vac Given Pfizer 3 Cum":17777504.0,
+      "Vac Given Pfizer 4 Cum":4369968.0,
+      "Vac Given Pfizer 5 Cum":630363.0,
+      "Vac Given Pfizer 6 Cum":48119.0,
+      "Vac Given Sinopharm 1 Cum":7588435.0,
+      "Vac Given Sinopharm 2 Cum":7287292.0,
+      "Vac Given Sinopharm 3 Cum":61222.0,
+      "Vac Given Sinopharm 4 Cum":6333.0,
+      "Vac Given Sinopharm 5 Cum":504.0,
+      "Vac Given Sinopharm 6 Cum":81.0,
+      "Vac Given Sinovac 1 Cum":22927232.0,
+      "Vac Given Sinovac 2 Cum":3608811.0,
+      "Vac Given Sinovac 3 Cum":9043.0,
+      "Vac Given Sinovac 4 Cum":684.0,
+      "Vac Given Sinovac 5 Cum":53.0,
+      "Vac Given Sinovac 6 Cum":2.0
+    }
+  ]
+}

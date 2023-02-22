@@ -1,0 +1,169 @@
+{
+  "schema":{
+    "fields":[
+      {
+        "name":"Date",
+        "type":"datetime"
+      },
+      {
+        "name":"Vac Given Sinovac 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 1 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 2 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 3 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 4 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 5 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinovac 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Sinopharm 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Pfizer 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given Moderna 6 Cum",
+        "type":"number"
+      },
+      {
+        "name":"Vac Given AstraZeneca 2 Cum",
+        "type":"number"
+      }
+    ],
+    "primaryKey":[
+      "Date"
+    ],
+    "pandas_version":"1.4.0"
+  },
+  "data":[
+    {
+      "Date":"2023-02-17T00:00:00.000",
+      "Vac Given Sinovac 1 Cum":22927409.0,
+      "Vac Given Sinovac 2 Cum":3609561.0,
+      "Vac Given AstraZeneca 1 Cum":14100657.0,
+      "Vac Given Sinopharm 1 Cum":7589605.0,
+      "Vac Given Sinopharm 2 Cum":7287717.0,
+      "Vac Given Pfizer 1 Cum":12139516.0,
+      "Vac Given Pfizer 2 Cum":13568751.0,
+      "Vac Given Moderna 1 Cum":834074.0,
+      "Vac Given Moderna 2 Cum":964724.0,
+      "Vac Given Sinovac 3 Cum":9083.0,
+      "Vac Given AstraZeneca 3 Cum":5679205.0,
+      "Vac Given Sinopharm 3 Cum":61606.0,
+      "Vac Given Pfizer 3 Cum":17859454.0,
+      "Vac Given Moderna 3 Cum":3681750.0,
+      "Vac Given Sinovac 4 Cum":687.0,
+      "Vac Given AstraZeneca 4 Cum":249467.0,
+      "Vac Given Sinopharm 4 Cum":6426.0,
+      "Vac Given Pfizer 4 Cum":4438838.0,
+      "Vac Given Moderna 4 Cum":1845224.0,
+      "Vac Given Sinovac 5 Cum":53.0,
+      "Vac Given AstraZeneca 5 Cum":3022.0,
+      "Vac Given Sinopharm 5 Cum":518.0,
+      "Vac Given Pfizer 5 Cum":669068.0,
+      "Vac Given Moderna 5 Cum":344172.0,
+      "Vac Given Sinovac 6 Cum":2.0,
+      "Vac Given AstraZeneca 6 Cum":134.0,
+      "Vac Given Sinopharm 6 Cum":84.0,
+      "Vac Given Pfizer 6 Cum":55828.0,
+      "Vac Given Moderna 6 Cum":8785.0,
+      "Vac Given AstraZeneca 2 Cum":28683791.0
+    }
+  ]
+}
