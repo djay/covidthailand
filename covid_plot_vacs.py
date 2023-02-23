@@ -491,14 +491,28 @@ def save_vacs_prov_plots(df, df_prov=None):
               footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
               )
 
+    # We only have partial data
     vac_prov_daily = cum2daily(vac)
     # vac_prov_daily = vac_prov_daily.join(get_provinces()[['Population', 'region']], on='Province')
-    vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
+    # vac_prov_daily = vac_prov_daily.join(pops, rsuffix="2")
 
-    by_region = vac_prov_daily.reset_index()
+    # by_region = vac_prov_daily.reset_index()
+    by_region = vac_prov_daily.reset_index("Province")[vac_prov_daily.groupby("Date").count()[
+        'Vac Population'] == 77].reset_index()
     pop_region = by_region.pivot_table("Vac Population", 'Date', 'region', "sum").replace(0, np.nan)
     by_region_1 = by_region.pivot_table('Vac Given 1', 'Date', 'region', "sum").replace(0, np.nan)
     by_region_2 = by_region.pivot_table('Vac Given 2', 'Date', 'region', "sum").replace(0, np.nan)
+    by_region_3 = by_region.pivot_table('Vac Given 3', 'Date', 'region', "sum").replace(0, np.nan)
+    plot_area(df=by_region_3 / pop_region * 100000,
+              title='Vacccinatations/100k - 3nd Dose - by Region - Thailand',
+              png_prefix='vac_region_daily_3', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,
+              ma_days=21,
+              kind='line', stacked=False, percent_fig=False, mini_map=True,
+              cmap=utils_thai.REG_COLOURS,
+              #              table = trend_table(vac_prov_daily['Vac Given 2'], sensitivity=10, style="green_up"),
+              footnote='Table of latest Vacciantions and 7 day trend per 100k',
+              footnote_left=f'{source}Data Sources: DDC Daily Vaccination Reports',
+              )
     plot_area(df=by_region_2 / pop_region * 100000,
               title='Vacccinatations/100k - 2nd Dose - by Region - Thailand',
               png_prefix='vac_region_daily_2', cols_subset=utils_thai.REG_COLS, legends=utils_thai.REG_LEG,

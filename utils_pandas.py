@@ -63,7 +63,7 @@ def check_cum(df, results, cols):
         raise Exception(str(next_day - last))
 
 
-def cum2daily(results, exclude=[], drop=True):
+def cum2daily(results, exclude=[], drop=True, replace=True):
     def todaily(df_cum):
         if df_cum.empty:
             return df_cum
@@ -100,7 +100,7 @@ def cum2daily(results, exclude=[], drop=True):
     #     #cum = cum.reset_index().set_index("Date")
     #     cum = cum.droplevel(list(set(inames) - set(["Date"])))
     # cum = cum.reset_index().set_index(inames)
-    restcols = list(c for c in results.columns if c not in cumcols)
+    restcols = list(c for c in results.columns if c not in cumcols and c not in cum.columns)
     cum[restcols] = results[restcols]
     return cum
 
