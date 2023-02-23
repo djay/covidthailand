@@ -364,6 +364,7 @@ def save_vacs_prov_plots(df, df_prov=None):
     # Reset populations to the latest since they changed definitions over time
     # Bring in vac populations
     pops = vac["Vac Population"].groupby("Province").last().to_frame("Vac Population")  # It's not on all data
+    pops2 = vac[["Vac Population", 'region']].groupby("Province").last()
     # vac = vac.join(pops, rsuffix="2")
     for pop_col in ["Vac Population Risk: Disease", 'Vac Population Over 60s', 'Vac Population']:
         vac = vac.join(vac[pop_col].groupby("Province").last().to_frame(pop_col), lsuffix="1")
@@ -382,7 +383,8 @@ def save_vacs_prov_plots(df, df_prov=None):
     #           y_formatter=perc_format,
     #           footnote_left=f'{source}Data Sources: MOPH Covid-19 Dashboard\n  DDC Daily Vaccination Reports')
 
-    by_region = vac.reset_index()
+    # Get rid of dates where we don't have complete data
+    by_region = vac.reset_index("Province")[vac.groupby("Date").count()['Vac Population2'] == 77].reset_index()
     pop_region = by_region.pivot_table('Vac Population2', 'Date', 'region', "sum").replace(0, np.nan)
     by_region_1 = by_region.pivot_table('Vac Given 1 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
     by_region_2 = by_region.pivot_table('Vac Given 2 Cum', 'Date', 'region', "sum").replace(0, np.nan) / pop_region * 100
