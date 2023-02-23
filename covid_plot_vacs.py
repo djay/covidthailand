@@ -543,6 +543,7 @@ def save_vacs_prov_plots(df, df_prov=None):
     #           cmap=utils_thai.REG_COLOURS,
     #           footnote_left=f'{source}Data Source: MOPH Covid-19 Dashboard')
 
+    vac = vac.replace(0, np.nan)
     top5 = vac.pipe(topprov, lambda df: df['Vac Given 1 Cum'] / df['Vac Population2'] * 100)
     pred = pred_vac(top5)
     pred = pred.clip(upper=pred.iloc[0].clip(100), axis=1)  # no more than 100% unless already over
@@ -645,7 +646,7 @@ if __name__ == "__main__":
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
     dash_weekly = import_csv("moph_dash_weekly", ["Date"], False, dir="inputs/json")  # so we cache it
     # have vac in briefings and dashboard
-    df = briefings.combine_first(dash).combine_first(cum2daily(dash_weekly, drop=False)).combine_first(df)
+    df = briefings.combine_first(dash).combine_first(dash_weekly).combine_first(df)
     vac = import_csv("vac_timeline", ['Date'])
     df = df.combine_first(vac)
 

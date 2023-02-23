@@ -222,17 +222,24 @@ sources have stopped being published so many plots will no longer be change.
 
 ## Vaccinations by Region/Province
 
-![Vaccinated given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_2_3.png)
-
 ![Vaccinated given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_3_3.png)
 
+![Vaccinated given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_2_3.png)
+
+### Daily Vaccinations
+
 ![Vaccine Doses given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_daily_3_3.png)
+![Vaccine Doses given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_daily_2_3.png)
+![Vaccine Doses given by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_daily_1_3.png)
+
+### By Province
 
 ![Top Provinces by Vaccination 2nd Jab](https://practical-ritchie-cca141.netlify.app/outputs/vac_top5_doses_2_3.png)
 ![Lowest Provinces by Vaccination 2nd Jab](https://practical-ritchie-cca141.netlify.app/outputs/vac_low_doses_2_3.png)
 
 ![Top Provinces by Vaccination 3rd Jab](https://practical-ritchie-cca141.netlify.app/outputs/vac_top5_doses_3_3.png)
 
+### By Group
 
 ![Vacccinated Over 60s - 2nd Dose - by Region](https://practical-ritchie-cca141.netlify.app/outputs/vac_region_60s_2_3.png)
 

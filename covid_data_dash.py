@@ -324,6 +324,9 @@ def dash_province_weekly(file="moph_province_weekly"):
         logger.info("{} MOPH Dashboard {}", row.index.max(),
                     row.loc[row.last_valid_index():].to_string(index=False, header=False))
     export(df, file, csv_only=True, dir="inputs/json")
+
+    # Vac Given 3 Cum seems to be 3+4+5+6 which is wrong
+    df = df.drop(columns=["Vac Given 3 Cum"])
     return df
 
 
@@ -493,6 +496,8 @@ def dash_trends_prov():
 
 def dash_by_province():
     df = import_csv("moph_dashboard_prov", ["Date", "Province"], False, dir="inputs/json")  # so we cache it
+    # Vac Given 3 Cum seems to be 3+4+5+6 which is wrong
+    df = df.drop(columns=["Vac Given 3 Cum"])
     return df
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard/2-dash-tiles-province-w"
@@ -690,8 +695,8 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_daily_df = dash_weekly()
     dash_by_province_df = dash_province_weekly()
+    dash_daily_df = dash_weekly()
     dash_by_province_daily = dash_by_province()
     # dash_ages_df = dash_ages()
 
