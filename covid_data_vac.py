@@ -732,8 +732,8 @@ def vaccination_reports():
         dcount = int(len([c for c in table.columns if 'Vac Given' in c]) / 2)
         sumdoses = len([c for c in vac_daily.columns if 'Vac Given' in c])
         sumgroups = int(len([c for c in vac_daily.columns if 'Vac Group' in c]) / sumdoses) if sumdoses else 0
-        logger.info("{} Vac Report prov={} pdose={} pgroups={} dose={} groups={}: {}",
-                    date, len(table), dcount, gcount, sumdoses, sumgroups, file)
+        logger.info(
+            f"Vac Report: {date} totals= {sumgroups}g * {sumdoses}d, Table= {len(table)}p * {gcount}g * {dcount}d : {file}")
         # TODO: move this into vaccination_tables so can be tested
         if date in [d("2021-12-11"), d("2022-01-06")] and table.empty:
             logger.info("{} doc has slides instead of report", date)
@@ -1226,8 +1226,7 @@ def vac_slides():
         gdoses = int(groups.columns.max().split()[-2]) if not groups.empty else 0
         ggroups = int(len([c for c in groups.columns if 'Vac Group' in c]) / gdoses) if gdoses else 0
         mdate = manuf.index.max().date() if mdoses else groups.index.max().date() if gdoses else date.date() if date else None
-        logger.info("Vac slides {} mdoses={} mtypes={} doses={} groups={}: {}",
-                    mdate, mdoses, mtypes, gdoses, ggroups, file)
+        logger.info(f"Vac slides: {mdate} manuf= {mtypes}m * {mdoses}d, groups= {ggroups}g * {gdoses}d: {file}")
         df = df.combine_first(manuf).combine_first(groups)
     return df
 

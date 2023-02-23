@@ -393,7 +393,7 @@ def topprov(df, metricfunc, valuefunc=None, name="Top 5 Provinces", num=5, other
 
 
 def pred_vac(dose1, dose2=None, ahead=90, lag=40, suffix=" Pred"):
-    "Pred dose 1 using linear progression using 14 day rate and dose {lag} using 2month from dose1"
+    "Pred dose 2 using linear progression using 14 day rate and dose {lag} using 2month from dose1"
     cur = dose1.last_valid_index()
     rate = (dose1.loc[cur] - dose1.loc[cur - relativedelta(days=14)]) / 14
     future_dates = pd.date_range(cur, cur + relativedelta(days=ahead), name="Date")
@@ -413,7 +413,8 @@ def pred_vac(dose1, dose2=None, ahead=90, lag=40, suffix=" Pred"):
     from_future.columns = from_past.columns
     v2 = pd.concat([from_past, from_future], axis=0)[:ahead + 1]
     # adjust to start where dose2 finished
-    future2 = (v2 - v2.loc[v2.index.min()]).add(list(dose2.loc[cur]))
+    end_dose2 = min(cur, dose2.last_valid_index())
+    future2 = (v2 - v2.loc[v2.index.min()]).add(list(dose2.loc[end_dose2]))
     future2.index = future_dates
     return (future1, future2)
 
