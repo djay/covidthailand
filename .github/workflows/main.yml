@@ -150,7 +150,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: openvpn unzip ghostscript python3-tk
-          version: 1.5
+          version: 1.6
           execute_install_scripts: true
       - name: Set up Python
         id: goscrape
