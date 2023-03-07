@@ -362,11 +362,25 @@ def cleanup_cases(cases):
 
 
 def get_case_details_api_weekly():
+    dir = "inputs/json/weekly/cases"
+
+    # No api for 2023 yet but do have last weeks. Just need to save somewhere
+    url = "https://covid19.ddc.moph.go.th/api/CSV/Cases/today-cases-line-lists"
+    file, content, _ = next(web_files(url, dir=dir))
+    cases2023 = pd.read_csv(file)
+    max_week = cases2023['weeknum'].max()
+    os.rename(f"{dir}/today-cases-line-lists", f"{dir}/today-cases-line-lists-{max_week}")
+    # Get fake api files
+    for file in [f"{dir}/today-cases-line-lists--{week}" for week in range(max_week - 1, 6, -1)]:
+        cases2023 = pd.concat([pd.read_csv(file), cases2023])
 
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
-                         ["year", "weeknum"], None, dir="inputs/json/weekly/cases", timeout=40)
+                         ["year", "weeknum"], None, dir=dir, timeout=40)
+    # assert df[[]'year']
+    df = pd.concat([df, cases2023])
+
     df['age'] = pd.to_numeric(df['age_number'], errors="coerce")
     df = df.rename(columns=dict(province="province_of_onset"))
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0).reset_index()
@@ -437,7 +451,7 @@ def get_case_details_api():
     return cases
 
 
-def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, timeout=80):
+def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, timeout=80, discard_last_index=False):
     basename = url2filename(url)
     if not target_index:
         # Then we will cache it ourselves and return the data
@@ -446,25 +460,6 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     else:
         cached = None
 
-    data = []
-    # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False, timeout=timeout, threads=1)), None)
-    pagedata = json.loads(content) if content is not None else {}
-    if "data" not in pagedata:
-        return pd.DataFrame(pagedata) if cached is None else cached
-    page = pagedata['data']
-    assert page
-    last_page = pagedata['meta']['last_page']
-    total = pagedata['meta']['total']
-    chunk = pagedata['meta']['per_page']
-    if cached is not None:
-        if len(cached) == total:
-            return cached
-        togo = (total - len(cached)) / chunk
-        logger.info("getting {} more pages".format(togo))
-
-    df = pd.DataFrame()
-    page = []
     # Because there is no unique case number to match up we will work backwards
     # until we get to the start of the last date we have, or where update date is before our last
     # update date
@@ -473,59 +468,79 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # build up the cache over time even if we get failures making us stop
     # if today().date() == d("2023-01-30").date():
     #     cached = pd.DataFrame()  # Fix mistake where first page was doubled
-    backwards = cached is None or len(cached) / total > 0.96
-    if backwards:
-        pagenum = last_page
-        pages = range(last_page, 1, -1)
-    else:
-        pagenum = int(len(cached) / chunk) + 1  # Assumes we didn't get a partial page before? but we shouldn't?
-        target_index = None
-        df = cached
-        pages = range(pagenum, last_page, 1)
+
+    chunk = 1000
+    df = pd.DataFrame()
     pages_got = 0
+    resume = int(len(cached) / chunk) + 1
+    pagenum = resume
     is_first = False
-    urls = [f"{url}?page={p}" for p in pages]
+    last_page = 0
+    total = 0
+    urls = [f"{url}?page={p}" for p in range(resume, 1, -1)]
     for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, threads=1):
         if file is None:
-            if backwards:
-                df = pd.DataFrame()  # Can't join it. have eto give up
-                # TODO: join it first (going backwards) then go forward
-            break
-        pagedata = json.loads(content)
-        data = pagedata['data']
-        if not pagedata['data']:
+            return cached  # Can't join it. have eto give up
+        data = (pagedata := json.loads(content))['data']
+        if not data:
             break
         pages_got += 1
         dfpage = pd.DataFrame(data)
-        df = pd.concat([dfpage, df] if backwards else [df, dfpage])
-        if pagenum == 1 and backwards or not backwards and pagenum == last_page:
+        df = pd.concat([dfpage, df])
+        if last_page == 0:
+            last_page = pagedata['meta']['last_page']
+            total = pagedata['meta']['total']
+            assert chunk == pagedata['meta']['per_page']
+            if cached is not None:
+                if len(cached) == total:
+                    return cached
+                togo = (total - len(cached)) / chunk
+                logger.info("getting {} more pages".format(togo))
+
+        if pagenum == 1:
             break
-        elif target_index is not None and backwards:
-            # we want the page with our target on but not at the top
-            on_page = (dfpage[index] == target_index).all(axis=1).any()
-            if not on_page and is_first:
-                # Join at page boundries
-                df = pd.concat([cached, df])
-                assert len(df) == total
-                break
-            is_first = (dfpage[index].iloc[0] == target_index).all()
-            if on_page and not is_first:
-                # Assume that last couple of pages might change so join where the nearest change in index happened
-                # first place we get our target
-                # get rid of additional data in case it changed
-                cache_before = cached[(cached[index] == target_index).all(axis=1)].index[0]
-                # get last part of latest pages
-                df_after = df[(df[index] == target_index).all(axis=1)].index[0]
-                cached = cached.iloc[:cache_before]
-                df = df[df_after:]
-                # stick togeather
-                df = pd.concat([cached, df])
-                assert len(df) == total
-                break
-        elif not backwards and pages_got == 100:
+        elif not discard_last_index:
+            # Get rid of partial page
+            cached = cached.iloc[:(resume - 1) * chunk]
+            df = pd.concat([cached, df])
+            break
+
+        # we want the page with our target on but not at the top
+        on_page = (dfpage[index] == target_index).all(axis=1).any()
+        if not on_page and is_first:
+            # it was first on the page after this. ok to join
+            # Join at page boundries
+            df = pd.concat([cached, df])
+            break
+        is_first = (dfpage[index].iloc[0] == target_index).all()
+        if on_page and not is_first:
+            # Assume that last couple of pages might change so join where the nearest change in index happened
+            # first place we get our target
+            # get rid of additional data in case it changed
+            cache_before = cached[(cached[index] == target_index).all(axis=1)].index[0]
+            # get last part of latest pages
+            df_after = df[(df[index] == target_index).all(axis=1)].index[0]
+            cached = cached.iloc[:cache_before]
+            df = df[df_after:]
+            # stick togeather
+            df = pd.concat([cached, df])
+            break
+        pagenum -= 1
+
+    # Go forwards
+    urls = [f"{url}?page={p}" for p in range(resume + 1, last_page, 1)]
+    for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, threads=1):
+        if file is None:
+            break
+        data = json.loads(content)['data']
+        if not data:
+            break
+        pages_got += 1
+        dfpage = pd.DataFrame(data)
+        df = pd.concat([df, dfpage])
+        if pages_got >= 100:
             # Cut our loses here so we don't take so much time. Get more later
             break
-        pagenum += -1 if backwards else +1
 
     if not df.empty:
         export(df.set_index(index), basename, csv_only=True, dir=dir)  # Ensure we don't include default index in the export
@@ -805,9 +820,11 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    excess_deaths()
+
+    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline_weekly = get_cases_timelineapi_weekly()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
-    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
 
@@ -826,8 +843,6 @@ if __name__ == '__main__':
     old = import_csv("combined", index=["Date"])
     df = timeline.combine_first(cases_demo).combine_first(deaths_weekly).combine_first(old)
     export(df, "combined", csv_only=True)
-
-    excess_deaths()
 
     import covid_plot_cases
     import covid_plot_deaths
