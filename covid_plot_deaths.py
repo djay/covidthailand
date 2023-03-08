@@ -406,14 +406,14 @@ def save_excess_death_plots(df):
         death5_min = months[years5].min(axis=1)
         death5_max = months[years5].max(axis=1)
         result = pd.DataFrame()
-        for year in [2020, 2021, 2022]:
+        for year in range(2020, months.columns.max() + 1):
             res = pd.DataFrame()
             res['Excess Deaths'] = (months[year] - death5_avg)
             res['P-Score'] = res['Excess Deaths'] / death5_avg * 100
             res['Pre Avg'], res['Pre Min'], res['Pre Max'] = death3_avg, death3_min, death3_max
             res['Pre 5 Avg'], res['Pre 5 Min'], res['Pre 5 Max'] = death5_avg, death5_min, death5_max
             res['Deaths All Month'] = months[year]
-            for y in range(2012, 2023):
+            for y in range(2012, months.columns.max() + 1):
                 res[f'Deaths {y}'] = months[y]
             res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
                                          format='%Y-%m') + MonthEnd(0)
