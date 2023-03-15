@@ -805,6 +805,14 @@ def get_ifr():
 
 
 if __name__ == '__main__':
+    import covid_plot_cases
+    import covid_plot_deaths
+
+    df = import_csv("combined", index=["Date"])
+
+    excess_deaths()
+    covid_plot_deaths.save_excess_death_plots(df)
+
     timeline_weekly = get_cases_timelineapi_weekly()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
@@ -823,14 +831,9 @@ if __name__ == '__main__':
     dfprov = join_provinces(dfprov, on="Province")
     export(dfprov, "cases_by_province")
 
-    old = import_csv("combined", index=["Date"])
-    df = timeline.combine_first(cases_demo).combine_first(deaths_weekly).combine_first(old)
+    df = timeline.combine_first(cases_demo).combine_first(deaths_weekly).combine_first(df)
     export(df, "combined", csv_only=True)
 
-    excess_deaths()
-
-    import covid_plot_cases
-    import covid_plot_deaths
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
