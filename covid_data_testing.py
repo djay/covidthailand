@@ -253,7 +253,8 @@ def get_tests_by_area_pdf(file, page, data, raw, page_num=None):
         "445270", "445 270").replace(
         "237193", "237 193").replace(
         # Missing district 13 number in 2023.01.28. #TODO. Number is the % plot, 2 pages later
-        "2107.7", "210 12966 7.7"
+        "2107.7", "210 12966 7.7").replace(
+        "88108", "88 108"  # 2023.03.11
     )
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
