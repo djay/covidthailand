@@ -189,6 +189,9 @@ def plot_area(df: pd.DataFrame,
     else:
         ma_suffix = ''
 
+    # some ratios go inf. better just filter it out here. maybe there should be another ceil?
+    df = df.replace(np.inf, np.nan)
+
     # try to hone in on last day of "important" data. Assume first col
     last_update = df[orig_cols[:1]].dropna().last_valid_index()  # date format chosen: '05 May 2021'
     # last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
