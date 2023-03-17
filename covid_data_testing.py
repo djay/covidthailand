@@ -457,10 +457,11 @@ def get_variant_sequenced_table(file, pages):
         df["Lineage"] = list(pd.to_numeric(weeks).dropna())
         # 164 = 2023-03-03?, 153 = 2022-12-02
 
-        if file2date(file) == d("2023-03-03"):
-            end_week_one = d("2020-01-10")
-        elif file2date(file) == d("2023-01-27"):
+        if file2date(file) == d("2023-01-27"):
             end_week_one = d("2020-01-17")
+        # Suspect dates are wrong so won't correct
+        # elif file2date(file) == d("2023-03-03"):
+        #     end_week_one = d("2020-01-10")
         elif file2date(file) > d("2022-12-02"):
             end_week_one = d("2020-01-03")
         else:
