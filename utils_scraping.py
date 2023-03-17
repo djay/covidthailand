@@ -674,8 +674,8 @@ def parse_numbers(lst):
     return [float(i.replace(",", "")) if i != "-" else 0 for i in lst]
 
 
-def any_in(target, *matches):
-    return any((str(m) in target) if type(m) != re.Pattern else m.search(target) for m in matches)
+def any_in(target, *matches, isstr=True):
+    return any(((str(m) if isstr else m) in target) if type(m) != re.Pattern else m.search(target) for m in matches)
 
 
 def all_in(target, *matches):

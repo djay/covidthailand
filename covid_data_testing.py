@@ -455,8 +455,32 @@ def get_variant_sequenced_table(file, pages):
         weeks = df["Lineage"].astype(str).str.replace("w", "").str.replace(
             "W", "").str.split(" ", expand=True).stack().reset_index()[0]
         df["Lineage"] = list(pd.to_numeric(weeks).dropna())
-        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
+        # 164 = 2023-03-03?, 153 = 2022-12-02
+
+        if file2date(file) == d("2023-03-03"):
+            end_week_one = d("2020-01-10")
+        elif file2date(file) == d("2023-01-27"):
+            end_week_one = d("2020-01-17")
+        elif file2date(file) > d("2022-12-02"):
+            end_week_one = d("2020-01-03")
+        else:
+            end_week_one = d("2019-12-27")
+        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
         df = df.set_index("End")
+        # Double check the weeks numbers are correct
+        nospace = page.replace("\n", "").replace(" ", "")
+        if any_in(file, "20230217"):
+            pass
+            # 2023-02-10: wrong month
+            # 27/01/2023 03/02/2023 in 32_20230203_DMSc_Variant_V.pdf.  160, 161
+        else:
+            found = find_dates(nospace, thai=False)
+            deltas = []
+            for week_date, week in zip([d for d in [df.index.max()]], [df['Lineage'].max()]):
+                deltas += [(week_date - d).days for d in found[-1:]]
+            if not any_in(deltas, 0, -6, isstr=False) and deltas:
+                logger.warning(
+                    f"Sequence table: Missing weekdate of w{list(df['Lineage'])} {[str(d.date()) for d in df.index]}: {deltas} in {file}")
         df = df.drop(columns=["Total Sequences", "Total Sequence", "Lineage"], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
@@ -574,8 +598,8 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    test_prov = get_tests_per_province()
     variants = get_variant_reports()
+    test_prov = get_tests_per_province()
     df_daily = get_tests_by_day()
     df = get_test_reports()
     old = import_csv("combined", index=["Date"])
