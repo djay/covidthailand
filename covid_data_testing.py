@@ -251,11 +251,14 @@ def get_tests_by_area_pdf(file, page, data, raw, page_num=None):
         "9881 14.3", "98811 4.3").replace(
         "2061 119828", "20611 19828").replace(
         "445270", "445 270").replace(
-        "237193", "237 193").replace(
-        # Missing district 13 number in 2023.01.28. #TODO. Number is the % plot, 2 pages later
-        "2107.7", "210 12966 7.7").replace(
-        "88108", "88 108"  # 2023.03.11
+        "237193", "237 193"
     )
+    page = page if "2023.03.18" not in file else page.replace("114157", "114 157")
+    page = page if "2023.03.11" not in file else page.replace("88108", "88 108")
+    page = page if "2023.02.25" not in file else page.replace("983.7 6.4", "98 12661 3.7 6.4")
+    # Missing district 13 number in 2023.01.28. #TODO. Number is the % plot, 2 pages later
+    page = page if "2023.01.28" not in file else page.replace("2107.7", "210 12966 7.7")
+
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
@@ -276,7 +279,8 @@ def get_tests_by_area_pdf(file, page, data, raw, page_num=None):
     pos_rate = numbers[tests_start + 13: tests_start + 26]
     if start > d("2020-12-05"):
         assert all([r <= 100 for r in pos_rate])
-        assert all([round(p / t * 100, 1) == r for p, t, r in zip(pos, tests, pos_rate)])  # double check we got right values
+        calc_pos_rates = [round(p / t * 100, 1) if t else 0 for p, t in zip(pos, tests)]
+        assert pos_rate == calc_pos_rates  # double check we got right values
 
     row = pos + tests + [sum(pos), sum(tests)]
     results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
@@ -599,10 +603,10 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    variants = get_variant_reports()
-    test_prov = get_tests_per_province()
-    df_daily = get_tests_by_day()
     df = get_test_reports()
+    test_prov = get_tests_per_province()
+    variants = get_variant_reports()
+    df_daily = get_tests_by_day()
     old = import_csv("combined", index=["Date"])
     df = old.combine_first(df).combine_first(df_daily)
 
