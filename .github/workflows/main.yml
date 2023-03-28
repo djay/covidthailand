@@ -123,12 +123,36 @@ jobs:
         with:
           file: "briefings.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached situation
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "situation.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached vaccinations
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "vaccinations.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached testing
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "testing.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
         if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
           tar -xzvf inputs.tar.gz
           tar -xzvf briefings.tar.gz || true
-          rm inputs.tar.gz briefings.tar.gz || true
+          tar -xzvf situation.tar.gz || true
+          tar -xzvf vaccinations.tar.gz || true
+          tar -xzvf testing.tar.gz || true
+          rm inputs.tar.gz briefings.tar.gz situation.tar.gz vaccinations.tar.gz testing.tar.gz || true
       - name: du
         if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
@@ -332,7 +356,10 @@ jobs:
         if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
            tar -czvf briefings.tar.gz -T <(\ls -1 inputs/briefings/*)
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" -czvf inputs.tar.gz inputs
+           tar -czvf situation.tar.gz -T <(\ls -1 inputs/situation_*/*)
+           tar -czvf vaccinations.tar.gz -T <(\ls -1 inputs/vaccinations/*)
+           tar -czvf testing.tar.gz -T <(\ls -1 inputs/testing_moph/* inputs/variants/*)
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" --exclude="inputs/situation_*/*" --exclude="inputs/vaccinations/*" --exclude="inputs/variants/*" --exclude="inputs/testing_moph/*" -czvf inputs.tar.gz inputs
            find api inputs/json   -path "api/*" -o -name "*.csv" | tar -czvf datasets.tar.gz -T -
       - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
@@ -364,4 +391,47 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated docs"
+      - name: Upload situation.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./situation.tar.gz
+          asset_name: situation.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated situation"
+      - name: Upload vaccinations.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./vaccinations.tar.gz
+          asset_name: vaccinations.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated vaccinations"
+      - name: Upload testing.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./testing.tar.gz
+          asset_name: testing.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated testing"
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: ${{ steps.date.outputs.date }}
+          title: Dataset and input files for covidthailand for ${{ steps.date.outputs.date }}
+          files: |
+             briefings.tar.gz
+             situation.tar.gz
+             vaccinations.tar.gz
+             testing.tar.gz
+             datasets.tar.gz
+             inputs.tar.gz
 
