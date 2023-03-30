@@ -199,27 +199,27 @@ jobs:
           python -c 'from ctypes.util import find_library; print(find_library("gs"))'
           # Prep tika so gets a new version outside of VPN
           tika-python config mime-types || true
-      - name: Setup VPN
-        id: setup-vpn
-        run: |
-          sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
-          sudo unzip configurations
-          (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
-          sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
-          rm userpass.txt
-          # Wait for OpenVPN to connect
-          sleep 5
-          tail -30 /var/log/syslog
-          while ! sudo pgrep openvpn > /dev/null; do
-            sleep 1
-          done
+      # - name: Setup VPN
+      #   id: setup-vpn
+      #   run: |
+      #     sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
+      #     sudo unzip configurations
+      #     (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
+      #     sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
+      #     rm userpass.txt
+      #     # Wait for OpenVPN to connect
+      #     sleep 5
+      #     tail -30 /var/log/syslog
+      #     while ! sudo pgrep openvpn > /dev/null; do
+      #       sleep 1
+      #     done
 
-          while ! sudo grep -q "Initialization Sequence Completed" /var/log/syslog; do
-            sleep 1
-          done
+      #     while ! sudo grep -q "Initialization Sequence Completed" /var/log/syslog; do
+      #       sleep 1
+      #     done
 
-          # Do something after OpenVPN connects
-          echo "OpenVPN connected"
+      #     # Do something after OpenVPN connects
+      #     echo "OpenVPN connected"
       - name: is dash ready
         id: godash
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}
@@ -255,10 +255,10 @@ jobs:
         continue-on-error: true
         run:
           du inputs | tee outputfiles.txt
-      - name: Stop VPN
-        id: stop-vpn
-        run: |
-          sudo pkill -f "openvpn"
+      # - name: Stop VPN
+      #   id: stop-vpn
+      #   run: |
+      #     sudo pkill -f "openvpn"
       - id: can-deploy
         env:
             MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
