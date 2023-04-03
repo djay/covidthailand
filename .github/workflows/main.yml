@@ -361,6 +361,19 @@ jobs:
            tar -czvf testing.tar.gz -T <(\ls -1 inputs/testing_moph/* inputs/variants/*)
            tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" --exclude="inputs/situation_*/*" --exclude="inputs/vaccinations/*" --exclude="inputs/variants/*" --exclude="inputs/testing_moph/*" -czvf inputs.tar.gz inputs
            find api inputs/json   -path "api/*" -o -name "*.csv" | tar -czvf datasets.tar.gz -T -
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: ${{ steps.date.outputs.date }}
+          title: Dataset and input files for covidthailand for ${{ steps.date.outputs.date }}
+          files: |
+             briefings.tar.gz
+             situation.tar.gz
+             vaccinations.tar.gz
+             testing.tar.gz
+             datasets.tar.gz
+             inputs.tar.gz
       - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
@@ -371,16 +384,6 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated docs"
-      - name: Upload briefings.tar.gz to existing release
-        if: ${{ steps.makerelease.outcome == 'success' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./briefings.tar.gz
-          asset_name: briefings.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated briefings"
       - name: Upload datasets.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
@@ -391,16 +394,6 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated docs"
-      - name: Upload situation.tar.gz to existing release
-        if: ${{ steps.makerelease.outcome == 'success' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./situation.tar.gz
-          asset_name: situation.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated situation"
       - name: Upload vaccinations.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
@@ -421,17 +414,24 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated testing"
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          automatic_release_tag: ${{ steps.date.outputs.date }}
-          title: Dataset and input files for covidthailand for ${{ steps.date.outputs.date }}
-          files: |
-             briefings.tar.gz
-             situation.tar.gz
-             vaccinations.tar.gz
-             testing.tar.gz
-             datasets.tar.gz
-             inputs.tar.gz
+      # - name: Upload briefings.tar.gz to existing release
+      #   if: ${{ steps.makerelease.outcome == 'success' }}
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: ./briefings.tar.gz
+      #     asset_name: briefings.tar.gz
+      #     tag: 1
+      #     overwrite: true
+      #     body: "Updated briefings"
+      # - name: Upload situation.tar.gz to existing release
+      #   if: ${{ steps.makerelease.outcome == 'success' }}
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: ./situation.tar.gz
+      #     asset_name: situation.tar.gz
+      #     tag: 1
+      #     overwrite: true
+      #     body: "Updated situation"
 
