@@ -22,32 +22,32 @@
   },
   "data":[
     {
-      "Date":"2021-06-15T00:00:00.000Z",
+      "Date":"2021-06-15T00:00:00.000",
       "Province":"Bangkok",
       "Deaths":11
     },
     {
-      "Date":"2021-06-15T00:00:00.000Z",
+      "Date":"2021-06-15T00:00:00.000",
       "Province":"Samut Prakan",
       "Deaths":3
     },
     {
-      "Date":"2021-06-15T00:00:00.000Z",
+      "Date":"2021-06-15T00:00:00.000",
       "Province":"Saraburi",
       "Deaths":2
     },
     {
-      "Date":"2021-06-15T00:00:00.000Z",
+      "Date":"2021-06-15T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Deaths":1
     },
     {
-      "Date":"2021-06-15T00:00:00.000Z",
+      "Date":"2021-06-15T00:00:00.000",
       "Province":"Prachinburi",
       "Deaths":1
     },
     {
-      "Date":"2021-06-15T00:00:00.000Z",
+      "Date":"2021-06-15T00:00:00.000",
       "Province":"Yala",
       "Deaths":1
     }

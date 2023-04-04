@@ -94,7 +94,7 @@
   },
   "data":[
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Allocated Sinovac":57600.0,
       "Vac Allocated AstraZeneca":43700.0,
@@ -117,7 +117,7 @@
       "Vac Population":379995.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Allocated Sinovac":61800.0,
       "Vac Allocated AstraZeneca":28500.0,
@@ -140,7 +140,7 @@
       "Vac Population":292159.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Bangkok",
       "Vac Allocated Sinovac":2566486.0,
       "Vac Allocated AstraZeneca":6128350.0,
@@ -163,7 +163,7 @@
       "Vac Population":7699175.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Allocated Sinovac":52960.0,
       "Vac Allocated AstraZeneca":42810.0,
@@ -186,7 +186,7 @@
       "Vac Population":425427.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Buriram",
       "Vac Allocated Sinovac":420000.0,
       "Vac Allocated AstraZeneca":294800.0,
@@ -209,7 +209,7 @@
       "Vac Population":1587359.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Allocated Sinovac":180360.0,
       "Vac Allocated AstraZeneca":265800.0,
@@ -232,7 +232,7 @@
       "Vac Population":750784.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Allocated Sinovac":50040.0,
       "Vac Allocated AstraZeneca":28900.0,
@@ -255,7 +255,7 @@
       "Vac Population":335049.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Allocated Sinovac":159720.0,
       "Vac Allocated AstraZeneca":80900.0,
@@ -278,7 +278,7 @@
       "Vac Population":1134867.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Allocated Sinovac":129036.0,
       "Vac Allocated AstraZeneca":99700.0,
@@ -301,7 +301,7 @@
       "Vac Population":587421.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Allocated Sinovac":346382.0,
       "Vac Allocated AstraZeneca":249770.0,
@@ -324,7 +324,7 @@
       "Vac Population":1729353.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Allocated Sinovac":167160.0,
       "Vac Allocated AstraZeneca":138000.0,
@@ -347,7 +347,7 @@
       "Vac Population":1172648.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chonburi",
       "Vac Allocated Sinovac":461020.0,
       "Vac Allocated AstraZeneca":450290.0,
@@ -370,7 +370,7 @@
       "Vac Population":2047622.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Chumphon",
       "Vac Allocated Sinovac":72600.0,
       "Vac Allocated AstraZeneca":56900.0,
@@ -393,7 +393,7 @@
       "Vac Population":543683.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Kalasin",
       "Vac Allocated Sinovac":120480.0,
       "Vac Allocated AstraZeneca":60100.0,
@@ -416,7 +416,7 @@
       "Vac Population":978299.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Allocated Sinovac":95880.0,
       "Vac Allocated AstraZeneca":54200.0,
@@ -439,7 +439,7 @@
       "Vac Population":725873.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Allocated Sinovac":130974.0,
       "Vac Allocated AstraZeneca":58000.0,
@@ -462,7 +462,7 @@
       "Vac Population":848454.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Allocated Sinovac":283420.0,
       "Vac Allocated AstraZeneca":122600.0,
@@ -485,7 +485,7 @@
       "Vac Population":1837005.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Krabi",
       "Vac Allocated Sinovac":101560.0,
       "Vac Allocated AstraZeneca":96920.0,
@@ -508,7 +508,7 @@
       "Vac Population":503538.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Lampang",
       "Vac Allocated Sinovac":124840.0,
       "Vac Allocated AstraZeneca":47800.0,
@@ -531,7 +531,7 @@
       "Vac Population":731573.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Lamphun",
       "Vac Allocated Sinovac":63880.0,
       "Vac Allocated AstraZeneca":35700.0,
@@ -554,7 +554,7 @@
       "Vac Population":417225.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Loei",
       "Vac Allocated Sinovac":92280.0,
       "Vac Allocated AstraZeneca":73110.0,
@@ -577,7 +577,7 @@
       "Vac Population":640283.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Lopburi",
       "Vac Allocated Sinovac":116200.0,
       "Vac Allocated AstraZeneca":61930.0,
@@ -600,7 +600,7 @@
       "Vac Population":760478.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Allocated Sinovac":39800.0,
       "Vac Allocated AstraZeneca":23900.0,
@@ -623,7 +623,7 @@
       "Vac Population":245764.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Allocated Sinovac":120200.0,
       "Vac Allocated AstraZeneca":80500.0,
@@ -646,7 +646,7 @@
       "Vac Population":957365.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Allocated Sinovac":61360.0,
       "Vac Allocated AstraZeneca":66400.0,
@@ -669,7 +669,7 @@
       "Vac Population":351257.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Allocated Sinovac":54873.0,
       "Vac Allocated AstraZeneca":46890.0,
@@ -692,7 +692,7 @@
       "Vac Population":271739.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Allocated Sinovac":169080.0,
       "Vac Allocated AstraZeneca":130940.0,
@@ -715,7 +715,7 @@
       "Vac Population":1125350.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Allocated Sinovac":93200.0,
       "Vac Allocated AstraZeneca":73310.0,
@@ -738,7 +738,7 @@
       "Vac Population":724861.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Allocated Sinovac":586190.0,
       "Vac Allocated AstraZeneca":213500.0,
@@ -761,7 +761,7 @@
       "Vac Population":2692890.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Allocated Sinovac":173260.0,
       "Vac Allocated AstraZeneca":77800.0,
@@ -784,7 +784,7 @@
       "Vac Population":1059708.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Allocated Sinovac":197120.0,
       "Vac Allocated AstraZeneca":167590.0,
@@ -807,7 +807,7 @@
       "Vac Population":1575117.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nan",
       "Vac Allocated Sinovac":66880.0,
       "Vac Allocated AstraZeneca":48400.0,
@@ -830,7 +830,7 @@
       "Vac Population":477862.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Allocated Sinovac":135160.0,
       "Vac Allocated AstraZeneca":145300.0,
@@ -853,7 +853,7 @@
       "Vac Population":805356.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Allocated Sinovac":66560.0,
       "Vac Allocated AstraZeneca":55310.0,
@@ -876,7 +876,7 @@
       "Vac Population":523861.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Allocated Sinovac":82480.0,
       "Vac Allocated AstraZeneca":83010.0,
@@ -899,7 +899,7 @@
       "Vac Population":519027.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Allocated Sinovac":535941.0,
       "Vac Allocated AstraZeneca":548686.0,
@@ -922,7 +922,7 @@
       "Vac Population":1609192.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Allocated Sinovac":321784.0,
       "Vac Allocated AstraZeneca":391520.0,
@@ -945,7 +945,7 @@
       "Vac Population":1533781.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Pattani",
       "Vac Allocated Sinovac":116880.0,
       "Vac Allocated AstraZeneca":117100.0,
@@ -968,7 +968,7 @@
       "Vac Population":743054.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Allocated Sinovac":77720.0,
       "Vac Allocated AstraZeneca":106700.0,
@@ -991,7 +991,7 @@
       "Vac Population":286339.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Allocated Sinovac":82840.0,
       "Vac Allocated AstraZeneca":50800.0,
@@ -1014,7 +1014,7 @@
       "Vac Population":528207.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phayao",
       "Vac Allocated Sinovac":85480.0,
       "Vac Allocated AstraZeneca":43100.0,
@@ -1037,7 +1037,7 @@
       "Vac Population":468292.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Allocated Sinovac":137920.0,
       "Vac Allocated AstraZeneca":110400.0,
@@ -1060,7 +1060,7 @@
       "Vac Population":992791.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Allocated Sinovac":129520.0,
       "Vac Allocated AstraZeneca":109900.0,
@@ -1083,7 +1083,7 @@
       "Vac Population":502827.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phichit",
       "Vac Allocated Sinovac":78000.0,
       "Vac Allocated AstraZeneca":35500.0,
@@ -1106,7 +1106,7 @@
       "Vac Population":536012.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Allocated Sinovac":146320.0,
       "Vac Allocated AstraZeneca":100600.0,
@@ -1129,7 +1129,7 @@
       "Vac Population":1050000.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Allocated Sinovac":150890.0,
       "Vac Allocated AstraZeneca":140000.0,
@@ -1152,7 +1152,7 @@
       "Vac Population":921047.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phrae",
       "Vac Allocated Sinovac":74120.0,
       "Vac Allocated AstraZeneca":38700.0,
@@ -1175,7 +1175,7 @@
       "Vac Population":441310.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Phuket",
       "Vac Allocated Sinovac":739800.0,
       "Vac Allocated AstraZeneca":137870.0,
@@ -1198,7 +1198,7 @@
       "Vac Population":547584.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Allocated Sinovac":95818.0,
       "Vac Allocated AstraZeneca":64700.0,
@@ -1221,7 +1221,7 @@
       "Vac Population":579651.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Allocated Sinovac":128960.0,
       "Vac Allocated AstraZeneca":81610.0,
@@ -1244,7 +1244,7 @@
       "Vac Population":578094.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Ranong",
       "Vac Allocated Sinovac":63000.0,
       "Vac Allocated AstraZeneca":85900.0,
@@ -1267,7 +1267,7 @@
       "Vac Population":228507.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Allocated Sinovac":170340.0,
       "Vac Allocated AstraZeneca":116000.0,
@@ -1290,7 +1290,7 @@
       "Vac Population":918674.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Rayong",
       "Vac Allocated Sinovac":164880.0,
       "Vac Allocated AstraZeneca":165700.0,
@@ -1313,7 +1313,7 @@
       "Vac Population":966932.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Roi Et",
       "Vac Allocated Sinovac":192320.0,
       "Vac Allocated AstraZeneca":74600.0,
@@ -1336,7 +1336,7 @@
       "Vac Population":1307158.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Allocated Sinovac":118480.0,
       "Vac Allocated AstraZeneca":86000.0,
@@ -1359,7 +1359,7 @@
       "Vac Population":586286.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Allocated Sinovac":141780.0,
       "Vac Allocated AstraZeneca":97500.0,
@@ -1382,7 +1382,7 @@
       "Vac Population":1145848.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Allocated Sinovac":365954.0,
       "Vac Allocated AstraZeneca":742090.0,
@@ -1405,7 +1405,7 @@
       "Vac Population":1931727.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Allocated Sinovac":350840.0,
       "Vac Allocated AstraZeneca":329760.0,
@@ -1428,7 +1428,7 @@
       "Vac Population":953167.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Allocated Sinovac":40520.0,
       "Vac Allocated AstraZeneca":33900.0,
@@ -1451,7 +1451,7 @@
       "Vac Population":204018.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Saraburi",
       "Vac Allocated Sinovac":120930.0,
       "Vac Allocated AstraZeneca":73800.0,
@@ -1474,7 +1474,7 @@
       "Vac Population":720145.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Satun",
       "Vac Allocated Sinovac":60320.0,
       "Vac Allocated AstraZeneca":31100.0,
@@ -1497,7 +1497,7 @@
       "Vac Population":331057.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Allocated Sinovac":35120.0,
       "Vac Allocated AstraZeneca":32800.0,
@@ -1520,7 +1520,7 @@
       "Vac Population":214665.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Sisaket",
       "Vac Allocated Sinovac":176280.0,
       "Vac Allocated AstraZeneca":126100.0,
@@ -1543,7 +1543,7 @@
       "Vac Population":1460182.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Songkhla",
       "Vac Allocated Sinovac":240016.0,
       "Vac Allocated AstraZeneca":215480.0,
@@ -1566,7 +1566,7 @@
       "Vac Population":1487320.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Allocated Sinovac":94880.0,
       "Vac Allocated AstraZeneca":48500.0,
@@ -1589,7 +1589,7 @@
       "Vac Population":596902.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Allocated Sinovac":131580.0,
       "Vac Allocated AstraZeneca":82700.0,
@@ -1612,7 +1612,7 @@
       "Vac Population":850709.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Allocated Sinovac":273720.0,
       "Vac Allocated AstraZeneca":195900.0,
@@ -1635,7 +1635,7 @@
       "Vac Population":1144090.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Surin",
       "Vac Allocated Sinovac":182000.0,
       "Vac Allocated AstraZeneca":98900.0,
@@ -1658,7 +1658,7 @@
       "Vac Population":1392583.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Tak",
       "Vac Allocated Sinovac":163172.0,
       "Vac Allocated AstraZeneca":91000.0,
@@ -1681,7 +1681,7 @@
       "Vac Population":589901.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Trang",
       "Vac Allocated Sinovac":91320.0,
       "Vac Allocated AstraZeneca":58600.0,
@@ -1704,7 +1704,7 @@
       "Vac Population":659636.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Trat",
       "Vac Allocated Sinovac":48600.0,
       "Vac Allocated AstraZeneca":35400.0,
@@ -1727,7 +1727,7 @@
       "Vac Population":249458.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Allocated Sinovac":242320.0,
       "Vac Allocated AstraZeneca":148830.0,
@@ -1750,7 +1750,7 @@
       "Vac Population":1880468.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Allocated Sinovac":213880.0,
       "Vac Allocated AstraZeneca":151020.0,
@@ -1773,7 +1773,7 @@
       "Vac Population":1565740.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Allocated Sinovac":68840.0,
       "Vac Allocated AstraZeneca":34900.0,
@@ -1796,7 +1796,7 @@
       "Vac Population":334270.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Allocated Sinovac":80080.0,
       "Vac Allocated AstraZeneca":46500.0,
@@ -1819,7 +1819,7 @@
       "Vac Population":455259.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Yala",
       "Vac Allocated Sinovac":87800.0,
       "Vac Allocated AstraZeneca":109300.0,
@@ -1842,7 +1842,7 @@
       "Vac Population":547993.0
     },
     {
-      "Date":"2021-08-30T00:00:00.000Z",
+      "Date":"2021-08-30T00:00:00.000",
       "Province":"Yasothon",
       "Vac Allocated Sinovac":74480.0,
       "Vac Allocated AstraZeneca":51100.0,

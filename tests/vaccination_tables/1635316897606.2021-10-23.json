@@ -166,7 +166,7 @@
   },
   "data":[
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Allocated AstraZeneca":121880.0,
       "Vac Allocated Pfizer":24420.0,
@@ -207,7 +207,7 @@
       "Vac Population Risk: Disease":29299.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Allocated AstraZeneca":84680.0,
       "Vac Allocated Pfizer":19020.0,
@@ -248,7 +248,7 @@
       "Vac Population Risk: Disease":30792.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Bangkok",
       "Vac Allocated AstraZeneca":9185960.0,
       "Vac Allocated Pfizer":569526.0,
@@ -289,7 +289,7 @@
       "Vac Population Risk: Disease":1347294.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Allocated AstraZeneca":85230.0,
       "Vac Allocated Pfizer":22500.0,
@@ -330,7 +330,7 @@
       "Vac Population Risk: Disease":32647.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Buriram",
       "Vac Allocated AstraZeneca":848820.0,
       "Vac Allocated Pfizer":99162.0,
@@ -371,7 +371,7 @@
       "Vac Population Risk: Disease":100571.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Allocated AstraZeneca":452800.0,
       "Vac Allocated Pfizer":82200.0,
@@ -412,7 +412,7 @@
       "Vac Population Risk: Disease":61939.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Allocated AstraZeneca":75140.0,
       "Vac Allocated Pfizer":16380.0,
@@ -453,7 +453,7 @@
       "Vac Population Risk: Disease":29928.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Allocated AstraZeneca":308980.0,
       "Vac Allocated Pfizer":51540.0,
@@ -494,7 +494,7 @@
       "Vac Population Risk: Disease":82708.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Allocated AstraZeneca":174660.0,
       "Vac Allocated Pfizer":31080.0,
@@ -535,7 +535,7 @@
       "Vac Population Risk: Disease":53888.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Allocated AstraZeneca":458250.0,
       "Vac Allocated Pfizer":108522.0,
@@ -576,7 +576,7 @@
       "Vac Population Risk: Disease":121137.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Allocated AstraZeneca":279800.0,
       "Vac Allocated Pfizer":57900.0,
@@ -617,7 +617,7 @@
       "Vac Population Risk: Disease":83210.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chonburi",
       "Vac Allocated AstraZeneca":975330.0,
       "Vac Allocated Pfizer":194280.0,
@@ -658,7 +658,7 @@
       "Vac Population Risk: Disease":163499.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Chumphon",
       "Vac Allocated AstraZeneca":104720.0,
       "Vac Allocated Pfizer":18942.0,
@@ -699,7 +699,7 @@
       "Vac Population Risk: Disease":43866.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Kalasin",
       "Vac Allocated AstraZeneca":210080.0,
       "Vac Allocated Pfizer":51360.0,
@@ -740,7 +740,7 @@
       "Vac Population Risk: Disease":73666.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Allocated AstraZeneca":172160.0,
       "Vac Allocated Pfizer":54540.0,
@@ -781,7 +781,7 @@
       "Vac Population Risk: Disease":49384.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Allocated AstraZeneca":178680.0,
       "Vac Allocated Pfizer":42864.0,
@@ -822,7 +822,7 @@
       "Vac Population Risk: Disease":65929.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Allocated AstraZeneca":399800.0,
       "Vac Allocated Pfizer":92460.0,
@@ -863,7 +863,7 @@
       "Vac Population Risk: Disease":184948.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Krabi",
       "Vac Allocated AstraZeneca":173400.0,
       "Vac Allocated Pfizer":34722.0,
@@ -904,7 +904,7 @@
       "Vac Population Risk: Disease":36927.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Lampang",
       "Vac Allocated AstraZeneca":153380.0,
       "Vac Allocated Pfizer":31500.0,
@@ -945,7 +945,7 @@
       "Vac Population Risk: Disease":63909.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Lamphun",
       "Vac Allocated AstraZeneca":86140.0,
       "Vac Allocated Pfizer":18900.0,
@@ -986,7 +986,7 @@
       "Vac Population Risk: Disease":35016.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Loei",
       "Vac Allocated AstraZeneca":150430.0,
       "Vac Allocated Pfizer":34020.0,
@@ -1027,7 +1027,7 @@
       "Vac Population Risk: Disease":54616.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Lopburi",
       "Vac Allocated AstraZeneca":170300.0,
       "Vac Allocated Pfizer":38880.0,
@@ -1068,7 +1068,7 @@
       "Vac Population Risk: Disease":61965.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Allocated AstraZeneca":46560.0,
       "Vac Allocated Pfizer":17220.0,
@@ -1109,7 +1109,7 @@
       "Vac Population Risk: Disease":18140.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Allocated AstraZeneca":207420.0,
       "Vac Allocated Pfizer":42300.0,
@@ -1150,7 +1150,7 @@
       "Vac Population Risk: Disease":74604.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Allocated AstraZeneca":113680.0,
       "Vac Allocated Pfizer":19080.0,
@@ -1191,7 +1191,7 @@
       "Vac Population Risk: Disease":27063.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Allocated AstraZeneca":98100.0,
       "Vac Allocated Pfizer":23682.0,
@@ -1232,7 +1232,7 @@
       "Vac Population Risk: Disease":33022.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Allocated AstraZeneca":286260.0,
       "Vac Allocated Pfizer":111780.0,
@@ -1273,7 +1273,7 @@
       "Vac Population Risk: Disease":84317.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Allocated AstraZeneca":145070.0,
       "Vac Allocated Pfizer":37260.0,
@@ -1314,7 +1314,7 @@
       "Vac Population Risk: Disease":52074.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Allocated AstraZeneca":777400.0,
       "Vac Allocated Pfizer":133740.0,
@@ -1355,7 +1355,7 @@
       "Vac Population Risk: Disease":217004.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Allocated AstraZeneca":252340.0,
       "Vac Allocated Pfizer":56700.0,
@@ -1396,7 +1396,7 @@
       "Vac Population Risk: Disease":88144.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Allocated AstraZeneca":354570.0,
       "Vac Allocated Pfizer":92070.0,
@@ -1437,7 +1437,7 @@
       "Vac Population Risk: Disease":124714.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nan",
       "Vac Allocated AstraZeneca":115720.0,
       "Vac Allocated Pfizer":22260.0,
@@ -1478,7 +1478,7 @@
       "Vac Population Risk: Disease":30372.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Allocated AstraZeneca":241360.0,
       "Vac Allocated Pfizer":117108.0,
@@ -1519,7 +1519,7 @@
       "Vac Population Risk: Disease":62661.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Allocated AstraZeneca":109670.0,
       "Vac Allocated Pfizer":26280.0,
@@ -1560,7 +1560,7 @@
       "Vac Population Risk: Disease":34099.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Allocated AstraZeneca":161410.0,
       "Vac Allocated Pfizer":29460.0,
@@ -1601,7 +1601,7 @@
       "Vac Population Risk: Disease":42190.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Allocated AstraZeneca":902016.0,
       "Vac Allocated Pfizer":245322.0,
@@ -1642,7 +1642,7 @@
       "Vac Population Risk: Disease":111345.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Allocated AstraZeneca":575160.0,
       "Vac Allocated Pfizer":101880.0,
@@ -1683,7 +1683,7 @@
       "Vac Population Risk: Disease":83021.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Pattani",
       "Vac Allocated AstraZeneca":199440.0,
       "Vac Allocated Pfizer":113328.0,
@@ -1724,7 +1724,7 @@
       "Vac Population Risk: Disease":51595.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Allocated AstraZeneca":157060.0,
       "Vac Allocated Pfizer":19140.0,
@@ -1765,7 +1765,7 @@
       "Vac Population Risk: Disease":24834.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Allocated AstraZeneca":115080.0,
       "Vac Allocated Pfizer":28800.0,
@@ -1806,7 +1806,7 @@
       "Vac Population Risk: Disease":54293.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phayao",
       "Vac Allocated AstraZeneca":132160.0,
       "Vac Allocated Pfizer":28380.0,
@@ -1847,7 +1847,7 @@
       "Vac Population Risk: Disease":34259.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Allocated AstraZeneca":238360.0,
       "Vac Allocated Pfizer":70560.0,
@@ -1888,7 +1888,7 @@
       "Vac Population Risk: Disease":79481.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Allocated AstraZeneca":213060.0,
       "Vac Allocated Pfizer":26802.0,
@@ -1929,7 +1929,7 @@
       "Vac Population Risk: Disease":39724.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phichit",
       "Vac Allocated AstraZeneca":106660.0,
       "Vac Allocated Pfizer":41820.0,
@@ -1970,7 +1970,7 @@
       "Vac Population Risk: Disease":50252.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Allocated AstraZeneca":213100.0,
       "Vac Allocated Pfizer":52218.0,
@@ -2011,7 +2011,7 @@
       "Vac Population Risk: Disease":75307.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Allocated AstraZeneca":259880.0,
       "Vac Allocated Pfizer":105900.0,
@@ -2052,7 +2052,7 @@
       "Vac Population Risk: Disease":80589.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phrae",
       "Vac Allocated AstraZeneca":113940.0,
       "Vac Allocated Pfizer":22260.0,
@@ -2093,7 +2093,7 @@
       "Vac Population Risk: Disease":32958.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Phuket",
       "Vac Allocated AstraZeneca":281150.0,
       "Vac Allocated Pfizer":30348.0,
@@ -2134,7 +2134,7 @@
       "Vac Population Risk: Disease":55357.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Allocated AstraZeneca":117160.0,
       "Vac Allocated Pfizer":34860.0,
@@ -2175,7 +2175,7 @@
       "Vac Population Risk: Disease":38051.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Allocated AstraZeneca":168890.0,
       "Vac Allocated Pfizer":34740.0,
@@ -2216,7 +2216,7 @@
       "Vac Population Risk: Disease":47033.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Ranong",
       "Vac Allocated AstraZeneca":124080.0,
       "Vac Allocated Pfizer":17760.0,
@@ -2257,7 +2257,7 @@
       "Vac Population Risk: Disease":16449.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Allocated AstraZeneca":259700.0,
       "Vac Allocated Pfizer":48060.0,
@@ -2298,7 +2298,7 @@
       "Vac Population Risk: Disease":77452.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Rayong",
       "Vac Allocated AstraZeneca":310000.0,
       "Vac Allocated Pfizer":43440.0,
@@ -2339,7 +2339,7 @@
       "Vac Population Risk: Disease":81936.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Roi Et",
       "Vac Allocated AstraZeneca":308340.0,
       "Vac Allocated Pfizer":82800.0,
@@ -2380,7 +2380,7 @@
       "Vac Population Risk: Disease":93206.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Allocated AstraZeneca":162640.0,
       "Vac Allocated Pfizer":30960.0,
@@ -2421,7 +2421,7 @@
       "Vac Population Risk: Disease":41060.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Allocated AstraZeneca":260560.0,
       "Vac Allocated Pfizer":50040.0,
@@ -2462,7 +2462,7 @@
       "Vac Population Risk: Disease":99568.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Allocated AstraZeneca":1164290.0,
       "Vac Allocated Pfizer":129480.0,
@@ -2503,7 +2503,7 @@
       "Vac Population Risk: Disease":94664.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Allocated AstraZeneca":569880.0,
       "Vac Allocated Pfizer":56460.0,
@@ -2544,7 +2544,7 @@
       "Vac Population Risk: Disease":95956.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Allocated AstraZeneca":56080.0,
       "Vac Allocated Pfizer":12360.0,
@@ -2585,7 +2585,7 @@
       "Vac Population Risk: Disease":15730.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Saraburi",
       "Vac Allocated AstraZeneca":174750.0,
       "Vac Allocated Pfizer":37560.0,
@@ -2626,7 +2626,7 @@
       "Vac Population Risk: Disease":76856.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Satun",
       "Vac Allocated AstraZeneca":70160.0,
       "Vac Allocated Pfizer":24060.0,
@@ -2667,7 +2667,7 @@
       "Vac Population Risk: Disease":29653.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Allocated AstraZeneca":65080.0,
       "Vac Allocated Pfizer":18900.0,
@@ -2708,7 +2708,7 @@
       "Vac Population Risk: Disease":21781.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Sisaket",
       "Vac Allocated AstraZeneca":280700.0,
       "Vac Allocated Pfizer":74400.0,
@@ -2749,7 +2749,7 @@
       "Vac Population Risk: Disease":74091.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Songkhla",
       "Vac Allocated AstraZeneca":405860.0,
       "Vac Allocated Pfizer":184584.0,
@@ -2790,7 +2790,7 @@
       "Vac Population Risk: Disease":118557.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Allocated AstraZeneca":144920.0,
       "Vac Allocated Pfizer":28140.0,
@@ -2831,7 +2831,7 @@
       "Vac Population Risk: Disease":51588.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Allocated AstraZeneca":234060.0,
       "Vac Allocated Pfizer":65940.0,
@@ -2872,7 +2872,7 @@
       "Vac Population Risk: Disease":83058.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Allocated AstraZeneca":385560.0,
       "Vac Allocated Pfizer":69960.0,
@@ -2913,7 +2913,7 @@
       "Vac Population Risk: Disease":117127.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Surin",
       "Vac Allocated AstraZeneca":413440.0,
       "Vac Allocated Pfizer":89940.0,
@@ -2954,7 +2954,7 @@
       "Vac Population Risk: Disease":81691.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Tak",
       "Vac Allocated AstraZeneca":181420.0,
       "Vac Allocated Pfizer":33840.0,
@@ -2995,7 +2995,7 @@
       "Vac Population Risk: Disease":32750.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Trang",
       "Vac Allocated AstraZeneca":138440.0,
       "Vac Allocated Pfizer":60540.0,
@@ -3036,7 +3036,7 @@
       "Vac Population Risk: Disease":57667.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Trat",
       "Vac Allocated AstraZeneca":60560.0,
       "Vac Allocated Pfizer":16020.0,
@@ -3077,7 +3077,7 @@
       "Vac Population Risk: Disease":18185.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Allocated AstraZeneca":420650.0,
       "Vac Allocated Pfizer":87624.0,
@@ -3118,7 +3118,7 @@
       "Vac Population Risk: Disease":143382.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Allocated AstraZeneca":308300.0,
       "Vac Allocated Pfizer":89700.0,
@@ -3159,7 +3159,7 @@
       "Vac Population Risk: Disease":117585.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Allocated AstraZeneca":99020.0,
       "Vac Allocated Pfizer":21960.0,
@@ -3200,7 +3200,7 @@
       "Vac Population Risk: Disease":30166.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Allocated AstraZeneca":155120.0,
       "Vac Allocated Pfizer":25260.0,
@@ -3241,7 +3241,7 @@
       "Vac Population Risk: Disease":33112.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Yala",
       "Vac Allocated AstraZeneca":168860.0,
       "Vac Allocated Pfizer":91668.0,
@@ -3282,7 +3282,7 @@
       "Vac Population Risk: Disease":48169.0
     },
     {
-      "Date":"2021-10-23T00:00:00.000Z",
+      "Date":"2021-10-23T00:00:00.000",
       "Province":"Yasothon",
       "Vac Allocated AstraZeneca":114600.0,
       "Vac Allocated Pfizer":23760.0,

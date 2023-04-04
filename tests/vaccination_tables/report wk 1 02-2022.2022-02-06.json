@@ -62,7 +62,7 @@
   },
   "data":[
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Group Over 60 1 Cum":265286.0,
       "Vac Group Over 60 2 Cum":247282.0,
@@ -77,7 +77,7 @@
       "Vac Population":1350927.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Group Over 60 1 Cum":433938.0,
       "Vac Group Over 60 2 Cum":420785.0,
@@ -92,7 +92,7 @@
       "Vac Population":2094476.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Nan",
       "Vac Group Over 60 1 Cum":108175.0,
       "Vac Group Over 60 2 Cum":104148.0,
@@ -107,7 +107,7 @@
       "Vac Population":429265.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Phayao",
       "Vac Group Over 60 1 Cum":107201.0,
       "Vac Group Over 60 2 Cum":104760.0,
@@ -122,7 +122,7 @@
       "Vac Population":428001.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Phrae",
       "Vac Group Over 60 1 Cum":106155.0,
       "Vac Group Over 60 2 Cum":100082.0,
@@ -137,7 +137,7 @@
       "Vac Population":389660.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Group Over 60 1 Cum":37750.0,
       "Vac Group Over 60 2 Cum":30905.0,
@@ -152,7 +152,7 @@
       "Vac Population":295354.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Lampang",
       "Vac Group Over 60 1 Cum":233952.0,
       "Vac Group Over 60 2 Cum":225860.0,
@@ -167,7 +167,7 @@
       "Vac Population":675931.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Lamphun",
       "Vac Group Over 60 1 Cum":101313.0,
       "Vac Group Over 60 2 Cum":96172.0,
@@ -182,7 +182,7 @@
       "Vac Population":410499.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Tak",
       "Vac Group Over 60 1 Cum":75687.0,
       "Vac Group Over 60 2 Cum":68324.0,
@@ -197,7 +197,7 @@
       "Vac Population":760935.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Group Over 60 1 Cum":159222.0,
       "Vac Group Over 60 2 Cum":153514.0,
@@ -212,7 +212,7 @@
       "Vac Population":841199.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Group Over 60 1 Cum":189640.0,
       "Vac Group Over 60 2 Cum":175512.0,
@@ -227,7 +227,7 @@
       "Vac Population":863657.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Group Over 60 1 Cum":122458.0,
       "Vac Group Over 60 2 Cum":113022.0,
@@ -242,7 +242,7 @@
       "Vac Population":516373.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Group Over 60 1 Cum":96867.0,
       "Vac Group Over 60 2 Cum":90623.0,
@@ -257,7 +257,7 @@
       "Vac Population":401527.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Group Over 60 1 Cum":137132.0,
       "Vac Group Over 60 2 Cum":130403.0,
@@ -272,7 +272,7 @@
       "Vac Population":620928.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Group Over 60 1 Cum":74962.0,
       "Vac Group Over 60 2 Cum":74021.0,
@@ -287,7 +287,7 @@
       "Vac Population":294762.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Group Over 60 1 Cum":189693.0,
       "Vac Group Over 60 2 Cum":184336.0,
@@ -302,7 +302,7 @@
       "Vac Population":959872.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Phichit",
       "Vac Group Over 60 1 Cum":110307.0,
       "Vac Group Over 60 2 Cum":106855.0,
@@ -317,7 +317,7 @@
       "Vac Population":460469.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Group Over 60 1 Cum":60804.0,
       "Vac Group Over 60 2 Cum":58818.0,
@@ -332,7 +332,7 @@
       "Vac Population":288568.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Group Over 60 1 Cum":49563.0,
       "Vac Group Over 60 2 Cum":49337.0,
@@ -347,7 +347,7 @@
       "Vac Population":249302.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Group Over 60 1 Cum":216855.0,
       "Vac Group Over 60 2 Cum":218091.0,
@@ -362,7 +362,7 @@
       "Vac Population":1375773.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Group Over 60 1 Cum":243392.0,
       "Vac Group Over 60 2 Cum":232440.0,
@@ -377,7 +377,7 @@
       "Vac Population":1503895.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Group Over 60 1 Cum":147809.0,
       "Vac Group Over 60 2 Cum":147322.0,
@@ -392,7 +392,7 @@
       "Vac Population":885214.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Lopburi",
       "Vac Group Over 60 1 Cum":126033.0,
       "Vac Group Over 60 2 Cum":116944.0,
@@ -407,7 +407,7 @@
       "Vac Population":728223.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Saraburi",
       "Vac Group Over 60 1 Cum":113979.0,
       "Vac Group Over 60 2 Cum":115941.0,
@@ -422,7 +422,7 @@
       "Vac Population":743079.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Group Over 60 1 Cum":45476.0,
       "Vac Group Over 60 2 Cum":44399.0,
@@ -437,7 +437,7 @@
       "Vac Population":201110.0
     },
     {
-      "Date":"2022-02-06T00:00:00.000Z",
+      "Date":"2022-02-06T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Group Over 60 1 Cum":58526.0,
       "Vac Group Over 60 2 Cum":58520.0,

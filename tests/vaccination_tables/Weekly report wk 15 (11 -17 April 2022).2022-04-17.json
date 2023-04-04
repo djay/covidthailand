@@ -62,7 +62,7 @@
   },
   "data":[
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Group Medical Staff 1 Cum":3074.0,
       "Vac Group Medical Staff 2 Cum":3050.0,
@@ -77,7 +77,7 @@
       "Vac Population":328456.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Group Medical Staff 1 Cum":2743.0,
       "Vac Group Medical Staff 2 Cum":2740.0,
@@ -92,7 +92,7 @@
       "Vac Population":254019.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Bangkok",
       "Vac Group Medical Staff 1 Cum":211658.0,
       "Vac Group Medical Staff 2 Cum":210208.0,
@@ -107,7 +107,7 @@
       "Vac Population":8411645.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Group Medical Staff 1 Cum":2741.0,
       "Vac Group Medical Staff 2 Cum":2728.0,
@@ -122,7 +122,7 @@
       "Vac Population":374306.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Buriram",
       "Vac Group Medical Staff 1 Cum":10151.0,
       "Vac Group Medical Staff 2 Cum":10094.0,
@@ -137,7 +137,7 @@
       "Vac Population":1356674.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Group Medical Staff 1 Cum":6813.0,
       "Vac Group Medical Staff 2 Cum":6714.0,
@@ -152,7 +152,7 @@
       "Vac Population":835173.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Group Medical Staff 1 Cum":3302.0,
       "Vac Group Medical Staff 2 Cum":3307.0,
@@ -167,7 +167,7 @@
       "Vac Population":294762.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Group Medical Staff 1 Cum":6940.0,
       "Vac Group Medical Staff 2 Cum":6919.0,
@@ -182,7 +182,7 @@
       "Vac Population":959452.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Group Medical Staff 1 Cum":7927.0,
       "Vac Group Medical Staff 2 Cum":7914.0,
@@ -197,7 +197,7 @@
       "Vac Population":584371.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Group Medical Staff 1 Cum":33030.0,
       "Vac Group Medical Staff 2 Cum":32920.0,
@@ -212,7 +212,7 @@
       "Vac Population":2094476.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Group Medical Staff 1 Cum":12382.0,
       "Vac Group Medical Staff 2 Cum":12396.0,
@@ -227,7 +227,7 @@
       "Vac Population":1350927.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chonburi",
       "Vac Group Medical Staff 1 Cum":28394.0,
       "Vac Group Medical Staff 2 Cum":28359.0,
@@ -242,7 +242,7 @@
       "Vac Population":2379307.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Chumphon",
       "Vac Group Medical Staff 1 Cum":4858.0,
       "Vac Group Medical Staff 2 Cum":4853.0,
@@ -257,7 +257,7 @@
       "Vac Population":535164.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Kalasin",
       "Vac Group Medical Staff 1 Cum":7076.0,
       "Vac Group Medical Staff 2 Cum":7052.0,
@@ -272,7 +272,7 @@
       "Vac Population":835574.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Group Medical Staff 1 Cum":4990.0,
       "Vac Group Medical Staff 2 Cum":4960.0,
@@ -287,7 +287,7 @@
       "Vac Population":620928.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Group Medical Staff 1 Cum":6297.0,
       "Vac Group Medical Staff 2 Cum":6272.0,
@@ -302,7 +302,7 @@
       "Vac Population":917296.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Group Medical Staff 1 Cum":25481.0,
       "Vac Group Medical Staff 2 Cum":25386.0,
@@ -317,7 +317,7 @@
       "Vac Population":1688242.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Krabi",
       "Vac Group Medical Staff 1 Cum":4034.0,
       "Vac Group Medical Staff 2 Cum":4012.0,
@@ -332,7 +332,7 @@
       "Vac Population":484378.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Lampang",
       "Vac Group Medical Staff 1 Cum":7708.0,
       "Vac Group Medical Staff 2 Cum":7712.0,
@@ -347,7 +347,7 @@
       "Vac Population":675931.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Lamphun",
       "Vac Group Medical Staff 1 Cum":4318.0,
       "Vac Group Medical Staff 2 Cum":4310.0,
@@ -362,7 +362,7 @@
       "Vac Population":410499.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Loei",
       "Vac Group Medical Staff 1 Cum":5582.0,
       "Vac Group Medical Staff 2 Cum":5574.0,
@@ -377,7 +377,7 @@
       "Vac Population":609874.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Lopburi",
       "Vac Group Medical Staff 1 Cum":7024.0,
       "Vac Group Medical Staff 2 Cum":7040.0,
@@ -392,7 +392,7 @@
       "Vac Population":728223.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Group Medical Staff 1 Cum":2474.0,
       "Vac Group Medical Staff 2 Cum":2468.0,
@@ -407,7 +407,7 @@
       "Vac Population":295354.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Group Medical Staff 1 Cum":8242.0,
       "Vac Group Medical Staff 2 Cum":8243.0,
@@ -422,7 +422,7 @@
       "Vac Population":833804.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Group Medical Staff 1 Cum":2741.0,
       "Vac Group Medical Staff 2 Cum":2725.0,
@@ -437,7 +437,7 @@
       "Vac Population":321765.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Group Medical Staff 1 Cum":4953.0,
       "Vac Group Medical Staff 2 Cum":4950.0,
@@ -452,7 +452,7 @@
       "Vac Population":249302.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Group Medical Staff 1 Cum":10905.0,
       "Vac Group Medical Staff 2 Cum":10771.0,
@@ -467,7 +467,7 @@
       "Vac Population":866693.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Group Medical Staff 1 Cum":4207.0,
       "Vac Group Medical Staff 2 Cum":4222.0,
@@ -482,7 +482,7 @@
       "Vac Population":622283.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Group Medical Staff 1 Cum":25606.0,
       "Vac Group Medical Staff 2 Cum":25579.0,
@@ -497,7 +497,7 @@
       "Vac Population":2621161.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Group Medical Staff 1 Cum":10371.0,
       "Vac Group Medical Staff 2 Cum":10378.0,
@@ -512,7 +512,7 @@
       "Vac Population":959872.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Group Medical Staff 1 Cum":13256.0,
       "Vac Group Medical Staff 2 Cum":13223.0,
@@ -527,7 +527,7 @@
       "Vac Population":1527054.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nan",
       "Vac Group Medical Staff 1 Cum":4880.0,
       "Vac Group Medical Staff 2 Cum":4883.0,
@@ -542,7 +542,7 @@
       "Vac Population":429265.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Group Medical Staff 1 Cum":6299.0,
       "Vac Group Medical Staff 2 Cum":6270.0,
@@ -557,7 +557,7 @@
       "Vac Population":790827.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Group Medical Staff 1 Cum":2862.0,
       "Vac Group Medical Staff 2 Cum":2823.0,
@@ -572,7 +572,7 @@
       "Vac Population":444679.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Group Medical Staff 1 Cum":4459.0,
       "Vac Group Medical Staff 2 Cum":4437.0,
@@ -587,7 +587,7 @@
       "Vac Population":470636.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Group Medical Staff 1 Cum":28169.0,
       "Vac Group Medical Staff 2 Cum":27755.0,
@@ -602,7 +602,7 @@
       "Vac Population":1375773.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Group Medical Staff 1 Cum":17255.0,
       "Vac Group Medical Staff 2 Cum":17061.0,
@@ -617,7 +617,7 @@
       "Vac Population":1503895.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Pattani",
       "Vac Group Medical Staff 1 Cum":5703.0,
       "Vac Group Medical Staff 2 Cum":5612.0,
@@ -632,7 +632,7 @@
       "Vac Population":719085.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Group Medical Staff 1 Cum":2708.0,
       "Vac Group Medical Staff 2 Cum":2709.0,
@@ -647,7 +647,7 @@
       "Vac Population":277412.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Group Medical Staff 1 Cum":5424.0,
       "Vac Group Medical Staff 2 Cum":5414.0,
@@ -662,7 +662,7 @@
       "Vac Population":489911.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phayao",
       "Vac Group Medical Staff 1 Cum":5104.0,
       "Vac Group Medical Staff 2 Cum":5103.0,
@@ -677,7 +677,7 @@
       "Vac Population":428001.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Group Medical Staff 1 Cum":6561.0,
       "Vac Group Medical Staff 2 Cum":6562.0,
@@ -692,7 +692,7 @@
       "Vac Population":863657.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Group Medical Staff 1 Cum":5310.0,
       "Vac Group Medical Staff 2 Cum":5297.0,
@@ -707,7 +707,7 @@
       "Vac Population":479824.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phichit",
       "Vac Group Medical Staff 1 Cum":4974.0,
       "Vac Group Medical Staff 2 Cum":4978.0,
@@ -722,7 +722,7 @@
       "Vac Population":460469.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Group Medical Staff 1 Cum":12793.0,
       "Vac Group Medical Staff 2 Cum":12780.0,
@@ -737,7 +737,7 @@
       "Vac Population":841199.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Group Medical Staff 1 Cum":6143.0,
       "Vac Group Medical Staff 2 Cum":6107.0,
@@ -752,7 +752,7 @@
       "Vac Population":885214.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phrae",
       "Vac Group Medical Staff 1 Cum":4612.0,
       "Vac Group Medical Staff 2 Cum":4605.0,
@@ -767,7 +767,7 @@
       "Vac Population":389660.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Phuket",
       "Vac Group Medical Staff 1 Cum":7387.0,
       "Vac Group Medical Staff 2 Cum":7383.0,
@@ -782,7 +782,7 @@
       "Vac Population":539183.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Group Medical Staff 1 Cum":4805.0,
       "Vac Group Medical Staff 2 Cum":4818.0,
@@ -797,7 +797,7 @@
       "Vac Population":533086.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Group Medical Staff 1 Cum":6056.0,
       "Vac Group Medical Staff 2 Cum":6039.0,
@@ -812,7 +812,7 @@
       "Vac Population":584731.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Ranong",
       "Vac Group Medical Staff 1 Cum":1954.0,
       "Vac Group Medical Staff 2 Cum":1957.0,
@@ -827,7 +827,7 @@
       "Vac Population":230940.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Group Medical Staff 1 Cum":8209.0,
       "Vac Group Medical Staff 2 Cum":8242.0,
@@ -842,7 +842,7 @@
       "Vac Population":890224.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Rayong",
       "Vac Group Medical Staff 1 Cum":7699.0,
       "Vac Group Medical Staff 2 Cum":7690.0,
@@ -857,7 +857,7 @@
       "Vac Population":932307.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Roi Et",
       "Vac Group Medical Staff 1 Cum":8920.0,
       "Vac Group Medical Staff 2 Cum":8906.0,
@@ -872,7 +872,7 @@
       "Vac Population":1100153.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Group Medical Staff 1 Cum":4202.0,
       "Vac Group Medical Staff 2 Cum":4188.0,
@@ -887,7 +887,7 @@
       "Vac Population":511839.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Group Medical Staff 1 Cum":8771.0,
       "Vac Group Medical Staff 2 Cum":8742.0,
@@ -902,7 +902,7 @@
       "Vac Population":1008971.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Group Medical Staff 1 Cum":16724.0,
       "Vac Group Medical Staff 2 Cum":16543.0,
@@ -917,7 +917,7 @@
       "Vac Population":1807836.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Group Medical Staff 1 Cum":7689.0,
       "Vac Group Medical Staff 2 Cum":7735.0,
@@ -932,7 +932,7 @@
       "Vac Population":1185211.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Group Medical Staff 1 Cum":1796.0,
       "Vac Group Medical Staff 2 Cum":1797.0,
@@ -947,7 +947,7 @@
       "Vac Population":188775.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Saraburi",
       "Vac Group Medical Staff 1 Cum":8584.0,
       "Vac Group Medical Staff 2 Cum":8598.0,
@@ -962,7 +962,7 @@
       "Vac Population":743079.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Satun",
       "Vac Group Medical Staff 1 Cum":2824.0,
       "Vac Group Medical Staff 2 Cum":2813.0,
@@ -977,7 +977,7 @@
       "Vac Population":311210.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Group Medical Staff 1 Cum":2434.0,
       "Vac Group Medical Staff 2 Cum":2435.0,
@@ -992,7 +992,7 @@
       "Vac Population":201110.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Sisaket",
       "Vac Group Medical Staff 1 Cum":8151.0,
       "Vac Group Medical Staff 2 Cum":8152.0,
@@ -1007,7 +1007,7 @@
       "Vac Population":1233832.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Songkhla",
       "Vac Group Medical Staff 1 Cum":46570.0,
       "Vac Group Medical Staff 2 Cum":33904.0,
@@ -1022,7 +1022,7 @@
       "Vac Population":1519301.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Group Medical Staff 1 Cum":3929.0,
       "Vac Group Medical Staff 2 Cum":3929.0,
@@ -1037,7 +1037,7 @@
       "Vac Population":516373.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Group Medical Staff 1 Cum":6911.0,
       "Vac Group Medical Staff 2 Cum":6919.0,
@@ -1052,7 +1052,7 @@
       "Vac Population":803801.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Group Medical Staff 1 Cum":13994.0,
       "Vac Group Medical Staff 2 Cum":13952.0,
@@ -1067,7 +1067,7 @@
       "Vac Population":1235744.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Surin",
       "Vac Group Medical Staff 1 Cum":9849.0,
       "Vac Group Medical Staff 2 Cum":9809.0,
@@ -1082,7 +1082,7 @@
       "Vac Population":1161635.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Tak",
       "Vac Group Medical Staff 1 Cum":7226.0,
       "Vac Group Medical Staff 2 Cum":7173.0,
@@ -1097,7 +1097,7 @@
       "Vac Population":760935.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Trang",
       "Vac Group Medical Staff 1 Cum":6684.0,
       "Vac Group Medical Staff 2 Cum":6691.0,
@@ -1112,7 +1112,7 @@
       "Vac Population":621514.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Trat",
       "Vac Group Medical Staff 1 Cum":2535.0,
       "Vac Group Medical Staff 2 Cum":2536.0,
@@ -1127,7 +1127,7 @@
       "Vac Population":239901.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Group Medical Staff 1 Cum":15987.0,
       "Vac Group Medical Staff 2 Cum":16010.0,
@@ -1142,7 +1142,7 @@
       "Vac Population":1675834.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Group Medical Staff 1 Cum":15256.0,
       "Vac Group Medical Staff 2 Cum":15266.0,
@@ -1157,7 +1157,7 @@
       "Vac Population":1433871.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Group Medical Staff 1 Cum":3116.0,
       "Vac Group Medical Staff 2 Cum":3129.0,
@@ -1172,7 +1172,7 @@
       "Vac Population":288568.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Group Medical Staff 1 Cum":5469.0,
       "Vac Group Medical Staff 2 Cum":5465.0,
@@ -1187,7 +1187,7 @@
       "Vac Population":401527.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Yala",
       "Vac Group Medical Staff 1 Cum":5276.0,
       "Vac Group Medical Staff 2 Cum":5240.0,
@@ -1202,7 +1202,7 @@
       "Vac Population":565448.0
     },
     {
-      "Date":"2022-04-17T00:00:00.000Z",
+      "Date":"2022-04-17T00:00:00.000",
       "Province":"Yasothon",
       "Vac Group Medical Staff 1 Cum":3867.0,
       "Vac Group Medical Staff 2 Cum":3854.0,
