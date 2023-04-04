@@ -22,72 +22,72 @@
   },
   "data":[
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Bangkok",
       "Deaths":8
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Nonthaburi",
       "Deaths":5
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Lamphun",
       "Deaths":2
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Samut Prakan",
       "Deaths":2
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Chonburi",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Pathum Thani",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Buriram",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Surat Thani",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Chai Nat",
       "Deaths":1
     },
     {
-      "Date":"2021-05-04T00:00:00.000Z",
+      "Date":"2021-05-04T00:00:00.000",
       "Province":"Nan",
       "Deaths":1
     }
