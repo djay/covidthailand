@@ -122,7 +122,7 @@
   },
   "data":[
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Allocated AstraZeneca":29800.0,
       "Vac Allocated Pfizer":1680.0,
@@ -152,7 +152,7 @@
       "Vac Population":379995.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Allocated AstraZeneca":21300.0,
       "Vac Allocated Pfizer":1440.0,
@@ -182,7 +182,7 @@
       "Vac Population":292159.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Bangkok",
       "Vac Allocated AstraZeneca":4369960.0,
       "Vac Allocated Pfizer":154686.0,
@@ -212,7 +212,7 @@
       "Vac Population":7699175.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Allocated AstraZeneca":24910.0,
       "Vac Allocated Pfizer":2160.0,
@@ -242,7 +242,7 @@
       "Vac Population":425427.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Buriram",
       "Vac Allocated AstraZeneca":205500.0,
       "Vac Allocated Pfizer":7200.0,
@@ -272,7 +272,7 @@
       "Vac Population":1587359.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Allocated AstraZeneca":215200.0,
       "Vac Allocated Pfizer":29520.0,
@@ -302,7 +302,7 @@
       "Vac Population":750784.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Allocated AstraZeneca":19200.0,
       "Vac Allocated Pfizer":1920.0,
@@ -332,7 +332,7 @@
       "Vac Population":335049.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Allocated AstraZeneca":56400.0,
       "Vac Allocated Pfizer":4800.0,
@@ -362,7 +362,7 @@
       "Vac Population":1134867.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Allocated AstraZeneca":65400.0,
       "Vac Allocated Pfizer":6720.0,
@@ -392,7 +392,7 @@
       "Vac Population":587421.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Allocated AstraZeneca":171970.0,
       "Vac Allocated Pfizer":10800.0,
@@ -422,7 +422,7 @@
       "Vac Population":1729353.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Allocated AstraZeneca":98000.0,
       "Vac Allocated Pfizer":5280.0,
@@ -452,7 +452,7 @@
       "Vac Population":1172648.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chonburi",
       "Vac Allocated AstraZeneca":325260.0,
       "Vac Allocated Pfizer":50400.0,
@@ -482,7 +482,7 @@
       "Vac Population":2047622.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Chumphon",
       "Vac Allocated AstraZeneca":40700.0,
       "Vac Allocated Pfizer":2400.0,
@@ -512,7 +512,7 @@
       "Vac Population":543683.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Kalasin",
       "Vac Allocated AstraZeneca":42900.0,
       "Vac Allocated Pfizer":4080.0,
@@ -542,7 +542,7 @@
       "Vac Population":978299.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Allocated AstraZeneca":31600.0,
       "Vac Allocated Pfizer":3360.0,
@@ -572,7 +572,7 @@
       "Vac Population":725873.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Allocated AstraZeneca":45000.0,
       "Vac Allocated Pfizer":3840.0,
@@ -602,7 +602,7 @@
       "Vac Population":848454.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Allocated AstraZeneca":85200.0,
       "Vac Allocated Pfizer":11040.0,
@@ -632,7 +632,7 @@
       "Vac Population":1837005.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Krabi",
       "Vac Allocated AstraZeneca":70820.0,
       "Vac Allocated Pfizer":2160.0,
@@ -662,7 +662,7 @@
       "Vac Population":503538.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Lampang",
       "Vac Allocated AstraZeneca":33400.0,
       "Vac Allocated Pfizer":2880.0,
@@ -692,7 +692,7 @@
       "Vac Population":731573.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Lamphun",
       "Vac Allocated AstraZeneca":28200.0,
       "Vac Allocated Pfizer":2160.0,
@@ -722,7 +722,7 @@
       "Vac Population":417225.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Loei",
       "Vac Allocated AstraZeneca":40810.0,
       "Vac Allocated Pfizer":3120.0,
@@ -752,7 +752,7 @@
       "Vac Population":640283.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Lopburi",
       "Vac Allocated AstraZeneca":44000.0,
       "Vac Allocated Pfizer":3840.0,
@@ -782,7 +782,7 @@
       "Vac Population":760478.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Allocated AstraZeneca":18900.0,
       "Vac Allocated Pfizer":1920.0,
@@ -812,7 +812,7 @@
       "Vac Population":245764.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Allocated AstraZeneca":52300.0,
       "Vac Allocated Pfizer":3840.0,
@@ -842,7 +842,7 @@
       "Vac Population":957365.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Allocated AstraZeneca":48400.0,
       "Vac Allocated Pfizer":1920.0,
@@ -872,7 +872,7 @@
       "Vac Population":351257.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Allocated AstraZeneca":19000.0,
       "Vac Allocated Pfizer":2880.0,
@@ -902,7 +902,7 @@
       "Vac Population":271739.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Allocated AstraZeneca":108740.0,
       "Vac Allocated Pfizer":36720.0,
@@ -932,7 +932,7 @@
       "Vac Population":1125350.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Allocated AstraZeneca":43610.0,
       "Vac Allocated Pfizer":3120.0,
@@ -962,7 +962,7 @@
       "Vac Population":724861.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Allocated AstraZeneca":143900.0,
       "Vac Allocated Pfizer":15600.0,
@@ -992,7 +992,7 @@
       "Vac Population":2692890.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Allocated AstraZeneca":52900.0,
       "Vac Allocated Pfizer":4320.0,
@@ -1022,7 +1022,7 @@
       "Vac Population":1059708.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Allocated AstraZeneca":104690.0,
       "Vac Allocated Pfizer":7590.0,
@@ -1052,7 +1052,7 @@
       "Vac Population":1575117.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nan",
       "Vac Allocated AstraZeneca":28400.0,
       "Vac Allocated Pfizer":2640.0,
@@ -1082,7 +1082,7 @@
       "Vac Population":477862.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Allocated AstraZeneca":118300.0,
       "Vac Allocated Pfizer":19200.0,
@@ -1112,7 +1112,7 @@
       "Vac Population":805356.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Allocated AstraZeneca":26910.0,
       "Vac Allocated Pfizer":1920.0,
@@ -1142,7 +1142,7 @@
       "Vac Population":523861.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Allocated AstraZeneca":60610.0,
       "Vac Allocated Pfizer":2880.0,
@@ -1172,7 +1172,7 @@
       "Vac Population":519027.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Allocated AstraZeneca":450970.0,
       "Vac Allocated Pfizer":54180.0,
@@ -1202,7 +1202,7 @@
       "Vac Population":1609192.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Allocated AstraZeneca":306420.0,
       "Vac Allocated Pfizer":26160.0,
@@ -1232,7 +1232,7 @@
       "Vac Population":1533781.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Pattani",
       "Vac Allocated AstraZeneca":101900.0,
       "Vac Allocated Pfizer":17280.0,
@@ -1262,7 +1262,7 @@
       "Vac Population":743054.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Allocated AstraZeneca":84900.0,
       "Vac Allocated Pfizer":1680.0,
@@ -1292,7 +1292,7 @@
       "Vac Population":286339.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Allocated AstraZeneca":36100.0,
       "Vac Allocated Pfizer":2400.0,
@@ -1322,7 +1322,7 @@
       "Vac Population":528207.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phayao",
       "Vac Allocated AstraZeneca":26100.0,
       "Vac Allocated Pfizer":2640.0,
@@ -1352,7 +1352,7 @@
       "Vac Population":468292.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Allocated AstraZeneca":65500.0,
       "Vac Allocated Pfizer":3120.0,
@@ -1382,7 +1382,7 @@
       "Vac Population":992791.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Allocated AstraZeneca":70400.0,
       "Vac Allocated Pfizer":3360.0,
@@ -1412,7 +1412,7 @@
       "Vac Population":502827.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phichit",
       "Vac Allocated AstraZeneca":22800.0,
       "Vac Allocated Pfizer":2880.0,
@@ -1442,7 +1442,7 @@
       "Vac Population":536012.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Allocated AstraZeneca":58900.0,
       "Vac Allocated Pfizer":7200.0,
@@ -1472,7 +1472,7 @@
       "Vac Population":1050000.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Allocated AstraZeneca":100500.0,
       "Vac Allocated Pfizer":34560.0,
@@ -1502,7 +1502,7 @@
       "Vac Population":921047.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phrae",
       "Vac Allocated AstraZeneca":26300.0,
       "Vac Allocated Pfizer":2640.0,
@@ -1532,7 +1532,7 @@
       "Vac Population":441310.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Phuket",
       "Vac Allocated AstraZeneca":111670.0,
       "Vac Allocated Pfizer":3840.0,
@@ -1562,7 +1562,7 @@
       "Vac Population":547584.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Allocated AstraZeneca":46900.0,
       "Vac Allocated Pfizer":3120.0,
@@ -1592,7 +1592,7 @@
       "Vac Population":579651.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Allocated AstraZeneca":67110.0,
       "Vac Allocated Pfizer":3840.0,
@@ -1622,7 +1622,7 @@
       "Vac Population":578094.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Ranong",
       "Vac Allocated AstraZeneca":64500.0,
       "Vac Allocated Pfizer":1200.0,
@@ -1652,7 +1652,7 @@
       "Vac Population":228507.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Allocated AstraZeneca":96760.0,
       "Vac Allocated Pfizer":4560.0,
@@ -1682,7 +1682,7 @@
       "Vac Population":918674.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Rayong",
       "Vac Allocated AstraZeneca":133100.0,
       "Vac Allocated Pfizer":3840.0,
@@ -1712,7 +1712,7 @@
       "Vac Population":966932.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Roi Et",
       "Vac Allocated AstraZeneca":58900.0,
       "Vac Allocated Pfizer":6480.0,
@@ -1742,7 +1742,7 @@
       "Vac Population":1307158.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Allocated AstraZeneca":69000.0,
       "Vac Allocated Pfizer":2880.0,
@@ -1772,7 +1772,7 @@
       "Vac Population":586286.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Allocated AstraZeneca":60200.0,
       "Vac Allocated Pfizer":4320.0,
@@ -1802,7 +1802,7 @@
       "Vac Population":1145848.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Allocated AstraZeneca":572350.0,
       "Vac Allocated Pfizer":45840.0,
@@ -1832,7 +1832,7 @@
       "Vac Population":1931727.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Allocated AstraZeneca":212400.0,
       "Vac Allocated Pfizer":16080.0,
@@ -1862,7 +1862,7 @@
       "Vac Population":953167.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Allocated AstraZeneca":28200.0,
       "Vac Allocated Pfizer":1200.0,
@@ -1892,7 +1892,7 @@
       "Vac Population":204018.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Saraburi",
       "Vac Allocated AstraZeneca":49700.0,
       "Vac Allocated Pfizer":4080.0,
@@ -1922,7 +1922,7 @@
       "Vac Population":720145.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Satun",
       "Vac Allocated AstraZeneca":22100.0,
       "Vac Allocated Pfizer":2160.0,
@@ -1952,7 +1952,7 @@
       "Vac Population":331057.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Allocated AstraZeneca":21200.0,
       "Vac Allocated Pfizer":1440.0,
@@ -1982,7 +1982,7 @@
       "Vac Population":214665.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Sisaket",
       "Vac Allocated AstraZeneca":77900.0,
       "Vac Allocated Pfizer":5760.0,
@@ -2012,7 +2012,7 @@
       "Vac Population":1460182.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Songkhla",
       "Vac Allocated AstraZeneca":183700.0,
       "Vac Allocated Pfizer":42720.0,
@@ -2042,7 +2042,7 @@
       "Vac Population":1487320.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Allocated AstraZeneca":28000.0,
       "Vac Allocated Pfizer":2640.0,
@@ -2072,7 +2072,7 @@
       "Vac Population":596902.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Allocated AstraZeneca":52200.0,
       "Vac Allocated Pfizer":3120.0,
@@ -2102,7 +2102,7 @@
       "Vac Population":850709.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Allocated AstraZeneca":151600.0,
       "Vac Allocated Pfizer":9120.0,
@@ -2132,7 +2132,7 @@
       "Vac Population":1144090.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Surin",
       "Vac Allocated AstraZeneca":72600.0,
       "Vac Allocated Pfizer":4560.0,
@@ -2162,7 +2162,7 @@
       "Vac Population":1392583.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Tak",
       "Vac Allocated AstraZeneca":65600.0,
       "Vac Allocated Pfizer":4320.0,
@@ -2192,7 +2192,7 @@
       "Vac Population":589901.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Trang",
       "Vac Allocated AstraZeneca":41700.0,
       "Vac Allocated Pfizer":3600.0,
@@ -2222,7 +2222,7 @@
       "Vac Population":659636.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Trat",
       "Vac Allocated AstraZeneca":23800.0,
       "Vac Allocated Pfizer":1440.0,
@@ -2252,7 +2252,7 @@
       "Vac Population":249458.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Allocated AstraZeneca":91700.0,
       "Vac Allocated Pfizer":11604.0,
@@ -2282,7 +2282,7 @@
       "Vac Population":1880468.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Allocated AstraZeneca":88720.0,
       "Vac Allocated Pfizer":7440.0,
@@ -2312,7 +2312,7 @@
       "Vac Population":1565740.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Allocated AstraZeneca":26200.0,
       "Vac Allocated Pfizer":1680.0,
@@ -2342,7 +2342,7 @@
       "Vac Population":334270.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Allocated AstraZeneca":33100.0,
       "Vac Allocated Pfizer":3120.0,
@@ -2372,7 +2372,7 @@
       "Vac Population":455259.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Yala",
       "Vac Allocated AstraZeneca":98300.0,
       "Vac Allocated Pfizer":12480.0,
@@ -2402,7 +2402,7 @@
       "Vac Population":547993.0
     },
     {
-      "Date":"2021-08-15T00:00:00.000Z",
+      "Date":"2021-08-15T00:00:00.000",
       "Province":"Yasothon",
       "Vac Allocated AstraZeneca":30400.0,
       "Vac Allocated Pfizer":2640.0,

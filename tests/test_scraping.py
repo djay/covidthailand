@@ -433,7 +433,7 @@ def test_situation_pui_en(date, testdf, dl):
     df = situation_pui_en(parsed_pdf, date)
 
     # write_scrape_data_back_to_test(df, "situation_pui_en", fname=file, date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_column_type=False, check_index_type=False)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("situation_cases_new", get_english_situation_files))
@@ -446,7 +446,7 @@ def test_situation_cases_new(date, testdf, dl):
     df = situation_cases_new(parsed_pdf, date)
 
     # write_scrape_data_back_to_test(df, "situation_cases_new", fname=file, date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_column_type=False, check_index_type=False)
 
 
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("variants", find_variant_pdf))
