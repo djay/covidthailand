@@ -659,7 +659,8 @@ def vaccination_reports_files2(check=0,
     # or https://ddc.moph.go.th/dcd/pagecontent.php?page=643&dept=dcd
 
     # more reliable from dec 2021 and updated quicker
-    hasyear = re.compile("(2564|2565|2566|2567)")
+    hasyear = re.compile(r"(?<!\.) *256[4-7]")
+    # re.compile(r"(ประจำปีงบประมาณ|งบประมาณ)\w*25")
     # if not check:
     #     use_proxy = False
     # else:
@@ -672,9 +673,9 @@ def vaccination_reports_files2(check=0,
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
     link_check = 1 if check else 0
-    years = web_links(base1, ext="dept=dcd", match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout)
-    months = (link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
-              match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout))
+    years = list(web_links(base1, ext="dept=dcd", match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout))
+    months = [link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
+              match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout)]
     links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=link_check, proxy=use_proxy, timeout=timeout) if (
         date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
 
@@ -1232,8 +1233,8 @@ def vac_slides():
 
 
 if __name__ == '__main__':
-    slides = vac_slides()
     reports, provs = vaccination_reports()
+    slides = vac_slides()
     vac = export_vaccinations(reports, provs, slides, do_export=True)
 
     df = import_csv("combined", index=["Date"], date_cols=["Date"])
