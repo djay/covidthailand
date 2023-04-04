@@ -415,7 +415,7 @@ def save_excess_death_plots(df):
             res['Deaths All Month'] = months[year]
             for y in range(2012, months.columns.max() + 1):
                 res[f'Deaths {y}'] = months[y]
-            res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str) + '-1',
+            res['Date'] = pd.to_datetime(f'{year}-' + res.index.astype(int).astype(str),
                                          format='%Y-%m') + MonthEnd(0)
             result = result.combine_first(res.reset_index().set_index("Date"))
         result = result.dropna(subset=['P-Score'])
