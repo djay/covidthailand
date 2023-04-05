@@ -290,7 +290,12 @@ def dash_province_weekly(file="moph_province_weekly"):
     # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
     ts = tableauscraper.TableauScraper()
-    ts.loads(url)
+    try:
+        ts.loads(url)
+    except AttributeError as e:
+        # Somethign is messed up about the page returned to scrape
+        logger.error("{} MOPH Dashboard: Can't scrape {}", e)
+        return df
     provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
     for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
