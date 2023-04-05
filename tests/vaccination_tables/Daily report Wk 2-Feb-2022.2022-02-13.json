@@ -46,7 +46,7 @@
   },
   "data":[
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Given 1 Cum":227379.0,
       "Vac Given 1 %":69.2,
@@ -57,7 +57,7 @@
       "Vac Population":328456.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Given 1 Cum":166634.0,
       "Vac Given 1 %":65.6,
@@ -68,7 +68,7 @@
       "Vac Population":254019.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Bangkok",
       "Vac Given 1 Cum":9450950.0,
       "Vac Given 1 %":112.4,
@@ -79,7 +79,7 @@
       "Vac Population":8411645.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Given 1 Cum":235845.0,
       "Vac Given 1 %":63.0,
@@ -90,7 +90,7 @@
       "Vac Population":374306.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Buriram",
       "Vac Given 1 Cum":991866.0,
       "Vac Given 1 %":73.1,
@@ -101,7 +101,7 @@
       "Vac Population":1356674.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Given 1 Cum":676134.0,
       "Vac Given 1 %":81.0,
@@ -112,7 +112,7 @@
       "Vac Population":835173.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Given 1 Cum":194032.0,
       "Vac Given 1 %":65.8,
@@ -123,7 +123,7 @@
       "Vac Population":294762.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Given 1 Cum":644772.0,
       "Vac Given 1 %":67.2,
@@ -134,7 +134,7 @@
       "Vac Population":959452.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Given 1 Cum":439809.0,
       "Vac Given 1 %":75.3,
@@ -145,7 +145,7 @@
       "Vac Population":584371.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Given 1 Cum":1581316.0,
       "Vac Given 1 %":75.5,
@@ -156,7 +156,7 @@
       "Vac Population":2094476.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Given 1 Cum":893311.0,
       "Vac Given 1 %":66.1,
@@ -167,7 +167,7 @@
       "Vac Population":1350927.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chonburi",
       "Vac Given 1 Cum":1957781.0,
       "Vac Given 1 %":82.3,
@@ -178,7 +178,7 @@
       "Vac Population":2379307.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Chumphon",
       "Vac Given 1 Cum":389873.0,
       "Vac Given 1 %":72.9,
@@ -189,7 +189,7 @@
       "Vac Population":535164.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Kalasin",
       "Vac Given 1 Cum":545255.0,
       "Vac Given 1 %":65.3,
@@ -200,7 +200,7 @@
       "Vac Population":835574.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Given 1 Cum":412063.0,
       "Vac Given 1 %":66.4,
@@ -211,7 +211,7 @@
       "Vac Population":620928.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Given 1 Cum":519255.0,
       "Vac Given 1 %":56.6,
@@ -222,7 +222,7 @@
       "Vac Population":917296.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Given 1 Cum":1175258.0,
       "Vac Given 1 %":69.6,
@@ -233,7 +233,7 @@
       "Vac Population":1688242.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Krabi",
       "Vac Given 1 Cum":364811.0,
       "Vac Given 1 %":75.3,
@@ -244,7 +244,7 @@
       "Vac Population":484378.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Lampang",
       "Vac Given 1 Cum":483854.0,
       "Vac Given 1 %":71.6,
@@ -255,7 +255,7 @@
       "Vac Population":675931.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Lamphun",
       "Vac Given 1 Cum":330182.0,
       "Vac Given 1 %":80.4,
@@ -266,7 +266,7 @@
       "Vac Population":410499.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Loei",
       "Vac Given 1 Cum":412321.0,
       "Vac Given 1 %":67.6,
@@ -277,7 +277,7 @@
       "Vac Population":609874.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Lopburi",
       "Vac Given 1 Cum":423520.0,
       "Vac Given 1 %":58.2,
@@ -288,7 +288,7 @@
       "Vac Population":728223.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Given 1 Cum":169524.0,
       "Vac Given 1 %":57.4,
@@ -299,7 +299,7 @@
       "Vac Population":295354.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Given 1 Cum":546399.0,
       "Vac Given 1 %":65.5,
@@ -310,7 +310,7 @@
       "Vac Population":833804.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Given 1 Cum":226037.0,
       "Vac Given 1 %":70.2,
@@ -321,7 +321,7 @@
       "Vac Population":321765.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Given 1 Cum":155164.0,
       "Vac Given 1 %":62.2,
@@ -332,7 +332,7 @@
       "Vac Population":249302.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Given 1 Cum":662533.0,
       "Vac Given 1 %":76.4,
@@ -343,7 +343,7 @@
       "Vac Population":866693.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Given 1 Cum":417855.0,
       "Vac Given 1 %":67.1,
@@ -354,7 +354,7 @@
       "Vac Population":622283.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Given 1 Cum":1755896.0,
       "Vac Given 1 %":67.0,
@@ -365,7 +365,7 @@
       "Vac Population":2621161.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Given 1 Cum":631903.0,
       "Vac Given 1 %":65.8,
@@ -376,7 +376,7 @@
       "Vac Population":959872.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Given 1 Cum":1054148.0,
       "Vac Given 1 %":69.0,
@@ -387,7 +387,7 @@
       "Vac Population":1527054.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nan",
       "Vac Given 1 Cum":317651.0,
       "Vac Given 1 %":74.0,
@@ -398,7 +398,7 @@
       "Vac Population":429265.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Given 1 Cum":438387.0,
       "Vac Given 1 %":55.4,
@@ -409,7 +409,7 @@
       "Vac Population":790827.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Given 1 Cum":279066.0,
       "Vac Given 1 %":62.8,
@@ -420,7 +420,7 @@
       "Vac Population":444679.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Given 1 Cum":302947.0,
       "Vac Given 1 %":64.4,
@@ -431,7 +431,7 @@
       "Vac Population":470636.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Given 1 Cum":1125834.0,
       "Vac Given 1 %":81.8,
@@ -442,7 +442,7 @@
       "Vac Population":1375773.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Given 1 Cum":1312725.0,
       "Vac Given 1 %":87.3,
@@ -453,7 +453,7 @@
       "Vac Population":1503895.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Pattani",
       "Vac Given 1 Cum":405518.0,
       "Vac Given 1 %":56.4,
@@ -464,7 +464,7 @@
       "Vac Population":719085.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Given 1 Cum":217974.0,
       "Vac Given 1 %":78.6,
@@ -475,7 +475,7 @@
       "Vac Population":277412.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Given 1 Cum":318820.0,
       "Vac Given 1 %":65.1,
@@ -486,7 +486,7 @@
       "Vac Population":489911.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phayao",
       "Vac Given 1 Cum":312447.0,
       "Vac Given 1 %":73.0,
@@ -497,7 +497,7 @@
       "Vac Population":428001.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Given 1 Cum":591995.0,
       "Vac Given 1 %":68.5,
@@ -508,7 +508,7 @@
       "Vac Population":863657.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Given 1 Cum":363893.0,
       "Vac Given 1 %":75.8,
@@ -519,7 +519,7 @@
       "Vac Population":479824.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phichit",
       "Vac Given 1 Cum":304610.0,
       "Vac Given 1 %":66.2,
@@ -530,7 +530,7 @@
       "Vac Population":460469.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Given 1 Cum":582456.0,
       "Vac Given 1 %":69.2,
@@ -541,7 +541,7 @@
       "Vac Population":841199.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Given 1 Cum":648568.0,
       "Vac Given 1 %":73.3,
@@ -552,7 +552,7 @@
       "Vac Population":885214.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phrae",
       "Vac Given 1 Cum":278477.0,
       "Vac Given 1 %":71.5,
@@ -563,7 +563,7 @@
       "Vac Population":389660.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Phuket",
       "Vac Given 1 Cum":485476.0,
       "Vac Given 1 %":90.0,
@@ -574,7 +574,7 @@
       "Vac Population":539183.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Given 1 Cum":383735.0,
       "Vac Given 1 %":72.0,
@@ -585,7 +585,7 @@
       "Vac Population":533086.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Given 1 Cum":417918.0,
       "Vac Given 1 %":71.5,
@@ -596,7 +596,7 @@
       "Vac Population":584731.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Ranong",
       "Vac Given 1 Cum":193367.0,
       "Vac Given 1 %":83.7,
@@ -607,7 +607,7 @@
       "Vac Population":230940.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Given 1 Cum":531176.0,
       "Vac Given 1 %":59.7,
@@ -618,7 +618,7 @@
       "Vac Population":890224.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Rayong",
       "Vac Given 1 Cum":780119.0,
       "Vac Given 1 %":83.7,
@@ -629,7 +629,7 @@
       "Vac Population":932307.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Roi Et",
       "Vac Given 1 Cum":722184.0,
       "Vac Given 1 %":65.6,
@@ -640,7 +640,7 @@
       "Vac Population":1100153.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Given 1 Cum":335719.0,
       "Vac Given 1 %":65.6,
@@ -651,7 +651,7 @@
       "Vac Population":511839.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Given 1 Cum":656196.0,
       "Vac Given 1 %":65.0,
@@ -662,7 +662,7 @@
       "Vac Population":1008971.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Given 1 Cum":1649380.0,
       "Vac Given 1 %":91.2,
@@ -673,7 +673,7 @@
       "Vac Population":1807836.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Given 1 Cum":931441.0,
       "Vac Given 1 %":78.6,
@@ -684,7 +684,7 @@
       "Vac Population":1185211.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Given 1 Cum":119926.0,
       "Vac Given 1 %":63.5,
@@ -695,7 +695,7 @@
       "Vac Population":188775.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Saraburi",
       "Vac Given 1 Cum":486732.0,
       "Vac Given 1 %":65.5,
@@ -706,7 +706,7 @@
       "Vac Population":743079.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Satun",
       "Vac Given 1 Cum":198710.0,
       "Vac Given 1 %":63.9,
@@ -717,7 +717,7 @@
       "Vac Population":311210.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Given 1 Cum":130129.0,
       "Vac Given 1 %":64.7,
@@ -728,7 +728,7 @@
       "Vac Population":201110.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Sisaket",
       "Vac Given 1 Cum":824049.0,
       "Vac Given 1 %":66.8,
@@ -739,7 +739,7 @@
       "Vac Population":1233832.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Songkhla",
       "Vac Given 1 Cum":1140517.0,
       "Vac Given 1 %":75.1,
@@ -750,7 +750,7 @@
       "Vac Population":1519301.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Given 1 Cum":351393.0,
       "Vac Given 1 %":68.1,
@@ -761,7 +761,7 @@
       "Vac Population":516373.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Given 1 Cum":494577.0,
       "Vac Given 1 %":61.5,
@@ -772,7 +772,7 @@
       "Vac Population":803801.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Given 1 Cum":889863.0,
       "Vac Given 1 %":72.0,
@@ -783,7 +783,7 @@
       "Vac Population":1235744.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Surin",
       "Vac Given 1 Cum":751325.0,
       "Vac Given 1 %":64.7,
@@ -794,7 +794,7 @@
       "Vac Population":1161635.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Tak",
       "Vac Given 1 Cum":449628.0,
       "Vac Given 1 %":59.1,
@@ -805,7 +805,7 @@
       "Vac Population":760935.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Trang",
       "Vac Given 1 Cum":467604.0,
       "Vac Given 1 %":75.2,
@@ -816,7 +816,7 @@
       "Vac Population":621514.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Trat",
       "Vac Given 1 Cum":172591.0,
       "Vac Given 1 %":71.9,
@@ -827,7 +827,7 @@
       "Vac Population":239901.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Given 1 Cum":1166471.0,
       "Vac Given 1 %":69.6,
@@ -838,7 +838,7 @@
       "Vac Population":1675834.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Given 1 Cum":968985.0,
       "Vac Given 1 %":67.6,
@@ -849,7 +849,7 @@
       "Vac Population":1433871.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Given 1 Cum":192559.0,
       "Vac Given 1 %":66.7,
@@ -860,7 +860,7 @@
       "Vac Population":288568.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Given 1 Cum":294641.0,
       "Vac Given 1 %":73.4,
@@ -871,7 +871,7 @@
       "Vac Population":401527.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Yala",
       "Vac Given 1 Cum":353537.0,
       "Vac Given 1 %":62.5,
@@ -882,7 +882,7 @@
       "Vac Population":565448.0
     },
     {
-      "Date":"2022-02-13T00:00:00.000Z",
+      "Date":"2022-02-13T00:00:00.000",
       "Province":"Yasothon",
       "Vac Given 1 Cum":316095.0,
       "Vac Given 1 %":69.8,

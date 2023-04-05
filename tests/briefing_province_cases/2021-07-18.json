@@ -22,1902 +22,1902 @@
   },
   "data":[
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Bangkok",
       "Cases":2166.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Bangkok",
       "Cases":2302.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Bangkok",
       "Cases":2195.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Bangkok",
       "Cases":2224.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Bangkok",
       "Cases":2332.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Prison",
       "Cases":318.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Prison",
       "Cases":127.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Prison",
       "Cases":615.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Prison",
       "Cases":79.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Prison",
       "Cases":129.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Samut Prakan",
       "Cases":604.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Samut Prakan",
       "Cases":849.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Samut Prakan",
       "Cases":607.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Samut Prakan",
       "Cases":846.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Samut Prakan",
       "Cases":1006.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Samut Sakhon",
       "Cases":677.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Samut Sakhon",
       "Cases":680.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Samut Sakhon",
       "Cases":653.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Samut Sakhon",
       "Cases":640.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Samut Sakhon",
       "Cases":577.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nonthaburi",
       "Cases":336.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nonthaburi",
       "Cases":471.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nonthaburi",
       "Cases":456.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nonthaburi",
       "Cases":355.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nonthaburi",
       "Cases":347.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chonburi",
       "Cases":660.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chonburi",
       "Cases":659.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chonburi",
       "Cases":530.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chonburi",
       "Cases":523.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chonburi",
       "Cases":513.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Pathum Thani",
       "Cases":684.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Pathum Thani",
       "Cases":251.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Pathum Thani",
       "Cases":243.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Pathum Thani",
       "Cases":233.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Pathum Thani",
       "Cases":398.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phetchaburi",
       "Cases":98.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phetchaburi",
       "Cases":75.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phetchaburi",
       "Cases":88.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phetchaburi",
       "Cases":98.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phetchaburi",
       "Cases":73.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Songkhla",
       "Cases":179.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Songkhla",
       "Cases":286.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Songkhla",
       "Cases":178.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Songkhla",
       "Cases":181.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Songkhla",
       "Cases":107.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Cases":240.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Cases":288.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Cases":202.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Cases":291.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Cases":202.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Pattani",
       "Cases":219.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Pattani",
       "Cases":194.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Pattani",
       "Cases":191.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Pattani",
       "Cases":269.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Pattani",
       "Cases":195.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chachoengsao",
       "Cases":242.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chachoengsao",
       "Cases":245.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chachoengsao",
       "Cases":374.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chachoengsao",
       "Cases":188.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chachoengsao",
       "Cases":339.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Yala",
       "Cases":190.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Yala",
       "Cases":196.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Yala",
       "Cases":264.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Yala",
       "Cases":160.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Yala",
       "Cases":158.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chiang Mai",
       "Cases":52.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chiang Mai",
       "Cases":76.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chiang Mai",
       "Cases":66.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chiang Mai",
       "Cases":48.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chiang Mai",
       "Cases":30.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Cases":392.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Cases":74.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Cases":68.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Cases":67.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Cases":94.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Narathiwat",
       "Cases":87.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Narathiwat",
       "Cases":148.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Narathiwat",
       "Cases":140.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Narathiwat",
       "Cases":172.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Narathiwat",
       "Cases":191.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Cases":48.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Cases":63.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Cases":48.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Cases":59.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Cases":71.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Saraburi",
       "Cases":345.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Saraburi",
       "Cases":65.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Saraburi",
       "Cases":68.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Saraburi",
       "Cases":65.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Saraburi",
       "Cases":65.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Rayong",
       "Cases":228.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Rayong",
       "Cases":90.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Rayong",
       "Cases":137.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Rayong",
       "Cases":118.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Rayong",
       "Cases":55.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Ratchaburi",
       "Cases":160.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Ratchaburi",
       "Cases":149.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Ratchaburi",
       "Cases":128.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Ratchaburi",
       "Cases":117.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Ratchaburi",
       "Cases":103.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Cases":170.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Cases":94.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Cases":98.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Cases":76.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Cases":138.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Surat Thani",
       "Cases":34.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Surat Thani",
       "Cases":60.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Surat Thani",
       "Cases":26.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Surat Thani",
       "Cases":26.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Surat Thani",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Lopburi",
       "Cases":297.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Lopburi",
       "Cases":62.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Lopburi",
       "Cases":60.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Lopburi",
       "Cases":53.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Lopburi",
       "Cases":52.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Tak",
       "Cases":104.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Tak",
       "Cases":38.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Tak",
       "Cases":38.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Tak",
       "Cases":35.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Tak",
       "Cases":57.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Cases":65.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Cases":41.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Cases":45.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Cases":51.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Cases":13.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Suphan Buri",
       "Cases":139.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Suphan Buri",
       "Cases":87.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Suphan Buri",
       "Cases":72.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Suphan Buri",
       "Cases":98.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Suphan Buri",
       "Cases":61.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Trang",
       "Cases":13.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Trang",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Trang",
       "Cases":6.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Trang",
       "Cases":34.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Trang",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Prachinburi",
       "Cases":71.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Prachinburi",
       "Cases":92.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Prachinburi",
       "Cases":63.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Prachinburi",
       "Cases":61.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Prachinburi",
       "Cases":86.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Surin",
       "Cases":165.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Surin",
       "Cases":139.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Surin",
       "Cases":116.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Surin",
       "Cases":108.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Surin",
       "Cases":80.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Udon Thani",
       "Cases":142.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Udon Thani",
       "Cases":21.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Udon Thani",
       "Cases":121.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Udon Thani",
       "Cases":27.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Udon Thani",
       "Cases":50.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Ranong",
       "Cases":31.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Ranong",
       "Cases":6.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Ranong",
       "Cases":12.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Ranong",
       "Cases":15.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Ranong",
       "Cases":16.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Cases":106.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Cases":115.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Cases":102.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Cases":83.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Cases":79.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Sisaket",
       "Cases":124.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Sisaket",
       "Cases":66.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Sisaket",
       "Cases":72.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Sisaket",
       "Cases":101.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Sisaket",
       "Cases":107.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Cases":95.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Cases":67.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Cases":81.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Cases":79.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Cases":57.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Khon Kaen",
       "Cases":104.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Khon Kaen",
       "Cases":44.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Khon Kaen",
       "Cases":90.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Khon Kaen",
       "Cases":50.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Khon Kaen",
       "Cases":83.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chanthaburi",
       "Cases":56.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chanthaburi",
       "Cases":36.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chanthaburi",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chanthaburi",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chanthaburi",
       "Cases":26.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Maha Sarakham",
       "Cases":131.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Maha Sarakham",
       "Cases":91.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Maha Sarakham",
       "Cases":65.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Maha Sarakham",
       "Cases":66.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Maha Sarakham",
       "Cases":110.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Kanchanaburi",
       "Cases":64.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Kanchanaburi",
       "Cases":143.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Kanchanaburi",
       "Cases":57.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Kanchanaburi",
       "Cases":95.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Kanchanaburi",
       "Cases":39.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Roi Et",
       "Cases":115.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Roi Et",
       "Cases":92.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Roi Et",
       "Cases":62.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Roi Et",
       "Cases":97.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Roi Et",
       "Cases":64.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Cases":85.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Cases":90.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Cases":54.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Cases":48.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Cases":61.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Buriram",
       "Cases":49.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Buriram",
       "Cases":93.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Buriram",
       "Cases":92.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Buriram",
       "Cases":104.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Buriram",
       "Cases":77.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chiang Rai",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chiang Rai",
       "Cases":37.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chiang Rai",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chiang Rai",
       "Cases":24.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chiang Rai",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chaiyaphum",
       "Cases":71.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chaiyaphum",
       "Cases":61.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chaiyaphum",
       "Cases":76.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chaiyaphum",
       "Cases":52.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chaiyaphum",
       "Cases":49.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Sa Kaeo",
       "Cases":44.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Sa Kaeo",
       "Cases":64.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Sa Kaeo",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Sa Kaeo",
       "Cases":64.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Sa Kaeo",
       "Cases":34.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Kalasin",
       "Cases":104.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Kalasin",
       "Cases":92.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Kalasin",
       "Cases":77.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Kalasin",
       "Cases":59.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Kalasin",
       "Cases":66.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Cases":53.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Cases":51.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Cases":37.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Cases":80.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Cases":54.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phetchabun",
       "Cases":76.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phetchabun",
       "Cases":51.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phetchabun",
       "Cases":69.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phetchabun",
       "Cases":59.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phetchabun",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phitsanulok",
       "Cases":65.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phitsanulok",
       "Cases":37.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phitsanulok",
       "Cases":31.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phitsanulok",
       "Cases":46.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phitsanulok",
       "Cases":63.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Krabi",
       "Cases":9.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Krabi",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Krabi",
       "Cases":5.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Krabi",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Krabi",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Cases":81.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Cases":20.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Cases":59.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Cases":41.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Cases":58.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phuket",
       "Cases":11.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phuket",
       "Cases":7.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phuket",
       "Cases":11.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phuket",
       "Cases":7.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phuket",
       "Cases":1.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Cases":60.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Cases":70.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Cases":29.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Cases":59.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Cases":43.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phatthalung",
       "Cases":17.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phatthalung",
       "Cases":21.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phatthalung",
       "Cases":13.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phatthalung",
       "Cases":7.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phatthalung",
       "Cases":13.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Sukhothai",
       "Cases":0.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Sukhothai",
       "Cases":85.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Sukhothai",
       "Cases":41.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Sukhothai",
       "Cases":71.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Sukhothai",
       "Cases":61.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Lampang",
       "Cases":30.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Lampang",
       "Cases":22.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Lampang",
       "Cases":29.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Lampang",
       "Cases":42.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Lampang",
       "Cases":35.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Yasothon",
       "Cases":44.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Yasothon",
       "Cases":50.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Yasothon",
       "Cases":64.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Yasothon",
       "Cases":46.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Yasothon",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Trat",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Trat",
       "Cases":22.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Trat",
       "Cases":24.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Trat",
       "Cases":19.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Trat",
       "Cases":34.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phichit",
       "Cases":47.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phichit",
       "Cases":63.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phichit",
       "Cases":47.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phichit",
       "Cases":28.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phichit",
       "Cases":37.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Loei",
       "Cases":33.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Loei",
       "Cases":15.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Loei",
       "Cases":21.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Loei",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Loei",
       "Cases":16.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Cases":32.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Cases":29.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Cases":13.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Cases":30.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Cases":42.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Uttaradit",
       "Cases":39.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Uttaradit",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Uttaradit",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Uttaradit",
       "Cases":46.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Uttaradit",
       "Cases":18.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phang Nga",
       "Cases":6.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phang Nga",
       "Cases":9.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phang Nga",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phang Nga",
       "Cases":3.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phang Nga",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chumphon",
       "Cases":34.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chumphon",
       "Cases":44.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chumphon",
       "Cases":36.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chumphon",
       "Cases":16.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chumphon",
       "Cases":12.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Uthai Thani",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Uthai Thani",
       "Cases":14.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Uthai Thani",
       "Cases":28.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Uthai Thani",
       "Cases":28.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Uthai Thani",
       "Cases":29.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Lamphun",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Lamphun",
       "Cases":15.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Lamphun",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Lamphun",
       "Cases":9.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Lamphun",
       "Cases":9.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nan",
       "Cases":25.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nan",
       "Cases":17.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nan",
       "Cases":14.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nan",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nan",
       "Cases":30.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Sing Buri",
       "Cases":13.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Sing Buri",
       "Cases":18.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Sing Buri",
       "Cases":19.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Sing Buri",
       "Cases":11.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Sing Buri",
       "Cases":9.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phayao",
       "Cases":24.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phayao",
       "Cases":26.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phayao",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phayao",
       "Cases":24.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phayao",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Nong Khai",
       "Cases":28.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Nong Khai",
       "Cases":42.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Nong Khai",
       "Cases":16.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Nong Khai",
       "Cases":29.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Nong Khai",
       "Cases":17.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Chai Nat",
       "Cases":20.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Chai Nat",
       "Cases":22.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Chai Nat",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Chai Nat",
       "Cases":19.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Chai Nat",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Satun",
       "Cases":15.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Satun",
       "Cases":46.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Satun",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Satun",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Satun",
       "Cases":14.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Mukdahan",
       "Cases":23.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Mukdahan",
       "Cases":20.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Mukdahan",
       "Cases":18.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Mukdahan",
       "Cases":17.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Mukdahan",
       "Cases":48.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Amnat Charoen",
       "Cases":30.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Amnat Charoen",
       "Cases":6.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Amnat Charoen",
       "Cases":36.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Amnat Charoen",
       "Cases":3.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Amnat Charoen",
       "Cases":8.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Phrae",
       "Cases":27.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Phrae",
       "Cases":26.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Phrae",
       "Cases":16.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Phrae",
       "Cases":16.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Phrae",
       "Cases":19.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Bueng Kan",
       "Cases":15.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Bueng Kan",
       "Cases":10.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Bueng Kan",
       "Cases":4.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Bueng Kan",
       "Cases":11.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Bueng Kan",
       "Cases":5.0
     },
     {
-      "Date":"2021-07-18T00:00:00.000Z",
+      "Date":"2021-07-18T00:00:00.000",
       "Province":"Mae Hong Son",
       "Cases":4.0
     },
     {
-      "Date":"2021-07-17T00:00:00.000Z",
+      "Date":"2021-07-17T00:00:00.000",
       "Province":"Mae Hong Son",
       "Cases":4.0
     },
     {
-      "Date":"2021-07-16T00:00:00.000Z",
+      "Date":"2021-07-16T00:00:00.000",
       "Province":"Mae Hong Son",
       "Cases":3.0
     },
     {
-      "Date":"2021-07-15T00:00:00.000Z",
+      "Date":"2021-07-15T00:00:00.000",
       "Province":"Mae Hong Son",
       "Cases":4.0
     },
     {
-      "Date":"2021-07-14T00:00:00.000Z",
+      "Date":"2021-07-14T00:00:00.000",
       "Province":"Mae Hong Son",
       "Cases":1.0
     }

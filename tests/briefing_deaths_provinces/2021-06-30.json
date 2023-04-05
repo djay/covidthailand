@@ -22,62 +22,62 @@
   },
   "data":[
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Bangkok",
       "Deaths":35
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Pathum Thani",
       "Deaths":3
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Samut Prakan",
       "Deaths":3
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Deaths":2
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Yala",
       "Deaths":2
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Songkhla",
       "Deaths":2
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Chanthaburi",
       "Deaths":1
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Deaths":1
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Pattani",
       "Deaths":1
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Uttaradit",
       "Deaths":1
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Deaths":1
     },
     {
-      "Date":"2021-06-30T00:00:00.000Z",
+      "Date":"2021-06-30T00:00:00.000",
       "Province":"Chonburi",
       "Deaths":1
     }

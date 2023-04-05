@@ -82,7 +82,7 @@
   },
   "data":[
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Given 1 Cum":3701.0,
       "Vac Given 1 %":106.4,
@@ -102,7 +102,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Given 1 Cum":5565.0,
       "Vac Given 1 %":152.0,
@@ -122,7 +122,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Bangkok",
       "Vac Given 1 Cum":459653.0,
       "Vac Given 1 %":145.7,
@@ -142,7 +142,7 @@
       "Vac Allocated AstraZeneca":58430.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Given 1 Cum":3712.0,
       "Vac Given 1 %":100.2,
@@ -162,7 +162,7 @@
       "Vac Allocated AstraZeneca":10.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Buriram",
       "Vac Given 1 Cum":56488.0,
       "Vac Given 1 %":129.1,
@@ -182,7 +182,7 @@
       "Vac Allocated AstraZeneca":100.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Given 1 Cum":9565.0,
       "Vac Given 1 %":139.0,
@@ -202,7 +202,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Given 1 Cum":3435.0,
       "Vac Given 1 %":104.7,
@@ -222,7 +222,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Given 1 Cum":10548.0,
       "Vac Given 1 %":103.8,
@@ -242,7 +242,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Given 1 Cum":12496.0,
       "Vac Given 1 %":132.7,
@@ -262,7 +262,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Given 1 Cum":28137.0,
       "Vac Given 1 %":101.7,
@@ -282,7 +282,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Given 1 Cum":13274.0,
       "Vac Given 1 %":121.8,
@@ -302,7 +302,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chonburi",
       "Vac Given 1 Cum":68722.0,
       "Vac Given 1 %":214.2,
@@ -322,7 +322,7 @@
       "Vac Allocated AstraZeneca":360.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Chumphon",
       "Vac Given 1 Cum":6240.0,
       "Vac Given 1 %":94.8,
@@ -342,7 +342,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Kalasin",
       "Vac Given 1 Cum":6693.0,
       "Vac Given 1 %":112.7,
@@ -362,7 +362,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Given 1 Cum":5036.0,
       "Vac Given 1 %":100.7,
@@ -382,7 +382,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Given 1 Cum":9066.0,
       "Vac Given 1 %":128.8,
@@ -402,7 +402,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Given 1 Cum":21145.0,
       "Vac Given 1 %":106.6,
@@ -422,7 +422,7 @@
       "Vac Allocated AstraZeneca":100.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Krabi",
       "Vac Given 1 Cum":11822.0,
       "Vac Given 1 %":151.8,
@@ -442,7 +442,7 @@
       "Vac Allocated AstraZeneca":20.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Lampang",
       "Vac Given 1 Cum":8854.0,
       "Vac Given 1 %":152.1,
@@ -462,7 +462,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Lamphun",
       "Vac Given 1 Cum":4698.0,
       "Vac Given 1 %":116.3,
@@ -482,7 +482,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Loei",
       "Vac Given 1 Cum":8874.0,
       "Vac Given 1 %":173.2,
@@ -502,7 +502,7 @@
       "Vac Allocated AstraZeneca":10.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Lopburi",
       "Vac Given 1 Cum":8718.0,
       "Vac Given 1 %":132.5,
@@ -522,7 +522,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Given 1 Cum":4815.0,
       "Vac Given 1 %":125.4,
@@ -542,7 +542,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Given 1 Cum":7053.0,
       "Vac Given 1 %":104.3,
@@ -562,7 +562,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Given 1 Cum":5202.0,
       "Vac Given 1 %":104.9,
@@ -582,7 +582,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Given 1 Cum":6526.0,
       "Vac Given 1 %":129.6,
@@ -602,7 +602,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Given 1 Cum":11742.0,
       "Vac Given 1 %":135.6,
@@ -622,7 +622,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Given 1 Cum":9200.0,
       "Vac Given 1 %":118.5,
@@ -642,7 +642,7 @@
       "Vac Allocated AstraZeneca":10.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Given 1 Cum":27201.0,
       "Vac Given 1 %":102.5,
@@ -662,7 +662,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Given 1 Cum":8884.0,
       "Vac Given 1 %":106.8,
@@ -682,7 +682,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Given 1 Cum":15474.0,
       "Vac Given 1 %":116.5,
@@ -702,7 +702,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nan",
       "Vac Given 1 Cum":4611.0,
       "Vac Given 1 %":101.6,
@@ -722,7 +722,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Given 1 Cum":9523.0,
       "Vac Given 1 %":115.6,
@@ -742,7 +742,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Given 1 Cum":3723.0,
       "Vac Given 1 %":103.8,
@@ -762,7 +762,7 @@
       "Vac Allocated AstraZeneca":10.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Given 1 Cum":5646.0,
       "Vac Given 1 %":100.7,
@@ -782,7 +782,7 @@
       "Vac Allocated AstraZeneca":10.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Given 1 Cum":61933.0,
       "Vac Given 1 %":99.6,
@@ -802,7 +802,7 @@
       "Vac Allocated AstraZeneca":13720.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Given 1 Cum":29897.0,
       "Vac Given 1 %":109.2,
@@ -822,7 +822,7 @@
       "Vac Allocated AstraZeneca":5000.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Pattani",
       "Vac Given 1 Cum":5479.0,
       "Vac Given 1 %":126.2,
@@ -842,7 +842,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Given 1 Cum":10946.0,
       "Vac Given 1 %":147.5,
@@ -862,7 +862,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Given 1 Cum":5242.0,
       "Vac Given 1 %":122.5,
@@ -882,7 +882,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phayao",
       "Vac Given 1 Cum":7671.0,
       "Vac Given 1 %":114.2,
@@ -902,7 +902,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Given 1 Cum":9328.0,
       "Vac Given 1 %":119.9,
@@ -922,7 +922,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Given 1 Cum":12487.0,
       "Vac Given 1 %":238.3,
@@ -942,7 +942,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phichit",
       "Vac Given 1 Cum":6822.0,
       "Vac Given 1 %":123.1,
@@ -962,7 +962,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Given 1 Cum":14035.0,
       "Vac Given 1 %":179.9,
@@ -982,7 +982,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Given 1 Cum":7716.0,
       "Vac Given 1 %":123.3,
@@ -1002,7 +1002,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phrae",
       "Vac Given 1 Cum":4145.0,
       "Vac Given 1 %":111.4,
@@ -1022,7 +1022,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Phuket",
       "Vac Given 1 Cum":144039.0,
       "Vac Given 1 %":141.6,
@@ -1042,7 +1042,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Given 1 Cum":5974.0,
       "Vac Given 1 %":109.8,
@@ -1062,7 +1062,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Given 1 Cum":12536.0,
       "Vac Given 1 %":110.2,
@@ -1082,7 +1082,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Ranong",
       "Vac Given 1 Cum":18694.0,
       "Vac Given 1 %":156.6,
@@ -1102,7 +1102,7 @@
       "Vac Allocated AstraZeneca":3000.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Given 1 Cum":9849.0,
       "Vac Given 1 %":124.4,
@@ -1122,7 +1122,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Rayong",
       "Vac Given 1 Cum":15863.0,
       "Vac Given 1 %":107.2,
@@ -1142,7 +1142,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Roi Et",
       "Vac Given 1 Cum":14271.0,
       "Vac Given 1 %":150.9,
@@ -1162,7 +1162,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Given 1 Cum":10448.0,
       "Vac Given 1 %":110.9,
@@ -1182,7 +1182,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Given 1 Cum":12239.0,
       "Vac Given 1 %":117.9,
@@ -1202,7 +1202,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Given 1 Cum":43581.0,
       "Vac Given 1 %":144.8,
@@ -1222,7 +1222,7 @@
       "Vac Allocated AstraZeneca":5000.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Given 1 Cum":124573.0,
       "Vac Given 1 %":118.7,
@@ -1242,7 +1242,7 @@
       "Vac Allocated AstraZeneca":30000.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Given 1 Cum":5588.0,
       "Vac Given 1 %":103.1,
@@ -1262,7 +1262,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Saraburi",
       "Vac Given 1 Cum":10017.0,
       "Vac Given 1 %":113.6,
@@ -1282,7 +1282,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Satun",
       "Vac Given 1 Cum":7722.0,
       "Vac Given 1 %":177.9,
@@ -1302,7 +1302,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Given 1 Cum":4879.0,
       "Vac Given 1 %":117.9,
@@ -1322,7 +1322,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Sisaket",
       "Vac Given 1 Cum":13209.0,
       "Vac Given 1 %":193.7,
@@ -1342,7 +1342,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Songkhla",
       "Vac Given 1 Cum":24416.0,
       "Vac Given 1 %":133.3,
@@ -1362,7 +1362,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Given 1 Cum":5702.0,
       "Vac Given 1 %":127.8,
@@ -1382,7 +1382,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Given 1 Cum":9105.0,
       "Vac Given 1 %":125.8,
@@ -1402,7 +1402,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Given 1 Cum":38644.0,
       "Vac Given 1 %":109.6,
@@ -1422,7 +1422,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Surin",
       "Vac Given 1 Cum":9511.0,
       "Vac Given 1 %":102.7,
@@ -1442,7 +1442,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Tak",
       "Vac Given 1 Cum":47864.0,
       "Vac Given 1 %":106.2,
@@ -1462,7 +1462,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Trang",
       "Vac Given 1 Cum":8005.0,
       "Vac Given 1 %":120.6,
@@ -1482,7 +1482,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Trat",
       "Vac Given 1 Cum":3549.0,
       "Vac Given 1 %":100.3,
@@ -1502,7 +1502,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Given 1 Cum":16804.0,
       "Vac Given 1 %":123.7,
@@ -1522,7 +1522,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Given 1 Cum":24824.0,
       "Vac Given 1 %":134.7,
@@ -1542,7 +1542,7 @@
       "Vac Allocated AstraZeneca":20.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Given 1 Cum":4453.0,
       "Vac Given 1 %":117.8,
@@ -1562,7 +1562,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Given 1 Cum":6238.0,
       "Vac Given 1 %":132.2,
@@ -1582,7 +1582,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Yala",
       "Vac Given 1 Cum":5757.0,
       "Vac Given 1 %":104.3,
@@ -1602,7 +1602,7 @@
       "Vac Allocated AstraZeneca":0.0
     },
     {
-      "Date":"2021-05-20T00:00:00.000Z",
+      "Date":"2021-05-20T00:00:00.000",
       "Province":"Yasothon",
       "Vac Given 1 Cum":6334.0,
       "Vac Given 1 %":139.5,
