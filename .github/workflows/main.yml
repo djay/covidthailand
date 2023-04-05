@@ -362,6 +362,7 @@ jobs:
            tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" --exclude="inputs/situation_*/*" --exclude="inputs/vaccinations/*" --exclude="inputs/variants/*" --exclude="inputs/testing_moph/*" -czvf inputs.tar.gz inputs
            find api inputs/json   -path "api/*" -o -name "*.csv" | tar -czvf datasets.tar.gz -T -
       - uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ steps.makerelease.outcome == 'success' }}
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
