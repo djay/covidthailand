@@ -172,7 +172,7 @@ Schema
 
 
 ### Dashboard by Province by Week
-#### [moph_prov_weekly.csv](https://practical-ritchie-cca141.netlify.app/api/moph_prov_weekly.csv)
+#### [moph_province_weekly.csv](https://practical-ritchie-cca141.netlify.app/api/moph_prov_weekly.csv)
 
 Source - https://ddc.moph.go.th/covid19-dashboard/?dashboard=province
 
