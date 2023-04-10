@@ -557,6 +557,8 @@ def get_variant_reports():
         nat = nat.iloc[1:-1]  # Get rid of header and totals at the bottom
         # nat = nat[[c for c in nat.columns if not pd.isna(c)]]  # get rid of empty cols
         dates = nat["End"].str.split("-", expand=True)
+        dates[0] = dates[0].str.replace("66", "23")
+        dates[1] = dates[1].str.replace("66", "23")
         if len(dates.columns) == 1:
             # Dealing with weeks since pandemic start.
             pd.to_numeric(dates[0].str.replace("wk", ""), errors="coerce")
@@ -604,10 +606,10 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
     test_prov = get_tests_per_province()
-    variants = get_variant_reports()
     old = import_csv("combined", index=["Date"])
     df = old.combine_first(df).combine_first(df_daily)
 

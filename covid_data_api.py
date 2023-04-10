@@ -809,6 +809,7 @@ if __name__ == '__main__':
     import covid_plot_deaths
 
     df = import_csv("combined", index=["Date"])
+    ihme_dataset()
 
     excess_deaths()
     covid_plot_deaths.save_excess_death_plots(df)
@@ -822,8 +823,6 @@ if __name__ == '__main__':
     timeline_prov = timeline_by_province()
     timeline_prov_weekly = timeline_by_province_weekly()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
-
-    ihme_dataset()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov).combine_first(deaths_prov_weekly)
