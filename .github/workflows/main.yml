@@ -169,6 +169,7 @@ jobs:
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
         id: dep_apt
         run: |
+          sudo apt-get update
           sudo apt-get install -y openvpn unzip ghostscript python3-tk
         #   sudo apt-get update -y --ignore-missing || true
         # uses: awalsh128/cache-apt-pkgs-action@latest
