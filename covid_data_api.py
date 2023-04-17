@@ -369,10 +369,12 @@ def get_case_details_api_weekly():
     file, content, _ = next(web_files(url, dir=dir))
     cases2023 = pd.read_csv(file)
     max_week = cases2023['weeknum'].max()
-    os.rename(f"{dir}/today-cases-line-lists", f"{dir}/today-cases-line-lists-{max_week}")
+
+    def week_file(week):
+        return f"{dir}/today-cases-line-lists-{week}"
+    os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
     # Get fake api files
-    for file in [f"{dir}/today-cases-line-lists--{week}" for week in range(max_week - 1, 6, -1)]:
-        cases2023 = pd.concat([pd.read_csv(file), cases2023])
+    cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week + 1) if os.path.exists(week_file(week))])
 
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
@@ -822,9 +824,9 @@ def get_ifr():
 if __name__ == '__main__':
     excess_deaths()
 
+    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline_weekly = get_cases_timelineapi_weekly()
-    cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
 
