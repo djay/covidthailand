@@ -375,6 +375,9 @@ def get_case_details_api_weekly():
     os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
     # Get fake api files
     cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week + 1) if os.path.exists(week_file(week))])
+    # Columns are all messed up
+    cases2023 = cases2023.drop(columns=["risk"]).rename(columns=dict(
+        patient_type="risk", province="job", region_odpc="patient_type", reporting_group="province", job="region_odpc", ))
 
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
