@@ -281,7 +281,7 @@ def dash_province_weekly(file="moph_province_weekly"):
 
     # Remove any dips in cumualtive values. can be caused by getting daily instead#
     # lambda mydf: mydf.loc[mydf['Cases Cum'].ffill() < mydf['Cases Cum'].cummax().ffill(), 'Cases Cum'] = np.nan
-    decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff(-1) > 1).any(axis=1)]
+    decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff() < 0).any(axis=1)]
     valid = {
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
         "Cases Cum": (d("2022-12-11"), today(), 150),  # TODO: need better way to reject this year cum values
