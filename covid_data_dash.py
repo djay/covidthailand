@@ -281,7 +281,12 @@ def dash_province_weekly(file="moph_province_weekly"):
 
     # Remove any dips in cumualtive values. can be caused by getting daily instead#
     # lambda mydf: mydf.loc[mydf['Cases Cum'].ffill() < mydf['Cases Cum'].cummax().ffill(), 'Cases Cum'] = np.nan
-    decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff() < 0).any(axis=1)]
+    # decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff() < 0).any(axis=1)]
+    contiguous = df[["Cases Cum", "Deaths Cum"]].dropna()
+    dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]
+    contiguous = df[["Vac Given 1 Cum", "Vac Given 2 Cum", "Vac Given 3 Cum"]].dropna()
+    dec2 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]
+    decreased = dec1.combine_first(dec2)
     valid = {
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
         "Cases Cum": (d("2022-12-11"), today(), 150),  # TODO: need better way to reject this year cum values
@@ -314,7 +319,7 @@ def dash_province_weekly(file="moph_province_weekly"):
             continue
         province = get_province(province)
         # TODO: make invalid not inc Cum values
-        if skip_valid(df, (date, province), valid) and (date, province) not in decresed.index:
+        if skip_valid(df, (date, province), valid) and (date, province) not in decreased.index:
             print("s", end="")
             continue
         if (wb := get_wb()) is None:
