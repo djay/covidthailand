@@ -809,20 +809,16 @@ if __name__ == '__main__':
     import covid_plot_deaths
 
     df = import_csv("combined", index=["Date"])
-    ihme_dataset()
 
-    excess_deaths()
-    covid_plot_deaths.save_excess_death_plots(df)
+    timeline_prov = timeline_by_province()
+    timeline_prov_weekly = timeline_by_province_weekly()
+    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     timeline_weekly = get_cases_timelineapi_weekly()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
-
-    timeline_prov = timeline_by_province()
-    timeline_prov_weekly = timeline_by_province_weekly()
-    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov).combine_first(deaths_prov_weekly)
@@ -837,3 +833,8 @@ if __name__ == '__main__':
     covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
     # covid_plot_cases.save_infections_estimate(df)
+
+    ihme_dataset()
+
+    excess_deaths()
+    covid_plot_deaths.save_excess_death_plots(df)

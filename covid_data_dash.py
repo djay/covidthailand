@@ -728,6 +728,7 @@ if __name__ == '__main__':
 
     daily = cum2daily(dash_daily_df, exclude=vaccols)
     df = daily.combine_first(df)
+    export(df, "combined", csv_only=True)
 
     covid_plot_vacs.save_vacs_prov_plots(df)
     covid_plot_vacs.save_vacs_plots(df)
