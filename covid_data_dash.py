@@ -283,10 +283,12 @@ def dash_province_weekly(file="moph_province_weekly"):
     # lambda mydf: mydf.loc[mydf['Cases Cum'].ffill() < mydf['Cases Cum'].cummax().ffill(), 'Cases Cum'] = np.nan
     # decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff() < 0).any(axis=1)]
     contiguous = df[["Cases Cum", "Deaths Cum"]].dropna()
-    dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]
+    dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
+    dec2 = contiguous[(contiguous.groupby("Province").diff(-1) > 0).any(axis=1)]  # In case its a spike thats wrong
     contiguous = df[["Vac Given 1 Cum", "Vac Given 2 Cum", "Vac Given 3 Cum"]].dropna()
-    dec2 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]
-    decreased = dec1.combine_first(dec2)
+    dec3 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]
+    dec4 = contiguous[(contiguous.groupby("Province").diff(-1) > 0).any(axis=1)]
+    decreased = dec1.combine_first(dec2).combine_first(dec3).combine_first(dec4)
     valid = {
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
         "Cases Cum": (d("2022-12-11"), today(), 150),  # TODO: need better way to reject this year cum values
