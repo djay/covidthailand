@@ -281,10 +281,10 @@ def dash_province_weekly(file="moph_province_weekly"):
 
     # Remove any dips in cumualtive values. can be caused by getting daily instead#
     # lambda mydf: mydf.loc[mydf['Cases Cum'].ffill() < mydf['Cases Cum'].cummax().ffill(), 'Cases Cum'] = np.nan
-
+    decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff(-1) > 1).any(axis=1)]
     valid = {
         "Deaths Cum": (d("2022-12-11"), today(), 5),
-        "Cases Cum": (d("2022-12-11"), today(), 1000),
+        "Cases Cum": (d("2022-12-11"), today(), 150),  # TODO: need better way to reject this year cum values
         'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
@@ -313,7 +313,8 @@ def dash_province_weekly(file="moph_province_weekly"):
         if province is None:
             continue
         province = get_province(province)
-        if skip_valid(df, (date, province), valid):
+        # TODO: make invalid not inc Cum values
+        if skip_valid(df, (date, province), valid) and (date, province) not in decresed.index:
             print("s", end="")
             continue
         if (wb := get_wb()) is None:
