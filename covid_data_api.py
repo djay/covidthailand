@@ -363,10 +363,29 @@ def cleanup_cases(cases):
 
 def get_case_details_api_weekly():
 
+    # No api for 2023 yet but do have last weeks. Just need to save somewhere
+    url = "https://covid19.ddc.moph.go.th/api/CSV/Cases/today-cases-line-lists"
+    dir = "inputs/json/weekly/cases"
+    file, content, _ = next(web_files(url, dir=dir))
+    cases2023 = pd.read_csv(file)
+    max_week = cases2023['weeknum'].max()
+
+    def week_file(week):
+        return f"{dir}/today-cases-line-lists-{week}"
+    os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
+    # Get fake api files
+    cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week + 1) if os.path.exists(week_file(week))])
+    # Columns are all messed up
+    cases2023 = cases2023.drop(columns=["risk"]).rename(columns=dict(
+        patient_type="risk", province="job", region_odpc="patient_type", reporting_group="province", job="region_odpc", ))
+
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     df = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-4-line-lists",
                          ["year", "weeknum"], None, dir="inputs/json/weekly/cases", timeout=40)
+
+    df = pd.concat([df, cases2023])
+
     df['age'] = pd.to_numeric(df['age_number'], errors="coerce")
     df = df.rename(columns=dict(province="province_of_onset"))
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0).reset_index()
@@ -809,20 +828,16 @@ if __name__ == '__main__':
     import covid_plot_deaths
 
     df = import_csv("combined", index=["Date"])
-    ihme_dataset()
 
-    excess_deaths()
-    covid_plot_deaths.save_excess_death_plots(df)
+    timeline_prov = timeline_by_province()
+    timeline_prov_weekly = timeline_by_province_weekly()
+    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     timeline_weekly = get_cases_timelineapi_weekly()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
-
-    timeline_prov = timeline_by_province()
-    timeline_prov_weekly = timeline_by_province_weekly()
-    timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov).combine_first(deaths_prov_weekly)
@@ -837,3 +852,8 @@ if __name__ == '__main__':
     covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
     # covid_plot_cases.save_infections_estimate(df)
+
+    ihme_dataset()
+
+    excess_deaths()
+    covid_plot_deaths.save_excess_death_plots(df)
