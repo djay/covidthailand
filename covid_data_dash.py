@@ -6,6 +6,7 @@ from lib2to3.pgen2.pgen import DFAState
 import numpy as np
 import pandas as pd
 import tableauscraper
+from bs4 import BeautifulSoup
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
 
@@ -19,6 +20,7 @@ from utils_pandas import weeks_to_end_date
 from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
+from utils_scraping import web_files
 from utils_scraping_tableau import force_setParameter
 from utils_scraping_tableau import workbook_explore
 from utils_scraping_tableau import workbook_iterate
@@ -289,9 +291,19 @@ def dash_province_weekly(file="moph_province_weekly"):
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
     # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
-    ts = tableauscraper.TableauScraper()
-    ts.loads(url)
-    provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
+    # ts = tableauscraper.TableauScraper()
+    # try:
+    #     ts.loads(url)
+    # except AttributeError as e:
+    #     # Somethign is messed up about the page returned to scrape
+    #     logger.error("{} MOPH Dashboard: Can't scrape {}", e)
+    #     return df
+    # provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
+    _, content, _ = next(web_files("https://ddc.moph.go.th/covid19-dashboard/?dashboard=province"))
+    soup = BeautifulSoup(content, 'html.parser')
+    # soup = parse_file(file, html=True, paged=False)
+    provs = [p.get("value") for p in soup.select("#sel-province")[0].find_all("option") if p.get("value")]
+
     for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
         date, province = idx_value
@@ -716,6 +728,7 @@ if __name__ == '__main__':
 
     daily = cum2daily(dash_daily_df, exclude=vaccols)
     df = daily.combine_first(df)
+    export(df, "combined", csv_only=True)
 
     covid_plot_vacs.save_vacs_prov_plots(df)
     covid_plot_vacs.save_vacs_plots(df)

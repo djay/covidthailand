@@ -351,7 +351,7 @@ def web_links(*index_urls, ext=".pdf", dir="inputs/html", match=None, filenamer=
         return len(a.get("href").rsplit(ext)) == 2 if ext else True
 
     def is_match(a):
-        return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True)) if match else True)
+        return a.get("href") and is_ext(a) and (match.search(a.get_text(strip=True, separator=' ')) if match else True)
 
     for file, index, index_url in web_files(*index_urls, dir=dir, check=check, filenamer=filenamer, timeout=timeout, proxy=proxy, threads=1):
         if ignore_errors and file is None:
@@ -423,11 +423,11 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             if r is None or r.status_code >= 300:
                 err = f"bad response {r.status_code}, {r.content}" if r is not None else err
                 if not os.path.exists(file):
-                    logger.info("Error downloading: {}: skipping. {}", file, err)
+                    logger.info("Error downloading: {}: skipping. {}", url, err)
                     return None, None, url
-                logger.info("Error downloading: {}: using cache. {}", file, err)
+                logger.info("Error downloading: {}: using cache {} {}", url, file, err)
             else:
-                logger.bind(end="").opt(raw=True).info("Download: {} {}", file, modified)
+                logger.bind(end="").opt(raw=True).info("Download: {} {} {}", file, url, modified)
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 mode = "w+b" if resume_byte_pos > 0 else "wb"
                 with open(file, mode) as f:
@@ -674,8 +674,8 @@ def parse_numbers(lst):
     return [float(i.replace(",", "")) if i != "-" else 0 for i in lst]
 
 
-def any_in(target, *matches):
-    return any((str(m) in target) if type(m) != re.Pattern else m.search(target) for m in matches)
+def any_in(target, *matches, isstr=True):
+    return any(((str(m) if isstr else m) in target) if type(m) != re.Pattern else m.search(target) for m in matches)
 
 
 def all_in(target, *matches):

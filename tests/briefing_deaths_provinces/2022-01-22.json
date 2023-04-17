@@ -22,72 +22,72 @@
   },
   "data":[
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Bangkok",
       "Deaths":2
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Samut Prakan",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Deaths":2
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Phitsanulok",
       "Deaths":3
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Phetchabun",
       "Deaths":2
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Chiang Mai",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Chiang Rai",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Uthai Thani",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Satun",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Phetchaburi",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Kanchanaburi",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Deaths":1
     },
     {
-      "Date":"2022-01-22T00:00:00.000Z",
+      "Date":"2022-01-22T00:00:00.000",
       "Province":"Rayong",
       "Deaths":1
     }

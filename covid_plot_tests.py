@@ -67,18 +67,22 @@ def save_variant_plots(df: pd.DataFrame) -> None:
         "BA.2.75": "BN.1/BA.2.75",
         "BA.2.76": "BN.1/BA.2.75",
         "BN.1.": "BN.1/BA.2.75",
+        "XBB": "XBB",
         "BQ.X": "Other",
         "Other": "Other",
     }
 
     def group(variant):
         label = next((label for match, label in reversed(groups.items()) if match in variant), "Other")
-        return label + " (Omicron)"
+        return label
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
     seq = seq[seq.sum(axis=1) > 20]  # If not enough samples we won't use it
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
+    # Put them back in the order above
+    seq = seq[dict(zip(groups.values(), [1] * len(groups))).keys()]
+    seq.columns = [c + " (Omicron)" for c in seq.columns]
 
     # add in manual values
     mseq = pd.read_csv(io.StringIO(est_variants))
@@ -94,7 +98,8 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     variants = variants.apply(lambda x: x / x.sum(), axis=1)
 
     # seq is all omicron variants
-    seq = seq.multiply(variants["BA.1 (Omicron)"], axis=0)
+    allseq = seq.multiply(variants["BA.1 (Omicron)"], axis=0)
+    seq = allseq.combine_first(seq.loc["2023-01-20":])
     seq = seq.rename(columns={'Other (Omicron)': 'Other'})  # Now includes BQ.X
 
     # TODO: missing seq data results in all BA.1. so either need a other omicron or nan data after date we are sure its not all BA1
@@ -114,7 +119,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     variants = variants.combine_first(area["2022-06-24":])
     last_data = variants['BA.2 (Omicron)'].last_valid_index()
 
-    cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "Other", first=False)
+    cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0))
@@ -752,6 +757,6 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
+    save_variant_plots(df)
     save_test_area_plots(df)
     save_tests_plots(df)
-    save_variant_plots(df)

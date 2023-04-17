@@ -107,16 +107,17 @@ def get_tests_by_day():
         df = pd.DataFrame()
         files = ""
         missing = "Thailand_COVID-19_ATK_data-update-20220604.xlsx"  # Until they bring it back, get from local cache
-        for file, dl in list(get_test_files(ext=missing)) + list(get_test_files(ext="xlsx")):
+        for file, dl in list(get_test_files(ext="xlsx")) + list(get_test_files(ext=missing)):
             dl()  # Cache everything just in case
             if not any_in(file, "ATK", "testing_data"):
                 continue
-            # TODO: work out how to process 2023.01.21_แยกประเภทของผล-รายจังหวัด.xlsx. Tests of different types per province
-            tests = pd.read_excel(file, parse_dates=True, usecols=[0, 1, 2, 3])
+            tests = pd.read_excel(file, parse_dates=True)
+            tests = tests.drop(columns=tests.columns[4:])  # Some have some rubbish on the right
+            tests = tests.dropna(how="all", axis=1)
             if "ATK" in file:
                 tests = tests.rename(columns={"approve date": "Date", "countPositive": "Pos ATK", "total": "Tests ATK"})
             else:
-                tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"}, inplace=True)
+                tests = tests.rename(columns={'Pos': "Pos XLS", 'Total': "Tests XLS"})
                 tests["Tests ATK"] = np.nan
                 tests["Pos ATK"] = np.nan
             tests = tests.drop(tests[tests['Date'].isna()].index)  # get rid of totals row
@@ -251,10 +252,14 @@ def get_tests_by_area_pdf(file, page, data, raw, page_num=None):
         "9881 14.3", "98811 4.3").replace(
         "2061 119828", "20611 19828").replace(
         "445270", "445 270").replace(
-        "237193", "237 193").replace(
-        # Missing district 13 number in 2023.01.28. #TODO. Number is the % plot, 2 pages later
-        "2107.7", "210 12966 7.7"
+        "237193", "237 193"
     )
+    page = page if "2023.03.18" not in file else page.replace("114157", "114 157")
+    page = page if "2023.03.11" not in file else page.replace("88108", "88 108")
+    page = page if "2023.02.25" not in file else page.replace("983.7 6.4", "98 12661 3.7 6.4")
+    # Missing district 13 number in 2023.01.28. #TODO. Number is the % plot, 2 pages later
+    page = page if "2023.01.28" not in file else page.replace("2107.7", "210 12966 7.7")
+
     # First line can be like จดัท ำโดย เพญ็พชิชำ ถำวงศ ์กรมวิทยำศำสตณก์ำรแพทย์ วันที่ท ำรำยงำน 15/02/2564 เวลำ 09.30 น.
     first, rest = page.split("\n", 1)
     page = (
@@ -275,7 +280,8 @@ def get_tests_by_area_pdf(file, page, data, raw, page_num=None):
     pos_rate = numbers[tests_start + 13: tests_start + 26]
     if start > d("2020-12-05"):
         assert all([r <= 100 for r in pos_rate])
-        assert all([round(p / t * 100, 1) == r for p, t, r in zip(pos, tests, pos_rate)])  # double check we got right values
+        calc_pos_rates = [round(p / t * 100, 1) if t else 0 for p, t in zip(pos, tests)]
+        assert pos_rate == calc_pos_rates  # double check we got right values
 
     row = pos + tests + [sum(pos), sum(tests)]
     results = spread_date_range(start, end, row, ["Date"] + POS_COLS + TEST_COLS + ["Pos Area", "Tests Area"])
@@ -454,8 +460,33 @@ def get_variant_sequenced_table(file, pages):
         weeks = df["Lineage"].astype(str).str.replace("w", "").str.replace(
             "W", "").str.split(" ", expand=True).stack().reset_index()[0]
         df["Lineage"] = list(pd.to_numeric(weeks).dropna())
-        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + d("2019-12-27"))
+        # 164 = 2023-03-03?, 153 = 2022-12-02
+
+        if file2date(file) == d("2023-01-27"):
+            end_week_one = d("2020-01-17")
+        # Suspect dates are wrong so won't correct
+        # elif file2date(file) == d("2023-03-03"):
+        #     end_week_one = d("2020-01-10")
+        elif file2date(file) > d("2022-12-02"):
+            end_week_one = d("2020-01-03")
+        else:
+            end_week_one = d("2019-12-27")
+        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
         df = df.set_index("End")
+        # Double check the weeks numbers are correct
+        nospace = page.replace("\n", "").replace(" ", "")
+        if any_in(file, "20230217"):
+            pass
+            # 2023-02-10: wrong month
+            # 27/01/2023 03/02/2023 in 32_20230203_DMSc_Variant_V.pdf.  160, 161
+        else:
+            found = find_dates(nospace, thai=False)
+            deltas = []
+            for week_date, week in zip([d for d in [df.index.max()]], [df['Lineage'].max()]):
+                deltas += [(week_date - d).days for d in found[-1:]]
+            if not any_in(deltas, 0, -6, isstr=False) and deltas:
+                logger.warning(
+                    f"Sequence table: Missing weekdate of w{list(df['Lineage'])} {[str(d.date()) for d in df.index]}: {deltas} in {file}")
         df = df.drop(columns=["Total Sequences", "Total Sequence", "Lineage"], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
@@ -526,6 +557,8 @@ def get_variant_reports():
         nat = nat.iloc[1:-1]  # Get rid of header and totals at the bottom
         # nat = nat[[c for c in nat.columns if not pd.isna(c)]]  # get rid of empty cols
         dates = nat["End"].str.split("-", expand=True)
+        dates[0] = dates[0].str.replace("66", "23")
+        dates[1] = dates[1].str.replace("66", "23")
         if len(dates.columns) == 1:
             # Dealing with weeks since pandemic start.
             pd.to_numeric(dates[0].str.replace("wk", ""), errors="coerce")
@@ -573,10 +606,10 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
-    test_prov = get_tests_per_province()
     variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
+    test_prov = get_tests_per_province()
     old = import_csv("combined", index=["Date"])
     df = old.combine_first(df).combine_first(df_daily)
 

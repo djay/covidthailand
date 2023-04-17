@@ -123,12 +123,36 @@ jobs:
         with:
           file: "briefings.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached situation
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "situation.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached vaccinations
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "vaccinations.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get release with cached testing
+        continue-on-error: true
+        if: ${{ steps.goready.outcome == 'success' || steps.dash.outcome == 'success' || steps.briefing.outcome == 'success'}}
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          file: "testing.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract cached docs  # TODO; should be before or after proper cache? or conditional on cache being empty?
         if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
           tar -xzvf inputs.tar.gz
           tar -xzvf briefings.tar.gz || true
-          rm inputs.tar.gz briefings.tar.gz || true
+          tar -xzvf situation.tar.gz || true
+          tar -xzvf vaccinations.tar.gz || true
+          tar -xzvf testing.tar.gz || true
+          rm inputs.tar.gz briefings.tar.gz situation.tar.gz vaccinations.tar.gz testing.tar.gz || true
       - name: du
         if: ${{ steps.docsrelease.outcome == 'success' }}
         run: |
@@ -144,14 +168,15 @@ jobs:
       - name: Apt update
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
         id: dep_apt
-        # run: |
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openvpn unzip ghostscript python3-tk
         #   sudo apt-get update -y --ignore-missing || true
-        #   sudo apt-get install -y ghostscript python3-tk
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: openvpn unzip ghostscript python3-tk
-          version: 1.5
-          execute_install_scripts: true
+        # uses: awalsh128/cache-apt-pkgs-action@latest
+        # with:
+        #   packages: openvpn unzip ghostscript python3-tk
+        #   version: 1.7
+        #   execute_install_scripts: true
       - name: Set up Python
         id: goscrape
         if: ${{ steps.gofull.outcome == 'success' || steps.goapi.outcome == 'success' || steps.dash.outcome == 'success' }}
@@ -175,27 +200,27 @@ jobs:
           python -c 'from ctypes.util import find_library; print(find_library("gs"))'
           # Prep tika so gets a new version outside of VPN
           tika-python config mime-types || true
-      - name: Setup VPN
-        id: setup-vpn
-        run: |
-          sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
-          sudo unzip configurations
-          (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
-          sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
-          rm userpass.txt
-          # Wait for OpenVPN to connect
-          sleep 5
-          tail -30 /var/log/syslog
-          while ! sudo pgrep openvpn > /dev/null; do
-            sleep 1
-          done
+      # - name: Setup VPN
+      #   id: setup-vpn
+      #   run: |
+      #     sudo wget https://my.surfshark.com/vpn/api/v1/server/configurations
+      #     sudo unzip configurations
+      #     (echo -e "${{ secrets.OVPN_USERNAME }}\n${{ secrets.OVPN_PASSWORD }}") > userpass.txt
+      #     sudo openvpn --config th-bkk.prod.surfshark.com_tcp.ovpn  --daemon --auth-user-pass userpass.txt
+      #     rm userpass.txt
+      #     # Wait for OpenVPN to connect
+      #     sleep 5
+      #     tail -30 /var/log/syslog
+      #     while ! sudo pgrep openvpn > /dev/null; do
+      #       sleep 1
+      #     done
 
-          while ! sudo grep -q "Initialization Sequence Completed" /var/log/syslog; do
-            sleep 1
-          done
+      #     while ! sudo grep -q "Initialization Sequence Completed" /var/log/syslog; do
+      #       sleep 1
+      #     done
 
-          # Do something after OpenVPN connects
-          echo "OpenVPN connected"
+      #     # Do something after OpenVPN connects
+      #     echo "OpenVPN connected"
       - name: is dash ready
         id: godash
         if: ${{ steps.dep.outcome == 'success' && steps.dep.dash != 'success' && github.event_name	== 'schedule'}}
@@ -231,10 +256,10 @@ jobs:
         continue-on-error: true
         run:
           du inputs | tee outputfiles.txt
-      - name: Stop VPN
-        id: stop-vpn
-        run: |
-          sudo pkill -f "openvpn"
+      # - name: Stop VPN
+      #   id: stop-vpn
+      #   run: |
+      #     sudo pkill -f "openvpn"
       - id: can-deploy
         env:
             MY_KEY: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -332,8 +357,25 @@ jobs:
         if: ${{ steps.netlify.outcome == 'success' && github.ref == 'refs/heads/main' }}
         run: |
            tar -czvf briefings.tar.gz -T <(\ls -1 inputs/briefings/*)
-           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" -czvf inputs.tar.gz inputs
+           tar -czvf situation.tar.gz -T <(\ls -1 inputs/situation_*/*)
+           tar -czvf vaccinations.tar.gz -T <(\ls -1 inputs/vaccinations/*)
+           tar -czvf testing.tar.gz -T <(\ls -1 inputs/testing_moph/* inputs/variants/*)
+           tar --exclude="inputs/.git" --exclude="_site" --exclude="._*" --exclude="inputs/json/*.csv" --exclude="inputs/briefings/*" --exclude="inputs/situation_*/*" --exclude="inputs/vaccinations/*" --exclude="inputs/variants/*" --exclude="inputs/testing_moph/*" -czvf inputs.tar.gz inputs
            find api inputs/json   -path "api/*" -o -name "*.csv" | tar -czvf datasets.tar.gz -T -
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: ${{ steps.date.outputs.date }}
+          title: Dataset and input files for covidthailand for ${{ steps.date.outputs.date }}
+          files: |
+             briefings.tar.gz
+             situation.tar.gz
+             vaccinations.tar.gz
+             testing.tar.gz
+             datasets.tar.gz
+             inputs.tar.gz
       - name: Upload inputs.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
@@ -344,16 +386,6 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated docs"
-      - name: Upload briefings.tar.gz to existing release
-        if: ${{ steps.makerelease.outcome == 'success' }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./briefings.tar.gz
-          asset_name: briefings.tar.gz
-          tag: 1
-          overwrite: true
-          body: "Updated briefings"
       - name: Upload datasets.tar.gz to existing release
         if: ${{ steps.makerelease.outcome == 'success' }}
         uses: svenstaro/upload-release-action@v2
@@ -364,4 +396,44 @@ jobs:
           tag: 1
           overwrite: true
           body: "Updated docs"
+      - name: Upload vaccinations.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./vaccinations.tar.gz
+          asset_name: vaccinations.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated vaccinations"
+      - name: Upload testing.tar.gz to existing release
+        if: ${{ steps.makerelease.outcome == 'success' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./testing.tar.gz
+          asset_name: testing.tar.gz
+          tag: 1
+          overwrite: true
+          body: "Updated testing"
+      # - name: Upload briefings.tar.gz to existing release
+      #   if: ${{ steps.makerelease.outcome == 'success' }}
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: ./briefings.tar.gz
+      #     asset_name: briefings.tar.gz
+      #     tag: 1
+      #     overwrite: true
+      #     body: "Updated briefings"
+      # - name: Upload situation.tar.gz to existing release
+      #   if: ${{ steps.makerelease.outcome == 'success' }}
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: ./situation.tar.gz
+      #     asset_name: situation.tar.gz
+      #     tag: 1
+      #     overwrite: true
+      #     body: "Updated situation"
 

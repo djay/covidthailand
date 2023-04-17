@@ -105,6 +105,10 @@ sources have stopped being published so many plots will no longer be change.
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/inf_by_variants_3.png)
 - source: [DMSc Variant Report](downloads.md#dl-variant), [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
 
+![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
+- source: [DMSc Variant Report](downloads.md#dl-variant)
+
+
 ## Cases by Region
 
 

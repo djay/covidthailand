@@ -161,13 +161,13 @@ def file2date(file):
     return None
 
 
-def find_dates(content):
+def find_dates(content, thai=True):
     # 7 - 13/11/2563
-    dates = re.findall(r"([0-9]+)/([0-9]+)/([0-9]+)", content)
+    dates = re.findall(r"([0-9]{2})/([0-9]{2})/(2[0-9]{3})", content)
     dates = set(
         [
-            datetime.datetime(day=int(d[0]), month=int(d[1]), year=int(d[2]) - 543)
-            for d in dates
+            datetime.datetime(day=int(date[0]), month=int(date[1]), year=int(date[2]) - 543 if thai else int(date[2]))
+            for date in dates
         ]
     )
     return sorted([d for d in dates])

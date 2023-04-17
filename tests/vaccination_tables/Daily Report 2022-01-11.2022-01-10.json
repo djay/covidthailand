@@ -78,7 +78,7 @@
   },
   "data":[
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Amnat Charoen",
       "Vac Group Risk: Disease 1 Cum":16211.0,
       "Vac Group Risk: Disease 2 Cum":15145.0,
@@ -97,7 +97,7 @@
       "Vac Population":379995.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Ang Thong",
       "Vac Group Risk: Disease 1 Cum":17957.0,
       "Vac Group Risk: Disease 2 Cum":17427.0,
@@ -116,7 +116,7 @@
       "Vac Population":292159.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Bangkok",
       "Vac Group Risk: Disease 1 Cum":886984.0,
       "Vac Group Risk: Disease 2 Cum":823524.0,
@@ -135,7 +135,7 @@
       "Vac Population":7699175.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Bueng Kan",
       "Vac Group Risk: Disease 1 Cum":43770.0,
       "Vac Group Risk: Disease 2 Cum":40185.0,
@@ -154,7 +154,7 @@
       "Vac Population":425427.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Buriram",
       "Vac Group Risk: Disease 1 Cum":85853.0,
       "Vac Group Risk: Disease 2 Cum":79471.0,
@@ -173,7 +173,7 @@
       "Vac Population":1587359.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chachoengsao",
       "Vac Group Risk: Disease 1 Cum":54265.0,
       "Vac Group Risk: Disease 2 Cum":47604.0,
@@ -192,7 +192,7 @@
       "Vac Population":750784.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chai Nat",
       "Vac Group Risk: Disease 1 Cum":24835.0,
       "Vac Group Risk: Disease 2 Cum":24222.0,
@@ -211,7 +211,7 @@
       "Vac Population":335049.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chaiyaphum",
       "Vac Group Risk: Disease 1 Cum":47451.0,
       "Vac Group Risk: Disease 2 Cum":42022.0,
@@ -230,7 +230,7 @@
       "Vac Population":1134867.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chanthaburi",
       "Vac Group Risk: Disease 1 Cum":37363.0,
       "Vac Group Risk: Disease 2 Cum":35268.0,
@@ -249,7 +249,7 @@
       "Vac Population":587421.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chiang Mai",
       "Vac Group Risk: Disease 1 Cum":142388.0,
       "Vac Group Risk: Disease 2 Cum":136806.0,
@@ -268,7 +268,7 @@
       "Vac Population":1729353.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chiang Rai",
       "Vac Group Risk: Disease 1 Cum":67648.0,
       "Vac Group Risk: Disease 2 Cum":58820.0,
@@ -287,7 +287,7 @@
       "Vac Population":1172648.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chonburi",
       "Vac Group Risk: Disease 1 Cum":133809.0,
       "Vac Group Risk: Disease 2 Cum":130609.0,
@@ -306,7 +306,7 @@
       "Vac Population":2047622.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Chumphon",
       "Vac Group Risk: Disease 1 Cum":27059.0,
       "Vac Group Risk: Disease 2 Cum":24413.0,
@@ -325,7 +325,7 @@
       "Vac Population":543683.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Kalasin",
       "Vac Group Risk: Disease 1 Cum":44048.0,
       "Vac Group Risk: Disease 2 Cum":39547.0,
@@ -344,7 +344,7 @@
       "Vac Population":978299.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Kamphaeng Phet",
       "Vac Group Risk: Disease 1 Cum":51002.0,
       "Vac Group Risk: Disease 2 Cum":49009.0,
@@ -363,7 +363,7 @@
       "Vac Population":725873.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Kanchanaburi",
       "Vac Group Risk: Disease 1 Cum":42367.0,
       "Vac Group Risk: Disease 2 Cum":41466.0,
@@ -382,7 +382,7 @@
       "Vac Population":848454.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Khon Kaen",
       "Vac Group Risk: Disease 1 Cum":93129.0,
       "Vac Group Risk: Disease 2 Cum":83870.0,
@@ -401,7 +401,7 @@
       "Vac Population":1837005.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Krabi",
       "Vac Group Risk: Disease 1 Cum":28620.0,
       "Vac Group Risk: Disease 2 Cum":27622.0,
@@ -420,7 +420,7 @@
       "Vac Population":503538.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Lampang",
       "Vac Group Risk: Disease 1 Cum":97057.0,
       "Vac Group Risk: Disease 2 Cum":93080.0,
@@ -439,7 +439,7 @@
       "Vac Population":731573.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Lamphun",
       "Vac Group Risk: Disease 1 Cum":31329.0,
       "Vac Group Risk: Disease 2 Cum":28781.0,
@@ -458,7 +458,7 @@
       "Vac Population":417225.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Loei",
       "Vac Group Risk: Disease 1 Cum":47914.0,
       "Vac Group Risk: Disease 2 Cum":43315.0,
@@ -477,7 +477,7 @@
       "Vac Population":640283.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Lopburi",
       "Vac Group Risk: Disease 1 Cum":41347.0,
       "Vac Group Risk: Disease 2 Cum":38109.0,
@@ -496,7 +496,7 @@
       "Vac Population":760478.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Mae Hong Son",
       "Vac Group Risk: Disease 1 Cum":11203.0,
       "Vac Group Risk: Disease 2 Cum":8316.0,
@@ -515,7 +515,7 @@
       "Vac Population":245764.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Maha Sarakham",
       "Vac Group Risk: Disease 1 Cum":64575.0,
       "Vac Group Risk: Disease 2 Cum":59202.0,
@@ -534,7 +534,7 @@
       "Vac Population":957365.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Mukdahan",
       "Vac Group Risk: Disease 1 Cum":18782.0,
       "Vac Group Risk: Disease 2 Cum":16763.0,
@@ -553,7 +553,7 @@
       "Vac Population":351257.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nakhon Nayok",
       "Vac Group Risk: Disease 1 Cum":16170.0,
       "Vac Group Risk: Disease 2 Cum":15681.0,
@@ -572,7 +572,7 @@
       "Vac Population":271739.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nakhon Pathom",
       "Vac Group Risk: Disease 1 Cum":63572.0,
       "Vac Group Risk: Disease 2 Cum":66080.0,
@@ -591,7 +591,7 @@
       "Vac Population":1125350.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nakhon Phanom",
       "Vac Group Risk: Disease 1 Cum":88332.0,
       "Vac Group Risk: Disease 2 Cum":78655.0,
@@ -610,7 +610,7 @@
       "Vac Population":724861.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nakhon Ratchasima",
       "Vac Group Risk: Disease 1 Cum":206615.0,
       "Vac Group Risk: Disease 2 Cum":196334.0,
@@ -629,7 +629,7 @@
       "Vac Population":2692890.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nakhon Sawan",
       "Vac Group Risk: Disease 1 Cum":56224.0,
       "Vac Group Risk: Disease 2 Cum":54028.0,
@@ -648,7 +648,7 @@
       "Vac Population":1059708.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nakhon Si Thammarat",
       "Vac Group Risk: Disease 1 Cum":93146.0,
       "Vac Group Risk: Disease 2 Cum":81876.0,
@@ -667,7 +667,7 @@
       "Vac Population":1575117.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nan",
       "Vac Group Risk: Disease 1 Cum":26758.0,
       "Vac Group Risk: Disease 2 Cum":25501.0,
@@ -686,7 +686,7 @@
       "Vac Population":477862.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Narathiwat",
       "Vac Group Risk: Disease 1 Cum":38215.0,
       "Vac Group Risk: Disease 2 Cum":30734.0,
@@ -705,7 +705,7 @@
       "Vac Population":805356.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nong Bua Lamphu",
       "Vac Group Risk: Disease 1 Cum":37485.0,
       "Vac Group Risk: Disease 2 Cum":36127.0,
@@ -724,7 +724,7 @@
       "Vac Population":523861.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nong Khai",
       "Vac Group Risk: Disease 1 Cum":32201.0,
       "Vac Group Risk: Disease 2 Cum":30244.0,
@@ -743,7 +743,7 @@
       "Vac Population":519027.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Nonthaburi",
       "Vac Group Risk: Disease 1 Cum":91961.0,
       "Vac Group Risk: Disease 2 Cum":90903.0,
@@ -762,7 +762,7 @@
       "Vac Population":1609192.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Pathum Thani",
       "Vac Group Risk: Disease 1 Cum":113870.0,
       "Vac Group Risk: Disease 2 Cum":108834.0,
@@ -781,7 +781,7 @@
       "Vac Population":1533781.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Pattani",
       "Vac Group Risk: Disease 1 Cum":30251.0,
       "Vac Group Risk: Disease 2 Cum":24608.0,
@@ -800,7 +800,7 @@
       "Vac Population":743054.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phang Nga",
       "Vac Group Risk: Disease 1 Cum":16916.0,
       "Vac Group Risk: Disease 2 Cum":16518.0,
@@ -819,7 +819,7 @@
       "Vac Population":286339.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phatthalung",
       "Vac Group Risk: Disease 1 Cum":29520.0,
       "Vac Group Risk: Disease 2 Cum":27818.0,
@@ -838,7 +838,7 @@
       "Vac Population":528207.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phayao",
       "Vac Group Risk: Disease 1 Cum":25315.0,
       "Vac Group Risk: Disease 2 Cum":24455.0,
@@ -857,7 +857,7 @@
       "Vac Population":468292.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phetchabun",
       "Vac Group Risk: Disease 1 Cum":56988.0,
       "Vac Group Risk: Disease 2 Cum":51623.0,
@@ -876,7 +876,7 @@
       "Vac Population":992791.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phetchaburi",
       "Vac Group Risk: Disease 1 Cum":32536.0,
       "Vac Group Risk: Disease 2 Cum":29998.0,
@@ -895,7 +895,7 @@
       "Vac Population":502827.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phichit",
       "Vac Group Risk: Disease 1 Cum":32025.0,
       "Vac Group Risk: Disease 2 Cum":31284.0,
@@ -914,7 +914,7 @@
       "Vac Population":536012.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phitsanulok",
       "Vac Group Risk: Disease 1 Cum":47488.0,
       "Vac Group Risk: Disease 2 Cum":46056.0,
@@ -933,7 +933,7 @@
       "Vac Population":1050000.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phra Nakhon Si Ayutthaya",
       "Vac Group Risk: Disease 1 Cum":55578.0,
       "Vac Group Risk: Disease 2 Cum":53382.0,
@@ -952,7 +952,7 @@
       "Vac Population":921047.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phrae",
       "Vac Group Risk: Disease 1 Cum":36870.0,
       "Vac Group Risk: Disease 2 Cum":32333.0,
@@ -971,7 +971,7 @@
       "Vac Population":441310.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Phuket",
       "Vac Group Risk: Disease 1 Cum":29672.0,
       "Vac Group Risk: Disease 2 Cum":28978.0,
@@ -990,7 +990,7 @@
       "Vac Population":547584.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Prachinburi",
       "Vac Group Risk: Disease 1 Cum":27662.0,
       "Vac Group Risk: Disease 2 Cum":26213.0,
@@ -1009,7 +1009,7 @@
       "Vac Population":579651.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Prachuap Khiri Khan",
       "Vac Group Risk: Disease 1 Cum":38761.0,
       "Vac Group Risk: Disease 2 Cum":36802.0,
@@ -1028,7 +1028,7 @@
       "Vac Population":578094.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Ranong",
       "Vac Group Risk: Disease 1 Cum":12698.0,
       "Vac Group Risk: Disease 2 Cum":12327.0,
@@ -1047,7 +1047,7 @@
       "Vac Population":228507.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Ratchaburi",
       "Vac Group Risk: Disease 1 Cum":46811.0,
       "Vac Group Risk: Disease 2 Cum":48071.0,
@@ -1066,7 +1066,7 @@
       "Vac Population":918674.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Rayong",
       "Vac Group Risk: Disease 1 Cum":53634.0,
       "Vac Group Risk: Disease 2 Cum":52700.0,
@@ -1085,7 +1085,7 @@
       "Vac Population":966932.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Roi Et",
       "Vac Group Risk: Disease 1 Cum":64785.0,
       "Vac Group Risk: Disease 2 Cum":59694.0,
@@ -1104,7 +1104,7 @@
       "Vac Population":1307158.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Sa Kaeo",
       "Vac Group Risk: Disease 1 Cum":27446.0,
       "Vac Group Risk: Disease 2 Cum":25245.0,
@@ -1123,7 +1123,7 @@
       "Vac Population":586286.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Sakon Nakhon",
       "Vac Group Risk: Disease 1 Cum":170093.0,
       "Vac Group Risk: Disease 2 Cum":157920.0,
@@ -1142,7 +1142,7 @@
       "Vac Population":1145848.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Samut Prakan",
       "Vac Group Risk: Disease 1 Cum":142956.0,
       "Vac Group Risk: Disease 2 Cum":130197.0,
@@ -1161,7 +1161,7 @@
       "Vac Population":1931727.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Samut Sakhon",
       "Vac Group Risk: Disease 1 Cum":62553.0,
       "Vac Group Risk: Disease 2 Cum":58659.0,
@@ -1180,7 +1180,7 @@
       "Vac Population":953167.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Samut Songkhram",
       "Vac Group Risk: Disease 1 Cum":11839.0,
       "Vac Group Risk: Disease 2 Cum":11231.0,
@@ -1199,7 +1199,7 @@
       "Vac Population":204018.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Saraburi",
       "Vac Group Risk: Disease 1 Cum":44619.0,
       "Vac Group Risk: Disease 2 Cum":44623.0,
@@ -1218,7 +1218,7 @@
       "Vac Population":720145.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Satun",
       "Vac Group Risk: Disease 1 Cum":17262.0,
       "Vac Group Risk: Disease 2 Cum":16294.0,
@@ -1237,7 +1237,7 @@
       "Vac Population":331057.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Sing Buri",
       "Vac Group Risk: Disease 1 Cum":11953.0,
       "Vac Group Risk: Disease 2 Cum":11687.0,
@@ -1256,7 +1256,7 @@
       "Vac Population":214665.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Sisaket",
       "Vac Group Risk: Disease 1 Cum":57863.0,
       "Vac Group Risk: Disease 2 Cum":50721.0,
@@ -1275,7 +1275,7 @@
       "Vac Population":1460182.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Songkhla",
       "Vac Group Risk: Disease 1 Cum":91702.0,
       "Vac Group Risk: Disease 2 Cum":87635.0,
@@ -1294,7 +1294,7 @@
       "Vac Population":1487320.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Sukhothai",
       "Vac Group Risk: Disease 1 Cum":34810.0,
       "Vac Group Risk: Disease 2 Cum":31811.0,
@@ -1313,7 +1313,7 @@
       "Vac Population":596902.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Suphan Buri",
       "Vac Group Risk: Disease 1 Cum":50388.0,
       "Vac Group Risk: Disease 2 Cum":48535.0,
@@ -1332,7 +1332,7 @@
       "Vac Population":850709.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Surat Thani",
       "Vac Group Risk: Disease 1 Cum":108834.0,
       "Vac Group Risk: Disease 2 Cum":100462.0,
@@ -1351,7 +1351,7 @@
       "Vac Population":1144090.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Surin",
       "Vac Group Risk: Disease 1 Cum":61544.0,
       "Vac Group Risk: Disease 2 Cum":55995.0,
@@ -1370,7 +1370,7 @@
       "Vac Population":1392583.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Tak",
       "Vac Group Risk: Disease 1 Cum":20677.0,
       "Vac Group Risk: Disease 2 Cum":17584.0,
@@ -1389,7 +1389,7 @@
       "Vac Population":589901.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Trang",
       "Vac Group Risk: Disease 1 Cum":42417.0,
       "Vac Group Risk: Disease 2 Cum":40529.0,
@@ -1408,7 +1408,7 @@
       "Vac Population":659636.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Trat",
       "Vac Group Risk: Disease 1 Cum":11703.0,
       "Vac Group Risk: Disease 2 Cum":11442.0,
@@ -1427,7 +1427,7 @@
       "Vac Population":249458.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Ubon Ratchathani",
       "Vac Group Risk: Disease 1 Cum":102689.0,
       "Vac Group Risk: Disease 2 Cum":92855.0,
@@ -1446,7 +1446,7 @@
       "Vac Population":1880468.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Udon Thani",
       "Vac Group Risk: Disease 1 Cum":124213.0,
       "Vac Group Risk: Disease 2 Cum":116119.0,
@@ -1465,7 +1465,7 @@
       "Vac Population":1565740.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Uthai Thani",
       "Vac Group Risk: Disease 1 Cum":22594.0,
       "Vac Group Risk: Disease 2 Cum":21372.0,
@@ -1484,7 +1484,7 @@
       "Vac Population":334270.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Uttaradit",
       "Vac Group Risk: Disease 1 Cum":22484.0,
       "Vac Group Risk: Disease 2 Cum":20131.0,
@@ -1503,7 +1503,7 @@
       "Vac Population":455259.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Yala",
       "Vac Group Risk: Disease 1 Cum":27212.0,
       "Vac Group Risk: Disease 2 Cum":22458.0,
@@ -1522,7 +1522,7 @@
       "Vac Population":547993.0
     },
     {
-      "Date":"2022-01-10T00:00:00.000Z",
+      "Date":"2022-01-10T00:00:00.000",
       "Province":"Yasothon",
       "Vac Group Risk: Disease 1 Cum":25103.0,
       "Vac Group Risk: Disease 2 Cum":23338.0,
