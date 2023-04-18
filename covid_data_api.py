@@ -367,12 +367,14 @@ def get_case_details_api_weekly():
     url = "https://covid19.ddc.moph.go.th/api/CSV/Cases/today-cases-line-lists"
     dir = "inputs/json/weekly/cases"
     file, content, _ = next(web_files(url, dir=dir))
-    cases2023 = pd.read_csv(file)
-    max_week = cases2023['weeknum'].max()
 
     def week_file(week):
         return f"{dir}/today-cases-line-lists-{week}"
-    os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
+    if file is not None:
+        cases2023 = pd.read_csv(file)
+        max_week = cases2023['weeknum'].max()
+        os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
+
     # Get fake api files
     cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week + 1) if os.path.exists(week_file(week))])
     # Columns are all messed up
