@@ -434,6 +434,7 @@ def get_variants_plot_pdf(file, page, page_num):
 def get_variant_sequenced_table(file, pages):
     fileseq = pd.DataFrame()
     first_seq_table = None
+    date = file2date(file)
     for page_num, page in enumerate(pages):
         if "Prevalence of Pangolin lineages" not in page:
             continue
@@ -463,17 +464,20 @@ def get_variant_sequenced_table(file, pages):
         df["Week"] = list(pd.to_numeric(weeks).dropna())
         # 164 = 2023-03-03?, 153 = 2022-12-02
 
-        if file2date(file) == d("2023-01-27"):
+        if date == d("2023-01-27"):
             end_week_one = d("2020-01-17")
         # Suspect dates are wrong so won't correct
         # elif file2date(file) == d("2023-03-03"):
         #     end_week_one = d("2020-01-10")
-        elif file2date(file) > d("2022-12-02"):
+        elif date > d("2022-12-02"):
             end_week_one = d("2020-01-03")
         else:
             end_week_one = d("2019-12-27")
+        if date == d("2023-04-14"):
+            df['Week'][2] = 171
         df['End'] = (df['Week'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
         df = df.set_index("End")
+        assert df.index.max() <= date
         # Double check the weeks numbers are correct
         nospace = page.replace("\n", "").replace(" ", "")
         if any_in(file, "20230217"):
