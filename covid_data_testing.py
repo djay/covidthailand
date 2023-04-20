@@ -438,7 +438,7 @@ def get_variant_sequenced_table(file, pages):
         if "Prevalence of Pangolin lineages" not in page:
             continue
         df = camelot_cache(file, page_num + 1, process_background=False)
-        if "Total" in df[0].iloc[-1] or df[0].str.contains("Other").any():
+        if "Total" in df[0].iloc[-1] or df[0].str.contains("Other").any() or df.iloc[0][1:].str.contains("(w|W)[0-9]+", regex=True).any():
             # Vertical. TODO: probably need a better test
             df = df.transpose()
         # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
@@ -454,12 +454,13 @@ def get_variant_sequenced_table(file, pages):
             df.iloc[1, 0] = "w126"
             df.iloc[2, 0] = "w127"
         df.columns = df.iloc[0]
+        df = df.rename(columns=dict(Lineage="Week"))
         df = df.iloc[1:]
         # Convert week number to a date
         # Need to handle when two weeks have ended up in one cell
-        weeks = df["Lineage"].astype(str).str.replace("w", "").str.replace(
+        weeks = df["Week"].astype(str).str.replace("w", "").str.replace(
             "W", "").str.split(" ", expand=True).stack().reset_index()[0]
-        df["Lineage"] = list(pd.to_numeric(weeks).dropna())
+        df["Week"] = list(pd.to_numeric(weeks).dropna())
         # 164 = 2023-03-03?, 153 = 2022-12-02
 
         if file2date(file) == d("2023-01-27"):
@@ -471,7 +472,7 @@ def get_variant_sequenced_table(file, pages):
             end_week_one = d("2020-01-03")
         else:
             end_week_one = d("2019-12-27")
-        df['End'] = (df['Lineage'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
+        df['End'] = (df['Week'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
         df = df.set_index("End")
         # Double check the weeks numbers are correct
         nospace = page.replace("\n", "").replace(" ", "")
@@ -482,12 +483,12 @@ def get_variant_sequenced_table(file, pages):
         else:
             found = find_dates(nospace, thai=False)
             deltas = []
-            for week_date, week in zip([d for d in [df.index.max()]], [df['Lineage'].max()]):
+            for week_date, week in zip([d for d in [df.index.max()]], [df['Week'].max()]):
                 deltas += [(week_date - d).days for d in found[-1:]]
             if not any_in(deltas, 0, -6, isstr=False) and deltas:
                 logger.warning(
-                    f"Sequence table: Missing weekdate of w{list(df['Lineage'])} {[str(d.date()) for d in df.index]}: {deltas} in {file}")
-        df = df.drop(columns=["Total Sequences", "Total Sequence", "Lineage"], errors="ignore")
+                    f"Sequence table: Missing weekdate of w{list(df['Week'])} {[str(d.date()) for d in df.index]}: {deltas} in {file}")
+        df = df.drop(columns=["Total Sequences", "Total Sequence", "Week"], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
         df = df.apply(pd.to_numeric)
