@@ -334,15 +334,25 @@ def dash_province_weekly(file="moph_province_weekly"):
 
         wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
-        row_update = extract_basics(wb, date, check_date=False)
+        row_update = extract_basics(wb, date, check_date=False, base_df=row)
         assert not row_update.empty
         row = row_update.combine_first(row)
 
         row['Province'] = province
         row = row.reset_index().set_index(["Date", "Province"])
-        df = row.combine_first(df)
-        logger.info("{} MOPH Dashboard {}", row.index.max(),
-                    row.loc[row.last_valid_index():].to_string(index=False, header=False))
+
+        combined = row.combine_first(df)
+
+        # Test if this creates a dip
+        contiguous = combined[["Cases Cum", "Deaths Cum"]].dropna()
+        dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
+        if False and len(dec1.index.intersection(row.index)) > 0:
+            logger.warning("{} MOPH dash, dropping invalid row. too low {}", row.index.max(),
+                           row.loc[row.last_valid_index():].to_string(index=False, header=False))
+        else:
+            df = combined
+            logger.info("{} MOPH Dashboard {}", row.index.max(),
+                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
     export(df, file, csv_only=True, dir="inputs/json")
 
     # Vac Given 3 Cum seems to be 3+4+5+6 which is wrong
@@ -350,7 +360,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     return df
 
 
-def extract_basics(wb, date, check_date=True):
+def extract_basics(wb, date, check_date=True, base_df=None):
 
     row = pd.DataFrame()
     # D_CaseNew_/7 - daily avg cases
@@ -399,11 +409,13 @@ def extract_basics(wb, date, check_date=True):
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
+    if cases.empty and base_df is not None:
+        cases = base_df[['Cases']]
     if check_date and date != vacs.index.max() and date != cases.index.max():
         return row
     # date = cases.index.max()  # We can't get update date always so use lastest cases date
     row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
-    row = row.combine_first(to_cum(row, cases, "Cases"))
+    row = row.combine_first(to_cum(row, cases, "Cases")).combine_first(cases)
     row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan))
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
@@ -411,8 +423,10 @@ def extract_basics(wb, date, check_date=True):
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
+    if deaths.empty and base_df is not None:
+        deaths = base_df[['Deaths']]
     if not deaths.empty:
-        row = row.combine_first(to_cum(row, deaths, "Deaths")).ffill()
+        row = row.combine_first(to_cum(row, deaths, "Deaths")).combine_first(deaths)
 
     row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
     row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
