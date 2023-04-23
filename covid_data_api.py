@@ -621,9 +621,27 @@ def timeline_by_province():
 def timeline_by_province_weekly():
     # url = "https://covid19.ddc.moph.go.th/api/Cases/round-1to2-by-provinces"
     # df = load_paged_json(url, ["year", "weeknum"], [2020, 1])
+    dir = "inputs/json/weekly"
     url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir="inputs/json/weekly", check=True, appending=False, timeout=80)), None)
+    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80)), None)
     df = pd.read_json(file)
+
+    url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces"
+    prefix = "today-cases-by-provinces"
+    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80)), None)
+
+    def week_file(week):
+        return f"{dir}/{prefix}-{week}"
+    if file is not None:
+        cases2023 = pd.read_json(file)
+        max_week = cases2023['weeknum'].max()
+        os.rename(f"{dir}/{prefix}", week_file(max_week))
+
+    # Get fake api files
+    cases2023 = pd.concat([pd.read_csv(week_file(week))
+                          for week in range(1, max_week) if os.path.exists(week_file(week))] + [cases2023])
+
+    df = pd.concat([df, cases2023])
 
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
@@ -831,8 +849,8 @@ if __name__ == '__main__':
 
     df = import_csv("combined", index=["Date"])
 
-    timeline_prov = timeline_by_province()
     timeline_prov_weekly = timeline_by_province_weekly()
+    timeline_prov = timeline_by_province()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     timeline_weekly = get_cases_timelineapi_weekly()
