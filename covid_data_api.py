@@ -638,7 +638,7 @@ def timeline_by_province_weekly():
         os.rename(f"{dir}/{prefix}", week_file(max_week))
 
     # Get fake api files
-    cases2023 = pd.concat([pd.read_csv(week_file(week))
+    cases2023 = pd.concat([pd.read_json(week_file(week))
                           for week in range(1, max_week) if os.path.exists(week_file(week))] + [cases2023])
 
     df = pd.concat([df, cases2023])
