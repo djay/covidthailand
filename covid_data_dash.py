@@ -289,6 +289,9 @@ def dash_province_weekly(file="moph_province_weekly"):
     dec3 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]
     dec4 = contiguous[(contiguous.groupby("Province").diff(-1) > 0).any(axis=1)]
     decreased = dec1.combine_first(dec2).combine_first(dec3).combine_first(dec4)
+    # Just remove bad rows
+    df = df.drop(index=decreased.index)
+
     valid = {
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
         "Cases Cum": (d("2022-12-11"), today(), 150),  # TODO: need better way to reject this year cum values
@@ -346,7 +349,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         # Test if this creates a dip
         contiguous = combined[["Cases Cum", "Deaths Cum"]].dropna()
         dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
-        if False and len(dec1.index.intersection(row.index)) > 0:
+        if len(dec1.index.intersection(row.index)) > 0:
             logger.warning("{} MOPH dash, dropping invalid row. too low {}", row.index.max(),
                            row.loc[row.last_valid_index():].to_string(index=False, header=False))
         else:
@@ -375,12 +378,13 @@ def extract_basics(wb, date, check_date=True, base_df=None):
         periodic = periodic[name]
         cum = cum[cum_name]
 
+        periodic = periodic.replace(np.nan, 0)
         assert cum.last_valid_index()
         combined = periodic.combine_first(cum)  # TODO: this might go back too far. should really be min of periodic?
         df = cum.reindex(combined.index).bfill().subtract(periodic.reindex(
             combined.index)[::-1].cumsum()[::-1].shift(-1), fill_value=0)
         assert (df > 0).any()
-        return df.to_frame(cum_name)
+        return df.to_frame(cum_name).ffill()
 
     vacs = workbook_series(wb, ["D_Vac2Table"], {
         "vaccine_plan_group-alias": {
