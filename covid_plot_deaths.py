@@ -456,8 +456,11 @@ def save_excess_death_plots(df):
     years2021 = by_month["2021-01-01":"2022-01-01"][cols2021 + ['Month']].reset_index().set_index("Month")
     cols2022 = ['Deaths 2022']
     years2022 = by_month["2022-01-01":"2023-01-01"][cols2022 + ['Month']].reset_index().set_index("Month")
-    by_month = years2020.combine_first(years2021).combine_first(years2022).sort_values("Date")
-    cols = cols + cols2021 + cols2022
+    cols2023 = ['Deaths 2023']
+    years2023 = by_month["2023-01-01":"2024-01-01"][cols2023 + ['Month']].reset_index().set_index("Month")
+
+    by_month = years2020.combine_first(years2021).combine_first(years2022).combine_first(years2023).sort_values("Date")
+    cols = cols + cols2021 + cols2022 + cols2023
 
     plot_area(df=by_month,
               title='Excess Deaths - Thailand',
