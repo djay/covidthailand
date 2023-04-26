@@ -454,6 +454,8 @@ def get_variant_sequenced_table(file, pages):
         elif "20220610" in file and page_num == 11:
             df.iloc[1, 0] = "w126"
             df.iloc[2, 0] = "w127"
+        elif "20230421" in file:
+            df = df.replace("w173", "w172")
         df.columns = df.iloc[0]
         df = df.rename(columns=dict(Lineage="Week"))
         df = df.iloc[1:]
