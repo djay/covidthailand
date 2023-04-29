@@ -413,7 +413,7 @@ def extract_basics(wb, date, check_date=True, base_df=None):
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
-    if cases.empty and base_df is not None:
+    if cases.empty and base_df is not None and 'Cases' in base_df.columns:
         cases = base_df[['Cases']]
     if check_date and date != vacs.index.max() and date != cases.index.max():
         return row
@@ -427,7 +427,7 @@ def extract_basics(wb, date, check_date=True, base_df=None):
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
-    if deaths.empty and base_df is not None:
+    if deaths.empty and base_df is not None and 'deaths' in base_df.columns:
         deaths = base_df[['Deaths']]
     if not deaths.empty:
         row = row.combine_first(to_cum(row, deaths, "Deaths")).combine_first(deaths)
