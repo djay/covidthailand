@@ -235,7 +235,7 @@ def dash_weekly(file="moph_dash_weekly"):
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
     # aggregated for week ending on sat
-    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
 
     latest = next(dates, None)
     for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates)):
@@ -298,7 +298,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
-    dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
+    dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
     # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
     # ts = tableauscraper.TableauScraper()
