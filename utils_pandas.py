@@ -167,7 +167,7 @@ def sensible_precision(num: float) -> str:
         elif abs(num) < 100.0:
             num = round(num, 1)
             sensible_number = f'{num:.1f}'.rstrip('0').rstrip('.')
-        elif num == np.inf:
+        elif abs(num) == np.inf:
             sensible_number = "INF"
         else:
             num = round(num)

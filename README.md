@@ -34,6 +34,7 @@ sources have stopped being published so many plots will no longer be change.
 
 ![Hospitalisation as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/active_peak_3.png)
 ![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
+![Bi-weekly change](https://practical-ritchie-cca141.netlify.app/outputs/biweekly_change_3.png)
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
   [MOPH daily situation report](downloads.md#dl-situation-reports), [DMSC: Thailand Laboratory testing data](downloads.md#dl-testing)

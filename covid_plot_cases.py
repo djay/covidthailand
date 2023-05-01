@@ -28,6 +28,22 @@ AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
 
 
 def save_cases_plots(df: pd.DataFrame) -> None:
+
+    cols = ['Cases', 'Hospitalized Severe', 'Hospitalized Respirator', 'Deaths', ]
+    avged = df[cols].rolling(14).mean()
+    change = ((avged - avged.shift(14)) / avged.shift(14) * 100)
+    change = change.replace(-np.inf, np.nan)
+    plot_area(df=change,
+              title='Bi-Weekly Change (from 14 day avg)',
+              png_prefix='biweekly_change', cols_subset=cols, legends=cols,
+              ma_days=0,
+              kind='line', stacked=False, percent_fig=False, clean_end=True,
+              periods_to_plot=["all", "3", "4"],
+              cmap='tab10',
+              y_formatter=perc_format,
+              limit_to_zero=False,
+              footnote_left=f'{source}Data Source: MOPH')
+
     # No longer include prisons in proactive number
     df['Cases Proactive Community'] = df['Cases Proactive']  # .sub(df['Cases Area Prison'], fill_value=0)
     # df['Cases inc ATK'] = df['Cases'].add(df['ATK'], fill_value=0)
@@ -516,6 +532,6 @@ if __name__ == "__main__":
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_infections_estimate(df)
     save_cases_plots(df)
+    save_infections_estimate(df)
     save_caseprov_plots(df)
