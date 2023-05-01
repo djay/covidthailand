@@ -30,7 +30,8 @@ AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
 def save_cases_plots(df: pd.DataFrame) -> None:
 
     cols = ['Cases', 'Hospitalized Severe', 'Hospitalized Respirator', 'Deaths', ]
-    avged = df[cols].rolling(14).mean()
+    # need to fill in hospitalisation figures
+    avged = df[cols].interpolate().rolling(14).mean()
     change = ((avged - avged.shift(14)) / avged.shift(14) * 100)
     change = change.replace(-np.inf, np.nan)
     plot_area(df=change,
