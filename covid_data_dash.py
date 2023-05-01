@@ -298,7 +298,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
-    dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
+    dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
     # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
     latest = next(dates, None)
     # ts = tableauscraper.TableauScraper()
@@ -350,8 +350,8 @@ def dash_province_weekly(file="moph_province_weekly"):
         contiguous = combined[["Cases Cum", "Deaths Cum"]].dropna()
         dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
         if len(dec1.index.intersection(row.index)) > 0:
-            logger.warning("{} MOPH dash, dropping invalid row. too low {}", row.index.max(),
-                           row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            logger.info("{} MOPH dash, dropping invalid row. too low {}", row.index.max(),
+                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
         else:
             df = combined
             logger.info("{} MOPH Dashboard {}", row.index.max(),
@@ -415,12 +415,7 @@ def extract_basics(wb, date, check_date=True, base_df=None):
     cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
     if cases.empty and base_df is not None and 'Cases' in base_df.columns:
         cases = base_df[['Cases']]
-    if check_date and (date != vacs.index.max() or date != cases.index.max()):
-        return row
-    # date = cases.index.max()  # We can't get update date always so use lastest cases date
-    row = row.combine_first(workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan))
-    row = row.combine_first(to_cum(row, cases, "Cases")).combine_first(cases)
-    row = row.combine_first(workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan))
+
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
         "AGG(NUM_DEATH)-value": "Deaths",
@@ -429,6 +424,15 @@ def extract_basics(wb, date, check_date=True, base_df=None):
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
     if deaths.empty and base_df is not None and 'deaths' in base_df.columns:
         deaths = base_df[['Deaths']]
+
+    if check_date and (date != deaths.index.max() and date != cases.index.max()):
+        return row
+    # date = cases.index.max()  # We can't get update date always so use lastest cases date
+    cases_cum = workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan)
+    deaths_cum = workbook_value(wb, date, ["D_DeathACM (2)", "D2_DeathACM (2)"], "Deaths Cum", default=np.nan)
+    row = row.combine_first(cases_cum)
+    row = row.combine_first(to_cum(row, cases, "Cases")).combine_first(cases)
+    row = row.combine_first(deaths_cum)
     if not deaths.empty:
         row = row.combine_first(to_cum(row, deaths, "Deaths")).combine_first(deaths)
 
@@ -733,8 +737,8 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_by_province_df = dash_province_weekly()
     dash_daily_df = dash_weekly()
+    dash_by_province_df = dash_province_weekly()
     dash_by_province_daily = dash_by_province()
     # dash_ages_df = dash_ages()
 
