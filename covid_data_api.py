@@ -640,10 +640,17 @@ def timeline_by_province_weekly():
     # Get fake api files
     cases2023 = pd.concat([pd.read_json(week_file(week))
                           for week in range(1, max_week) if os.path.exists(week_file(week))] + [cases2023])
-    last_values = df.set_index(['year', 'weeknum']).loc[(2022, 52)]
+    total_cols = ['total_case', 'total_death', 'total_case_excludeabroad']
+    last_values = df.set_index(['year', 'weeknum']).loc[(2022, 52)].set_index("province")[total_cols]
+    #combined = pd.concat([last_values, cases2023])
+    combined = cases2023.set_index(["year", "weeknum", "province"])[total_cols].groupby(
+        ["year", "weeknum"], as_index=False).apply(lambda adf: adf + last_values)
+    combined = combined.reset_index(0).drop(columns="level_0")
+    combined = combined.combine_first(cases2023.set_index(["year", "weeknum", "province"])).reset_index()
+    # combined.set_index(["year", "weeknum", "province"])[['total_case', 'total_death']].groupby("province").apply(lambda adf: adf + adf.loc[(2022, 52)])
 
     # TODO: cases2023 totals need to be added to values from 2022
-    # df = pd.concat([df, cases2023])
+    df = pd.concat([df, combined])
 
     df = df.rename(columns={"province": "Province", "new_case": "Cases", "total_case": "Cases Cum",
                    "new_case_excludeabroad": "Cases Local", "total_case_excludeabroad": "Case Local Cum", "new_death": "Deaths", "total_death": "Deaths Cum"})
