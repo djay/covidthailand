@@ -105,11 +105,24 @@ def cum2daily(results, exclude=[], drop=True, replace=True):
     return cum
 
 
-def weekly2daily(weekly):
-    # This one doesn't have the right area under the curve
-    # weekly.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate() / 7
-    # This one is flat. TODO: how to get more of a curve?
-    return weekly.reindex(pd.date_range(weekly.index.min(), weekly.index.max(), name="Date")).cumsum().interpolate().diff()
+# def weekly2daily(weekly):
+#     # This one doesn't have the right area under the curve
+#     # weekly.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate() / 7
+#     # This one is flat. TODO: how to get more of a curve?
+#     return weekly.reindex(pd.date_range(weekly.index.min(), weekly.index.max(), name="Date")).cumsum().interpolate().diff()
+
+
+def weekly2daily(df):
+    """
+    Take date values from end of week, spread non cum values over the week/7
+    """
+    if "Province" in df.index.names:
+        df = df.reset_index("Province")
+    df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date"))
+    cums = [c for c in df.columns if " Cum" in c]
+    others = [c for c in df.columns if " Cum" not in c and "Province" != c]
+    df = (df[others] / 7).combine_first(df)
+    return df[others][::-1].rolling("7d").min()[::-1]
 
 
 def daily2cum(results):

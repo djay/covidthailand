@@ -83,17 +83,14 @@ def get_cases_timelineapi():
 
 
 def get_cases_timelineapi_weekly():
-    try:
-        json1, _, url = next(web_files("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all",
-                             dir="inputs/json/weekly", check=False), None)
-    except requests.exceptions.RequestException:
-        # I think we have all this data covered by other sources. It's a little unreliable.
-        return pd.DataFrame()
-    df2 = pd.read_json(json1)
+    y2, y4 = web_files("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-all",
+                       "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all",
+                       dir="inputs/json/weekly", check=False, appending=False, timeout=80)
+
+    df2, df4 = [pd.read_json(f[0]) for f in [y2, y4]]
     df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/report-round-3-y21-line-lists",
                           ["year", "weeknum"], dir="inputs/json/weekly")
-    df4 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-all",
-                          ["year", "weeknum"], dir="inputs/json/weekly")
+
     # df = pd.concat([df2, df3, df4])
     df = df4  # there is overlap and it has different values. Just use this year?
 
@@ -110,15 +107,15 @@ def get_cases_timelineapi_weekly():
                    new_recovered="Recovered", total_recovered="Recovered Cum",
                                 ))
     df = df.drop(columns=[col for col in df.columns if "_" in col])
-    daily = weekly2daily(df[[col for col in df.columns if " Cum" not in col]])
-    cum = df[[col for col in df.columns if "Cum" in col]].reindex(
-        pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
-    df = cum2daily(cum).combine_first(daily)
+    # daily = weekly2daily(df[[col for col in df.columns if " Cum" not in col]])
+    #cum = df[[col for col in df.columns if "Cum" in col]].reindex(
+    #    pd.date_range(df.index.min(), df.index.max(), name="Date")).interpolate()
+    df = weekly2daily(df)  # .combine_first(daily)
 
     # daily = [col for col in df.columns if "Cum" not in col]
     # df[daily] = (df[daily] / 7)
 
-    df["Source Cases"] = url
+    df["Source Cases"] = "api"
     return df
 
 
@@ -659,15 +656,16 @@ def timeline_by_province_weekly():
     df = join_provinces(df, "Province", extra=[])
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0)
     df = df.drop(columns=['update_date', "index"])
-    df = df.groupby("Province").apply(lambda x: x.drop(columns="Province").reindex(
-        pd.date_range(x.index.min(), x.index.max(), name="Date")).interpolate())
+    df = df.reset_index().set_index(['Date', 'Province'])
+    spread = df.groupby("Province", group_keys=True).apply(weekly2daily)
+    df = spread.combine_first(df)  # Put back in cum values
 
     # daily = [col for col in df.columns if "Cum" not in col]
     # df[daily] = (df[daily] / 7).round().astype(int)
 
-    df = cum2daily(df[[col for col in df.columns if "Cum" in col]]).combine_first(df)
+    # df = cum2daily(df[[col for col in df.columns if "Cum" in col]]).combine_first(df)
 
-    df = df.reset_index().set_index(["Date", "Province"])
+    # df = df.reset_index().set_index(["Date", "Province"])
     return df
 
 
@@ -859,11 +857,11 @@ if __name__ == '__main__':
 
     df = import_csv("combined", index=["Date"])
 
+    timeline_weekly = get_cases_timelineapi_weekly()
     timeline_prov_weekly = timeline_by_province_weekly()
     timeline_prov = timeline_by_province()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
-    timeline_weekly = get_cases_timelineapi_weekly()
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
