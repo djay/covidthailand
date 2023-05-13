@@ -637,8 +637,7 @@ def timeline_by_province_weekly():
 
     max_week = today().isocalendar().week + 1
     # Get fake api files
-    cases2023 = pd.concat([pd.read_json(week_file(week))
-                          for week in range(1, max_week) if os.path.exists(week_file(week))] + [cases2023])
+    cases2023 = pd.concat([pd.read_json(week_file(week)) for week in range(1, max_week) if os.path.exists(week_file(week))])
     total_cols = ['total_case', 'total_death', 'total_case_excludeabroad']
     last_values = df.set_index(['year', 'weeknum']).loc[(2022, 52)].set_index("province")[total_cols]
     #combined = pd.concat([last_values, cases2023])
