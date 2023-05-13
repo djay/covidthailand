@@ -8,6 +8,7 @@ from dateutil.parser import parse as d
 
 import utils_thai
 from covid_data_api import ihme_dataset
+from covid_data_testing import get_variant_api
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
 from utils_pandas import import_csv
@@ -52,37 +53,49 @@ week,BA.1 (Omicron),BA.2 (Omicron)
 120, 3, 97
 """
 
+# 'B.1.1.7 (Alpha)'
+# 'B.1.351 (Beta)'
+# 'B.1.617.2 (Delta)'
+groups = {
+    'B.1.1': 'B.1.1.7 (Alpha)',
+    'B.1.351': 'B.1.351 (Beta)',
+    'B.1.617.2': 'B.1.617.2 (Delta)',
+    'AY.': 'B.1.617.2 (Delta)',
+    "BA.1": "BA.1 (Omicron)",
+    "BA.2": "BA.2 (Omicron)",
+    "BA.4": "BA.4/BA.5 (Omicron)",
+    "BA.5": "BA.4/BA.5 (Omicron)",
+    "BA.2.75": "BN.1/BA.2.75 (Omicron)",
+    "BA.2.76": "BN.1/BA.2.75 (Omicron)",
+    "BN.1.": "BN.1/BA.2.75 (Omicron)",
+    "XBB": "XBB (Omicron)",
+    "BQ.X": "Other",
+    "Other": "Other",
+}
 
-def save_variant_plots(df: pd.DataFrame) -> None:
-    # Vartiants
-    # sequence data have less of but more detail
-    seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
-    seq = seq.fillna(0)
-    # Group into major categories, BA.2 vs BA.1
-    groups = {
-        "BA.1": "BA.1",
-        "BA.2": "BA.2",
-        "BA.4": "BA.4/BA.5",
-        "BA.5": "BA.4/BA.5",
-        "BA.2.75": "BN.1/BA.2.75",
-        "BA.2.76": "BN.1/BA.2.75",
-        "BN.1.": "BN.1/BA.2.75",
-        "XBB": "XBB",
-        "BQ.X": "Other",
-        "Other": "Other",
-    }
 
+def group_seq(seq):
     def group(variant):
-        label = next((label for match, label in reversed(groups.items()) if match in variant), "Other")
+        label = next((label for match, label in reversed(groups.items()) if match in variant.upper()), "Other")
         return label
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
-    seq = seq[seq.sum(axis=1) > 20]  # If not enough samples we won't use it
     seq = seq.apply(lambda x: x / x.sum(), axis=1)
     # Put them back in the order above
-    seq = seq[dict(zip(groups.values(), [1] * len(groups))).keys()]
-    seq.columns = [c + " (Omicron)" for c in seq.columns]
+    # seq = seq[dict(zip(groups.values(), [1] * len(groups))).keys()]
+    # seq.columns = [c + " (Omicron)" for c in seq.columns]
+    return seq
+
+
+def combined_variant_reports():
+    # Vartiants
+    # sequence data have less of but more detail
+    seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
+    seq = seq.fillna(0)
+    seq = seq[seq.sum(axis=1) > 20]  # If not enough samples we won't use it
+    # Group into major categories, BA.2 vs BA.1
+    seq = group_seq(seq)
 
     # add in manual values
     mseq = pd.read_csv(io.StringIO(est_variants))
@@ -118,9 +131,20 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     # TODO: should we prefer seq data or pcr data?
     variants = variants.combine_first(area["2022-06-24":])
     last_data = variants['BA.2 (Omicron)'].last_valid_index()
+    variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
+    return variants
+
+
+def save_variant_plots(df: pd.DataFrame) -> None:
+    variants = combined_variant_reports()
+    api = get_variant_api()
+    api = api.resample("7D", label='right', closed='right').mean()
+    # api = api.rolling("7d").mean()
+    # api = api[api.sum(axis=1) > 5]  # If not enough samples we won't use it
+
+    variants = group_seq(api)
 
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
-    variants = variants.reindex(pd.date_range(variants.index.min(), last_data, freq='D')).interpolate()
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0))
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])

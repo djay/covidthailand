@@ -7,7 +7,6 @@ import pandas as pd
 import requests
 from dateutil.parser import parse as d
 
-import covid_plot_tests
 from utils_pandas import daterange
 from utils_pandas import export
 from utils_pandas import import_csv
@@ -430,8 +429,21 @@ def get_variants_plot_pdf(file, page, page_num):
     bangkok = bangkok.iloc[1:]
     return bangkok
 
-# TODO: should be able to replace with this api - https://outbreak-info.github.io/R-outbreak-info/
-# need to apply for account
+
+def get_variant_api():
+    # TODO: should be able to replace with this api - https://outbreak-info.github.io/R-outbreak-info/
+    # need to apply for account
+    js = requests.get("https://outbreak.info/assets/genomics-f604ae21.js").text
+    bearer = re.search(r'Bearer ([^"]*)', js).group(0)
+    # sequences = requests.get("https://api.outbreak.info/genomics/sequence-count?location_id=THA", headers=dict(Authorization=bearer)).json()
+    prev = requests.get("https://api.outbreak.info/genomics/prevalence-by-location-all-lineages?location_id=THA&other_threshold=0.03&nday_threshold=5&ndays=600",
+                        headers=dict(Authorization=bearer)).json()
+    prev = pd.DataFrame(prev['results'])
+    prev['date'] = pd.to_datetime(prev['date'])
+    # prev = prev.set_index(["date", "lineage"])
+    prev = prev.rename(columns=dict(lineage="Variant", date="End"))
+    prev = prev.pivot(columns="Variant", values="lineage_count", index="End")
+    return prev
 
 
 def get_variant_sequenced_table(file, pages):
@@ -616,12 +628,14 @@ def get_variant_reports():
 
 
 if __name__ == '__main__':
+    prev = get_variant_api()
     variants = get_variant_reports()
     df_daily = get_tests_by_day()
     df = get_test_reports()
     test_prov = get_tests_per_province()
     old = import_csv("combined", index=["Date"])
     df = old.combine_first(df).combine_first(df_daily)
+    import covid_plot_tests
 
     covid_plot_tests.save_test_area_plots(df)
     covid_plot_tests.save_tests_plots(df)
