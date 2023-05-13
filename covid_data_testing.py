@@ -430,6 +430,9 @@ def get_variants_plot_pdf(file, page, page_num):
     bangkok = bangkok.iloc[1:]
     return bangkok
 
+# TODO: should be able to replace with this api - https://outbreak-info.github.io/R-outbreak-info/
+# need to apply for account
+
 
 def get_variant_sequenced_table(file, pages):
     fileseq = pd.DataFrame()
