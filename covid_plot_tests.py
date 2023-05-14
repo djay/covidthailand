@@ -187,9 +187,9 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               footnote="Cases are tests for variants not Deaths so this is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections.",
               footnote_left=foot_source)
 
-    hosp_variants = (variants[cols].multiply(df['Hospitalized'], axis=0)).dropna(axis=0)
+    hosp_variants = (variants[cols].multiply(df['Hospitalized Respirator'], axis=0)).dropna(axis=0)
     plot_area(df=hosp_variants,
-              title='Hospitalized by Major Variant - Interpolated from Sampling - Thailand',
+              title='Hospitalized on Ventilator by Major Variant - Thailand',
               png_prefix='hosp_by_variants', cols_subset=cols,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
