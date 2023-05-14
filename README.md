@@ -85,6 +85,7 @@ sources have stopped being published so many plots will no longer be change.
 # Cases <a name="cases">
 
 ## Estimated Daily Infections
+*No longer updated so model is inaccurate*
 
 ![](https://practical-ritchie-cca141.netlify.app/outputs/cases_est_ihme_3.png)
 - IHME: stopped updating predictions from 2022-12-16 so estimates become less reliable the further past that date.
@@ -104,6 +105,7 @@ sources have stopped being published so many plots will no longer be change.
   [Google mobility data](https://ourworldindata.org/grapher/changes-visitors-covid?time=2021-04-01..latest&country=~THA)
 - Source: [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads), [MOPH Covid-19 Dashboard](downloads.md#dl-moph-dashboard), [CCSA Daily Briefing](downloads.md#dl-briefings)
 
+<!--
 ## Estimated Infections by Major Variant (Extrapolated from Surviellance)
 
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/inf_by_variants_3.png)
@@ -111,7 +113,7 @@ sources have stopped being published so many plots will no longer be change.
 
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/cases_by_variants_3.png)
 - source: [DMSc Variant Report](downloads.md#dl-variant)
-
+ -->
 
 ## Cases by Region
 

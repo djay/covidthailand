@@ -150,7 +150,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
 
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants['Cases'] = df['Cases']
-    case_variants = (variants[cols].multiply(variants['Cases'], axis=0))
+    case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0)
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
     plot_area(df=case_variants,
               title='Cases by Major Variant - Interpolated from Sampling - Thailand',
@@ -165,7 +165,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     ihme = ihme_dataset(check=False)
     today = df['Cases'].index.max()
     #est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
-    inf_variants = (variants[cols].multiply(ihme['inf_mean'], axis=0))
+    inf_variants = (variants[cols].multiply(ihme['inf_mean'], axis=0)).dropna(axis=0)
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
     plot_area(df=inf_variants,
               title='Est. Infections by Major Variant - Interpolated from Sampling - Thailand',
