@@ -143,8 +143,10 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     # api = api[api.sum(axis=1) > 5]  # If not enough samples we won't use it
     if not api.empty:
         variants = group_seq(api)
+        foot_source = f'{source}Data Source: GISAID'
     else:
         logger.warning("Using Variants from reports. GISAID problem")
+        foot_source = f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc)'
 
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants['Cases'] = df['Cases']
@@ -158,7 +160,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               # y_formatter=perc_format,
               footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to cases. Not all cases are tested.",
-              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand Report (DMSc')
+              footnote_left=foot_source)
 
     ihme = ihme_dataset(check=False)
     today = df['Cases'].index.max()
@@ -173,9 +175,9 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               # y_formatter=perc_format,
               footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections. Not all infections are tested. IHME infections is an estimate from modeling",
-              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
+              footnote_left=foot_source)
 
-    death_variants = (variants[cols].multiply(df['Deaths'], axis=0))
+    death_variants = (variants[cols].multiply(df['Deaths'], axis=0)).dropna(axis=0)
     plot_area(df=death_variants,
               title='Deaths by Major Variant - Interpolated from Sampling - Thailand',
               png_prefix='deaths_by_variants', cols_subset=cols,
@@ -183,7 +185,17 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               footnote="Cases are tests for variants not Deaths so this is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections.",
-              footnote_left=f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc), IHME')
+              footnote_left=foot_source)
+
+    hosp_variants = (variants[cols].multiply(df['Hospitalized'], axis=0)).dropna(axis=0)
+    plot_area(df=hosp_variants,
+              title='Hospitalized by Major Variant - Interpolated from Sampling - Thailand',
+              png_prefix='hosp_by_variants', cols_subset=cols,
+              ma_days=7,
+              kind='area', stacked=True, percent_fig=True,
+              cmap='tab10',
+              footnote="This is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated.",
+              footnote_left=foot_source)
 
 
 def save_tests_plots(df: pd.DataFrame) -> None:
