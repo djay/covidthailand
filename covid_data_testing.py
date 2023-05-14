@@ -436,13 +436,14 @@ def get_variant_api():
     js = requests.get("https://outbreak.info/assets/genomics-f604ae21.js").text
     bearer = re.search(r'Bearer ([^"]*)', js).group(0)
     # sequences = requests.get("https://api.outbreak.info/genomics/sequence-count?location_id=THA", headers=dict(Authorization=bearer)).json()
-    prev = requests.get("https://api.outbreak.info/genomics/prevalence-by-location-all-lineages?location_id=THA&other_threshold=0.03&nday_threshold=5&ndays=600",
-                        headers=dict(Authorization=bearer)).json()
+    url = "https://api.outbreak.info/genomics/prevalence-by-location-all-lineages?location_id=THA&other_threshold=0.03&nday_threshold=5&ndays=600"
+    prev = requests.get(url, headers=dict(Authorization=bearer)).json()
     prev = pd.DataFrame(prev['results'])
     prev['date'] = pd.to_datetime(prev['date'])
     # prev = prev.set_index(["date", "lineage"])
     prev = prev.rename(columns=dict(lineage="Variant", date="End"))
     prev = prev.pivot(columns="Variant", values="lineage_count", index="End")
+    logger.info("Variants GISAID {} - {} {}", prev.index.min(), prev.index.max(), url)
     return prev
 
 

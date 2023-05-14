@@ -141,8 +141,10 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     api = api.resample("7D", label='right', closed='right').mean()
     # api = api.rolling("7d").mean()
     # api = api[api.sum(axis=1) > 5]  # If not enough samples we won't use it
-
-    variants = group_seq(api)
+    if not api.empty:
+        variants = group_seq(api)
+    else:
+        logger.warning("Using Variants from reports. GISAID problem")
 
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants['Cases'] = df['Cases']
