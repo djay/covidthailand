@@ -433,7 +433,11 @@ def get_variants_plot_pdf(file, page, page_num):
 def get_variant_api():
     # TODO: should be able to replace with this api - https://outbreak-info.github.io/R-outbreak-info/
     # need to apply for account
-    js = requests.get("https://outbreak.info/assets/genomics-f604ae21.js").text
+    page = requests.get("https://outbreak.info/").text
+    assets_file = re.search(r'index-[^.]*.js', page).group(0)
+    assets = requests.get(f"https://outbreak.info/assets/{assets_file}").text
+    js_file = re.search(r'genomics-[^.]*.js', assets).group(0)
+    js = requests.get(f"https://outbreak.info/assets/{js_file}").text
     bearer = re.search(r'Bearer ([^"]*)', js).group(0)
     # sequences = requests.get("https://api.outbreak.info/genomics/sequence-count?location_id=THA", headers=dict(Authorization=bearer)).json()
     url = "https://api.outbreak.info/genomics/prevalence-by-location-all-lineages?location_id=THA&other_threshold=0.03&nday_threshold=5&ndays=600"
