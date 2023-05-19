@@ -88,12 +88,12 @@ def group_seq(seq):
     return seq
 
 
-def combined_variant_reports():
+def combined_variant_reports(min_samples=20):
     # Vartiants
     # sequence data have less of but more detail
     seq = import_csv("variants_sequenced", index=["End"], date_cols=["End"])
     seq = seq.fillna(0)
-    seq = seq[seq.sum(axis=1) > 20]  # If not enough samples we won't use it
+    seq = seq[seq.sum(axis=1) >= min_samples]  # If not enough samples we won't use it
     # Group into major categories, BA.2 vs BA.1
     seq = group_seq(seq)
 
@@ -136,7 +136,7 @@ def combined_variant_reports():
 
 
 def save_variant_plots(df: pd.DataFrame) -> None:
-    variants = combined_variant_reports()
+    variants = combined_variant_reports(min_samples=19)
     api = get_variant_api(other_threshold=0.0, nday_threshold=1)
     api = api.resample("7D", label='right', closed='right').mean()
     # api = api.rolling("7d").mean()

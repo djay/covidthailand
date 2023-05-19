@@ -471,11 +471,6 @@ def get_variant_sequenced_table(file, pages):
         if "20220715" in file and df.iloc[0, 3] == "Other BA.2":
             # Other BA.2 is there twice. One is wrong
             df.iloc[0, 3] = "Other BA.2.9"
-        elif "20220610" in file and page_num == 11:
-            df.iloc[1, 0] = "w126"
-            df.iloc[2, 0] = "w127"
-        elif "20230421" in file:
-            df = df.replace("w173", "w172")
         df.columns = df.iloc[0]
         df = df.rename(columns=dict(Lineage="Week"))
         df = df.iloc[1:]
@@ -483,8 +478,16 @@ def get_variant_sequenced_table(file, pages):
         # Need to handle when two weeks have ended up in one cell
         weeks = df["Week"].astype(str).str.replace("w", "").str.replace(
             "W", "").str.split(" ", expand=True).stack().reset_index()[0]
-        df["Week"] = list(pd.to_numeric(weeks).dropna())
         # 164 = 2023-03-03?, 153 = 2022-12-02
+        if "20220610" in file and page_num == 11:
+            weeks = weeks.replace("126", "127").replace("125", "126")
+        elif "20230303" in file:
+            weeks = weeks.replace("164", "165").replace("163", "164")
+        elif "20230421" in file:
+            weeks = weeks.replace("173", "172")
+        elif "20230512" in file:
+            weeks = weeks.replace("174", "175").replace("173", "174")
+        df["Week"] = list(pd.to_numeric(weeks).dropna())
 
         if date == d("2023-01-27"):
             end_week_one = d("2020-01-17")
@@ -512,8 +515,10 @@ def get_variant_sequenced_table(file, pages):
             for week_date, week in zip([d for d in [df.index.max()]], [df['Week'].max()]):
                 deltas += [(week_date - d).days for d in found[-1:]]
             if not any_in(deltas, 0, -6, isstr=False) and deltas:
+                week_dates = [str(d.date()) for d in df.index]
+                found_dates = [str(d.date()) for d in found]
                 logger.warning(
-                    f"Sequence table: Missing weekdate of w{list(df['Week'])} {[str(d.date()) for d in df.index]}: {deltas} in {file}")
+                    f"Sequence table: week numbers don't match dates w{list(df['Week'])} is {week_dates} but found {found_dates}: off by {deltas} in {file}")
         df = df.drop(columns=["Total Sequences", "Total Sequence", "Week"], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
