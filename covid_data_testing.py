@@ -430,7 +430,7 @@ def get_variants_plot_pdf(file, page, page_num):
     return bangkok
 
 
-def get_variant_api():
+def get_variant_api(country="THA", other_threshold=0.03, nday_threshold=5, ndays=600):
     # TODO: should be able to replace with this api - https://outbreak-info.github.io/R-outbreak-info/
     # need to apply for account
     page = requests.get("https://outbreak.info/").text
@@ -440,7 +440,7 @@ def get_variant_api():
     js = requests.get(f"https://outbreak.info/assets/{js_file}").text
     bearer = re.search(r'Bearer ([^"]*)', js).group(0)
     # sequences = requests.get("https://api.outbreak.info/genomics/sequence-count?location_id=THA", headers=dict(Authorization=bearer)).json()
-    url = "https://api.outbreak.info/genomics/prevalence-by-location-all-lineages?location_id=THA&other_threshold=0.03&nday_threshold=5&ndays=600"
+    url = f"https://api.outbreak.info/genomics/prevalence-by-location-all-lineages?location_id={country}&other_threshold={other_threshold}&nday_threshold={nday_threshold}&ndays={ndays}"
     prev = requests.get(url, headers=dict(Authorization=bearer)).json()
     prev = pd.DataFrame(prev['results'])
     prev['date'] = pd.to_datetime(prev['date'])

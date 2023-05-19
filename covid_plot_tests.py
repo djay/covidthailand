@@ -137,20 +137,20 @@ def combined_variant_reports():
 
 def save_variant_plots(df: pd.DataFrame) -> None:
     variants = combined_variant_reports()
-    api = get_variant_api()
+    api = get_variant_api(other_threshold=0.0, nday_threshold=1)
     api = api.resample("7D", label='right', closed='right').mean()
     # api = api.rolling("7d").mean()
     # api = api[api.sum(axis=1) > 5]  # If not enough samples we won't use it
-    if not api.empty:
+    if not api.empty and variants.index.max() <= api.index.max():
         variants = group_seq(api)
         foot_source = f'{source}Data Source: GISAID'
     else:
-        logger.warning("Using Variants from reports. GISAID problem")
+        logger.warning("Using Variants from reports. GISAID problem, or old")
         foot_source = f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc)'
 
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants['Cases'] = df['Cases']
-    case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0)
+    case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
     plot_area(df=case_variants,
               title='Cases by Major Variant - Interpolated from Sampling - Thailand',
@@ -165,7 +165,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     ihme = ihme_dataset(check=False)
     today = df['Cases'].index.max()
     #est_cases = ihme["inf_mean"].loc[:today].to_frame("Estimated Total Infections (IHME)")
-    inf_variants = (variants[cols].multiply(ihme['inf_mean'], axis=0)).dropna(axis=0)
+    inf_variants = (variants[cols].multiply(ihme['inf_mean'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
     plot_area(df=inf_variants,
               title='Est. Infections by Major Variant - Interpolated from Sampling - Thailand',
@@ -177,7 +177,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections. Not all infections are tested. IHME infections is an estimate from modeling",
               footnote_left=foot_source)
 
-    death_variants = (variants[cols].multiply(df['Deaths'], axis=0)).dropna(axis=0)
+    death_variants = (variants[cols].multiply(df['Deaths'], axis=0)).dropna(axis=0, how="all")
     plot_area(df=death_variants,
               title='Deaths by Major Variant - Interpolated from Sampling - Thailand',
               png_prefix='deaths_by_variants', cols_subset=cols,
@@ -187,7 +187,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               footnote="Cases are tests for variants not Deaths so this is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections.",
               footnote_left=foot_source)
 
-    hosp_variants = (variants[cols].multiply(df['Hospitalized Respirator'], axis=0)).dropna(axis=0)
+    hosp_variants = (variants[cols].multiply(df['Hospitalized Respirator'], axis=0)).dropna(axis=0, how="all")
     plot_area(df=hosp_variants,
               title='Hospitalized on Ventilator by Major Variant - Thailand',
               png_prefix='hosp_by_variants', cols_subset=cols,
