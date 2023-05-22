@@ -138,7 +138,7 @@ def combined_variant_reports(min_samples=20):
 def save_variant_plots(df: pd.DataFrame) -> None:
     variants = combined_variant_reports(min_samples=19)
     api = get_variant_api(other_threshold=0.0, nday_threshold=1)
-    api = api.resample("7D", label='right', closed='right').mean()
+    api = api.resample("W-SAT", label='right', closed='right').mean()
     # api = api.rolling("7d").mean()
     # api = api[api.sum(axis=1) > 5]  # If not enough samples we won't use it
     if not api.empty and variants.index.max() <= api.index.max():
