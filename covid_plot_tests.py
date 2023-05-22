@@ -152,6 +152,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     # TODO put in different colour to show its a prediction
     variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
 
+    footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
@@ -163,7 +164,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               # y_formatter=perc_format,
-              footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to cases. Not all cases are tested.",
+              footnote=footnote.format("Cases"),
               footnote_left=foot_source)
 
     ihme = ihme_dataset(check=False)
@@ -178,7 +179,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               # y_formatter=perc_format,
-              footnote="Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections. Not all infections are tested. IHME infections is an estimate from modeling",
+              footnote=footnote.format("IHME Infections Prediction"),
               footnote_left=foot_source)
 
     death_variants = (variants[cols].multiply(df['Deaths'], axis=0)).dropna(axis=0, how="all")
@@ -188,17 +189,17 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
-              footnote="Cases are tests for variants not Deaths so this is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated to infections.",
+              footnote=footnote.format("Deaths"),
               footnote_left=foot_source)
 
-    hosp_variants = (variants[cols].multiply(df['Hospitalized Respirator'], axis=0)).dropna(axis=0, how="all")
+    hosp_variants = (variants[cols].multiply(df['Hospitalized Respirator'].interpolate(), axis=0)).dropna(axis=0, how="all")
     plot_area(df=hosp_variants,
               title='Hospitalized on Ventilator by Major Variant - Thailand',
               png_prefix='hosp_by_variants', cols_subset=cols,
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
-              footnote="This is an approximation. Estimate combines random sample data from SNP Genotyping by PCR and Genome Sequencing\nextraploated.",
+              footnote=footnote.format("Hospitalized on Ventilator"),
               footnote_left=foot_source)
 
 
