@@ -148,6 +148,10 @@ def save_variant_plots(df: pd.DataFrame) -> None:
         logger.warning("Using Variants from reports. GISAID problem, or old")
         foot_source = f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc)'
 
+    # Interpolate up to current data
+    # TODO put in different colour to show its a prediction
+    variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
+
     cols = rearrange(variants.columns.to_list(), "BN.1/BA.2.75 (Omicron)", "XBB (Omicron)", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
