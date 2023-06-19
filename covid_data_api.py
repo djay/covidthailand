@@ -469,7 +469,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     # First check api is working ok
     file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False, timeout=timeout, threads=1)), None)
     pagedata = json.loads(content) if content is not None else {}
-    if "data" not in pagedata:
+    if "data" not in pagedata or not pagedata['data']:
         return pd.DataFrame(pagedata) if cached is None else cached
     page = pagedata['data']
     assert page
