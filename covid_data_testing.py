@@ -490,6 +490,8 @@ def get_variant_sequenced_table(file, pages):
         elif "20230602" in file:
             weeks = weeks.replace("178", "177").replace("179", "178")
             weeks = weeks.replace("176", "178").replace("175", "177")
+        elif "20230609" in file:
+            weeks = weeks.replace("179", "178").replace("180", "179")
 
         df["Week"] = list(pd.to_numeric(weeks).dropna())
 
