@@ -68,6 +68,10 @@ groups = {
     "BA.2.75": "BN.1/BA.2.75 (Omicron)",
     "BA.2.76": "BN.1/BA.2.75 (Omicron)",
     "BN.1.": "BN.1/BA.2.75 (Omicron)",
+    "FY.": "XBB (Omicron)",  # see https://github.com/MurrellGroup/lineages
+    "FU.": "XBB (Omicron)",
+    "EQ.": "XBB (Omicron)",
+    "FL.": "XBB (Omicron)",
     "XBB": "XBB (Omicron)",
     "BQ.X": "Other",
     "Other": "Other",
