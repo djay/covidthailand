@@ -742,7 +742,7 @@ def vaccination_reports():
         if date in [d("2021-12-11"), d("2022-01-06")] and table.empty:
             logger.info("{} doc has slides instead of report", date)
             continue
-        elif d("2021-05-04") <= date <= d("2021-08-01") and len(table) < 77:
+        elif d("2021-05-04") <= date <= d("2021-09-23") and len(table) < 77:
             logger.warning("{} Dropping table: too few provinces", date)
             continue
         elif d("2021-04-09") <= date <= d("2021-05-03") and table.groupby("Date").count().iloc[0]['Vac Group Risk: Location 1 Cum'] != 77:
