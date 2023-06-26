@@ -246,7 +246,8 @@ def vaccination_daily(daily, file_date, file, page):
             return daily
     # assert len(d3_num) == 0 or len(d3_num) == len(d2_num)
 
-    is_risks = re.compile(r"(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|จำนวน|ได้รับวัคซีน 2|7 กลุ)")
+    is_risks = re.compile(
+        r"(บุคคลที่มีโรคประจ|บุคคลท่ีมีโรคประจําตัว|ผู้ที่มีอายุตั้งแต่ 60|ผู้ท่ีมีอายุต้ังแต่ 60|จำนวน|ได้รับวัคซีน 2|7 กลุ)")
     row = [None] * 9
     for dose, numbers, rest in [(1, d1_num, rest1), (2, d2_num, rest2), (3, d3_num, rest3)]:
         cols = [
