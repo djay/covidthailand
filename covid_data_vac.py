@@ -672,12 +672,15 @@ def vaccination_reports_files2(check=0,
 
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
-    link_check = 1 if check else 0
+    link_check = 2 if check else 0
     years = list(web_links(base1, ext="dept=dcd", match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout))
     months = [link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
               match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout)]
-    links1 = (link for link in web_links(*avoid_redirect(months), ext=".pdf", check=link_check, proxy=use_proxy, timeout=timeout) if (
-        date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week"])))
+    links1 = [link for link in web_links(*avoid_redirect(months), ext=".pdf", check=link_check, proxy=use_proxy, timeout=timeout) if (
+        date := file2date(link)) is not None and date >= d("2021-12-01") or (any_in(link.lower(), *['wk', "week", "รง.", "rep"]))]
+
+    # รง.สรุปวัคซีนประจำสัปดาห์ที่  23 (6 -9 มิ.ย.66).pdf
+    # text = รายงานสรุปวัคซีน
 
     # this set was more reliable for awhile. Need to match tests
     folders = [base2.format(m=m) for m in range(11, 2, -1)]
