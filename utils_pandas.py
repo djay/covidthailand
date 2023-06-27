@@ -118,6 +118,7 @@ def weekly2daily(df):
     """
     if "Province" in df.index.names:
         df = df.reset_index("Province")
+    df = df[~df.index.duplicated(keep='first')]  # Just in case api returned crap data
     df = df.reindex(pd.date_range(df.index.min(), df.index.max(), name="Date"))
     cums = [c for c in df.columns if " Cum" in c]
     others = [c for c in df.columns if " Cum" not in c and "Province" != c]
