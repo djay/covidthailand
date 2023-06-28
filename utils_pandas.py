@@ -151,6 +151,7 @@ def daily2cum(results):
 def fix_gaps(df):
     # Some gaps in the data so fill them in. df.groupby("Province").apply(fix_gaps)
     df = df.reset_index("Province")
+    df = df[~df.index.duplicated(keep='first')]  # Just in case api returned crap data
     all_days = pd.date_range(df.index.min(), df.index.max(), name="Date", normalize=True, inclusive="neither")
     df = df.reindex(all_days, fill_value=np.nan)
     cum = df[[c for c in df.columns if " Cum" in c]]
