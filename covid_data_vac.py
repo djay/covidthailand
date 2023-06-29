@@ -678,7 +678,7 @@ def vaccination_reports_files2(check=0,
     months = [link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
               match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout)]
     links1 = [link for link in web_links(*avoid_redirect(months), ext=".pdf", check=link_check, proxy=use_proxy, timeout=timeout) if (
-        date := file2date(link)) is None and (any_in(link.lower(), *['wk', "week", "รง.", "rep"])) or date is not None and date >= d("2021-12-01")]
+        date := file2date(link)) is None and (any_in(link.lower(), *['wk', "week", "รง.", "rep"])) or date is not None and date >= d("2021-09-01")]
 
     # รง.สรุปวัคซีนประจำสัปดาห์ที่  23 (6 -9 มิ.ย.66).pdf
     # text = รายงานสรุปวัคซีน
