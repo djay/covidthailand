@@ -624,8 +624,9 @@ def timeline_by_province_weekly():
     file, _, _ = next(iter(web_files(url, dir=dir, check=False, appending=False, timeout=80)), None)
     if file is None:
         logger.warning("{} missing", url)
-        return pd.DataFrame()
-    df = pd.read_json(file)
+        df = pd.DataFrame()
+    else:
+        df = pd.read_json(file)
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces"
     prefix = "today-cases-by-provinces"
