@@ -632,6 +632,9 @@ def timeline_by_province_weekly():
         return f"{dir}/{prefix}-{week}"
     if file is not None:
         cases2023 = pd.read_json(file)
+        # This file has had double entries. first has larger total so must be most recent
+        cases2023 = cases2023.set_index(["weeknum", "province"])
+        cases2023 = cases2023[~cases2023.index.duplicated(keep='first')].reset_index()
         max_week = cases2023['weeknum'].max()
         os.rename(f"{dir}/{prefix}", week_file(max_week))
 
@@ -657,6 +660,7 @@ def timeline_by_province_weekly():
     df = weeks_to_end_date(df, year_col="year", week_col="weeknum", offset=0)
     df = df.drop(columns=['update_date', "index"])
     df = df.reset_index().set_index(['Date', 'Province'])
+    df = df[~df.index.duplicated(keep='first')]  # why we still have duplicates?
     spread = df.groupby("Province", group_keys=True).apply(weekly2daily)
     df = spread.combine_first(df)  # Put back in cum values
 
@@ -858,14 +862,19 @@ if __name__ == '__main__':
     df = import_csv("combined", index=["Date"])
 
     timeline_weekly = get_cases_timelineapi_weekly()
+    assert not timeline_weekly.index.duplicated().any()
+
     timeline_prov_weekly = timeline_by_province_weekly()
+    assert not timeline_prov_weekly.index.duplicated().any()
     timeline_prov = timeline_by_province()
+    assert not timeline_prov.index.duplicated().any()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
+    assert not timeline.index.duplicated().any()
 
     dfprov = import_csv("cases_by_province", ["Date", "Province"], False)
     dfprov = dfprov.combine_first(timeline_prov).combine_first(risks_prov).combine_first(deaths_prov_weekly)
