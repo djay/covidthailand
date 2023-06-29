@@ -621,7 +621,10 @@ def timeline_by_province_weekly():
     # df = load_paged_json(url, ["year", "weeknum"], [2020, 1])
     dir = "inputs/json/weekly"
     url = "https://covid19.ddc.moph.go.th/api/Cases/timeline-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80)), None)
+    file, _, _ = next(iter(web_files(url, dir=dir, check=False, appending=False, timeout=80)), None)
+    if file is None:
+        logger.warning("{} missing", url)
+        return pd.DataFrame()
     df = pd.read_json(file)
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces"
