@@ -692,7 +692,7 @@ def vaccination_reports_files2(check=0,
     res = []
     checks = [True] * check + [False] * (len(links) - check)
     for link, check in zip(links, checks):
-        if any_in(link, "1638863771691.pdf", '1639206014644.pdf') and "Report" in base2:
+        if any_in(link, "1638863771691.pdf", '1639206014644.pdf', "Slide") and "Report" in base2:
             # it's really slides
             continue
 
