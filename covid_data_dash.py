@@ -294,8 +294,8 @@ def dash_province_weekly(file="moph_province_weekly"):
 
     valid = {
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
-        "Cases Cum": (d("2022-12-11"), today(), 150),  # TODO: need better way to reject this year cum values
-        'Vac Given 1 Cum': (d("2022-12-11"), today() - relativedelta(days=4)),
+        "Cases Cum": (today() - relativedelta(days=22), today(), 150),  # TODO: need better way to reject this year cum values
+        'Vac Given 1 Cum': (today() - relativedelta(days=22), today() - relativedelta(days=4)),
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
@@ -350,7 +350,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         contiguous = combined[["Cases Cum", "Deaths Cum"]].dropna()
         dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
         if len(dec1.index.intersection(row.index)) > 0:
-            logger.info("{} MOPH dash, dropping invalid row. too low {}", row.index.max(),
+            logger.info("{} MOPH dash, dropping invalid row. cum value not inc. {}", row.index.max(),
                         row.loc[row.last_valid_index():].to_string(index=False, header=False))
         else:
             df = combined
