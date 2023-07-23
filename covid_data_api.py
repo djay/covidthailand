@@ -804,8 +804,8 @@ def ihme_dataset(check=True):
     #         'https://ihmecovid19storage.blob.core.windows.net/latest/data_download_file_reference_2020.csv']
     # IHME seems to have problem with their latest section and have pointed main site back to archives
     scenario = "file_best_masks"  # "file_reference" doesn't seem to fit mask use here. they assume its dropped
-    urls = [u for u in web_links("https://www.healthdata.org/covid/data-downloads", ext="csv") if scenario in u]
-    for file, _, _ in web_files(*reversed(urls), dir="inputs/IHME", check=check, appending=False):
+    urls = [u for u in web_links("https://www.healthdata.org/covid/data-downloads", ext="csv", check=False) if scenario in u]
+    for file, _, _ in web_files(*reversed(urls), dir="inputs/IHME", check=False, appending=False):
         data_in_file = pd.read_csv(file)
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)
@@ -865,6 +865,8 @@ if __name__ == '__main__':
 
     df = import_csv("combined", index=["Date"])
 
+    ihme_dataset()
+
     timeline_weekly = get_cases_timelineapi_weekly()
     assert not timeline_weekly.index.duplicated().any()
 
@@ -893,8 +895,6 @@ if __name__ == '__main__':
     covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
     # covid_plot_cases.save_infections_estimate(df)
-
-    ihme_dataset()
 
     excess_deaths()
     covid_plot_deaths.save_excess_death_plots(df)
