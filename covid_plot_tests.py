@@ -80,14 +80,20 @@ groups = {
     "FK.": "BA.2.75/BN.1/CH.1 (Omicron)",
     "DV.": "BA.2.75/BN.1/CH.1 (Omicron)",
     "EJ.": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "FY.": "XBB (Omicron)",  # see https://github.com/MurrellGroup/lineages
-    "FU.": "XBB (Omicron)",
-    "EQ.": "XBB (Omicron)",
-    "EM.": "XBB (Omicron)",
-    "EU.": "XBB (Omicron)",
-    "EK.": "XBB (Omicron)",
-    "FL.": "XBB (Omicron)",
-    "XBB": "XBB (Omicron)",
+    "FY.": "XBB (Arcturus)",  # see https://github.com/MurrellGroup/lineages
+    "FU.": "XBB (Arcturus)",
+    "EQ.": "XBB (Arcturus)",
+    "EM.": "XBB (Arcturus)",
+    "EU.": "XBB (Arcturus)",
+    "EK.": "XBB (Arcturus)",
+    "FL.": "XBB (Arcturus)",
+    "XBB": "XBB (Arcturus)",
+    "GY.": "XBB (Arcturus)",
+    "GJ.": "XBB (Arcturus)",
+    "GS.": "XBB (Arcturus)",
+    "GE.": "XBB (Arcturus)",
+    "GA.": "XBB (Arcturus)",
+    "EG.": "EG (Eris)",
     "Other": "Other",
 }
 
@@ -171,7 +177,8 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
 
     footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
-    cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Omicron)", "XBB (Omicron)", "Other", first=False)
+    cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Omicron)",
+                     "XBB (Arcturus)", "EG (Eris)", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
