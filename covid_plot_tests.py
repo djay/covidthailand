@@ -72,14 +72,14 @@ groups = {
     "ED.": "BA.4/BA.5 (Omicron)",
     "EZ.": "BA.4/BA.5 (Omicron)",
     "FM.": "BA.4/BA.5 (Omicron)",
-    "BA.2.75": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "BA.2.76": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "BN.": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "CH.": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "BR.": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "FK.": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "DV.": "BA.2.75/BN.1/CH.1 (Omicron)",
-    "EJ.": "BA.2.75/BN.1/CH.1 (Omicron)",
+    "BA.2.75": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "BA.2.76": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "BN.": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "CH.": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "BR.": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "FK.": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "DV.": "BA.2.75/BN.1/CH.1 (Centaurus)",
+    "EJ.": "BA.2.75/BN.1/CH.1 (Centaurus)",
     "FY.": "XBB (Arcturus)",  # see https://github.com/MurrellGroup/lineages
     "FU.": "XBB (Arcturus)",
     "EQ.": "XBB (Arcturus)",
@@ -177,7 +177,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
 
     footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
-    cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Omicron)",
+    cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Centaurus)",
                      "XBB (Arcturus)", "EG (Eris)", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
