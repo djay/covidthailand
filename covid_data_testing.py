@@ -525,7 +525,7 @@ def get_variant_sequenced_table(file, pages):
                 found_dates = [str(d.date()) for d in found]
                 logger.warning(
                     f"Sequence table: week numbers don't match dates w{list(df['Week'])} is {week_dates} but found {found_dates}: off by {deltas} in {file}")
-        df = df.drop(columns=["Total Sequences", "Total Sequence", "Week"], errors="ignore")
+        df = df.drop(columns=["Week"] + [c for c in df.columns if "Total" in c], errors="ignore")
         # TODO: Ensure Other is always counted in rest of numbers. so far seems to
         # df = df.drop(columns=[c for c in df.columns if "Other BA" in c])
         df = df.apply(pd.to_numeric)

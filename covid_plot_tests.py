@@ -80,19 +80,19 @@ groups = {
     "FK.": "BA.2.75/BN.1/CH.1 (Centaurus)",
     "DV.": "BA.2.75/BN.1/CH.1 (Centaurus)",
     "EJ.": "BA.2.75/BN.1/CH.1 (Centaurus)",
-    "FY.": "XBB (Arcturus)",  # see https://github.com/MurrellGroup/lineages
-    "FU.": "XBB (Arcturus)",
-    "EQ.": "XBB (Arcturus)",
-    "EM.": "XBB (Arcturus)",
-    "EU.": "XBB (Arcturus)",
-    "EK.": "XBB (Arcturus)",
-    "FL.": "XBB (Arcturus)",
-    "XBB": "XBB (Arcturus)",
-    "GY.": "XBB (Arcturus)",
-    "GJ.": "XBB (Arcturus)",
-    "GS.": "XBB (Arcturus)",
-    "GE.": "XBB (Arcturus)",
-    "GA.": "XBB (Arcturus)",
+    "FY.": "XBB (Kraken/Arcturus)",  # see https://github.com/MurrellGroup/lineages
+    "FU.": "XBB (Kraken/Arcturus)",
+    "EQ.": "XBB (Kraken/Arcturus)",
+    "EM.": "XBB (Kraken/Arcturus)",
+    "EU.": "XBB (Kraken/Arcturus)",
+    "EK.": "XBB (Kraken/Arcturus)",
+    "FL.": "XBB (Kraken/Arcturus)",
+    "XBB": "XBB (Kraken/Arcturus)",
+    "GY.": "XBB (Kraken/Arcturus)",
+    "GJ.": "XBB (Kraken/Arcturus)",
+    "GS.": "XBB (Kraken/Arcturus)",
+    "GE.": "XBB (Kraken/Arcturus)",
+    "GA.": "XBB (Kraken/Arcturus)",
     "EG.": "EG (Eris)",
     "Other": "Other",
 }
@@ -178,7 +178,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
 
     footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
     cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Centaurus)",
-                     "XBB (Arcturus)", "EG (Eris)", "Other", first=False)
+                     "XBB (Kraken/Arcturus)", "EG (Eris)", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
