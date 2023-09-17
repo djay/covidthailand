@@ -350,7 +350,7 @@ def plot_area(df: pd.DataFrame,
 
         # advance colour cycle so lines have correct next colour
         for _ in range(len(areacols)):
-            next(a0._get_lines.prop_cycler)
+            a0._get_lines.get_next_color()
 
         for c in linecols:
             style = "--" if c in [f"{b}{ma_suffix}" for b in between] + actuals else None
