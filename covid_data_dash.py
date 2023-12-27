@@ -309,7 +309,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     #     logger.error("{} MOPH Dashboard: Can't scrape {}", e)
     #     return df
     # provs = ts.getWorkbook().getWorksheet("D2_Province (2)").getSelectableValues("province")
-    _, content, _ = next(web_files("https://ddc.moph.go.th/covid19-dashboard/?dashboard=province"), proxy=True, check=True)
+    _, content, _ = next(web_files("https://ddc.moph.go.th/covid19-dashboard/?dashboard=province", proxy=True, check=True))
     soup = BeautifulSoup(content, 'html.parser')
     # soup = parse_file(file, html=True, paged=False)
     provs = [p.get("value") for p in soup.select("#sel-province")[0].find_all("option") if p.get("value")]
