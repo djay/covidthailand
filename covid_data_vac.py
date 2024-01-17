@@ -673,7 +673,8 @@ def vaccination_reports_files2(check=0,
 
     def avoid_redirect(links):
         return (url.replace("http://", "https://") for url in links)
-    link_check = 2 if check else 0
+    #link_check = 2 if check else 0
+    link_check = 0  # reports aren't being updated now anyway
     years = list(web_links(base1, ext="dept=dcd", match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout))
     months = [link for link in web_links(*avoid_redirect(years), ext="dept=dcd",
               match=hasyear, check=link_check, proxy=use_proxy, timeout=timeout)]
