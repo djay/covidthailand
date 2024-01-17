@@ -468,7 +468,10 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     data = []
     # First check api is working ok
     file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False, timeout=timeout, threads=1)), None)
-    pagedata = json.loads(content) if content is not None else {}
+    try:
+        pagedata = json.loads(content) if content is not None else {}
+    except json.JSONDecodeError:
+        pagedata = {}
     if "data" not in pagedata or not pagedata['data']:
         return pd.DataFrame(pagedata) if cached is None else cached
     page = pagedata['data']
@@ -810,6 +813,8 @@ def ihme_dataset(check=True):
         data_in_file = data_in_file.loc[(data_in_file['location_name'] == "Thailand")]
         data = add_data(data, data_in_file)
     # already filtered for just Thailand data above
+    if data.empty:
+        return data
     data.drop(['location_id', 'location_name'], axis=1, inplace=True)
     data.rename(columns={'date': 'Date', 'mobility_mean': 'Mobility Index'}, inplace=True)
     data["Date"] = pd.to_datetime(data["Date"])
@@ -865,13 +870,14 @@ if __name__ == '__main__':
 
     df = import_csv("combined", index=["Date"])
 
+    timeline_prov_weekly = timeline_by_province_weekly()
+    assert not timeline_prov_weekly.index.duplicated().any()
+
     ihme_dataset()
 
     timeline_weekly = get_cases_timelineapi_weekly()
     assert not timeline_weekly.index.duplicated().any()
 
-    timeline_prov_weekly = timeline_by_province_weekly()
-    assert not timeline_prov_weekly.index.duplicated().any()
     timeline_prov = timeline_by_province()
     assert not timeline_prov.index.duplicated().any()
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
