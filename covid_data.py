@@ -261,6 +261,9 @@ def scrape_and_combine():
     # briefings = briefings.combine_first(cases_briefings).combine_first(twcases)
     # export(briefings, "cases_briefings")
 
+    vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
+    hospcols = [c for c in df.columns if 'Hospitalized' in c]
+
     # Export per province
     briefings_prov = import_csv("cases_briefings_prov", ["Date", "Province"], False)
     # export(briefings_prov, "cases_briefings_prov", csv_only=True)
@@ -272,7 +275,7 @@ def scrape_and_combine():
         res['timeline_by_province_weekly']).combine_first(
         deaths_prov_weekly).combine_first(
         res['dash_by_province']).combine_first(
-        cum2daily(res['dash_province_weekly'], drop=False)).combine_first(
+        cum2daily(res['dash_province_weekly'], drop=False, exclude=vaccols + hospcols)).combine_first(
         # tweets_prov).combine_first(
         risks_prov)  # TODO: check they agree
     dfprov = join_provinces(dfprov, on="Province")
@@ -297,7 +300,7 @@ def scrape_and_combine():
 
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 
-    dash_weekly = cum2daily(res['dash_weekly'], drop=False)
+    dash_weekly = cum2daily(res['dash_weekly'], drop=False, exclude=vaccols + hospcols)
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
