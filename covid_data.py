@@ -262,7 +262,7 @@ def scrape_and_combine():
     # export(briefings, "cases_briefings")
 
     vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
-    hospcols = [c for c in df.columns if 'Hospitalized' in c]
+    hospcols = [c for c in res['dash_province_weekly'].columns if 'Hospitalized' in c]
 
     # Export per province
     briefings_prov = import_csv("cases_briefings_prov", ["Date", "Province"], False)
