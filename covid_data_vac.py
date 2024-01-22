@@ -1203,7 +1203,7 @@ def vac_slides_manuf(file, link):
 
 def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
-    for link, _, get_file in vac_slides_files(check=1):
+    for link, _, get_file in vac_slides_files(check=0):
         file = get_file()
         if file is None:
             continue
