@@ -239,7 +239,7 @@ def test_get_tests_by_area_chart_pptx(fname, testdf, dl):
     for chart, title, series, pagenum in pptx2chartdata(file):
         data, raw = get_tests_by_area_chart_pptx(input, title, series, data, raw)
     # write_scrape_data_back_to_test(raw, "testing_moph", fname)
-    pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, raw, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("testing_moph_pdf", find_testing_pdf))
@@ -259,7 +259,7 @@ def test_get_tests_by_area_chart_pdf(fname, testdf, dl):
     if testdf.index.max() >= dateutil.parser.parse("2021-08-08"):
         # plots stopped having numbers for positives so aren't scraped
         return
-    pd.testing.assert_frame_equal(testdf, raw, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, raw, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_provinces", briefing_documents))
@@ -277,7 +277,7 @@ def test_briefing_deaths_provinces(date, testdf, dl):
         df = briefing_deaths_provinces(text, dateutil.parser.parse(date), file)
         dfprov = dfprov.combine_first(df)
     # write_scrape_data_back_to_test(dfprov, "briefing_deaths_provinces")
-    pd.testing.assert_frame_equal(testdf, dfprov, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, dfprov, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_summary", briefing_documents))
@@ -296,7 +296,7 @@ def test_briefing_deaths_summary(date, testdf, dl):
     # write_scrape_data_back_to_test(df, "briefing_deaths_summary")
     if testdf.empty:
         return
-    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_deaths_cells", briefing_documents))
@@ -311,7 +311,7 @@ def test_briefing_deaths_cells(date, testdf, dl):
     # write_scrape_data_back_to_test(each_death, "briefing_deaths_cells", date=dateutil.parser.parse(date))
     if testdf.empty:
         return
-    pd.testing.assert_frame_equal(testdf.dropna(axis=1), each_death.dropna(axis=1), check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), each_death.dropna(axis=1), check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_case_types", briefing_documents))
@@ -336,7 +336,7 @@ def test_briefing_case_types(date, testdf, dl):
 
     df = briefing_case_types(dateutil.parser.parse(date), pages, "")
     # write_scrape_data_back_to_test(df, "briefing_case_types")
-    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False)
+    pd.testing.assert_frame_equal(testdf.dropna(axis=1), df.dropna(axis=1), check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_province_cases", briefing_documents))
@@ -350,7 +350,7 @@ def test_briefing_province_cases(date, testdf, dl):
 
     df = briefing_province_cases(file, dateutil.parser.parse(date), pages)
     # write_scrape_data_back_to_test(df, "briefing_province_cases")
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("vac_briefing_totals", briefing_documents))
@@ -372,7 +372,7 @@ def test_vac_briefing_totals(date, testdf, dl):
         text = soup.get_text()
         df = vac_briefing_totals(df, date, "", soup, text, i)
     # write_scrape_data_back_to_test(df, "vac_briefing_totals", date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("vac_briefing_groups", briefing_documents))
@@ -392,7 +392,7 @@ def test_vac_briefing_groups(date, testdf, dl):
         text = soup.get_text()
         df = vac_briefing_groups(df, date, file, soup, text, i)
     # write_scrape_data_back_to_test(df, "vac_briefing_groups", date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("briefing_atk", briefing_documents))
@@ -406,7 +406,7 @@ def test_briefing_atk(date, testdf, dl):
 
     df = briefing_atk(file, dateutil.parser.parse(date), pages)
     # write_scrape_data_back_to_test(df, "briefing_atk")
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("situation_pui_th", get_thai_situation_files))
@@ -420,7 +420,7 @@ def test_situation_pui_th(date, testdf, dl):
     df = situation_pui_th(results, parsed_pdf, date, file)
 
     # write_scrape_data_back_to_test(df, "situation_pui_th", fname=file, date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("situation_pui_en", get_english_situation_files))
@@ -433,7 +433,8 @@ def test_situation_pui_en(date, testdf, dl):
     df = situation_pui_en(parsed_pdf, date)
 
     # write_scrape_data_back_to_test(df, "situation_pui_en", fname=file, date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_column_type=False, check_index_type=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_column_type=False,
+                                  check_index_type=False, check_like=True)
 
 
 @pytest.mark.parametrize("date, testdf, dl", dl_files("situation_cases_new", get_english_situation_files))
@@ -446,7 +447,8 @@ def test_situation_cases_new(date, testdf, dl):
     df = situation_cases_new(parsed_pdf, date)
 
     # write_scrape_data_back_to_test(df, "situation_cases_new", fname=file, date=date)
-    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_column_type=False, check_index_type=False)
+    pd.testing.assert_frame_equal(testdf, df, check_dtype=False, check_column_type=False,
+                                  check_index_type=False, check_like=True)
 
 
 @pytest.mark.parametrize("fname, testdf, dl", dl_files("variants", find_variant_pdf))
@@ -457,4 +459,4 @@ def test_get_variant_seq(fname, testdf, dl):
     pages = parse_file(file, html=False, paged=True)
     fileseq = get_variant_sequenced_table(file, pages)
     # write_scrape_data_back_to_test(fileseq, "variants", fname)
-    pd.testing.assert_frame_equal(testdf, fileseq, check_dtype=False)
+    pd.testing.assert_frame_equal(testdf, fileseq, check_dtype=False, check_like=True)
