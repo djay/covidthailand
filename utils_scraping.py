@@ -370,11 +370,14 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
         timeout = 10
         # We only want retries under normal conditions
     fix_timeouts(s, timeout)
+    if dir is None:
+        dir = tempfile.gettempdir()
+    os.makedirs(dir, exist_ok=True)
 
     def get_file(url, i, check):
-        file = filenamer(url, strip_version)
-        file = os.path.join(tempfile.gettempdir() if dir is None else dir, file)
-        os.makedirs(os.path.dirname(file), exist_ok=True)
+        filename = filenamer(url, strip_version)
+        file = os.path.join(tempfile.gettempdir(), filename)
+        target = os.path.join(dir, filename)
         resumable = False
         size = None
         #verify = "ddc.moph.go.th" not in url
@@ -397,10 +400,10 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
                 modified = None
         else:
             modified = None
-        if i > 0 and is_cutshort(file, modified, check):
+        if i > 0 and is_cutshort(target, modified, check):
             return None, None, url
         err = ""
-        if (resume_byte_pos := resume_from(file, modified, check, size, appending)) < 0:
+        if (resume_byte_pos := resume_from(target, modified, check, size, appending)) < 0:
             if check:
                 # logger.info("Unmodified: {}: using cache. {} {}", file, modified, size)
                 pass
@@ -408,6 +411,9 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             # go back 10% in case end of data changed (e.g csv)
             resume_byte_pos = int(resume_byte_pos * 0.95) if resumable else 0
             resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resumable else {}
+
+            if resume_byte_pos > 0:
+                target = file
 
             proxies = next(proxies_itor, None) if proxy else None
             try:
@@ -450,9 +456,16 @@ def web_files(*urls, dir=os.getcwd(), check=CHECK_NEWER, strip_version=False, ap
             logger.bind(end="\n")
         if remove:
             os.remove(file)  # if we leave it without check it will never get fixed
+            # return None, None, url
+        if dir is not None:
+            if not remove and os.path.exists(file):
+                os.rename(file, target)
+            file = target
+        if os.path.exists(file):
+            with open(file, "rb") as f:
+                content = f.read()
+        else:
             return None, None, url
-        with open(file, "rb") as f:
-            content = f.read()
         if dir is None:
             os.remove(file)
         # i += 1

@@ -225,9 +225,9 @@ def dash_weekly(file="moph_dash_weekly"):
     df = import_csv(file, ["Date"], False, dir="inputs/json")  # so we cache it
 
     allow_na = {
-        'Vac Given 1 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
-        'Vac Given 2 Cum': (d("2021-08-01"), today() - relativedelta(days=4)),
-        "Vac Given 3 Cum": (d("2021-08-01"), today() - relativedelta(days=4)),
+        'Vac Given 1 Cum': (d("2021-08-01"), d("2023-05-23")),
+        'Vac Given 2 Cum': (d("2021-08-01"), d("2023-05-23")),
+        "Vac Given 3 Cum": (d("2021-08-01"), d("2023-05-23")),
         'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
         'Cases Cum': (d("2022-09-17"), today(), 4625384),
@@ -256,7 +256,7 @@ def dash_weekly(file="moph_dash_weekly"):
         row_since2023 = row = extract_basics(wb, date)
         if row_since2023.empty:
             logger.warning("{} MOPH Dashboard: wrong date: skip", date)
-            break
+            continue
 
         wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
@@ -420,7 +420,7 @@ def extract_basics(wb, date, check_date=True, base_df=None):
 
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
-        "AGG(NUM_DEATH)-value": "Deaths",
+        "AGG(# NUM_DEATH)-value": "Deaths",
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
