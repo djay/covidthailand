@@ -420,7 +420,7 @@ def extract_basics(wb, date, check_date=True, base_df=None):
 
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
-        "AGG(NUM_DEATH)-value": "Deaths",
+        "AGG(# NUM_DEATH)-value": "Deaths",
         "ATTR(week)-alias": "Week"
     }, index_col="Week", index_date=False)
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
