@@ -374,7 +374,7 @@ def get_case_details_api_weekly():
         os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
 
     # Get fake api files
-    max_week = today().isocalendar().week + 1
+    max_week = int(today().strftime("%U")) + 1
     cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week) if os.path.exists(week_file(week))])
     # Columns are all messed up
     cases2023 = cases2023.drop(columns=["risk"]).rename(columns=dict(
@@ -640,13 +640,14 @@ def timeline_by_province_weekly():
         return f"{dir}/{prefix}-{week}"
     if file is not None:
         cases2023 = pd.read_json(file)
-        # This file has had double entries. first has larger total so must be most recent
-        cases2023 = cases2023.set_index(["weeknum", "province"])
-        cases2023 = cases2023[~cases2023.index.duplicated(keep='first')].reset_index()
-        max_week = cases2023['weeknum'].max()
-        os.rename(f"{dir}/{prefix}", week_file(max_week))
+        if not cases2023.empty:
+            # This file has had double entries. first has larger total so must be most recent
+            cases2023 = cases2023.set_index(["weeknum", "province"])
+            cases2023 = cases2023[~cases2023.index.duplicated(keep='first')].reset_index()
+            max_week = cases2023['weeknum'].max()
+            os.rename(f"{dir}/{prefix}", week_file(max_week))
 
-    max_week = today().isocalendar().week + 1
+    max_week = int(today().strftime("%U")) + 1
     # Get fake api files
     cases2023 = pd.concat([pd.read_json(week_file(week)) for week in range(1, max_week) if os.path.exists(week_file(week))])
     total_cols = ['total_case', 'total_death', 'total_case_excludeabroad']
