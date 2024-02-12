@@ -690,8 +690,9 @@ def deaths_by_province_weekly():
         "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
     ]
     data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
-    csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # isn't that supposed to be round 5?
-    file, _, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, appending=True), None)
+    csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
+    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=False), None)
+    assert "{" not in content
     try:
         data += [pd.read_csv(file)]
     except ParserError:
@@ -876,6 +877,7 @@ if __name__ == '__main__':
 
     df = import_csv("combined", index=["Date"])
 
+    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     excess_deaths()
     covid_plot_deaths.save_excess_death_plots(df)
 
@@ -892,7 +894,6 @@ if __name__ == '__main__':
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
-    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
     assert not timeline.index.duplicated().any()
