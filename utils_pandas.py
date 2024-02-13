@@ -157,7 +157,7 @@ def fix_gaps(df):
     cum = df[[c for c in df.columns if " Cum" in c]]
     smoothed = cum.iloc[::-1].cummin().iloc[::-1]
     df = smoothed.combine_first(df)
-    df = df.interpolate(limit_area="inside")
+    df = df.infer_objects(copy=False).interpolate(limit_area="inside")
     df['Province'] = df['Province'].iloc[0]  # Ensure they all have same province
     df = df.reset_index().set_index(["Date", "Province"])
     df = df.dropna(how="all", axis=0)  # get rid of extra data at the end we don't need. helps with trend table
