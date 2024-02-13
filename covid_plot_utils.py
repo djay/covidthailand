@@ -265,7 +265,7 @@ def plot_area(df: pd.DataFrame,
             # '2': df_clean['2020-12-12':],
             '3': df_clean['2021-04-01':],
             '4': df_clean['2022-02-01':],
-            '30d': df_clean.last('30d')
+            '30d': df_clean[-30:]
         }
         quick = os.environ.get('USE_CACHE_DATA', False) == 'True'  # TODO: have its own switch
         if periods_to_plot:
@@ -455,13 +455,13 @@ def plot_area(df: pd.DataFrame,
         path = os.path.join("outputs", f'{png_prefix}_{suffix}.svg')
         lim = a0.get_ylim()
         # TODO: should be way to generic it inside svg_hover
-        sort_df = df_plot[cols].applymap(lambda y: (y - lim[0]) / (lim[1] - lim[0]))  # make % of axis
+        sort_df = df_plot[cols].map(lambda y: (y - lim[0]) / (lim[1] - lim[0]))  # make % of axis
         if stacked:
             sort_df = sort_df.cumsum(axis=1)
-        avg_df = df_plot[cols].applymap(lambda v: y_formatter(v, 0))
+        avg_df = df_plot[cols].map(lambda v: y_formatter(v, 0))
         if ma_suffix:
             act_cols = list(orig_cols) + ([unknown_name] if unknown_total else [])
-            act_df = df_plot[act_cols].applymap(lambda v: y_formatter(v, 0))
+            act_df = df_plot[act_cols].map(lambda v: y_formatter(v, 0))
             svg_hover(plt, path, leg, stacked, sort_df, act_df, avg_df, labels=["", f"{ma_days}d avg"])
         else:
             svg_hover(plt, path, leg, stacked, sort_df, avg_df)
@@ -569,7 +569,7 @@ def add_to_table(axis, table, regions):
     """Add selected regions to a table."""
     regions_to_add = table[table['region'].isin(regions)]
     regions_to_add = regions_to_add.sort_values(by=['region', 'Value'], ascending=[True, False])
-    regions_to_add['Trend'].replace(np.nan, 0.00042, inplace=True)
+    regions_to_add['Trend'] = regions_to_add['Trend'].replace(np.nan, 0.00042)
     add_regions_to_axis(axis, regions_to_add)
 
 
