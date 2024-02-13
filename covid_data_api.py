@@ -743,6 +743,7 @@ def excess_deaths():
     index = ["Year", "Month", "Province", "Gender", "Age"]
     df = import_csv("deaths_all", index, date_cols=[], dir="inputs/json")
     counts = df.reset_index(["Gender", "Age"]).groupby(["Year", "Month"]).count()
+    sums = df.reset_index(["Gender", "Age"]).groupby(["Year", "Month"]).sum()
     if df.empty:
         lyear, lmonth = 2015, 0
     else:
@@ -753,7 +754,7 @@ def excess_deaths():
         for month in range(1, 13):
             if done:
                 break
-            if counts.Age.get((year, month), 0) >= 77 * 102 * 2:
+            if counts.Age.get((year, month), 0) >= 77 * 102 * 2 and sums.Age.get((year, month), 0) > 30000:
                 continue
             date = datetime.datetime(year=year, month=month, day=1)
             logger.info("Excess Deaths: missing {}-{}", year, month)
