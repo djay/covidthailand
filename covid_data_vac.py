@@ -717,7 +717,7 @@ def vaccination_reports():
     # add in newer https://ddc.moph.go.th/uploads/ckeditor2//files/Daily%20report%202021-06-04.pdf
     # Just need the latest
 
-    for link, date, dl in vaccination_reports_files2(check=6):
+    for link, date, dl in vaccination_reports_files2(check=0):
         if (file := dl()) is None:
             continue
         table = pd.DataFrame(columns=["Date", "Province"]).set_index(["Date", "Province"])
@@ -1203,7 +1203,7 @@ def vac_slides_manuf(file, link):
 
 def vac_slides():
     df = pd.DataFrame(columns=['Date']).set_index("Date")
-    for link, _, get_file in vac_slides_files(check=1):
+    for link, _, get_file in vac_slides_files(check=0):
         file = get_file()
         if file is None:
             continue

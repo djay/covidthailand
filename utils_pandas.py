@@ -722,17 +722,18 @@ def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None)
     # df['Date'] = (pd.to_numeric(df[week_col]) * 7).apply(lambda x: pd.DateOffset(x) + start)
     if year_col not in df.columns and date:
         # TODO: do we need to offset to the sat? (date - datetime.timedelta(days=6))
-        last_week = date.isocalendar().week
+        last_week = int(date.strftime("%U"))
         year = date.year
         # any week past the last date we expect is assumed to be last year
         # assumes not more than one year and no future data
         # df[year_col] = df.apply(lambda row: year - 1 if row[week_col] > last_week else year, axis=1)
         df.loc[df[week_col] > last_week, year_col] = year - 1
+        # df.loc[df[week_col] > 52, week_col] = 52  # Stupid mistake at the end of 2023
         df.loc[df[week_col] <= last_week, year_col] = year
         df[year_col] = df[year_col].astype(int)
     # df["Date"] = df.apply(lambda row: datetime.datetime.strptime(
     #     f"{row[year_col] if year_col else year}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
     df["Date"] = pd.to_datetime(df[year_col].astype(str) + df[week_col].astype(str) +
-                                "-6", format='%G%V-%w') - DateOffset(days=offset)
+                                "-6", format='%Y%U-%w') - DateOffset(days=offset)
     df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
     return df.set_index(["Date"] + otherindex)

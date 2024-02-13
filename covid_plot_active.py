@@ -4,6 +4,7 @@ import pandas as pd
 
 from covid_plot_utils import plot_area
 from covid_plot_utils import source
+from utils_pandas import cum2daily
 from utils_pandas import import_csv
 from utils_pandas import perc_format
 from utils_scraping import logger
@@ -168,8 +169,11 @@ if __name__ == "__main__":
     df = import_csv("combined", index=["Date"])
     briefings = import_csv("cases_briefings", ["Date"], False)
     dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
-
-    df = briefings.combine_first(dash).combine_first(df)
+    dash_weekly = import_csv("moph_dash_weekly", ["Date"], False, dir="inputs/json")  # so we cache it
+    vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
+    hospcols = [c for c in df.columns if 'Hospitalized' in c]
+    daily = cum2daily(dash_weekly, exclude=vaccols + hospcols)
+    df = briefings.combine_first(dash).combine_first(daily).combine_first(df)
 
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'

@@ -9,6 +9,7 @@ import pandas as pd
 import requests
 from dateutil.parser import parse as d
 from dateutil.relativedelta import relativedelta
+from pandas.errors import ParserError
 
 from utils_pandas import add_data
 from utils_pandas import cum2daily
@@ -373,7 +374,7 @@ def get_case_details_api_weekly():
         os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
 
     # Get fake api files
-    max_week = today().isocalendar().week + 1
+    max_week = int(today().strftime("%U")) + 1
     cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week) if os.path.exists(week_file(week))])
     # Columns are all messed up
     cases2023 = cases2023.drop(columns=["risk"]).rename(columns=dict(
@@ -639,13 +640,14 @@ def timeline_by_province_weekly():
         return f"{dir}/{prefix}-{week}"
     if file is not None:
         cases2023 = pd.read_json(file)
-        # This file has had double entries. first has larger total so must be most recent
-        cases2023 = cases2023.set_index(["weeknum", "province"])
-        cases2023 = cases2023[~cases2023.index.duplicated(keep='first')].reset_index()
-        max_week = cases2023['weeknum'].max()
-        os.rename(f"{dir}/{prefix}", week_file(max_week))
+        if not cases2023.empty:
+            # This file has had double entries. first has larger total so must be most recent
+            cases2023 = cases2023.set_index(["weeknum", "province"])
+            cases2023 = cases2023[~cases2023.index.duplicated(keep='first')].reset_index()
+            max_week = cases2023['weeknum'].max()
+            os.rename(f"{dir}/{prefix}", week_file(max_week))
 
-    max_week = today().isocalendar().week + 1
+    max_week = int(today().strftime("%U")) + 1
     # Get fake api files
     cases2023 = pd.concat([pd.read_json(week_file(week)) for week in range(1, max_week) if os.path.exists(week_file(week))])
     total_cols = ['total_case', 'total_death', 'total_case_excludeabroad']
@@ -688,9 +690,13 @@ def deaths_by_province_weekly():
         "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
     ]
     data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
-    csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # isn't that supposed to be round 5?
-    file, _, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=True), None)
-    data += [pd.read_csv(file)]
+    csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
+    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=False), None)
+    assert b"{" not in content
+    try:
+        data += [pd.read_csv(file)]
+    except ParserError:
+        pass
     df = pd.concat(data)
     # "age":"57","age_range":"50-59 \u0e1b\u0e35","occupation":"\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38","type":"\u0e1c\u0e39\u0e49\u0e1b\u0e48\u0e27\u0e22\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19","death_cluster":null
     # TODO: counts per province per age range, total deaths,
@@ -754,7 +760,7 @@ def excess_deaths():
         for month in range(1, 13):
             if done:
                 break
-            if counts.Age.get((year, month), 0) >= 77 * 102 * 2 and sums.Age.get((year, month), 0) > 30000:
+            if counts.Age.get((year, month), 0) >= 77 * 102 * 2 and sums.Age.get((year, month), 0) > 2000:
                 continue
             date = datetime.datetime(year=year, month=month, day=1)
             logger.info("Excess Deaths: missing {}-{}", year, month)
@@ -871,6 +877,10 @@ if __name__ == '__main__':
 
     df = import_csv("combined", index=["Date"])
 
+    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
+    excess_deaths()
+    covid_plot_deaths.save_excess_death_plots(df)
+
     timeline_prov_weekly = timeline_by_province_weekly()
     assert not timeline_prov_weekly.index.duplicated().any()
 
@@ -884,7 +894,6 @@ if __name__ == '__main__':
     timeline_prov = timeline_prov.combine_first(timeline_prov_weekly)
 
     cases_demo, risks_prov, case_api_by_area = get_cases_by_demographics_api()
-    deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     timeline = get_cases_timelineapi()
     timeline = timeline.combine_first(timeline_weekly)
     assert not timeline.index.duplicated().any()
@@ -902,6 +911,3 @@ if __name__ == '__main__':
     covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
     # covid_plot_cases.save_infections_estimate(df)
-
-    excess_deaths()
-    covid_plot_deaths.save_excess_death_plots(df)
