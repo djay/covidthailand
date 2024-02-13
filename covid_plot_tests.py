@@ -154,7 +154,7 @@ def combined_variant_reports(min_samples=20):
     area = import_csv("variants_by_area", index=["Start", "End"], date_cols=["Start", "End"])
     area = area.groupby(["Start", "End"]).sum()
     area = area.reset_index().drop(columns=["Health Area", "Start"]).set_index(
-        "End").rename(columns={"B.1.1.529 (Omicron)": "Other", "BA.2.75 (Omicron)": "BA.2.75/BN.1/CH.1 (Omicron)"})
+        "End").rename(columns={"B.1.1.529 (Omicron)": "Other", "BA.2.75 (Omicron)": "BA.2.75/BN.1/CH.1 (Centaurus)"})
     area = area.apply(lambda x: x / x.sum(), axis=1)
     # Omicron didn't get spit out until 2022-06-24 so get rid of the rest
     # TODO: should we prefer seq data or pcr data?
@@ -184,7 +184,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
 
     footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
     cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Centaurus)",
-                     "XBB (Kraken/Arcturus)", "EG (Eris)", "Other", first=False)
+                     "XBB (Kraken/Arcturus)", "EG (Eris)", "JN.1 (Pirola)", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
