@@ -93,7 +93,12 @@ groups = {
     "GS.": "XBB (Kraken/Arcturus)",
     "GE.": "XBB (Kraken/Arcturus)",
     "GA.": "XBB (Kraken/Arcturus)",
+    "HK.3": "XBB (Kraken/Arcturus)",  # from eg.5.1?
+    "HN.": "XBB (Kraken/Arcturus)",
     "EG.": "EG (Eris)",
+    # https://www.news-medical.net/news/20240209/Understanding-the-virological-properties-of-SARS-CoV-2-variant-JN1.aspx
+    "BA.2.86": "JN.1 (Pirola)",
+    "JN.1": "JN.1 (Pirola)",
     "Other": "Other",
 }
 
@@ -166,7 +171,8 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     # api = api.rolling("7d").mean()
     # api = api[api.sum(axis=1) > 5]  # If not enough samples we won't use it
     if not api.empty and variants.index.max() <= api.index.max():
-        variants = group_seq(api)
+        # api seems not have alpha beta. maybe because not enough sequence data then?
+        variants = pd.concat([variants[:"2022-01-01"], group_seq(api)["2022-01-02":]])
         foot_source = f'{source}Data Source: GISAID'
     else:
         logger.warning("Using Variants from reports. GISAID problem, or old")
