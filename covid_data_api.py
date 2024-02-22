@@ -90,7 +90,7 @@ def get_cases_timelineapi_weekly():
 
     df2, df4 = [pd.read_json(f[0]) for f in [y2, y4]]
     df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/report-round-3-y21-line-lists",
-                          ["year", "weeknum"], dir="inputs/json/weekly")
+                          ["year", "weeknum"], dir="inputs/json/weekly", check=False)
 
     # df = pd.concat([df2, df3, df4])
     df = df4  # there is overlap and it has different values. Just use this year?
@@ -634,7 +634,7 @@ def timeline_by_province_weekly():
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces"
     prefix = "today-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80)), None)
+    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80, proxy=True)), None)
 
     def week_file(week):
         return f"{dir}/{prefix}-{week}"
@@ -689,9 +689,9 @@ def deaths_by_province_weekly():
         "https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list",  # = 2021-2021
         "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
     ]
-    data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
+    data = [load_paged_json(url, dir="inputs/json/weekly/deaths", check=False, proxy=True) for url in years]
     csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
-    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, appending=False), None)
+    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, proxy=True, appending=False), None)
     if b"{" in content:
         try:
             data += [pd.read_csv(file)]
