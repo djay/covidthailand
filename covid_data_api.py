@@ -691,12 +691,12 @@ def deaths_by_province_weekly():
     ]
     data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
     csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
-    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=False), None)
-    assert b"{" not in content
-    try:
-        data += [pd.read_csv(file)]
-    except ParserError:
-        pass
+    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, appending=False), None)
+    if b"{" in content:
+        try:
+            data += [pd.read_csv(file)]
+        except ParserError:
+            pass
     df = pd.concat(data)
     # "age":"57","age_range":"50-59 \u0e1b\u0e35","occupation":"\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38","type":"\u0e1c\u0e39\u0e49\u0e1b\u0e48\u0e27\u0e22\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19","death_cluster":null
     # TODO: counts per province per age range, total deaths,
