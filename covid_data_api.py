@@ -457,7 +457,7 @@ def get_case_details_api():
     return cases
 
 
-def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, timeout=80):
+def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, proxy=False, timeout=80):
     basename = url2filename(url)
     if not target_index:
         # Then we will cache it ourselves and return the data
@@ -468,7 +468,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
 
     data = []
     # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False, timeout=timeout, threads=1)), None)
+    file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False,
+                            timeout=timeout, proxy=proxy, threads=1)), None)
     try:
         pagedata = json.loads(content) if content is not None else {}
     except json.JSONDecodeError:
@@ -508,7 +509,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     pages_got = 0
     is_first = False
     urls = [f"{url}?page={p}" for p in pages]
-    for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, threads=1):
+    for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, proxy=proxy, threads=1):
         if file is None:
             if backwards:
                 df = pd.DataFrame()  # Can't join it. have eto give up
