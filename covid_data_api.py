@@ -693,7 +693,7 @@ def deaths_by_province_weekly():
     data = [load_paged_json(url, dir="inputs/json/weekly/deaths", check=False, proxy=True) for url in years]
     csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
     file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, proxy=True, appending=False), None)
-    if b"{" in content:
+    if b"{" not in content:
         try:
             data += [pd.read_csv(file)]
         except ParserError:
