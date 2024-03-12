@@ -1,0 +1,3 @@
+[submodule "src/tableau-scraping"]
+	path = src/tableau-scraping
+	url = git@github.com:djay/tableau-scraping.git
