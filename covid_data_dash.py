@@ -354,6 +354,9 @@ def dash_province_weekly(file="moph_province_weekly"):
         if len(dec1.index.intersection(row.index)) > 0:
             logger.info("{} MOPH dash, dropping invalid row. cum value not inc. {}", row.index.max(),
                         row.loc[row.last_valid_index():].to_string(index=False, header=False))
+            df = combined.drop(dec1.index.intersection(row.index))
+            # TODO: Some rows don't seem to show a drop
+            # TODO: We should drop the row before as well as that might be the source of the bad data.
         else:
             df = combined
             logger.info("{} MOPH Dashboard {}", row.index.max(),
@@ -427,7 +430,9 @@ def extract_basics(wb, date, check_date=True, base_df=None):
     if deaths.empty and base_df is not None and 'deaths' in base_df.columns:
         deaths = base_df[['Deaths']]
 
-    if check_date and (date != deaths.index.max() and date != cases.index.max()):
+    # There is no date in the data to tell us that its returning the correct data except for the
+    # the deaths and cases. lets just look if we got latest instead.
+    if check_date and ((not deaths.empty and date < deaths.index.max()) or (not cases.empty and date < cases.index.max())):
         return row
     # date = cases.index.max()  # We can't get update date always so use lastest cases date
     cases_cum = workbook_value(wb, date, ["D_NewACM (2)", "D2_NewACM (2)"], "Cases Cum", default=np.nan)
