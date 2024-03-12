@@ -30,6 +30,8 @@ jobs:
     #   statuses: write
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       # - name: Get Cached docs
       #   uses: actions/checkout@v2
       #   with:
