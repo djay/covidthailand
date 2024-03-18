@@ -349,12 +349,13 @@ def dash_province_weekly(file="moph_province_weekly"):
         combined = row.combine_first(df)
 
         # Test if this creates a dip
-        contiguous = combined[["Cases Cum", "Deaths Cum"]].dropna()
+        contiguous = combined[["Cases Cum", "Deaths Cum"]]
         dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
-        if len(dec1.index.intersection(row.index)) > 0:
-            logger.info("{} MOPH dash, dropping invalid row. cum value not inc. {}", row.index.max(),
-                        row.loc[row.last_valid_index():].to_string(index=False, header=False))
-            df = combined.drop(dec1.index.intersection(row.index))
+        bad_rows = dec1.index.intersection(row.index)
+        if len(bad_rows) > 0:
+            logger.info("{} MOPH dash, dropping invalid row. cum value not inc. {}", bad_rows,
+                        row.loc[bad_rows].to_string(index=False, header=False))
+            df = combined.drop(bad_rows)
             # TODO: Some rows don't seem to show a drop
             # TODO: We should drop the row before as well as that might be the source of the bad data.
         else:
