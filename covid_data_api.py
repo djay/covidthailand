@@ -30,6 +30,9 @@ from utils_thai import to_thaiyear
 from utils_thai import today
 
 
+USE_PROXY = False
+
+
 #################################
 # Cases Apis
 #################################
@@ -359,23 +362,52 @@ def cleanup_cases(cases):
     return cases
 
 
+def get_weekly_today(url, dir):
+    file, content, _ = next(web_files(url, dir=dir))
+    fname = url.split("/")[-1]
+
+    def week_file(week, year):
+        if year == 2023:
+            file = f"{dir}/{fname}-{week}"
+        else:
+            file = f"{dir}/{fname}-{year}-{week}"
+        return file
+
+    def read_week(file):
+        try:
+            cases2023 = pd.read_json(file)
+        except ValueError:
+            cases2023 = pd.read_csv(file)
+        cols = ['year', 'weeknum', 'province', 'age', 'age_range', 'occupation', 'type', 'death_cluster', 'update_date']
+        ['year', 'weeknum', 'gender', 'age_number', 'age_range', 'job', 'risk',
+         'patient_type', 'province', 'reporting_group', 'region_odpc', 'region',
+         'update_date']
+        if "." in cases2023['province'].iloc[-1]:
+            # Some cases have the cols un the wrong order
+            cases2023 = cases2023.rename(columns=dict(province='job', reporting_group='province', job='region',
+                                         region='region_odpc', region_odpc='patient_type', patient_type="reporting_group"))
+        return cases2023
+    if file is not None:
+        cases2023 = read_week(file)
+        max_week = cases2023['weeknum'].max()
+        year = cases2023['year'].max()
+        os.rename(f"{dir}/{fname}", week_file(max_week, year))
+
+    # Get fake api files
+    # max_week = int(today().strftime("%U")) + 1
+    cases2023 = pd.concat([read_week(week_file(week, year)) for year in range(2023, 2025)
+                          for week in range(1, 53) if os.path.exists(week_file(week, year))])
+    return cases2023
+
+
 def get_case_details_api_weekly():
 
     # No api for 2023 yet but do have last weeks. Just need to save somewhere
-    url = "https://covid19.ddc.moph.go.th/api/CSV/Cases/today-cases-line-lists"
+    # url = "https://covid19.ddc.moph.go.th/api/CSV/Cases/today-cases-line-lists"
+    url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-line-lists"
     dir = "inputs/json/weekly/cases"
-    file, content, _ = next(web_files(url, dir=dir))
+    cases2023 = get_weekly_today(url, dir)
 
-    def week_file(week):
-        return f"{dir}/today-cases-line-lists-{week}"
-    if file is not None:
-        cases2023 = pd.read_csv(file)
-        max_week = cases2023['weeknum'].max()
-        os.rename(f"{dir}/today-cases-line-lists", week_file(max_week))
-
-    # Get fake api files
-    max_week = int(today().strftime("%U")) + 1
-    cases2023 = pd.concat([pd.read_csv(week_file(week)) for week in range(1, max_week) if os.path.exists(week_file(week))])
     # Columns are all messed up
     cases2023 = cases2023.drop(columns=["risk"]).rename(columns=dict(
         patient_type="risk", province="job", region_odpc="patient_type", reporting_group="province", job="region_odpc", ))
@@ -635,7 +667,7 @@ def timeline_by_province_weekly():
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces"
     prefix = "today-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80, proxy=True)), None)
+    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80, proxy=USE_PROXY)), None)
 
     def week_file(week):
         return f"{dir}/{prefix}-{week}"
@@ -690,15 +722,21 @@ def deaths_by_province_weekly():
         "https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list",  # = 2021-2021
         "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
     ]
-    data = [load_paged_json(url, dir="inputs/json/weekly/deaths", check=False, proxy=True) for url in years]
+    data = [load_paged_json(url, dir="inputs/json/weekly/deaths", check=False, proxy=USE_PROXY) for url in years]
     csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
-    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, proxy=True, appending=False), None)
+    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, proxy=USE_PROXY, appending=False), None)
     if b"{" not in content:
         try:
             data += [pd.read_csv(file)]
         except ParserError:
             pass
     df = pd.concat(data)
+
+    url = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/weekly-deaths-line-lists"
+    dir = "inputs/json/weekly/deaths"
+    deaths_latest = get_weekly_today(url, dir)
+    df = pd.concat([df, deaths_latest])
+
     # "age":"57","age_range":"50-59 \u0e1b\u0e35","occupation":"\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38","type":"\u0e1c\u0e39\u0e49\u0e1b\u0e48\u0e27\u0e22\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19","death_cluster":null
     # TODO: counts per province per age range, total deaths,
     # TODO classify occupation or type? is type reason for death?
@@ -880,7 +918,6 @@ if __name__ == '__main__':
 
     deaths_weekly, deaths_prov_weekly = deaths_by_province_weekly()
     excess_deaths()
-    covid_plot_deaths.save_excess_death_plots(df)
 
     timeline_prov_weekly = timeline_by_province_weekly()
     assert not timeline_prov_weekly.index.duplicated().any()
@@ -908,6 +945,7 @@ if __name__ == '__main__':
     df = timeline.combine_first(cases_demo).combine_first(deaths_weekly).combine_first(df)
     export(df, "combined", csv_only=True)
 
+    covid_plot_deaths.save_excess_death_plots(df)
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_caseprov_plots(df)
     covid_plot_cases.save_cases_plots(df)
