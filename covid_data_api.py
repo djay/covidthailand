@@ -632,7 +632,8 @@ def get_cases_by_demographics_api():
     cases_weekly = get_case_details_api_weekly()  # 2022 onwards
     # cases = cases.combine_first(cases_weekly)
 
-    cases_daily, risks_prov, case_areas = process(cases) if not cases.empty else pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    cases_daily, risks_prov, case_areas = process(cases) if not cases.empty else (
+        pd.DataFrame(), pd.DataFrame(), pd.DataFrame())
     cases_daily_w, risks_prov_w, case_areas_w = process(cases_weekly)
     risks_prov_w = risks_prov_w.reset_index("Province").groupby("Province", group_keys=True).apply(weekly2daily)
 
