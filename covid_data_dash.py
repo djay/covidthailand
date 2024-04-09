@@ -297,7 +297,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
         "Cases Cum": (today() - relativedelta(days=22), today(), 150),  # TODO: need better way to reject this year cum values
         # 'Vac Given 1 Cum': (today() - relativedelta(days=22), today() - relativedelta(days=4)),
-        'Vac Given 1 Cum': (d("2021-08-01"), d("2023-05-23")),
+        # 'Vac Given 1 Cum': (d("2021-08-01"), d("2023-05-23")),
 
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
