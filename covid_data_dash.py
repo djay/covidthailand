@@ -231,6 +231,7 @@ def dash_weekly(file="moph_dash_weekly"):
         'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
         'Cases Cum': (d("2022-09-17"), today(), 4625384),
+        'Deaths Male': (d("2024-01-01"), today()),
     }
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
@@ -295,7 +296,9 @@ def dash_province_weekly(file="moph_province_weekly"):
     valid = {
         # "Deaths Cum": (d("2022-12-11"), today(), 1),
         "Cases Cum": (today() - relativedelta(days=22), today(), 150),  # TODO: need better way to reject this year cum values
-        'Vac Given 1 Cum': (today() - relativedelta(days=22), today() - relativedelta(days=4)),
+        # 'Vac Given 1 Cum': (today() - relativedelta(days=22), today() - relativedelta(days=4)),
+        'Vac Given 1 Cum': (d("2021-08-01"), d("2023-05-23")),
+
     }
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
@@ -446,6 +449,20 @@ def extract_basics(wb, date, check_date=True, base_df=None):
 
     row = row.combine_first(workbook_value(wb, date, "D_Severe (2)", "Hospitalized Severe", None))
     row = row.combine_first(workbook_value(wb, date, "D_SevereTube (2)", "Hospitalized Respirator", None))
+
+    ages = workbook_series(wb, 'cvd_agegroup', {'Measure Values-value': 'Deaths',
+                           "Measure Names-alias": "Age Group"}, index_col="Age Group", index_date=False)
+    gender = workbook_series(wb, 'cvd_gender', {'Measure Values-value': 'Deaths',
+                             "Measure Names-alias": "Gender"}, index_col="Gender", index_date=False)
+
+    if not ages.empty:
+        ages['Date'] = deaths.index.max()
+        ages = ages.reset_index().pivot(columns=['Age Group'], values=["Deaths"], index=["Date"])
+        ages.columns = [f"Deaths Age {a}" for a in ["0-4", "10-19", "20-49", "5-9", "50-59", "60-69", "70+"]]
+        gender['Date'] = deaths.index.max()
+        gender = gender.reset_index().pivot(columns=['Gender'], values=["Deaths"], index=["Date"])
+        gender.columns = [f"Deaths {g}" for g in ["Male", "Female"]]
+        row = row.combine_first(gender).combine_first(ages)
 
     # TODO: should switch from weekly?
     row = row.combine_first(vacs).combine_first(vacs_dates)
