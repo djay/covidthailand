@@ -19,6 +19,7 @@ from utils_pandas import fuzzy_join
 from utils_pandas import import_csv
 from utils_pandas import weekly2daily
 from utils_pandas import weeks_to_end_date
+from utils_scraping import any_in
 from utils_scraping import logger
 from utils_scraping import s
 from utils_scraping import url2filename
@@ -378,14 +379,15 @@ def get_weekly_today(url, dir):
             cases2023 = pd.read_json(file)
         except ValueError:
             cases2023 = pd.read_csv(file)
-        cols = ['year', 'weeknum', 'province', 'age', 'age_range', 'occupation', 'type', 'death_cluster', 'update_date']
-        ['year', 'weeknum', 'gender', 'age_number', 'age_range', 'job', 'risk',
-         'patient_type', 'province', 'reporting_group', 'region_odpc', 'region',
-         'update_date']
-        if "." in cases2023['province'].iloc[-1]:
+        if any_in(cases2023['province'].iloc[-1], 'อื่นๆ', 'เคสปกติ', '.'):
             # Some cases have the cols un the wrong order
-            cases2023 = cases2023.rename(columns=dict(province='job', reporting_group='province', job='region',
-                                         region='region_odpc', region_odpc='patient_type', patient_type="reporting_group"))
+            # cases2023 = cases2023.rename(columns=dict(province='job', reporting_group='province', job='region',
+            #                              region='region_odpc', region_odpc='patient_type', patient_type="reporting_group"))
+            # cases2023 = cases2023.rename(columns=dict(province='reporting_group', reporting_group='province', job='patient_type',
+            #                              region='job', region_odpc='region', patient_type="region_odpc"))
+            cases2023.columns = ['year', 'weeknum', 'gender', 'age_number', 'age_range', 'region', 'risk',
+                                 'job', 'reporting_group', 'province', 'patient_type', 'region_odpc',
+                                 'update_date']
         return cases2023
     if file is not None:
         cases2023 = read_week(file)
@@ -408,9 +410,10 @@ def get_case_details_api_weekly():
     dir = "inputs/json/weekly/cases"
     cases2023 = get_weekly_today(url, dir)
 
+    cases2023 = cases2023.drop(columns=["risk"])
     # Columns are all messed up
-    cases2023 = cases2023.drop(columns=["risk"]).rename(columns=dict(
-        patient_type="risk", province="job", region_odpc="patient_type", reporting_group="province", job="region_odpc", ))
+    # cases2023 = cases2023.rename(columns=dict(
+    #     patient_type="risk", province="job", region_odpc="patient_type", reporting_group="province", job="region_odpc", ))
 
     # df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
     # df1 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/round-1to2-line-lists", ["year", "weeknum"], target_date, dir="inputs/json/weekly")
@@ -629,13 +632,13 @@ def get_cases_by_demographics_api():
     cases_weekly = get_case_details_api_weekly()  # 2022 onwards
     # cases = cases.combine_first(cases_weekly)
 
-    cases_daily, risks_prov, case_areas = process(cases)
+    cases_daily, risks_prov, case_areas = process(cases) if not cases.empty else pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     cases_daily_w, risks_prov_w, case_areas_w = process(cases_weekly)
     risks_prov_w = risks_prov_w.reset_index("Province").groupby("Province", group_keys=True).apply(weekly2daily)
 
     return (
         cases_daily.combine_first(weekly2daily(cases_daily_w)),
-        risks_prov.combine_first(risks_prov_w),
+        risks_prov.combine_first(risks_prov_w) if not risks_prov.empty else risks_prov_w,
         case_areas.combine_first(weekly2daily(case_areas_w))
     )
 
