@@ -494,6 +494,8 @@ def get_variant_sequenced_table(file, pages):
             weeks = weeks.replace("176", "178").replace("175", "177")
         elif "20230609" in file:
             weeks = weeks.replace("179", "178").replace("180", "179")
+        elif "20230414" in file:
+            weeks = weeks.replace("173", "171")
 
         df["Week"] = list(pd.to_numeric(weeks).dropna())
 
@@ -506,8 +508,6 @@ def get_variant_sequenced_table(file, pages):
             end_week_one = d("2020-01-03")
         else:
             end_week_one = d("2019-12-27")
-        if date == d("2023-04-14"):
-            df[2, 'Week'] = 171
         df['End'] = (df['Week'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
         df = df.set_index("End")
         assert df.index.max() <= date
