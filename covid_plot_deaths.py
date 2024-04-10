@@ -434,7 +434,7 @@ def save_excess_death_plots(df):
     years3 = [2015, 2016, 2017, 2018]
 
     all = calc_pscore(excess)
-    all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='M')).sum()
+    all['Deaths Covid'] = df['Deaths'].groupby(pd.Grouper(freq='ME')).sum()
     all['Deaths (ex. Known Covid)'] = all['Deaths All Month'] - all['Deaths Covid']
     all['Deaths 2021 (ex. Known Covid)'] = all['Deaths 2021'] - all['Deaths Covid']
     all['Expected Deaths'] = all['Pre 5 Avg'] + all['Deaths Covid']
@@ -526,8 +526,8 @@ def save_excess_death_plots(df):
     def group_deaths(excess, by, daily_covid):
         cols5y = [f'Deaths {y}' for y in years5]
 
-        dfby = excess.groupby(by).apply(calc_pscore)
-        covid_by = daily_covid.groupby([by, pd.Grouper(level=0, freq='M')])['Deaths'].sum()
+        dfby = excess.groupby(by, observed=False).apply(calc_pscore)
+        covid_by = daily_covid.groupby([by, pd.Grouper(level=0, freq='ME')])['Deaths'].sum()
         dfby['Deaths ex Covid'] = dfby['Deaths All Month'] - covid_by
         dfby['Covid Deaths'] = covid_by
 
@@ -557,7 +557,7 @@ def save_excess_death_plots(df):
 
     by_region, regions = group_deaths(excess, "region", cases)
     # # Get covid deaths by region
-    # covid_by_region = cases.groupby([pd.Grouper(level=0, freq='M'), "region"])['Deaths'].sum()
+    # covid_by_region = cases.groupby([pd.Grouper(level=0, freq='ME'), "region"])['Deaths'].sum()
     # # fix up dates to start on 1st (for bar graph)
     # covid_by_region = covid_by_region.reset_index("region")
     # covid_by_region = covid_by_region.set_index(covid_by_region.index - pd.offsets.MonthBegin(1))
@@ -634,7 +634,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
                   footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_province = excess.groupby(["Province"]).apply(calc_pscore)
-    by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
+    by_province['Deaths Covid'] = cases.groupby(["Province", pd.Grouper(level=0, freq='ME')])['Deaths'].sum()
     top5 = by_province.pipe(topprov, lambda adf: (adf["Excess Deaths"] - adf['Deaths Covid']) / adf['Pre 5 Avg'] * 100, num=5)
     cols = top5.columns.to_list()
     plot_area(df=top5,
@@ -673,7 +673,7 @@ see https://djay.github.io/covidthailand/#excess-deaths
               footnote_left=f'{source}Data Sources: Office of Registration Administration\n  Department of Provincial Administration')
 
     by_district = excess.groupby("Health District Number").apply(calc_pscore)
-    by_district['Deaths Covid'] = cases.groupby(["Health District Number", pd.Grouper(level=0, freq='M')])['Deaths'].sum()
+    by_district['Deaths Covid'] = cases.groupby(["Health District Number", pd.Grouper(level=0, freq='ME')])['Deaths'].sum()
     by_district['Deviation from expected Deaths'] = (
         by_district['Excess Deaths'] - by_district['Deaths Covid']) / by_district['Pre 5 Avg'] * 100
     top5 = area_crosstab(by_district, "Deviation from expected Deaths", "")

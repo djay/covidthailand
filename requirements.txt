@@ -32,3 +32,5 @@ benford_py
 tqdm
 pre-commit-hooks
 proxyscrape
+openpyxl >= 3.1.0
+pyarrow
