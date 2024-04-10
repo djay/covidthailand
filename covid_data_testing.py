@@ -455,6 +455,8 @@ def get_variant_sequenced_table(file, pages):
     fileseq = pd.DataFrame()
     first_seq_table = None
     date = file2date(file)
+    if date >= d("2023-09-24"):
+        return pd.DataFrame()  # switched to montly. TODO
     for page_num, page in enumerate(pages):
         if "Prevalence of Pangolin lineages" not in page:
             continue
@@ -630,6 +632,8 @@ def get_variant_reports():
                 bangkok.index = nat.index[:len(bangkok.index)]
             area = area.combine_first(get_variants_by_area_pdf(file, page, page_num))
         fileseq = get_variant_sequenced_table(file, pages)
+        if fileseq.empty:
+            continue
 
         # Later files can update prev reports
         sequenced = pd.concat([sequenced, fileseq]).reset_index().drop_duplicates(subset="End").set_index("End").sort_index()

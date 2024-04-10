@@ -90,7 +90,7 @@ def get_cases_timelineapi_weekly():
 
     df2, df4 = [pd.read_json(f[0]) for f in [y2, y4]]
     df3 = load_paged_json("https://covid19.ddc.moph.go.th/api/Cases/report-round-3-y21-line-lists",
-                          ["year", "weeknum"], dir="inputs/json/weekly")
+                          ["year", "weeknum"], dir="inputs/json/weekly", check=False)
 
     # df = pd.concat([df2, df3, df4])
     df = df4  # there is overlap and it has different values. Just use this year?
@@ -457,7 +457,7 @@ def get_case_details_api():
     return cases
 
 
-def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, timeout=80):
+def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inputs/json/weekly", check=True, proxy=False, timeout=80):
     basename = url2filename(url)
     if not target_index:
         # Then we will cache it ourselves and return the data
@@ -468,7 +468,8 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
 
     data = []
     # First check api is working ok
-    file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False, timeout=timeout, threads=1)), None)
+    file, content, _ = next(iter(web_files(url, dir=None, check=check, appending=False,
+                            timeout=timeout, proxy=proxy, threads=1)), None)
     try:
         pagedata = json.loads(content) if content is not None else {}
     except json.JSONDecodeError:
@@ -508,7 +509,7 @@ def load_paged_json(url, index=["year", "weeknum"], target_index=None, dir="inpu
     pages_got = 0
     is_first = False
     urls = [f"{url}?page={p}" for p in pages]
-    for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, threads=1):
+    for file, content, _ in web_files(*urls, dir=None, check=check, appending=False, timeout=timeout, proxy=proxy, threads=1):
         if file is None:
             if backwards:
                 df = pd.DataFrame()  # Can't join it. have eto give up
@@ -634,7 +635,7 @@ def timeline_by_province_weekly():
 
     url = "https://covid19.ddc.moph.go.th/api/Cases/today-cases-by-provinces"
     prefix = "today-cases-by-provinces"
-    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80)), None)
+    file, _, _ = next(iter(web_files(url, dir=dir, check=True, appending=False, timeout=80, proxy=True)), None)
 
     def week_file(week):
         return f"{dir}/{prefix}-{week}"
@@ -689,14 +690,14 @@ def deaths_by_province_weekly():
         "https://covid19.ddc.moph.go.th/api/Deaths/round-3-line-list",  # = 2021-2021
         "https://covid19.ddc.moph.go.th/api/Deaths/round-4-line-list",  # - 2022-2022 - includes type and cluster?
     ]
-    data = [load_paged_json(url, dir="inputs/json/weekly/deaths") for url in years]
+    data = [load_paged_json(url, dir="inputs/json/weekly/deaths", check=False, proxy=True) for url in years]
     csv_2023 = "https://covid19.ddc.moph.go.th/api/CSV/Deaths/round-4-line-list"  # 2023. isn't that supposed to be round 5?
-    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=True, appending=False), None)
-    assert b"{" not in content
-    try:
-        data += [pd.read_csv(file)]
-    except ParserError:
-        pass
+    file, content, _ = next(web_files(csv_2023, dir="inputs/csv/weekly", check=False, proxy=True, appending=False), None)
+    if b"{" not in content:
+        try:
+            data += [pd.read_csv(file)]
+        except ParserError:
+            pass
     df = pd.concat(data)
     # "age":"57","age_range":"50-59 \u0e1b\u0e35","occupation":"\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38","type":"\u0e1c\u0e39\u0e49\u0e1b\u0e48\u0e27\u0e22\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19","death_cluster":null
     # TODO: counts per province per age range, total deaths,
