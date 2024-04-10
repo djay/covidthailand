@@ -21,6 +21,7 @@ from utils_pandas import add_data
 from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
+from utils_pandas import weekly2daily
 from utils_scraping import CHECK_NEWER
 from utils_scraping import logger
 from utils_scraping import USE_CACHE_DATA
@@ -301,6 +302,8 @@ def scrape_and_combine():
     vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
 
     dash_weekly = cum2daily(res['dash_weekly'], drop=False, exclude=vaccols + hospcols)
+    dash_weekly = dash_weekly.combine_first(weekly2daily(
+        res['dash_weekly'][(c for c in res['dash_weekly'].columns if "Deaths " in c)]))
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")

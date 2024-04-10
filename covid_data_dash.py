@@ -16,6 +16,7 @@ import covid_plot_vacs
 from utils_pandas import cum2daily
 from utils_pandas import export
 from utils_pandas import import_csv
+from utils_pandas import weekly2daily
 from utils_pandas import weeks_to_end_date
 from utils_scraping import any_in
 from utils_scraping import logger
@@ -782,10 +783,11 @@ if __name__ == '__main__':
     export(prov, "cases_by_province", csv_only=True)
 
     daily = cum2daily(dash_daily_df, exclude=vaccols)
-    df = daily.combine_first(df)
+    daily_deaths = weekly2daily(dash_daily_df[(c for c in dash_daily_df.columns if "Deaths " in c)])
+    df = daily.combine_first(df).combine_first(daily_deaths)
     export(df, "combined", csv_only=True)
 
-    covid_plot_vacs.save_vacs_prov_plots(df)
-    covid_plot_vacs.save_vacs_plots(df)
     covid_plot_deaths.save_deaths_plots(df)
     covid_plot_cases.save_cases_plots(df)
+    covid_plot_vacs.save_vacs_prov_plots(df)
+    covid_plot_vacs.save_vacs_plots(df)
