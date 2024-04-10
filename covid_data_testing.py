@@ -461,7 +461,7 @@ def get_variant_sequenced_table(file, pages):
         if "Prevalence of Pangolin lineages" not in page:
             continue
         df = camelot_cache(file, page_num + 1, process_background=False)
-        if "Total" in df[0].iloc[-1] or df[0].str.contains("Other").any() or df.iloc[0][1:].str.contains("(w|W)[0-9]+", regex=True).any():
+        if "Total" in df[0].iloc[-1] or df[0].str.contains("Other").any() or df.iloc[0][1:].str.contains("(?:w|W)[0-9]+", regex=True).any():
             # Vertical. TODO: probably need a better test
             df = df.transpose()
         # clean up "13 MAY 2022\nOther BA.2" , "BA.2.27\n13 MAY 2022"
@@ -494,6 +494,8 @@ def get_variant_sequenced_table(file, pages):
             weeks = weeks.replace("176", "178").replace("175", "177")
         elif "20230609" in file:
             weeks = weeks.replace("179", "178").replace("180", "179")
+        elif "20230414" in file:
+            weeks = weeks.replace("173", "171")
 
         df["Week"] = list(pd.to_numeric(weeks).dropna())
 
@@ -506,8 +508,6 @@ def get_variant_sequenced_table(file, pages):
             end_week_one = d("2020-01-03")
         else:
             end_week_one = d("2019-12-27")
-        if date == d("2023-04-14"):
-            df['Week'][2] = 171
         df['End'] = (df['Week'] * 7).apply(lambda x: pd.DateOffset(x) + end_week_one)  # )
         df = df.set_index("End")
         assert df.index.max() <= date

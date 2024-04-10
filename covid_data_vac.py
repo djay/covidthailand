@@ -38,6 +38,8 @@ from utils_thai import join_provinces
 from utils_thai import today
 
 
+pd.set_option('future.no_silent_downcasting', True)
+
 ################################
 # Vaccination reports
 ################################
