@@ -240,13 +240,16 @@ def dash_weekly(file="moph_dash_weekly"):
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
 
     latest = next(dates, None)
+    logger.info("{} MOPH Dashboard: checking", latest)
     for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates)):
         # date, wave = this_index
         date = this_index[0]
         date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
+            print("s", end="")
             continue
         if (wb := get_wb()) is None:
+            logger.warning("{} MOPH Dashboard: workbook is None", date)
             continue
 
         # end_date = workbook_value(wb, None, "D_UpdateTime (2)", "Date", is_date=True)
@@ -268,6 +271,7 @@ def dash_weekly(file="moph_dash_weekly"):
 
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
+    print()
     export(df, file, csv_only=True, dir="inputs/json")
     return df
 
@@ -366,6 +370,7 @@ def dash_province_weekly(file="moph_province_weekly"):
             df = combined
             logger.info("{} MOPH Dashboard {}", row.index.max(),
                         row.loc[row.last_valid_index():].to_string(index=False, header=False))
+    print()
     export(df, file, csv_only=True, dir="inputs/json")
 
     # Vac Given 3 Cum seems to be 3+4+5+6 which is wrong

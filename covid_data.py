@@ -303,7 +303,7 @@ def scrape_and_combine():
 
     dash_weekly = cum2daily(res['dash_weekly'], drop=False, exclude=vaccols + hospcols)
     dash_weekly = dash_weekly.combine_first(weekly2daily(
-        res['dash_weekly'][(c for c in res['dash_weekly'].columns if "Deaths " in c)]))
+        dash_weekly[(c for c in dash_weekly.columns if "Deaths " in c)]))
 
     logger.info("========Combine all data sources==========")
     df = pd.DataFrame(columns=["Date"]).set_index("Date")
