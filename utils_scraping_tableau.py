@@ -243,13 +243,13 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
     def do_reset():
         for _ in range(2):
             ts = tableauscraper.TableauScraper(verify=verify)
-            fix_timeouts(ts.session, timeout=30)
             try:
                 ts.loads(url)
             except Exception as err:
                 # ts library fails in all sorts of weird ways depending on the data sent back
                 logger.warning("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
                 continue
+            fix_timeouts(ts.session, timeout=30)
             wb = ts.getWorkbook()
             return wb
         return None
