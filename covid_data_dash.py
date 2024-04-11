@@ -239,15 +239,17 @@ def dash_weekly(file="moph_dash_weekly"):
     # aggregated for week ending on sat
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
 
-    latest = next(dates, None)
-    logger.info("{} MOPH Dashboard: checking", latest)
-    for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates)):
+    # latest = next(dates, None)
+    # logger.info("{} MOPH Dashboard: checking", latest)
+    for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=list(dates), param_wave=["ตั้งแต่เริ่มระบาด"]):
         # date, wave = this_index
         date = this_index[0]
-        date = date if date is not None else latest
+        # date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
             print("s", end="")
             continue
+        else:
+            logger.warning("{} MOPH Dashboard: reading workbook for {}", date, date)
         if (wb := get_wb()) is None:
             logger.warning("{} MOPH Dashboard: workbook is None", date)
             continue
@@ -258,16 +260,17 @@ def dash_weekly(file="moph_dash_weekly"):
         #     continue
 
         # TODO: should be part of workbook_iterate so its done once.
-        row_since2023 = row = extract_basics(wb, date)
-        if row_since2023.empty:
-            logger.warning("{} MOPH Dashboard: wrong date: skip", date)
-            continue
+        # row_since2023 = row = extract_basics(wb, date)
+        # if row_since2023.empty:
+        #     logger.warning("{} MOPH Dashboard: wrong date: skip", date)
+        #     continue
 
-        wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
+        # wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
         row_update = extract_basics(wb, date, check_date=False)
         assert not row_update.empty
-        row = row_update.combine_first(row_since2023)
+        # row = row_update.combine_first(row_since2023)
+        row = row_update
 
         df = row.combine_first(df)  # prefer any updated info that might come in. Only applies to backdated series though
         logger.info("{} MOPH Dashboard {}", date, row.loc[row.last_valid_index():].to_string(index=False, header=False))
