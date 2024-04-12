@@ -235,7 +235,7 @@ def dash_weekly(file="moph_dash_weekly"):
         'Deaths Male': (d("2024-01-01"), today()),
     }
 
-    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
+    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week?:isGuestRedirectFromVizportal=y&:embed=y"
     # aggregated for week ending on sat
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
 
@@ -249,7 +249,7 @@ def dash_weekly(file="moph_dash_weekly"):
             print("s", end="")
             continue
         else:
-            logger.warning("{} MOPH Dashboard: reading workbook for {}", date, date)
+            logger.info("{} MOPH Dashboard: reading workbook for {}", date, this_index)
         if (wb := get_wb()) is None:
             logger.warning("{} MOPH Dashboard: workbook is None", date)
             continue
