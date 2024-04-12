@@ -236,6 +236,7 @@ def dash_weekly(file="moph_dash_weekly"):
     }
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week?:isGuestRedirectFromVizportal=y&:embed=y"
+
     # aggregated for week ending on sat
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
 
@@ -311,7 +312,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/2-dash-week-province"
     dates = reversed(pd.date_range("2022-01-01", today() - relativedelta(hours=7.5), freq='W-SAT').to_pydatetime())
     # dates = iter([d.strftime("%m/%d/%Y") for d in dates])
-    latest = next(dates, None)
+    # latest = next(dates, None)
     # ts = tableauscraper.TableauScraper()
     # try:
     #     ts.loads(url)
@@ -327,11 +328,11 @@ def dash_province_weekly(file="moph_province_weekly"):
     # soup = parse_file(file, html=True, paged=False)
     provs = [p.get("value") for p in soup.select("#sel-province")[0].find_all("option") if p.get("value")]
 
-    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=[None] + list(dates), filters=dict(province=provs), verify=False):
+    for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date_weekend=list(dates), param_wave=["ตั้งแต่เริ่มระบาด"], filters=dict(province=provs), verify=False):
         # for get_wb, idx_value in workbook_iterate(url, inc_no_param=False, param_date=list(dates), D2_Province="province", verify=False):
-        date, province = idx_value
-        if date is None:
-            date = latest
+        date, wave, province = idx_value
+        # if date is None:
+        #     date = latest
         # date = d(date, dayfirst=False)
         if province is None:
             continue
@@ -348,11 +349,11 @@ def dash_province_weekly(file="moph_province_weekly"):
             logger.warning("{} MOPH Dashboard: wrong date: skip {}", date, province)
             continue  # Not getting latest data yet
 
-        wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
+        # wb = force_setParameter(wb, "param_wave", "ตั้งแต่เริ่มระบาด")
         # We miss data not effected by wave
-        row_update = extract_basics(wb, date, check_date=False, base_df=row)
-        assert not row_update.empty
-        row = row_update.combine_first(row)
+        # row_update = extract_basics(wb, date, check_date=False, base_df=row)
+        # assert not row_update.empty
+        # row = row_update.combine_first(row)
 
         row['Province'] = province
         row = row.reset_index().set_index(["Date", "Province"])
