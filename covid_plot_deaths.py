@@ -105,7 +105,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing, IHME')
 
-    df = df.combine_first((df['Deaths Age 0-4'] + df['Deaths Age 5-9']).to_frame('Deaths Age 0-9'))
+    if 'Deaths Age 0-4' in df.columns:
+        df = df.combine_first((df['Deaths Age 0-4'] + df['Deaths Age 5-9']).to_frame('Deaths Age 0-9'))
     df = df.combine_first((df['Deaths Age 20-29'] + df['Deaths Age 30-39'] +
                           df['Deaths Age 40-49']).to_frame('Deaths Age 20-49'))
     df = df.combine_first((df['Cases Age 20-29'] + df['Cases Age 30-39'] + df['Cases Age 40-49']).to_frame('Cases Age 20-49'))

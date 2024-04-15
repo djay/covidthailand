@@ -245,6 +245,7 @@ def dash_weekly(file="moph_dash_weekly"):
     for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=list(dates), param_wave=["ตั้งแต่เริ่มระบาด"]):
         # date, wave = this_index
         date = this_index[0]
+        logger.info("{} MOPH Dashboard: trying {}", date, this_index)
         # date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
             print("s", end="")
