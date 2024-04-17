@@ -232,7 +232,7 @@ def dash_weekly(file="moph_dash_weekly"):
         'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
         'Cases Cum': (d("2022-09-17"), today(), 4625384),
-        'Deaths Age 0-4': (d("2024-01-01"), today()),
+        'Deaths Age 0-4': (d("2024-01-01"), today(), 0),
     }
 
     url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
