@@ -232,10 +232,10 @@ def dash_weekly(file="moph_dash_weekly"):
         'Hospitalized Respirator': (d("2021-03-25"), today(), 1),  # patchy before this
         'Hospitalized Severe': (d("2021-04-01"), today(), 10),  # try and fix bad values
         'Cases Cum': (d("2022-09-17"), today(), 4625384),
-        'Deaths Male': (d("2024-01-01"), today()),
+        'Deaths Age 0-4': (d("2024-01-01"), today()),
     }
 
-    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week?:isGuestRedirectFromVizportal=y&:embed=y"
+    url = "https://public.tableau.com/views/SATCOVIDDashboard_WEEK/1-dash-week"
 
     # aggregated for week ending on sat
     dates = reversed(pd.date_range("2022-09-25", today() - relativedelta(days=1, hours=7.5), freq='W-SAT').to_pydatetime())
@@ -245,10 +245,12 @@ def dash_weekly(file="moph_dash_weekly"):
     for get_wb, this_index in workbook_iterate(url, inc_no_param=False, param_date_weekend=list(dates), param_wave=["ตั้งแต่เริ่มระบาด"]):
         # date, wave = this_index
         date = this_index[0]
-        logger.info("{} MOPH Dashboard: trying {}", date, this_index)
+        # logger.info("{} MOPH Dashboard: trying {}", date, this_index)
         # date = date if date is not None else latest
         if skip_valid(df, date, allow_na):
-            print("s", end="")
+            # print("s", end="")
+            row = str(dict(df.loc[date]))
+            logger.info("{} MOPH Dashboard: skipping {}", date, row)
             continue
         else:
             logger.info("{} MOPH Dashboard: reading workbook for {}", date, this_index)
