@@ -757,7 +757,7 @@ def skip_valid(df, idx_value, allow_na={}):
             return True
 
     # allow certain fields null if before set date
-    nulls = [c for c in df.columns if not is_valid(c, date, idx_value)]
+    nulls = [c for c in set(list(allow_na.keys()) + list(df.columns)) if not is_valid(c, date, idx_value)]
     if not nulls:
         return True
     else:
