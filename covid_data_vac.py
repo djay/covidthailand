@@ -205,7 +205,7 @@ def vaccination_daily(daily, file_date, file, page):
         "Date",
         "Vac Allocated Sinovac",
         "Vac Allocated AstraZeneca",
-    ]).set_index("Date").fillna(value=np.nan)
+    ]).set_index("Date").infer_objects(copy=False).fillna(value=np.nan)
     # TODO: until make more specific to only reports for allocations
     daily = daily.combine_first(df)
 
@@ -907,7 +907,7 @@ def vac_manuf_given_blue(page, file, page_num, url):
         # Slide weekly 2023-01-20.pdf and Slide wk 1 2023-01-06.pdf'
         return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
-    table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
+    table = table.infer_objects(copy=False).replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
     manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
 
     if len(table.columns) < 3:
@@ -978,7 +978,7 @@ def vac_manuf_given_brown(page, file, page_num, url):
         # get with Slide weekly 2023-01-20.pdf
         return df
     # should be just one col. sometimes there are extra empty ones. 2021-08-03
-    table = table.replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
+    table = table.infer_objects(copy=False).replace('', np.nan).dropna(how="all", axis=1).replace(np.nan, '')
     manuf = ["Sinovac", "AstraZeneca", "Sinopharm", "Pfizer", "Moderna"]
 
     if len(table.columns) != 1:

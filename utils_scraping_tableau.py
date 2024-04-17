@@ -245,9 +245,10 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
             ts = tableauscraper.TableauScraper(verify=verify)
             try:
                 ts.loads(url)
+                logger.info("MOPH Dashboard: TS loads url {}", url)
             except Exception as err:
                 # ts library fails in all sorts of weird ways depending on the data sent back
-                logger.info("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
+                logger.warning("MOPH Dashboard Error: Exception TS loads url {}: {}", url, str(err))
                 continue
             fix_timeouts(ts.session, timeout=30)
             wb = ts.getWorkbook()
@@ -256,6 +257,7 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
 
     wb = do_reset()
     if wb is None:
+        logger.warning("MOPH Dashboard Error: Workbook empty {}", url)
         return
     set_value = []
     product_values = {}
@@ -316,7 +318,10 @@ def workbook_iterate(url, verify=True, inc_no_param=False, max_errors=20, **sele
 
     last_idx = [None] * len(selects)  # Outside so we know if we need to change teh params or not
     # Get all combinations of the values of params, select or filter
-    for next_idx in itertools.product(*product_values.values()):
+    combinations = list(itertools.product(*product_values.values()))
+    assert len(combinations) > 0
+    logger.info(f"MOPH Dashboard: iteration combinations {len(combinations)} at {url}")
+    for next_idx in combinations:
         def get_workbook(*checks, wb=wb, next_idx=next_idx):
             nonlocal last_idx, max_errors
             reset = False

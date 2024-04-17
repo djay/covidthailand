@@ -19,6 +19,7 @@ from utils_pandas import normalise_to_total
 from utils_pandas import perc_format
 from utils_pandas import rearrange
 from utils_pandas import topprov
+from utils_pandas import weekly2daily
 from utils_scraping import logger
 from utils_scraping import remove_prefix
 from utils_thai import area_crosstab
@@ -29,9 +30,9 @@ from utils_thai import FIRST_AREAS
 from utils_thai import join_provinces
 from utils_thai import trend_table
 
-AGE_BINS = [10, 20, 30, 40, 50, 60, 70]
+AGE_BINS = [10, 20, 50, 60, 70]
 
-DEATH_COLS = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']
+DEATH_COLS = ['0-9', '10-19', '20-49', '50-59', '60-69', '70+']
 DEATH_COLS = [f"Deaths Age {age}" for age in DEATH_COLS]
 
 
@@ -77,7 +78,8 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
         df['Deaths Comorbidity None']).to_frame('Deaths Under 60yo without Underlying Diseases')
     deaths_reason["Deaths"] = df["Deaths"]
     deaths_reason['Deaths Risk Family'] = df['Deaths Risk Family']
-    deaths_reason["Estimated Total Deaths (IHME)"] = ihme['seir_daily_mean']
+    if not ihme.empty:
+        deaths_reason["Estimated Total Deaths (IHME)"] = ihme['seir_daily_mean']
     # deaths_reason["Estimated Deaths Max (IHME)"] = ihme['seir_daily_upper']
     # deaths_reason["Estimated Deaths Min (IHME)"] = ihme['seir_daily_lower']
 
@@ -102,6 +104,12 @@ def save_deaths_plots(df: pd.DataFrame) -> None:
               kind='line', stacked=False, percent_fig=False,
               cmap='tab10',
               footnote_left=f'{source}Data Source: CCSA Daily Briefing, IHME')
+
+    if 'Deaths Age 0-4' in df.columns:
+        df = df.combine_first((df['Deaths Age 0-4'] + df['Deaths Age 5-9']).to_frame('Deaths Age 0-9'))
+    df = df.combine_first((df['Deaths Age 20-29'] + df['Deaths Age 30-39'] +
+                          df['Deaths Age 40-49']).to_frame('Deaths Age 20-49'))
+    df = df.combine_first((df['Cases Age 20-29'] + df['Cases Age 30-39'] + df['Cases Age 40-49']).to_frame('Cases Age 20-49'))
 
     df['Deaths Comorbidity Aged 70+'] = df['Deaths Age 70+']
     df['Deaths Comorbidity Aged 60+'] = df['Deaths Age 70+'] + df['Deaths Age 60-69']
@@ -699,9 +707,19 @@ see https://djay.github.io/covidthailand/#excess-deaths
 
 
 if __name__ == "__main__":
-
     df = import_csv("combined", index=["Date"])
+    briefings = import_csv("cases_briefings", ["Date"], False)
+    dash = import_csv("moph_dashboard", ["Date"], False, dir="inputs/json")  # so we cache it
+    dash_weekly = import_csv("moph_dash_weekly", ["Date"], False, dir="inputs/json")  # so we cache it
+    vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
+    hospcols = [c for c in df.columns if 'Hospitalized' in c]
+    daily = cum2daily(dash_weekly, exclude=vaccols + hospcols)
+    daily_deaths = weekly2daily(dash_weekly[(c for c in dash_weekly.columns if "Deaths " in c)])
+    daily = daily.combine_first(daily_deaths)
+    df = briefings.combine_first(dash).combine_first(daily).combine_first(df)
+
+    # df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_excess_death_plots(df)
     save_deaths_plots(df)
+    save_excess_death_plots(df)
