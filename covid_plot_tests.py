@@ -53,6 +53,7 @@ week,BA.1 (Omicron),BA.2 (Omicron)
 120, 3, 97
 """
 
+# https://github.com/neherlab/SARS-CoV-2_variant-reports/blob/main/reports/variant_report_latest_draft.md
 # 'B.1.1.7 (Alpha)'
 # 'B.1.351 (Beta)'
 # 'B.1.617.2 (Delta)'
@@ -101,7 +102,8 @@ groups = {
     "BA.2.86": "JN.1 (Pirola)",
     "JN.": "JN.1 (Pirola)",
     "KP.": "JN.1 (Pirola)",
-    # "XDQ": 'Other',  # BA.2.86 recombinants - XDQ: BA.2.86.1 with 3' from FL.15.1.1, lacks S:L455S as not from JN.1 but sublineage XDQ.1 has S:A475V. Around 5% at end of January 2024 in South Korea and Japan, possibly growing.
+    # BA.2.86 recombinants - XDQ: BA.2.86.1 with 3' from FL.15.1.1, lacks S:L455S as not from JN.1 but sublineage XDQ.1 has S:A475V. Around 5% at end of January 2024 in South Korea and Japan, possibly growing.
+    "XDQ": "JN.1 (Pirola)",
     "Other": "Other",
 }
 
