@@ -99,7 +99,9 @@ groups = {
     "EG.": "EG (Eris)",
     # https://www.news-medical.net/news/20240209/Understanding-the-virological-properties-of-SARS-CoV-2-variant-JN1.aspx
     "BA.2.86": "JN.1 (Pirola)",
-    "JN.1": "JN.1 (Pirola)",
+    "JN.": "JN.1 (Pirola)",
+    "KP.": "JN.1 (Pirola)",
+    # "XDQ": 'Other',  # BA.2.86 recombinants - XDQ: BA.2.86.1 with 3' from FL.15.1.1, lacks S:L455S as not from JN.1 but sublineage XDQ.1 has S:A475V. Around 5% at end of January 2024 in South Korea and Japan, possibly growing.
     "Other": "Other",
 }
 
