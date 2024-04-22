@@ -379,6 +379,8 @@ def get_weekly_today(url, dir):
             cases2023 = pd.read_json(file)
         except ValueError:
             cases2023 = pd.read_csv(file)
+        if 'province' not in cases2023.columns:
+            return None
         if any_in(cases2023['province'].iloc[-1], 'อื่นๆ', 'เคสปกติ', '.'):
             # Some cases have the cols un the wrong order
             # cases2023 = cases2023.rename(columns=dict(province='job', reporting_group='province', job='region',
@@ -389,11 +391,12 @@ def get_weekly_today(url, dir):
                                  'job', 'reporting_group', 'province', 'patient_type', 'region_odpc',
                                  'update_date']
         return cases2023
-    if file is not None:
-        cases2023 = read_week(file)
+    if file is not None and (cases2023 := read_week(file)) is not None:
         max_week = cases2023['weeknum'].max()
         year = cases2023['year'].max()
         os.rename(f"{dir}/{fname}", week_file(max_week, year))
+    else:
+        logger.error("Failed to read weekly api data {}", url)
 
     # Get fake api files
     # max_week = int(today().strftime("%U")) + 1
