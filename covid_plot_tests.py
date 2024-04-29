@@ -183,6 +183,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
         logger.warning("Using Variants from reports. GISAID problem, or old")
         foot_source = f'{source}Data Source: SARS-CoV-2 variants in Thailand(DMSc)'
 
+    last_update = variants.last_valid_index()
     # Interpolate up to current data
     # TODO put in different colour to show its a prediction
     variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
@@ -200,6 +201,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               # y_formatter=perc_format,
+              last_update=last_update,
               footnote=footnote.format("Cases"),
               footnote_left=foot_source)
 

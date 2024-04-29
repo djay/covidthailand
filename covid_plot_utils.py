@@ -104,6 +104,7 @@ def plot_area(df: pd.DataFrame,
               reverse_cmap: bool = False,
               y_formatter: Callable[[float, int], str] = human_format,
               clean_end=True,
+              last_update=None,
               between: List[str] = []) -> None:
     """Creates one .png file for several time periods, showing data in absolute numbers and percentage terms.
 
@@ -192,8 +193,9 @@ def plot_area(df: pd.DataFrame,
     # some ratios go inf. better just filter it out here. maybe there should be another ceil?
     df = df.replace(np.inf, np.nan)
 
-    # try to hone in on last day of "important" data. Assume first col
-    last_update = df[orig_cols[:1]].dropna().last_valid_index()  # date format chosen: '05 May 2021'
+    if last_update is None:
+        # try to hone in on last day of "important" data. Assume first col
+        last_update = df[orig_cols[:1]].dropna().last_valid_index()  # date format chosen: '05 May 2021'
     # last_date_excl = df[cols].last_valid_index() # last date with some data (not inc unknown)
     is_dates = hasattr(last_update, 'date')
 
