@@ -36,7 +36,7 @@ sources have stopped being published so many plots will no longer be change.
 ![Daily Averages as % of Peak](https://practical-ritchie-cca141.netlify.app/outputs/cases_peak_3.png)
 ![Bi-weekly change](https://practical-ritchie-cca141.netlify.app/outputs/biweekly_change_3.png)
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/hosp_by_variants_3.png)
-- source: [DMSc Variant Report](downloads.md#dl-variant), [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+- source: [Outbreak.info](https://outbreak.info/location-reports?loc=THA&dark=true), [DMSc Variant Report](downloads.md#dl-variant)
 
 
 - Sources: [CCSA Daily Briefing](downloads.md#dl-briefings),
@@ -48,7 +48,7 @@ sources have stopped being published so many plots will no longer be change.
 ## Deaths by Major Variant (Extrapolated from Surviellance)
 
 ![Covid Variant Surviellance](https://practical-ritchie-cca141.netlify.app/outputs/deaths_by_variants_3.png)
-- source: [DMSc Variant Report](downloads.md#dl-variant), [IHME COVID estimates](http://www.healthdata.org/covid/data-downloads)
+- source: [Outbreak.info](https://outbreak.info/location-reports?loc=THA&dark=true), [DMSc Variant Report](downloads.md#dl-variant)
 
 
 ## COVID-19 Deaths
