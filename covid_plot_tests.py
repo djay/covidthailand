@@ -189,7 +189,8 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
 
     footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
-    cols = rearrange(variants.columns.to_list(), "BA.2.86/JN.1 (Pirola)", "XDQ", "Other", first=False)
+    cols = rearrange(variants.columns.to_list(), *dict.fromkeys(groups.values()).keys())
+    cols = rearrange(cols, "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
