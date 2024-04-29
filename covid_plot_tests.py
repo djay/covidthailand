@@ -189,8 +189,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     variants = variants.reindex(pd.date_range(df.index.min(), df.index.max(), freq='D')).interpolate()
 
     footnote = "Estimate of variants in {} based on random sampling\nof Case PCR Genetic sequencing submitted to GISAID."
-    cols = rearrange(variants.columns.to_list(), "BA.2.75/BN.1/CH.1 (Centaurus)",
-                     "XBB (Kraken/Arcturus)", "EG (Eris)", "JN.1 (Pirola)", "Other", first=False)
+    cols = rearrange(variants.columns.to_list(), "BA.2.86/JN.1 (Pirola)", "XDQ", "Other", first=False)
     variants['Cases'] = df['Cases']
     case_variants = (variants[cols].multiply(variants['Cases'], axis=0)).dropna(axis=0, how="all")
     # cols = sorted(variants.columns, key=lambda c: c.split("(")[1])
@@ -217,6 +216,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               # y_formatter=perc_format,
+              last_update=last_update,
               footnote=footnote.format("IHME Infections Prediction"),
               footnote_left=foot_source)
 
@@ -227,6 +227,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
+              last_update=last_update,
               footnote=footnote.format("Deaths"),
               footnote_left=foot_source)
 
@@ -237,6 +238,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               ma_days=7,
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
+              last_update=last_update,
               footnote=footnote.format("Hospitalized on Ventilator"),
               footnote_left=foot_source)
 
