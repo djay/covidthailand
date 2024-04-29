@@ -97,7 +97,7 @@ groups = {
     "GA.": "XBB (Kraken/Arcturus)",
     "HK.3": "XBB (Kraken/Arcturus)",  # from eg.5.1?
     "HN.": "XBB (Kraken/Arcturus)",
-    "EG.": "EG (Eris)",
+    "EG.": "Other",  # "EG (Eris)", - didn't have much impact
     # https://www.news-medical.net/news/20240209/Understanding-the-virological-properties-of-SARS-CoV-2-variant-JN1.aspx
     "BA.2.86": "BA.2.86/JN.1 (Pirola)",
     "JN.": "BA.2.86/JN.1 (Pirola)",
