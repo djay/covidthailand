@@ -379,7 +379,7 @@ def get_weekly_today(url, dir):
             cases2023 = pd.read_json(file)
         except ValueError:
             cases2023 = pd.read_csv(file)
-        if 'province' not in cases2023.columns:
+        if 'province' not in cases2023.columns or cases2023.empty:
             return None
         if any_in(cases2023['province'].iloc[-1], 'อื่นๆ', 'เคสปกติ', '.'):
             # Some cases have the cols un the wrong order
