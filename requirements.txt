@@ -13,7 +13,7 @@ camelot-py[cv,plot] == 0.8.2
 PyPDF2<3.0  # until this is fixed - https://github.com/camelot-dev/camelot/issues/339
 pandas > 1.4.0 # < 2.0.0 # some plot error
 numpy < 1.24.0
-matplotlib # == 3.3.4
+matplotlib <= 3.8.4
 pythainlp
 pytest; python_version != '3.9'
 pytest !=7.0.0; python_version == '3.9'  # https://github.com/pytest-dev/pytest/issues/9608
