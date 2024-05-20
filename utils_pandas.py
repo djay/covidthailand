@@ -443,7 +443,7 @@ def custom_cm(cm_name: str, size: int, last_colour: str = None, flip: bool = Fal
     """Returns a ListedColorMap object built with the supplied color scheme and with the last color forced to be equal
     to the parameter passed. The flip parameter allows to reverse the colour scheme if needed.
     """
-    summer = matplotlib.cm.get_cmap(cm_name)
+    summer = getattr(matplotlib.cm, cm_name)
     if flip:
         newcolors = summer(np.linspace(1, 0, size))
     else:
@@ -485,7 +485,7 @@ def get_cycle(cmap, n=None, use_index="auto", extras=[], unpair=False, start=0):
                 use_index = True
             else:
                 use_index = False
-        cmap = matplotlib.cm.get_cmap(cmap)
+        cmap = getattr(matplotlib.cm, cmap)
     if not n:
         n = cmap.N
     if use_index == "auto":
