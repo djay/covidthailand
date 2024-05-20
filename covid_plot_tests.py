@@ -105,13 +105,15 @@ groups = {
     "KP.2": "KP.* (FLiRT)",
     # BA.2.86 recombinants - XDQ: BA.2.86.1 with 3' from FL.15.1.1, lacks S:L455S as not from JN.1 but sublineage XDQ.1 has S:A475V. Around 5% at end of January 2024 in South Korea and Japan, possibly growing.
     # "XDQ": "XDQ",
+    # XDV	Recombinant lineage of XDE, JN.1, XDE, JN.1 (breakpoints between 19327-21608, 27916-28296, 28959-29534), USA/China, from #2402
+    # XDV.1	S:F456L (T22930A), on C11572T branch, Hong Kong
     "Other": "Other",
 }
 
 
 def group_seq(seq):
     def group(variant):
-        label = next((label for match, label in reversed(groups.items()) if match in variant.upper()), "Other")
+        label = next((label for match, label in reversed(groups.items()) if variant.upper().startswith(match)), "Other")
         return label
     recent_variants = seq.iloc[-4:].dropna(axis=1)
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
