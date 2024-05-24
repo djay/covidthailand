@@ -103,6 +103,7 @@ groups = {
     "JN.": "BA.2.86/JN.1 (Pirola)",
     "KP.1.1": "KP.* (FLiRT)",
     "KP.2": "KP.* (FLiRT)",
+    "KP.3": "KP.* (FLiRT)",
     # BA.2.86 recombinants - XDQ: BA.2.86.1 with 3' from FL.15.1.1, lacks S:L455S as not from JN.1 but sublineage XDQ.1 has S:A475V. Around 5% at end of January 2024 in South Korea and Japan, possibly growing.
     # "XDQ": "XDQ",
     # XDV	Recombinant lineage of XDE, JN.1, XDE, JN.1 (breakpoints between 19327-21608, 27916-28296, 28959-29534), USA/China, from #2402
