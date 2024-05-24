@@ -103,7 +103,9 @@ groups = {
     "JN.": "BA.2.86/JN.1 (Pirola)",
     "KP.1.1": "KP.* (FLiRT)",
     "KP.2": "KP.* (FLiRT)",
-    "KP.3": "KP.* (FLiRT)",
+    "KP.": "KP.* (FLiRT)",
+    "LB.1": "KP.* (FLiRT)",
+    "KS.1": "KP.* (FLiRT)",
     # BA.2.86 recombinants - XDQ: BA.2.86.1 with 3' from FL.15.1.1, lacks S:L455S as not from JN.1 but sublineage XDQ.1 has S:A475V. Around 5% at end of January 2024 in South Korea and Japan, possibly growing.
     # "XDQ": "XDQ",
     # XDV	Recombinant lineage of XDE, JN.1, XDE, JN.1 (breakpoints between 19327-21608, 27916-28296, 28959-29534), USA/China, from #2402
@@ -116,7 +118,7 @@ def group_seq(seq):
     def group(variant):
         label = next((label for match, label in reversed(groups.items()) if variant.upper().startswith(match)), "Other")
         return label
-    recent_variants = seq.iloc[-4:].dropna(axis=1)
+    recent_variants = seq.iloc[-4:].dropna(axis=1, how='all')
     unstacked = seq.unstack().reset_index(name="Detected").rename(columns=dict(level_0="Variant"))
     unstacked['Variant Group'] = unstacked['Variant'].apply(group)
     seq = pd.pivot_table(unstacked, columns="Variant Group", values="Detected", index="End", aggfunc="sum")
