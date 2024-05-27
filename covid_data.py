@@ -208,8 +208,8 @@ def scrape_and_combine():
         old = old.set_index("Date")
         return old
     jobs = [
-        covid_data_vac.vac_slides,
-        covid_data_vac.vaccination_reports,
+        # covid_data_vac.vac_slides,
+        # covid_data_vac.vaccination_reports,
         # covid_data_briefing.get_cases_by_prov_briefings,
         covid_data_dash.dash_weekly,
         covid_data_dash.dash_province_weekly,
@@ -243,7 +243,7 @@ def scrape_and_combine():
         pool.join()
     logger.info(f"data={len(res)}")
 
-    vac_reports, vac_reports_prov = res['vaccination_reports']
+    # vac_reports, vac_reports_prov = res['vaccination_reports']
     # briefings_prov, cases_briefings = res['get_cases_by_prov_briefings']
     cases_demo, risks_prov, case_api_by_area = res['get_cases_by_demographics_api']
     # tweets_prov, twcases = res['get_cases_by_prov_tweets']
@@ -299,7 +299,8 @@ def scrape_and_combine():
     # Export situation
     situation = covid_data_situation.export_situation(res.get('get_thai_situation', None), res.get('get_en_situation', None))
 
-    vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
+    # vac = covid_data_vac.export_vaccinations(vac_reports, vac_reports_prov, res['vac_slides'])
+    vac = import_csv("vac_timeline", ['Date'])
 
     dash_weekly = cum2daily(res['dash_weekly'], drop=False, exclude=vaccols + hospcols)
     dash_weekly = dash_weekly.combine_first(weekly2daily(
