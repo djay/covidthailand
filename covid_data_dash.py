@@ -295,7 +295,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     # Remove any dips in cumualtive values. can be caused by getting daily instead#
     # lambda mydf: mydf.loc[mydf['Cases Cum'].ffill() < mydf['Cases Cum'].cummax().ffill(), 'Cases Cum'] = np.nan
     # decresed = df[(df[[c for c in df.columns if " Cum" in c]].groupby("Province").diff() < 0).any(axis=1)]
-    contiguous = df[["Cases Cum", "Deaths Cum"]].dropna()
+    contiguous = df[["Cases Cum", "Deaths Cum"]].dropna(how="any")
     dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
     dec2 = contiguous[(contiguous.groupby("Province").diff(-1) > 0).any(axis=1)]  # In case its a spike thats wrong
     contiguous = df[["Vac Given 1 Cum", "Vac Given 2 Cum", "Vac Given 3 Cum"]].dropna()
@@ -303,6 +303,7 @@ def dash_province_weekly(file="moph_province_weekly"):
     dec4 = contiguous[(contiguous.groupby("Province").diff(-1) > 0).any(axis=1)]
     decreased = dec1.combine_first(dec2).combine_first(dec3).combine_first(dec4)
     # Just remove bad rows
+    logger.warning("Dropping decreasing values {}", decreased.index)
     df = df.drop(index=decreased.index)
 
     valid = {
@@ -367,7 +368,7 @@ def dash_province_weekly(file="moph_province_weekly"):
         contiguous = combined[["Cases Cum", "Deaths Cum"]]
         dec1 = contiguous[(contiguous.groupby("Province").diff() < 0).any(axis=1)]  # in case its the drop thats wrong
         bad_rows = dec1.index.intersection(row.index)
-        if len(bad_rows) > 0:
+        if False and len(bad_rows) > 0:
             logger.info("{} MOPH dash, dropping invalid row. cum value not inc. {}", bad_rows,
                         row.loc[bad_rows].to_string(index=False, header=False))
             df = combined.drop(bad_rows)
