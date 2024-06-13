@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
 from dateutil.parser import parse as d
+from tika import unpack
 
 import covid_plot_cases
 import covid_plot_deaths
@@ -827,6 +828,8 @@ def get_cases_by_prov_briefings():
         pages = parse_file(file, html=True, paged=True)
         pages = [BeautifulSoup(page, 'html.parser') for page in pages]
 
+        unvaccinated = get_unvaccinated(pages, file)
+
         today_types = briefing_case_types(date, pages, briefing_url)
         types = types.combine_first(today_types)
 
@@ -1020,6 +1023,15 @@ def vac_briefing_provs(df, date, file, page, text):
     return df.combine_first(
         pd.DataFrame(rows, columns=["Date", "Province", "Vac Given Cum", "Vac Given 1 Cum",
                                     "Vac Given 2 Cum"]).set_index(["Date", "Province"]))
+
+
+def get_unvaccinated(pages, file):
+    for soup in pages:
+        text = str(soup)
+        if "ผู้ติดเชื้อ ผู้ป่วยปอดอักเสบ ผู้ป่วยใส่ท่อช่วยหายใจ และผู้เสียชีวิต" not in text:
+            continue
+        imgs = unpack.from_file(file, serverEndpoint="http://localhost:9998")['attachments']
+        soup.find_all("img")
 
 
 if __name__ == '__main__':
