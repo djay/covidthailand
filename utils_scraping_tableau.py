@@ -526,7 +526,7 @@ def select(scraper, worksheetName, dashboard, storyPointId, selection):
         ("selection", (None, json.dumps(
             {"objectIds": selection, "selectionType": "tuples"}))),
         ("selectOptions", (None, "select-options-simple")),
-        #        ("zoneId", (None, 3)),
+        ("zoneId", (None, 3)),
         ("zoneSelectionType", (None, "replace")),
     )
     r = scraper.session.post(
