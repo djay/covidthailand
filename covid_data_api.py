@@ -810,6 +810,8 @@ def excess_deaths():
                 continue
             date = datetime.datetime(year=year, month=month, day=1)
             logger.info("Excess Deaths: missing {}-{}", year, month)
+            mcount = 0
+            mtotal = 0
             for prov, iso in provinces[["Name", "ISO[7]"]].itertuples(index=False):
                 if iso is None or type(iso) != str:
                     continue
@@ -825,11 +827,11 @@ def excess_deaths():
                     # data not found
                     if date < today() - relativedelta(months=1):
                         # Error in specific past data
-                        logger.info("Excess Deaths: Error getting {} {} {}", prov, apiurl, str(data))
+                        logger.warning("Excess Deaths: Error getting {} {} {}", prov, apiurl, str(data))
                         continue
                     else:
                         # This months data not yet available
-                        logger.info("Excess Deaths: Error in {}-{}", year, month)
+                        logger.warning("Excess Deaths: Error in {}-{}", year, month)
                         done = True
                         break
                 changed = True
@@ -839,7 +841,10 @@ def excess_deaths():
                     assert total == sum([r[-1] for r in thisrows])
                     assert numbers.get("lsAge102") is None
                     rows.extend(thisrows)
+                    mtotal += total
+                    mcount += 1
             logger.opt(raw=True).info("\n")
+            logger.info("Excess Deaths: Total in {}-{}: {}", year, month, mtotal)
     df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
     if changed:
         export(df, "deaths_all", csv_only=True, dir="inputs/json")
