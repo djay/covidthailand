@@ -806,7 +806,7 @@ def excess_deaths():
         for month in range(1, 13):
             if done:
                 break
-            if not (year == 2023 and month == 12) and counts.Age.get((year, month), 0) >= 77 * 102 * 2 and sums.Age.get((year, month), 0) > 2000:
+            if counts.Age.get((year, month), 0) >= 77 * 102 * 2 and sums.Age.get((year, month), 0) > 2000:
                 continue
             date = datetime.datetime(year=year, month=month, day=1)
             logger.info("Excess Deaths: missing {}-{}", year, month)
