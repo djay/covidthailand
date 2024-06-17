@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import numpy as np
@@ -459,18 +460,25 @@ def save_excess_death_plots(df):
     cols = [f'Deaths {y}' for y in range(2012, 2021, 1)]
     by_month = pd.DataFrame(all)
     by_month['Month'] = by_month.index.strftime('%B')
-    years2020 = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
-    cols2021 = ['Deaths 2021', 'Deaths 2021 (ex. Known Covid)']
-    years2021 = by_month["2021-01-01":"2022-01-01"][cols2021 + ['Month']].reset_index().set_index("Month")
-    cols2022 = ['Deaths 2022']
-    years2022 = by_month["2022-01-01":"2023-01-01"][cols2022 + ['Month']].reset_index().set_index("Month")
-    cols2023 = ['Deaths 2023']
-    years2023 = by_month["2023-01-01":"2024-01-01"][cols2023 + ['Month']].reset_index().set_index("Month")
+    years = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
 
-    by_month = years2020.combine_first(years2021).combine_first(years2022).combine_first(years2023).sort_values("Date")
-    cols = cols + cols2021 + cols2022 + cols2023
+    for year in range(2021, datetime.datetime.now().year + 1):
+        cols += [f'Deaths {year}']
+        years = years.combine_first(by_month[f"{year}-01-01":f"{year+1}-01-01"]
+                                    [[f'Deaths {year}'] + ['Month']].reset_index().set_index("Month"))
+    # cols2021 = ['Deaths 2021']
+    # years2021 = by_month["2021-01-01":"2022-01-01"][cols2021 + ['Month']].reset_index().set_index("Month")
+    # cols2022 = ['Deaths 2022']
+    # years2022 = by_month["2022-01-01":"2023-01-01"][cols2022 + ['Month']].reset_index().set_index("Month")
+    # cols2023 = ['Deaths 2023']
+    # years2023 = by_month["2023-01-01":"2024-01-01"][cols2023 + ['Month']].reset_index().set_index("Month")
+    # cols2024 = ['Deaths 2024']
+    # years2024 = by_month["2024-01-01":"2025-01-01"][cols2024 + ['Month']].reset_index().set_index("Month")
 
-    plot_area(df=by_month,
+    # by_month = years2020.combine_first(years2021).combine_first(years2022).combine_first(years2023).combine_first(years2024).sort_values("Date")
+    # cols = cols + cols2021 + cols2022 + cols2023 + cols2024
+
+    plot_area(df=years.sort_values("Date"),
               title='Excess Deaths - Thailand',
               legend_pos="lower center", legend_cols=3,
               png_prefix='deaths_excess_years', cols_subset=cols,
@@ -721,5 +729,5 @@ if __name__ == "__main__":
     # df = import_csv("combined", index=["Date"])
     os.environ["MAX_DAYS"] = '0'
     os.environ['USE_CACHE_DATA'] = 'True'
-    save_deaths_plots(df)
     save_excess_death_plots(df)
+    save_deaths_plots(df)
