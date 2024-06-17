@@ -845,7 +845,7 @@ def excess_deaths():
                     mcount += 1
             logger.opt(raw=True).info("\n")
             logger.info("Excess Deaths: Total in {}-{}: {}", year, month, mtotal)
-    df = df.combine_first(pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index))
+    df = pd.DataFrame(rows, columns=index + ["Deaths"]).set_index(index).combine_first(df)
     if changed:
         export(df, "deaths_all", csv_only=True, dir="inputs/json")
         shutil.copy(os.path.join("inputs", "json", "deaths_all.csv"), "api")  # "json" for caching, api so it's downloadable
