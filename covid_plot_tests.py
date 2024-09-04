@@ -185,6 +185,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
     if not api.empty and variants.index.max() <= api.index.max():
         # api seems not have alpha beta. maybe because not enough sequence data then?
         variants = pd.concat([variants[:"2022-01-01"], group_seq(api)["2022-01-02":]])
+        variants = variants.replace(np.nan, 0)
         foot_source = f'{source}Data Source: GISAID'
     else:
         logger.warning("Using Variants from reports. GISAID problem, or old")
@@ -244,6 +245,7 @@ def save_variant_plots(df: pd.DataFrame) -> None:
               title='Hospitalized on Ventilator by Major Variant - Thailand',
               png_prefix='hosp_by_variants', cols_subset=cols,
               ma_days=7,
+              periods_to_plot=["3", "all"],
               kind='area', stacked=True, percent_fig=True,
               cmap='tab10',
               last_update=last_update,
