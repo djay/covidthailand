@@ -110,6 +110,7 @@ def workbook_series(wb, name, mappings, defaults={"": 0.0}, index_col="Date", en
         df.columns = df.columns.map(' '.join)
         df = df.reset_index()
     df = df.set_index(index_col)
+    assert np.nan not in df.index
     # This seems to be 0 in these graphs. and if we don't then any bad previous values won't get corrected. TODO: param depeden
     if type(defaults) != dict:
         default = [defaults] * len(df.columns)

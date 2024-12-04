@@ -273,6 +273,7 @@ def dash_weekly(file="moph_dash_weekly"):
         # We miss data not effected by wave
         row_update = extract_basics(wb, date, check_date=False)
         assert not row_update.empty
+        assert np.nan not in row_update.index and pd.NaT not in row_update.index
         # row = row_update.combine_first(row_since2023)
         row = row_update
 
@@ -389,6 +390,7 @@ def dash_province_weekly(file="moph_province_weekly"):
 def extract_basics(wb, date, check_date=True, base_df=None):
 
     row = pd.DataFrame()
+    maxdate = None
     # D_CaseNew_/7 - daily avg cases
     # D_DeathNew_/7 - daily avg deaths
     # D_Death (2)
@@ -438,6 +440,7 @@ def extract_basics(wb, date, check_date=True, base_df=None):
     cases = weeks_to_end_date(cases, year_col="Year", week_col="Week", offset=0, date=date)
     if cases.empty and base_df is not None and 'Cases' in base_df.columns:
         cases = base_df[['Cases']]
+        maxdate = cases.index.max()
 
     deaths = workbook_series(wb, ["D_DeathTL (2)", "D2_DeathTL (2)"], {
         "SUM(death_new)-value": "Deaths",
@@ -447,6 +450,9 @@ def extract_basics(wb, date, check_date=True, base_df=None):
     deaths = weeks_to_end_date(deaths, year_col="Year", week_col="Week", offset=0, date=date)
     if deaths.empty and base_df is not None and 'deaths' in base_df.columns:
         deaths = base_df[['Deaths']]
+        maxdate = deaths.index.max()
+
+    assert maxdate is not pd.NaT or maxdate is not np.nan
 
     # There is no date in the data to tell us that its returning the correct data except for the
     # the deaths and cases. lets just look if we got latest instead.
@@ -470,13 +476,15 @@ def extract_basics(wb, date, check_date=True, base_df=None):
                              "Measure Names-alias": "Gender"}, index_col="Gender", index_date=False)
 
     if not ages.empty:
-        ages['Date'] = deaths.index.max()
+        ages['Date'] = date
         ages = ages.reset_index().pivot(columns=['Age Group'], values=["Deaths"], index=["Date"])
         ages.columns = [f"Deaths Age {a}" for a in ["0-4", "10-19", "20-49", "5-9", "50-59", "60-69", "70+"]]
-        gender['Date'] = deaths.index.max()
+        row = row.combine_first(ages)
+    if not gender.empty:
+        gender['Date'] = date
         gender = gender.reset_index().pivot(columns=['Gender'], values=["Deaths"], index=["Date"])
         gender.columns = [f"Deaths {g}" for g in ["Male", "Female"]]
-        row = row.combine_first(gender).combine_first(ages)
+        row = row.combine_first(gender)
 
     # TODO: should switch from weekly?
     row = row.combine_first(vacs).combine_first(vacs_dates)
@@ -776,25 +784,26 @@ def check_dash_ready():
 if __name__ == '__main__':
     # check_dash_ready()
 
-    dash_daily_df = dash_weekly()
-    dash_by_province_df = dash_province_weekly()
-    dash_by_province_daily = dash_by_province()
     # dash_ages_df = dash_ages()
 
     # This doesn't add any more info since severe cases was a mistake
-#    dash_trends_prov_df = dash_trends_prov()
+    #    dash_trends_prov_df = dash_trends_prov()
 
     df = import_csv("combined", index=["Date"], date_cols=["Date"])
     prov = import_csv("cases_by_province", index=["Date", "Province"], date_cols=["Date"])
 
+    dash_by_province_df = dash_province_weekly()
     # df = dash.combine(df, lambda s1, s2: s1)
     # df = briefings.combine(df, lambda s1, s2: s1)
     vaccols = [f"Vac Given {d} Cum" for d in range(1, 5)]
     daily_prov = cum2daily(dash_by_province_df, exclude=vaccols)
+    dash_by_province_daily = dash_by_province()
     prov = dash_by_province_daily.combine_first(daily_prov).combine_first(prov)
     # Write this one as it's imported
     export(prov, "cases_by_province", csv_only=True)
 
+    dash_daily_df = dash_weekly()
+    dash_daily_df = dash_daily_df.loc[dash_daily_df.index.notnull()]  # remove some bad data
     daily = cum2daily(dash_daily_df, exclude=vaccols)
     daily_deaths = weekly2daily(dash_daily_df[(c for c in dash_daily_df.columns if "Deaths " in c)])
     df = daily.combine_first(df).combine_first(daily_deaths)

@@ -72,6 +72,8 @@ def cum2daily(results, exclude=[], drop=True, replace=True):
         cum = df_cum.reset_index(otherindex)
         othervals = cum[otherindex]
         cum = cum[[c for c in cols if c not in otherindex]]
+        # remove any bad time values
+        cum = cum.loc[cum.index.notnull()]
 
         all_days = pd.date_range(cum.index.min(), cum.index.max(), name="Date")
         cum = cum.reindex(all_days)  # put in missing days with NaN
@@ -81,7 +83,9 @@ def cum2daily(results, exclude=[], drop=True, replace=True):
         renames = dict((c, c.rstrip(' Cum')) for c in list(daily.columns) if 'Cum' in c)
         daily = daily.rename(columns=renames)
         assert not (daily < 0).any().any()
-        daily[otherindex] = othervals.iloc[0]  # Should all be the same
+        # set to all the first province as they should all be the same.
+        for i in otherindex:
+            daily.insert(0, i, othervals.iloc[0][i])
         daily = daily.reset_index().set_index(["Date"] + otherindex)
         if not drop:
             # add back in the cum valuse
@@ -735,5 +739,6 @@ def weeks_to_end_date(df, week_col="Week", year_col="year", offset=0, date=None)
     #     f"{row[year_col] if year_col else year}-W{int(row[week_col])}-6", "%Y-W%W-%w") - datetime.timedelta(days=offset), axis=1)
     df["Date"] = pd.to_datetime(df[year_col].astype(str) + df[week_col].astype(str) +
                                 "-6", format='%Y%U-%w') - DateOffset(days=offset)
+    assert np.nan not in df['Date'] and pd.NaT not in df['Date']
     df = df.drop(columns=set(df.columns).intersection(set([week_col, year_col, None])))
     return df.set_index(["Date"] + otherindex)
