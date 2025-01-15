@@ -463,6 +463,8 @@ def save_excess_death_plots(df):
     years = by_month["2020-01-01":"2021-01-01"][cols + ['Month']].reset_index().set_index("Month")
 
     for year in range(2021, datetime.datetime.now().year + 1):
+        if f'Deaths {year}' not in years.columns:
+            continue
         cols += [f'Deaths {year}']
         years = years.combine_first(by_month[f"{year}-01-01":f"{year+1}-01-01"]
                                     [[f'Deaths {year}'] + ['Month']].reset_index().set_index("Month"))
