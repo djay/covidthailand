@@ -1,0 +1,34 @@
+theme: jekyll-theme-midnight
+title: Covid Thailand Trends
+description: Thailand Covid testing and case data gathered and combined from various sources for others to download or view
+image: https://practical-ritchie-cca141.netlify.app/outputs/tests_all.png
+page:
+   image: https://practical-ritchie-cca141.netlify.app/outputs/tests_all.png
+google_analytics: UA-167358587-2
+plugins:
+  - jekyll-titles-from-headings
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-default-layout
+exclude:
+  - inputs/
+  - '*.py'
+  - vendor
+  - tests
+social-network-links:
+   github: djay
+   twitter: djay75
+social:
+   name: Dylan Jay
+author:
+   twitter: djay75
+   github: djay
+twitter:
+  username: djay75
+  image: https://practical-ritchie-cca141.netlify.app/outputs/tests_all.png
+  card: summary_large_image
+show_downloads: true
+github:
+  zip_url: https://djay.github.io/covidthailand/#downloads
+  tar_url: https://djay.github.io/covidthailand/#downloads
+permalink: :path:basename:output_ext
