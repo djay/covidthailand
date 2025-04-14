@@ -1,0 +1,25 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+section {
+  margin-top: 0px;
+  max-width: 1024px;
+}
+
+.wrapper {
+  max-width: 1024px;
+}
+
+div#header {
+  visibility: hidden;
+}
+
+.credits {
+  visibility: hidden;
+}
+
+body {
+  background: #202020;
+}
